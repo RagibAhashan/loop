@@ -1,0 +1,29 @@
+{
+  "name": "sneaker",
+  "version": "0.0.1",
+  "description": "sneaker bot ~uwu~",
+  "main": "main.js",
+  "dependencies": {
+    "axios": "^0.21.1",
+    "inquirer": "^7.3.3",
+    "puppeteer": "^5.5.0"
+  },
+  "devDependencies": {
+    "browser-env": "^3.3.0",
+    "eslint": "^7.17.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RagibAhashan/sneaker.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RagibAhashan/sneaker/issues"
+  },
+  "homepage": "https://github.com/RagibAhashan/sneaker#README"
+}
