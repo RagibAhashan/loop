@@ -6,12 +6,12 @@
 
 body {
   position: relative;
-  color: white;
+  color: rgb(0, 0, 0);
   height: 100vh;
   background: linear-gradient(
     200.96deg,
     #fedc2a -29.09%,
-    #dd5789 51.77%,
+    /* #dd5789 51.77%, */
     #7a2c9e 129.35%
   );
   font-family: 'Noto Sans JP', sans-serif;
@@ -44,31 +44,4 @@ button {
 
 button:hover {
   transform: scale(1.1);
-}
-
-p {
-  font-size: 24px;
-}
-
-li {
-  list-style: none;
-}
-
-a {
-  color: white;
-  opacity: 0.75;
-  text-decoration: none;
-}
-
-a:hover {
-  opacity: 1;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.Hello {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 20px 0;
 }
