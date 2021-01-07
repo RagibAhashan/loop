@@ -1,44 +1,54 @@
 import React from 'react';
-// import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-// import SideBar from './components/sidebar';
-import CustomerForm from './components/customerForm'
+import { Menu, Button } from 'antd';
+import {
+  AppstoreOutlined,
+  MenuUnfoldOutlined,
+  MenuFoldOutlined,
+  PieChartOutlined,
+  DesktopOutlined,
+  ContainerOutlined,
+  MailOutlined,
+} from '@ant-design/icons';
 
 
-// const Main = () => {
-//   return (
-//     <Router>
-//       <Switch>
-//         <Route path="/" component={() => <div />} />
-//       </Switch>
-//     </Router>
-//   );
-// };
+const { SubMenu } = Menu;
 
-// interface UserShippingInformation {
-//   email: String;
-//   firstName: String;
-//   lastName: String;
-//   address: String;
-//   phone: Number;
-//   postalCode: String
-//   town: String
-// };
+export default class App extends React.Component {
+  state = {
+    collapsed: false,
+  };
 
-// interface UserBillingInformation {
-//   creditCardNumber: Number;
-//   cvc: Number;
-//   month: Number;
-//   year: Number;
-// };
-
-export default function App() {
-  return (
-    <div>
-      Hello!
-      <CustomerForm
-        // creditInformation={{creditCardNumber: 0,cvc: 0,month: 0,year: 0} as UserBillingInformation}
-        // userInfo={{email: "",firstName: "",lastName: "",address: "",phone: 1,postalCode: "",town: ""} as UserShippingInformation}
-      />
-    </div>
-  );
+  toggleCollapsed = () => {
+    this.setState({
+      collapsed: !this.state.collapsed,
+    });
+  };
+  
+  render() {
+    return (
+      <div style={{ width: 256 }}>
+        <Button type="primary" onClick={this.toggleCollapsed} style={{ marginBottom: 1, 
+          width: this.state.collapsed ? '80px' : '256px' }}>
+          {React.createElement(this.state.collapsed ? MenuUnfoldOutlined : MenuFoldOutlined)}
+        </Button>
+        <Menu
+          defaultSelectedKeys={['1']}
+          defaultOpenKeys={['sub1']}
+          mode="inline"
+          theme="dark"
+          inlineCollapsed={this.state.collapsed}
+        >
+          <Menu.Item key="1" icon={<PieChartOutlined />}>
+            Billing Information
+          </Menu.Item>
+          <Menu.Item key="2" icon={<DesktopOutlined />}>
+            Manage Proxies
+          </Menu.Item>
+          <Menu.Item key="3" icon={<ContainerOutlined />}>
+            Tasks
+          </Menu.Item>
+        </Menu>
+      </div>
+    )
+  }
 }
