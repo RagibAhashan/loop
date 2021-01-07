@@ -19,7 +19,7 @@ import {
       number: '${label} is not a valid number!',
     },
     number: {
-      range: '${label} must be between ${min} and ${max}',
+      range: '${label} must be 3 digits or less.',
     },
   };
 
@@ -131,7 +131,7 @@ const BillingPage = () => {
                     <Col span={12}>
                         <Divider orientation="right"> Credit Card Information </Divider>
                         <Form.Item name={['user', 'credit']} label="Credit Card Number" rules={[{ required: true }]}>
-                                <Input />
+                            <Input.Password />
                         </Form.Item>
 
                         <Form.Item name={['user', 'cvc']} label="CVC" rules={[{ required: true, type: 'number', min:0, max:999 }]}>
