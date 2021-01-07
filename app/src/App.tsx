@@ -1,54 +1,53 @@
-import React from 'react';
-import { Menu, Button } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Layout } from 'antd';
 import {
-  AppstoreOutlined,
-  MenuUnfoldOutlined,
-  MenuFoldOutlined,
-  PieChartOutlined,
-  DesktopOutlined,
-  ContainerOutlined,
-  MailOutlined,
-} from '@ant-design/icons';
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link
+} from "react-router-dom";
+
+import SideBar from './components/sidebar'
+import CustomerForm from './components/customerForm'
+import * as Constants from './constants.tsx'
 
 
-const { SubMenu } = Menu;
+const MAIN    = 'MAIN'
+const BILLING = 'BILLING'
+const PROXIES = 'PROXIES'
+const TASKS   = 'TASKS'
 
-export default class App extends React.Component {
-  state = {
-    collapsed: false,
-  };
 
-  toggleCollapsed = () => {
-    this.setState({
-      collapsed: !this.state.collapsed,
-    });
-  };
+const { Header, Content, Footer, Sider } = Layout;
+
+const App = () => {
+
   
-  render() {
-    return (
-      <div style={{ width: 256 }}>
-        <Button type="primary" onClick={this.toggleCollapsed} style={{ marginBottom: 1, 
-          width: this.state.collapsed ? '80px' : '256px' }}>
-          {React.createElement(this.state.collapsed ? MenuUnfoldOutlined : MenuFoldOutlined)}
-        </Button>
-        <Menu
-          defaultSelectedKeys={['1']}
-          defaultOpenKeys={['sub1']}
-          mode="inline"
-          theme="dark"
-          inlineCollapsed={this.state.collapsed}
-        >
-          <Menu.Item key="1" icon={<PieChartOutlined />}>
-            Billing Information
-          </Menu.Item>
-          <Menu.Item key="2" icon={<DesktopOutlined />}>
-            Manage Proxies
-          </Menu.Item>
-          <Menu.Item key="3" icon={<ContainerOutlined />}>
-            Tasks
-          </Menu.Item>
-        </Menu>
-      </div>
-    )
-  }
+
+  const [page, setPage] = useState(MAIN)
+
+
+
+  return (
+
+    <Layout style={{ minHeight: '100vh' }}>
+      
+      <SideBar
+          currentPage={page}
+          setPage={setPage}
+      />
+
+    <Layout className="site-layout">
+          <Header className="site-layout-background" style={{ padding: 0 }} />
+          <Content style={{ margin: '0 16px' }}>
+            <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
+              {page}
+            </div>
+          </Content>
+        </Layout>
+      </Layout>
+
+  );
 }
+
+export default App;
