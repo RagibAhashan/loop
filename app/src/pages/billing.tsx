@@ -65,38 +65,38 @@ const BillingPage = () => {
             <Form {...layout} name="nest-messages" onFinish={onFinish} validateMessages={validateMessages}>
                 <Row>
                     <Col span={12}>
-                        <Divider> Shipping Information </Divider>
+                        <Divider> Shipping Address </Divider>
                         
                             
-                            <Form.Item name={['user', 'firstname']} label="First Name" rules={[{ required: true }]}>
+                            <Form.Item name={['shipping', 'firstname']} label="First Name" rules={[{ required: true }]}>
                                 <Input placeholder=""/>
                             </Form.Item>
 
-                            <Form.Item name={['user', 'lastname']} label="Last Name" rules={[{ required: true }]}>
+                            <Form.Item name={['shipping', 'lastname']} label="Last Name" rules={[{ required: true }]}>
                                 <Input />
                             </Form.Item>
 
-                            <Form.Item name={['user', 'phone']} label="Phone" rules={[{ required: true, type: 'number',  }]}>
+                            <Form.Item name={['shipping', 'phone']} label="Phone" rules={[{ required: true, type: 'number',  }]}>
                                 <InputNumber placeholder="ex: 5141231111"/>
                             </Form.Item>
                             <br />
-                            <Form.Item name={['user', 'email']} label="email" rules={[{ required: true, type: 'email' }]}>
+                            <Form.Item name={['shipping', 'email']} label="Email" rules={[{ required: true, type: 'email' }]}>
                                 <Input placeholder="ex: youremail@gmail.com"/>
                             </Form.Item>
                             
-                            <Form.Item name={['user', 'Address']} label="Address" rules={[{ required: true  }]}>
+                            <Form.Item name={['shipping', 'address']} label="Address" rules={[{ required: true  }]}>
                                 <Input placeholder="ex: 9900 avenue Yourstreet"/>
                             </Form.Item>
 
-                            <Form.Item name={['user', 'city']} label="City" rules={[{ required: true  }]}>
+                            <Form.Item name={['shipping', 'city']} label="City" rules={[{ required: true  }]}>
                                 <Input placeholder="ex: Montreal"/>
                             </Form.Item>
 
-                            <Form.Item name={['user', 'postalcode']} label="Postal Code" rules={[{ required: true  }]}>
+                            <Form.Item name={['shipping', 'postalcode']} label="Postal Code" rules={[{ required: true  }]}>
                                 <Input placeholder="ex: H8Q 1X0"/>
                             </Form.Item>
 
-                            <Form.Item name={['user', 'province']} label="Province" rules={[{ required: true  }]}>
+                            <Form.Item name={['shipping', 'province']} label="Province" rules={[{ required: true  }]}>
                                 <Input placeholder="ex: Quebec"/>
                             </Form.Item>
                             
@@ -105,38 +105,38 @@ const BillingPage = () => {
                     </Col>
 
                     <Col span={12}>
-                        <Divider> Billing Information </Divider>
+                        <Divider> Billing Address </Divider>
                         
                             
-                            <Form.Item name={['user', 'b_firstname']} label="First Name" rules={[{ required: true }]}>
+                            <Form.Item name={['billing', 'firstname']} label="First Name" rules={[{ required: true }]}>
                                 <Input placeholder=""/>
                             </Form.Item>
 
-                            <Form.Item name={['user', 'b_lastname']} label="Last Name" rules={[{ required: true }]}>
+                            <Form.Item name={['billing', 'lastname']} label="Last Name" rules={[{ required: true }]}>
                                 <Input />
                             </Form.Item>
 
-                            <Form.Item name={['user', 'b_phone']} label="Phone" rules={[{ required: true, type: 'number',  }]}>
+                            <Form.Item name={['billing', 'phone']} label="Phone" rules={[{ required: true, type: 'number',  }]}>
                                 <InputNumber placeholder="ex: 5141231111"/>
                             </Form.Item>
                             <br />
-                            <Form.Item name={['user', 'b_email']} label="email" rules={[{ required: true, type: 'email' }]}>
+                            <Form.Item name={['billing', 'email']} label="email" rules={[{ required: true, type: 'email' }]}>
                                 <Input placeholder="ex: youremail@gmail.com"/>
                             </Form.Item>
                             
-                            <Form.Item name={['user', 'b_Address']} label="Address" rules={[{ required: true  }]}>
+                            <Form.Item name={['billing', 'address']} label="Address" rules={[{ required: true  }]}>
                                 <Input placeholder="ex: 9900 avenue Yourstreet"/>
                             </Form.Item>
 
-                            <Form.Item name={['user', 'b_city']} label="City" rules={[{ required: true  }]}>
+                            <Form.Item name={['billing', 'city']} label="City" rules={[{ required: true  }]}>
                                 <Input placeholder="ex: Montreal"/>
                             </Form.Item>
 
-                            <Form.Item name={['user', 'b_postalcode']} label="Postal Code" rules={[{ required: true  }]}>
+                            <Form.Item name={['billing', 'postalcode']} label="Postal Code" rules={[{ required: true  }]}>
                                 <Input placeholder="ex: H8Q 1X0"/>
                             </Form.Item>
 
-                            <Form.Item name={['user', 'b_province']} label="Province" rules={[{ required: true  }]}>
+                            <Form.Item name={['billing', 'province']} label="Province" rules={[{ required: true  }]}>
                                 <Input placeholder="ex: Quebec"/>
                             </Form.Item>
 
@@ -144,36 +144,23 @@ const BillingPage = () => {
 
                     <Divider> Credit Card Information </Divider>
                     <Col span={10}>
-                        <Form.Item name={['user', 'credit']} label="Credit Card" rules={[{ required: true }]}>
+                        <Form.Item name={['billing', 'credit']} label="Credit Card" rules={[{ required: true }]}>
                             <Input.Password placeholder="ex: 1111222233334444"/>
                         </Form.Item>
                     </Col>
                     <Col span={10}>
-                        <Form.Item name={['user', 'cvc']} label="CVC" rules={[{ required: true, type: 'number', min:0, max:999 }]}>
+                        <Form.Item name={['billing', 'cvc']} label="CVC" rules={[{ required: true, type: 'number', min:0, max:999 }]}>
                             <InputNumber />
                         </Form.Item>
                     </Col>
                     <Col span={10}>
 
-                        <Form.Item name="month" label="Exp Month" rules={[{ required: true }]}>
+                        <Form.Item name={['billing', 'month']} label="Exp Month" rules={[{ required: true }]}>
                             <Select
                                 placeholder="Select an option"
                                 // onChange={onGenderChange}
                                 allowClear
                                 options={monthOptions}
-                            >
-                            </Select>
-
-                        </Form.Item>
-                    </Col>
-
-                    <Col span={10}>
-                        <Form.Item name="year" label="Exp Year" rules={[{ required: true }]}>
-                            <Select
-                                placeholder="Select an option"
-                                // onChange={onGenderChange}
-                                allowClear
-                                options={yearOptions}
                             >
                             </Select>
 
@@ -184,6 +171,21 @@ const BillingPage = () => {
                                     Add Shipping Information
                                 </Button>
                         </Form.Item>
+                    </Col>
+
+                    <Col span={10}>
+                        <Form.Item name={['billing', 'year']} label="Exp Year" rules={[{ required: true }]}>
+                            <Select
+                                placeholder="Select an option"
+                                // onChange={onGenderChange}
+                                allowClear
+                                options={yearOptions}
+                            >
+                            </Select>
+
+                        </Form.Item>
+
+                        
                     </Col>
                 </Row>
             </Form>
