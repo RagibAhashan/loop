@@ -48,6 +48,8 @@ const getYears = () => {
 }
 
 const UserFormData = {
+    profile: "",
+    same: false,
     shipping: {
         address: "88 address",
         city: "88 city",
@@ -150,6 +152,13 @@ const BillingPage = (props: any) => {
     }, [profiles])
 
     const onFinish = (values: any) => {
+        for (let i=0; i < profiles.length; i++) {
+            if (profiles[i].profile === values.profile) {
+                console.log(values.profiles, ' already exists!');
+                message.error(`Profile "${profiles[i].profile}" already exists!`)
+                return null;
+            }
+        }
         console.log(values);
 
         if (values.same) {
@@ -167,6 +176,35 @@ const BillingPage = (props: any) => {
         setPage(Constants.BILLING)
     };
 
+    const onDeleteProfile = (profileID: String): void =>{
+        console.log('profileID', profileID)
+        if (profiles.length === 1 && profiles[0].profile === profileID) {
+            let old = profiles;
+            old = []
+            console.log(old)
+            // localStorage.setItem('profiles', JSON.stringify());
+            localStorage.removeItem('profiles');
+            setUserProfiles([]);
+            setPage(Constants.PROXIES)
+            setPage(Constants.BILLING)
+            return ;
+        }
+
+        for (let i=0; i < profiles.length; i++) {
+            if (profiles[i].profile === profileID) {
+                let old_profiles = profiles;
+                old_profiles.splice(i,i);
+                console.log(old_profiles)
+                localStorage.setItem('profiles', JSON.stringify(old_profiles));
+                setUserProfiles(old_profiles);
+                setPage(Constants.PROXIES)
+                setPage(Constants.BILLING)
+                return ;
+            }
+        }
+
+    }
+
 
     const ShowProfiles = (all_profils: any[]) => {
 
@@ -178,7 +216,9 @@ const BillingPage = (props: any) => {
                     <Card size="small"
                         title={value.profile}
                         extra={
-                            <Button type="link" danger icon={<DeleteOutlined />} />
+                            <Button type="link" danger icon={<DeleteOutlined />} 
+                                onClick={() => onDeleteProfile(value.profile)}
+                            />
                         }
                         style={{ width: 200, height: 140, margin: 3 }}
                     >
