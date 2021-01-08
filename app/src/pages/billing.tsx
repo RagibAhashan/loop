@@ -179,12 +179,9 @@ const BillingPage = (props: any) => {
     const onDeleteProfile = (profileID: String): void =>{
         console.log('profileID', profileID)
         if (profiles.length === 1 && profiles[0].profile === profileID) {
-            let old = profiles;
-            old = []
-            console.log(old)
-            // localStorage.setItem('profiles', JSON.stringify());
             localStorage.removeItem('profiles');
             setUserProfiles([]);
+            localStorage.setItem('profiles', JSON.stringify([]));
             setPage(Constants.PROXIES)
             setPage(Constants.BILLING)
             return ;
@@ -193,12 +190,18 @@ const BillingPage = (props: any) => {
         for (let i=0; i < profiles.length; i++) {
             if (profiles[i].profile === profileID) {
                 let old_profiles = profiles;
-                old_profiles.splice(i,i);
+                old_profiles.splice(i,1);
                 console.log(old_profiles)
+                
+                // localStorage.removeItem('profiles');
                 localStorage.setItem('profiles', JSON.stringify(old_profiles));
                 setUserProfiles(old_profiles);
                 setPage(Constants.PROXIES)
-                setPage(Constants.BILLING)
+                setTimeout(() => {
+                    setPage(Constants.BILLING)
+                }, 0.5)
+                
+
                 return ;
             }
         }
