@@ -33,6 +33,7 @@ const App = () => {
               {page === Constants.BILLING ? <BillingPage setPage={setPage} /> : ''}
               {page === Constants.PROXIES ? <div> PROXIES </div> : ''}
               {page === Constants.TASKS   ? <div> TASKS </div> : ''}
+              {page === Constants.NEW_TASK   ? <div> NEW_TASK </div> : ''}
             
             </div>
           </Content>

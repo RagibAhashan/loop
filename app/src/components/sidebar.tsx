@@ -5,7 +5,8 @@ import './sidebar.css'
 import {
   DesktopOutlined,
   PieChartOutlined,
-  FileOutlined
+  FileOutlined,
+  PlusOutlined
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
@@ -30,21 +31,40 @@ const SideBar = (props: any) => {
             <Menu
             style={{marginTop:'30%'}}
             theme="dark" defaultSelectedKeys={['1']} mode="inline">
+
+
               <Menu.Item key="1" icon={<PieChartOutlined />} onClick={() => {
                 setPage(Constants.BILLING)
               }}>
                 Billing Information
               </Menu.Item>
+
+
+
               <Menu.Item key="2" icon={<DesktopOutlined />} onClick={() => {
                 setPage(Constants.PROXIES)
               }}>
                 Manage Proxies
               </Menu.Item>
-              <Menu.Item key="9" icon={<FileOutlined />} onClick={() => {
+
+
+
+              <Menu.Item key="3" icon={<FileOutlined />} onClick={() => {
                 setPage(Constants.TASKS)
               }}>
                 Tasks
               </Menu.Item>
+
+              <Menu.Item key="4" icon={<PlusOutlined />} onClick={() => {
+                setPage(Constants.NEW_TASK)
+              }}>
+                Create Task
+              </Menu.Item>
+
+              
+
+
+
             </Menu>
           </Sider>
 
