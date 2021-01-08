@@ -15,7 +15,6 @@ const App = () => {
   const [page, setPage] = useState(Constants.BILLING)
 
 
-
   return (
 
     <Layout style={{ minHeight: '100vh' }}>
@@ -31,7 +30,7 @@ const App = () => {
             <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
               
               {page === Constants.MAIN    ? <div> MAINS </div> : ''}
-              {page === Constants.BILLING ? <BillingPage /> : ''}
+              {page === Constants.BILLING ? <BillingPage setPage={setPage} /> : ''}
               {page === Constants.PROXIES ? <div> PROXIES </div> : ''}
               {page === Constants.TASKS   ? <div> TASKS </div> : ''}
             

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Row, Col, Divider, Input, Form, Select, InputNumber, Button, Checkbox, message, Card, Space, Popover } from 'antd';
-import {
-    DeleteOutlined
-  } from '@ant-design/icons';
-
+import { DeleteOutlined } from '@ant-design/icons';
+import * as Constants from '../constants';
   const layout = {
     labelCol: { span: 8 },
     wrapperCol: { span: 16 },
@@ -120,8 +118,8 @@ const content = (UserFormData: any) => (
     </div>
   );
 
-const BillingPage = () => {
-
+const BillingPage = (props: any) => {
+    const { setPage } = props;
     const [yearOptions, setYearOptions] = useState([]);
     const [same, setSame] = useState(false);
     const [profiles, setUserProfiles] = useState([
@@ -146,6 +144,11 @@ const BillingPage = () => {
         // console.log(cat)
     }, []);
 
+
+    useEffect(() => {
+        console.log('Profile updated!', profiles)
+    }, [profiles])
+
     const onFinish = (values: any) => {
         console.log(values);
 
@@ -160,6 +163,8 @@ const BillingPage = () => {
         
         setUserProfiles(prev_profiles)
         localStorage.setItem('profiles', JSON.stringify(prev_profiles));
+        setPage(Constants.PROXIES)
+        setPage(Constants.BILLING)
     };
 
 
@@ -171,7 +176,7 @@ const BillingPage = () => {
           return (
                 <Popover content={content(value)} placement="right">
                     <Card size="small"
-                        title={"Foot Locker"}
+                        title={value.profile}
                         extra={
                             <Button type="link" danger icon={<DeleteOutlined />} />
                         }
@@ -194,13 +199,13 @@ const BillingPage = () => {
     return (
         <div>
 
-            {profiles.length === 0 ? <div /> :
+            {/* {profiles.length === 0 ? <div /> : */}
                 <Row>
                 <Divider> My Profiles </Divider>
 
                     {ShowProfiles(profiles)}
                  </Row>
-            }
+            
 
             <Row>
             
@@ -254,9 +259,6 @@ const BillingPage = () => {
                             <Form.Item name={['shipping', 'province']} label="Province" rules={[{ required: true  }]}>
                                 <Input placeholder="ex: Quebec"/>
                             </Form.Item>
-                            
-                            
-
                     </Col>
 
                     <Col span={12}>
