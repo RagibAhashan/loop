@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react'
-import { Layout, Menu, Breadcrumb } from 'antd';
-import * as Constants from '../constants.tsx'
+import { Layout, Menu } from 'antd';
+import * as Constants from '../constants'
 import './sidebar.css'
 import {
   DesktopOutlined,
   PieChartOutlined,
   FileOutlined,
-  TeamOutlined,
-  UserOutlined,
+  PlusOutlined
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
 
 
-const SideBar = (props) => {
+const SideBar = (props: any) => {
     const {currentPage, setPage} = props;
 
     const [collapsed, setCollapsed] = useState(false) 
@@ -32,21 +31,40 @@ const SideBar = (props) => {
             <Menu
             style={{marginTop:'30%'}}
             theme="dark" defaultSelectedKeys={['1']} mode="inline">
+
+
               <Menu.Item key="1" icon={<PieChartOutlined />} onClick={() => {
                 setPage(Constants.BILLING)
               }}>
                 Billing Information
               </Menu.Item>
+
+
+
               <Menu.Item key="2" icon={<DesktopOutlined />} onClick={() => {
                 setPage(Constants.PROXIES)
               }}>
                 Manage Proxies
               </Menu.Item>
-              <Menu.Item key="9" icon={<FileOutlined />} onClick={() => {
+
+
+
+              <Menu.Item key="3" icon={<FileOutlined />} onClick={() => {
                 setPage(Constants.TASKS)
               }}>
                 Tasks
               </Menu.Item>
+
+              <Menu.Item key="4" icon={<PlusOutlined />} onClick={() => {
+                setPage(Constants.NEW_TASK)
+              }}>
+                Create Task
+              </Menu.Item>
+
+              
+
+
+
             </Menu>
           </Sider>
 
