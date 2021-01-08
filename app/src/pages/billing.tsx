@@ -3,7 +3,7 @@ import { Row, Col, Divider, Input, Form, Select, InputNumber, Button, Checkbox, 
 import { DeleteOutlined } from '@ant-design/icons';
 import * as Constants from '../constants';
   const layout = {
-    labelCol: { span: 8 },
+    labelCol: { span: 5 },
     wrapperCol: { span: 16 },
   };
   
@@ -130,7 +130,6 @@ const BillingPage = (props: any) => {
 
     useEffect(() => {        
         setYearOptions(getYears())
-        console.log('profiles', profiles)
 
         let db_profiles: any = localStorage.getItem('profiles');
         if (!db_profiles) {
@@ -141,25 +140,15 @@ const BillingPage = (props: any) => {
         }
 
         setUserProfiles(db_profiles)
-        console.log(db_profiles)
-        // localStorage.setItem('myCat', 'Tom');
-        // console.log(cat)
     }, []);
-
-
-    useEffect(() => {
-        console.log('Profile updated!', profiles)
-    }, [profiles])
 
     const onFinish = (values: any) => {
         for (let i=0; i < profiles.length; i++) {
             if (profiles[i].profile === values.profile) {
-                console.log(values.profiles, ' already exists!');
                 message.error(`Profile "${profiles[i].profile}" already exists!`)
                 return null;
             }
         }
-        console.log(values);
 
         if (values.same) {
             values['billing'] = values.shipping;
@@ -177,7 +166,6 @@ const BillingPage = (props: any) => {
     };
 
     const onDeleteProfile = (profileID: String): void =>{
-        console.log('profileID', profileID)
         if (profiles.length === 1 && profiles[0].profile === profileID) {
             localStorage.removeItem('profiles');
             setUserProfiles([]);
@@ -191,7 +179,6 @@ const BillingPage = (props: any) => {
             if (profiles[i].profile === profileID) {
                 let old_profiles = profiles;
                 old_profiles.splice(i,1);
-                console.log(old_profiles)
                 
                 // localStorage.removeItem('profiles');
                 localStorage.setItem('profiles', JSON.stringify(old_profiles));
@@ -211,7 +198,7 @@ const BillingPage = (props: any) => {
 
     const ShowProfiles = (all_profils: any[]) => {
 
-        if (all_profils.length === 0) return (<div> List empty </div>)
+        if (!all_profils.length) return (<h1> No Profile Found. </h1>)
 
         return all_profils.map( (value) => {
           return (
@@ -347,7 +334,6 @@ const BillingPage = (props: any) => {
                                 <Checkbox checked={same}
                                     onChange={(e) => {
                                         setSame(e.target.checked)
-                                        console.log('same', same)
                                     }}
                                 > Same as shipping address </Checkbox>
                             </Form.Item>

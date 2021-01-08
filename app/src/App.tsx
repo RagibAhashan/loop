@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Layout } from 'antd';
 
-import SideBar from './components/sidebar'
+import SideBar from './components/sidebar';
 import BillingPage from './pages/billing';
-import * as Constants from './constants'
+import CreateTaskPage from './pages/createTask';
+import * as Constants from './constants';
 
 
 const { Header, Content } = Layout;
@@ -33,7 +34,7 @@ const App = () => {
               {page === Constants.BILLING ? <BillingPage setPage={setPage} /> : ''}
               {page === Constants.PROXIES ? <div> PROXIES </div> : ''}
               {page === Constants.TASKS   ? <div> TASKS </div> : ''}
-              {page === Constants.NEW_TASK   ? <div> NEW_TASK </div> : ''}
+              {page === Constants.NEW_TASK   ? <CreateTaskPage /> : ''}
             
             </div>
           </Content>
