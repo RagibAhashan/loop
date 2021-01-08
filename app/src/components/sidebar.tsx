@@ -1,19 +1,17 @@
 import React, { useState, useEffect } from 'react'
-import { Layout, Menu, Breadcrumb } from 'antd';
-import * as Constants from '../constants.tsx'
+import { Layout, Menu } from 'antd';
+import * as Constants from '../constants'
 import './sidebar.css'
 import {
   DesktopOutlined,
   PieChartOutlined,
-  FileOutlined,
-  TeamOutlined,
-  UserOutlined,
+  FileOutlined
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
 
 
-const SideBar = (props) => {
+const SideBar = (props: any) => {
     const {currentPage, setPage} = props;
 
     const [collapsed, setCollapsed] = useState(false) 

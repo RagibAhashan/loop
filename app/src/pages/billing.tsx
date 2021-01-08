@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Divider, Input, Form, Select, InputNumber, Button, Checkbox } from 'antd';
+import { Row, Col, Divider, Input, Form, Select, InputNumber, Button, Checkbox, message, Card, Space, Popover } from 'antd';
+import {
+    DeleteOutlined
+  } from '@ant-design/icons';
 
   const layout = {
     labelCol: { span: 8 },
     wrapperCol: { span: 16 },
   };
   
+
+
   const validateMessages = {
     required: '${label} is required!',
     types: {
@@ -44,35 +49,177 @@ const getYears = () => {
     return years;
 }
 
-const tailLayout = {
-    wrapperCol: { offset: 8, span: 16 },
-};
+const UserFormData = {
+    shipping: {
+        address: "88 address",
+        city: "88 city",
+        email: "88 email",
+        firstname: "88 email",
+        lastname: "88 email",
+        phone: "88 email",
+        postalcode: "88 email",
+        province: "88 email",
+    },
+
+    billing: {
+        address: "88 billing",
+        city: "88 billing",
+        email: "88 billing",
+        firstname: "88 billing",
+        lastname: "88 billing",
+        phone: "88 billing",
+        postalcode: "88 billing",
+        province: "88 billing",
+    },
+
+    payment: {
+        credit: "dasd",
+        cvc: "dasd",
+        month: "asd",
+        year: "asdasd",
+    }
+}
+
+const content = (UserFormData: any) => (
+    <div>
+
+    <Row>
+        <Space>
+
+            <Col>
+                <Divider> Shipping Address </Divider>
+                <p> {UserFormData.shipping.firstname} </p>
+                <p> {UserFormData.shipping.lastname} </p>
+                <p> {UserFormData.shipping.phone} </p>
+                <p> {UserFormData.shipping.email} </p>
+                <p> {UserFormData.shipping.address} </p>
+                <p> {UserFormData.shipping.city} </p>
+                <p> {UserFormData.shipping.postalcode} </p>
+                <p> {UserFormData.shipping.province} </p>
+            </Col>
+            <Col>
+                <Divider> Billing Address </Divider>
+                <p> {UserFormData.billing.firstname} </p>
+                <p> {UserFormData.billing.lastname} </p>
+                <p> {UserFormData.billing.phone} </p>
+                <p> {UserFormData.billing.email} </p>
+                <p> {UserFormData.billing.address} </p>
+                <p> {UserFormData.billing.city} </p>
+                <p> {UserFormData.billing.postalcode} </p>
+                <p> {UserFormData.billing.province} </p>
+            </Col>    
+        </Space>
+    </Row>
+    <br />
+
+      <Divider> Payment Info </Divider>
+      <p> Credit Card: {UserFormData.payment.credit} </p>
+      <p> CVC: {UserFormData.payment.cvc} </p>
+      <p> Month: {UserFormData.payment.month} </p>
+      <p> Year: {UserFormData.payment.year} </p>
+    </div>
+  );
 
 const BillingPage = () => {
 
     const [yearOptions, setYearOptions] = useState([]);
     const [same, setSame] = useState(false);
+    const [profiles, setUserProfiles] = useState([
+        UserFormData, UserFormData, UserFormData, UserFormData, UserFormData, UserFormData
+    ]);
 
     useEffect(() => {        
         setYearOptions(getYears())
+        console.log('profiles', profiles)
+
+        let db_profiles: any = localStorage.getItem('profiles');
+        if (!db_profiles) {
+            db_profiles = []
+            localStorage.setItem('profiles', '[]');
+        } else {
+            db_profiles = JSON.parse(db_profiles);
+        }
+
+        setUserProfiles(db_profiles)
+        console.log(db_profiles)
+        // localStorage.setItem('myCat', 'Tom');
+        // console.log(cat)
     }, []);
 
     const onFinish = (values: any) => {
-          console.log(values);
+        console.log(values);
+
+        if (values.same) {
+            values['billing'] = values.shipping;
+        }
+
+        message.success('Profile created!');
+          
+        let prev_profiles = profiles;
+        prev_profiles.push(values)
+        
+        setUserProfiles(prev_profiles)
+        localStorage.setItem('profiles', JSON.stringify(prev_profiles));
     };
 
+
+    const ShowProfiles = (all_profils: any[]) => {
+
+        if (all_profils.length === 0) return (<div> List empty </div>)
+
+        return all_profils.map( (value) => {
+          return (
+                <Popover content={content(value)} placement="right">
+                    <Card size="small"
+                        title={"Foot Locker"}
+                        extra={
+                            <Button type="link" danger icon={<DeleteOutlined />} />
+                        }
+                        style={{ width: 200, height: 140, margin: 3 }}
+                    >
+                        <p> {`${value.shipping.firstname} ${value.shipping.lastname}`} </p>
+                        <p> {`${value.shipping.address}`} </p>
+                        
+                    </Card>
+                </Popover>
+          )
+        })
+
+    }
+
+
+    
 
 
     return (
         <div>
-            
 
-            <Form {...layout} name="nest-messages" onFinish={onFinish} validateMessages={validateMessages}>
+            {profiles.length === 0 ? <div /> :
+                <Row>
+                <Divider> My Profiles </Divider>
+
+                    {ShowProfiles(profiles)}
+                 </Row>
+            }
+
+            <Row>
+            
+            <Form {...layout} name="nest-messages" onFinish={onFinish} validateMessages={validateMessages} style={{marginTop:'30px'}}>
+                <Row>
+                    <Divider> Add Profile </Divider>
+                    <Col span={12}>
+                        <Form.Item name="profile" label="Profile Name" rules={[{ required: true }]}>
+                            <Input placeholder=""/>
+                        </Form.Item>
+                    </Col>
+                </Row>
+                
+
                 <Row>
                     <Col span={12}>
-                        <Divider> Shipping Address </Divider>
+                    <Divider> Shipping Address </Divider>
+
                         
-                            
                             <Form.Item name={['shipping', 'firstname']} label="First Name" rules={[{ required: true }]}>
                                 <Input placeholder=""/>
                             </Form.Item>
@@ -178,7 +325,6 @@ const BillingPage = () => {
                         <Form.Item name={['payment', 'month']} label="Exp Month" rules={[{ required: true }]}>
                             <Select
                                 placeholder="Select an option"
-                                // onChange={onGenderChange}
                                 allowClear
                                 options={monthOptions}
                             >
@@ -188,7 +334,7 @@ const BillingPage = () => {
 
                         <Form.Item wrapperCol={{ ...layout.wrapperCol, offset: 8 }}>
                                 <Button type="primary" htmlType="submit">
-                                    Add Profile
+                                    Create Profile
                                 </Button>
                         </Form.Item>
                     </Col>
@@ -197,7 +343,6 @@ const BillingPage = () => {
                         <Form.Item name={['payment', 'year']} label="Exp Year" rules={[{ required: true }]}>
                             <Select
                                 placeholder="Select an option"
-                                // onChange={onGenderChange}
                                 allowClear
                                 options={yearOptions}
                             >
@@ -209,8 +354,8 @@ const BillingPage = () => {
                     </Col>
                 </Row>
             </Form>
-
-        </div>
+        </Row>
+    </div>
     )
 }
 
