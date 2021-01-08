@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
 import { Layout } from 'antd';
 
-import SideBar from './components/sidebar'
+import SideBar from './components/sidebar';
 import BillingPage from './pages/billing';
-import * as Constants from './constants'
+import ProxyPage from './pages/proxy';
+import * as Constants from './constants';
 
 
 const { Header, Content } = Layout;
 
 const App = () => {
 
-  
+
 
   const [page, setPage] = useState(Constants.BILLING)
 
@@ -19,7 +20,7 @@ const App = () => {
   return (
 
     <Layout style={{ minHeight: '100vh' }}>
-      
+
       <SideBar
           currentPage={page}
           setPage={setPage}
@@ -29,12 +30,12 @@ const App = () => {
           <Header className="site-layout-background" style={{ padding: 0 }} />
           <Content style={{ margin: '0 16px' }}>
             <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
-              
+
               {page === Constants.MAIN    ? <div> MAINS </div> : ''}
               {page === Constants.BILLING ? <BillingPage /> : ''}
-              {page === Constants.PROXIES ? <div> PROXIES </div> : ''}
+              {page === Constants.PROXIES ? <ProxyPage /> : ''}
               {page === Constants.TASKS   ? <div> TASKS </div> : ''}
-            
+
             </div>
           </Content>
         </Layout>
