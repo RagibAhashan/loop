@@ -6,7 +6,7 @@ import * as Constants from '../constants';
     labelCol: { span: 5 },
     wrapperCol: { span: 16 },
   };
-  
+
 
 
   const validateMessages = {
@@ -107,7 +107,7 @@ const content = (UserFormData: any) => (
                 <p> {UserFormData.billing.city} </p>
                 <p> {UserFormData.billing.postalcode} </p>
                 <p> {UserFormData.billing.province} </p>
-            </Col>    
+            </Col>
         </Space>
     </Row>
     <br />
@@ -128,7 +128,7 @@ const BillingPage = (props: any) => {
         UserFormData, UserFormData, UserFormData, UserFormData, UserFormData, UserFormData
     ]);
 
-    useEffect(() => {        
+    useEffect(() => {
         setYearOptions(getYears())
 
         let db_profiles: any = localStorage.getItem('profiles');
@@ -155,10 +155,10 @@ const BillingPage = (props: any) => {
         }
 
         message.success('Profile created!');
-          
+
         let prev_profiles = profiles;
         prev_profiles.push(values)
-        
+
         setUserProfiles(prev_profiles)
         localStorage.setItem('profiles', JSON.stringify(prev_profiles));
         setPage(Constants.PROXIES)
@@ -179,7 +179,7 @@ const BillingPage = (props: any) => {
             if (profiles[i].profile === profileID) {
                 let old_profiles = profiles;
                 old_profiles.splice(i,1);
-                
+
                 // localStorage.removeItem('profiles');
                 localStorage.setItem('profiles', JSON.stringify(old_profiles));
                 setUserProfiles(old_profiles);
@@ -187,7 +187,7 @@ const BillingPage = (props: any) => {
                 setTimeout(() => {
                     setPage(Constants.BILLING)
                 }, 0.5)
-                
+
 
                 return ;
             }
@@ -206,7 +206,7 @@ const BillingPage = (props: any) => {
                     <Card size="small"
                         title={value.profile}
                         extra={
-                            <Button type="link" danger icon={<DeleteOutlined />} 
+                            <Button type="link" danger icon={<DeleteOutlined />}
                                 onClick={() => onDeleteProfile(value.profile)}
                             />
                         }
@@ -214,7 +214,7 @@ const BillingPage = (props: any) => {
                     >
                         <p> {`${value.shipping.firstname} ${value.shipping.lastname}`} </p>
                         <p> {`${value.shipping.address}`} </p>
-                        
+
                     </Card>
                 </Popover>
           )
@@ -223,7 +223,7 @@ const BillingPage = (props: any) => {
     }
 
 
-    
+
 
 
     return (
@@ -235,10 +235,10 @@ const BillingPage = (props: any) => {
 
                     {ShowProfiles(profiles)}
                  </Row>
-            
+
 
             <Row>
-            
+
             <Form {...layout} name="nest-messages" onFinish={onFinish} validateMessages={validateMessages} style={{marginTop:'30px'}}>
                 <Row>
                     <Divider> Add Profile </Divider>
@@ -248,13 +248,13 @@ const BillingPage = (props: any) => {
                         </Form.Item>
                     </Col>
                 </Row>
-                
+
 
                 <Row>
                     <Col span={12}>
                     <Divider> Shipping Address </Divider>
 
-                        
+
                             <Form.Item name={['shipping', 'firstname']} label="First Name" rules={[{ required: true }]}>
                                 <Input placeholder=""/>
                             </Form.Item>
@@ -273,7 +273,7 @@ const BillingPage = (props: any) => {
                             <Form.Item name={['shipping', 'email']} label="Email" rules={[{ required: true, type: 'email' }]}>
                                 <Input placeholder="ex: youremail@gmail.com"/>
                             </Form.Item>
-                            
+
                             <Form.Item name={['shipping', 'address']} label="Address" rules={[{ required: true  }]}>
                                 <Input placeholder="ex: 9900 avenue Yourstreet"/>
                             </Form.Item>
@@ -293,8 +293,8 @@ const BillingPage = (props: any) => {
 
                     <Col span={12}>
                         <Divider> Billing Address </Divider>
-                        
-                            
+
+
                             <Form.Item name={[same ? 'shipping' : 'billing', 'firstname']} label="First Name" rules={[{ required: true }]}>
                                 <Input placeholder=""/>
                             </Form.Item>
@@ -313,7 +313,7 @@ const BillingPage = (props: any) => {
                             <Form.Item name={[same ? 'shipping' : 'billing', 'email']} label="email" rules={[{ required: true, type: 'email' }]}>
                                 <Input placeholder="ex: youremail@gmail.com"/>
                             </Form.Item>
-                            
+
                             <Form.Item name={[same ? 'shipping' : 'billing', 'address']} label="Address" rules={[{ required: true  }]}>
                                 <Input placeholder="ex: 9900 avenue Yourstreet"/>
                             </Form.Item>
@@ -381,7 +381,7 @@ const BillingPage = (props: any) => {
 
                         </Form.Item>
 
-                        
+
                     </Col>
                 </Row>
             </Form>
