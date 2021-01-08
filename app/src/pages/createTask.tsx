@@ -21,9 +21,21 @@ const validateMessages = {
   };
 
 
-const children: any[] = [];
+const shoe_size: any[] = [];
+let option_profiles: any[] = [];
+
+let saved_profiles = localStorage.getItem('profiles');
+saved_profiles = localStorage.getItem('profiles');
+option_profiles = []
+if (saved_profiles) {
+    saved_profiles = JSON.parse(saved_profiles);
+    for(let i=0; i < saved_profiles.length; i++) {
+        option_profiles.push(<Option key={saved_profiles[i].profile}> {saved_profiles[i].profile} </Option>)
+    }
+}
+
 for (let i = 4; i < 15; i += 0.5) {
-    children.push(<Option key={i.toString()}>{'Size ' + i.toString()}</Option>);
+    shoe_size.push(<Option key={i.toString()}>{'Size ' + i.toString()}</Option>);
 }
 
 const CreateTaskPage = () => {
@@ -38,6 +50,15 @@ const CreateTaskPage = () => {
     });
 
     useEffect(() => {
+        let saved_profiles = localStorage.getItem('profiles');
+        saved_profiles = localStorage.getItem('profiles');
+        option_profiles = []
+        if (saved_profiles) {
+            saved_profiles = JSON.parse(saved_profiles);
+            for(let i=0; i < saved_profiles.length; i++) {
+                option_profiles.push(<Option key={saved_profiles[i].profile}> {saved_profiles[i].profile} </Option>)
+            }
+        }
     }, [])
 
     const onFinish = (value: any) => {
@@ -65,9 +86,8 @@ const CreateTaskPage = () => {
                             style={{ width: '100%' }}
                             placeholder="Please select your profiles"
                             defaultValue={[]}
-                            // onChange={handleChange}
                         >
-                            {children}
+                            {option_profiles}
                         </Select>
                     </Form.Item>
                 </Col>
@@ -89,9 +109,8 @@ const CreateTaskPage = () => {
                         style={{ width: '100%' }}
                         placeholder="Please select"
                         defaultValue={[]}
-                        // onChange={handleChange}
                     >
-                        {children}
+                        {shoe_size}
                     </Select>
                     </Form.Item>
                 </Col>
@@ -107,9 +126,8 @@ const CreateTaskPage = () => {
                             style={{ width: '100%' }}
                             placeholder="Please select your proxy set"
                             defaultValue={[]}
-                            // onChange={handleChange}
                         >
-                            {children}
+                            {/* {children} */}
                         </Select>
                     </Form.Item>
 
