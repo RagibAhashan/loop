@@ -39,33 +39,36 @@ const ProxyPage = (props: any) => {
   };
 
   const onDeleteSet = (name: any) => {
+    console.log(name)
+    proxies.delete(name.toString());
+    setProxies(proxies);
+    localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())))
     setPage(Constants.BILLING)
-    setPage(Constants.PROXIES)
+    setTimeout(() => {
+        setPage(Constants.PROXIES)
+    }, 0.2)
   }
 
   const content = (values: any, name: any) => (
     <div>
-        <Space>
-            <Row>
-              <Col>
-                  <Divider> Name </Divider>
-                  <p> {name} </p>
-
-              </Col>
-            </Row>
-            <Row>
-              <Col>
-                  <Divider> Proxies </Divider>
-                  <p> {values} </p>
-              </Col>
-            </Row>
-            <Row>
-              <Col>
-                  <Divider> No. of Proxies </Divider>
-                  <p> {values.length} </p>
-              </Col>
-            </Row>
-        </Space>
+      <Row>
+        <Col>
+            <Divider> Name </Divider>
+            <p> {name} </p>
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+            <Divider> Proxies </Divider>
+            {(values.join("<\n>"))}
+        </Col>
+      </Row>
+      <Row>
+        <Col>
+            <Divider> No. of Proxies </Divider>
+            <p> {values.length} </p>
+        </Col>
+      </Row>
     </div>
   );
 
