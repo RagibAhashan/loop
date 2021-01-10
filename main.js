@@ -3,6 +3,11 @@ const API = "https://www.footlocker.ca/api";
 const inquirer = require("inquirer");
 const prompt = inquirer.createPromptModule();
 const user = require("./info.json");
+const puppeteer = require("puppeteer");
+// const puppeteer = require("puppeteer-extra");
+// const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+// puppeteer.use(StealthPlugin());
+const httpsProxyAgent = require("https-proxy-agent");
 
 // Client side script
 require("browser-env")();
@@ -12,7 +17,9 @@ const cookie_utils = require("./utils/cookies");
 const ioGetBlackbox = require("./scripts/snare");
 
 /*
-These are some headers shared with requests
+These are some headers shared with requests to avoid bot detection
+I have tested it without most of the headers and it still works ?
+I am not sure if they are really needed, but lets keep them just in case
 */
 const defaultHeaders = {
     accept: "application/json",
@@ -37,6 +44,7 @@ const axiosSession = axios.create({
     baseURL: API,
     params: { timestamp: Date.now() },
     headers: defaultHeaders,
+    // httpsAgent: new httpsProxyAgent("http://8.210.9.252:8118"),
 });
 
 /**
@@ -50,7 +58,8 @@ const axiosSession = axios.create({
 async function instanciateSession() {
     const response = await axiosSession.get("/v4/session");
 
-    const JSESSIONID = response.headers["set-cookie"][0].split(" ")[0];
+    const cookies = response.headers["set-cookie"].join();
+    const JSESSIONID = cookie_utils.extract(cookies, "JSESSIONID");
     const csrfToken = response.data["data"]["csrfToken"];
 
     const tokens = {
@@ -59,7 +68,7 @@ async function instanciateSession() {
         cartguid: "",
     };
 
-    console.log("Session Init OK... ", response.status);
+    console.log("Session Init OK... ", response.status, tokens);
 
     return tokens;
 }
@@ -124,54 +133,107 @@ async function promptProductSize(products) {
 }
 
 async function addToCart(code, productLink, tokens) {
-    try {
-        const headers = {
-            referer: productLink,
-            cookie: tokens.jsessionid,
-            "x-fl-productid": code,
-            "x-csrf-token": tokens.csrf,
-        };
+    let added = false;
+    let datadome = undefined;
+    while (!added) {
+        try {
+            console.log("trying to add");
+            const headers = {
+                referer: productLink,
+                cookie: `JSESSIONID=${tokens.jsessionid}`,
+                "x-fl-productid": code,
+                "x-csrf-token": tokens.csrf,
+            };
 
-        const body = { productQuantity: "1", productId: code };
+            if (datadome) {
+                headers.cookie = `${headers.cookie};datadome=${datadome}`;
+                console.log("TRYING AGAIN BUT WITH DATADOME", headers.cookie);
+            }
 
-        const response = await axiosSession.post(
-            "/users/carts/current/entries",
-            body,
-            { headers: headers }
-        );
+            console.log(headers);
 
-        console.log("Adding to cart OK... ", response.status);
+            const body = { productQuantity: "1", productId: code };
 
-        return response.headers["set-cookie"][0].split(" ")[0];
-    } catch (error) {
-        // TODO WIP Captcha
-        /*
-        if (error.response && "url" in error.response.data) {
-            const cookies = error.response.headers["set-cookie"][0];
-            const datadome = cookie_utils.extract(cookies, "datadome");
-            const captcha_url = `${error.response.data["url"]}&cid=${datadome}&referer=${productLink}`;
+            const response = await axiosSession.post(
+                "/users/carts/current/entries",
+                body,
+                { headers: headers }
+            );
 
-            console.log(captcha_url);
-            const puppeteer = require("puppeteer");
-            const browser = await puppeteer.launch();
-            const page = await browser.newPage();
-            await page.goto("https://example.com");
-            await page.screenshot({ path: "example.png" });
+            console.log("getting cookies");
+            const cookies = response.headers["set-cookie"].join();
+            console.log("COOKIES", cookies);
 
-            const captchaLink = error.response.data["url"];
-            console.log("Solve Captcha...", captchaLink);
-            await browser.close();
+            console.log("Adding to cart OK... ", response.status);
+            added = true;
+            const cart_guid = cookie_utils.extract(cookies, "cart-guid");
+            console.log("CARt GUID", cart_guid);
+            return cart_guid;
+        } catch (error) {
+            // TODO WIP Captcha
+            if (error.response && "url" in error.response.data) {
+                console.log("trying to solve captcha");
+                const cookies = error.response.headers["set-cookie"][0];
+                const capDatadome = cookie_utils.extract(cookies, "datadome");
+                const captcha_url = `${error.response.data["url"]}&cid=${capDatadome}&referer=${productLink}`;
+
+                console.log(captcha_url);
+                const browser = await puppeteer.launch({
+                    headless: false,
+                    defaultViewport: null,
+                });
+                const page = await browser.newPage();
+
+                page.on("response", async (res) => {
+                    if (
+                        res
+                            .url()
+                            .startsWith(
+                                "https://geo.captcha-delivery.com/captcha/check?"
+                            )
+                    ) {
+                        console.log("getting new datadome cookie !");
+                        const cookie = await res.json();
+                        datadome = cookie_utils.extract(
+                            cookie["cookie"],
+                            "datadome"
+                        );
+                        console.log(
+                            "datadome cookie found !, closing browser...",
+                            datadome
+                        );
+                    }
+                });
+
+                await page.setExtraHTTPHeaders({
+                    referer: "https://www.footlocker.ca/",
+                });
+
+                await page.setUserAgent(
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.3="
+                );
+
+                await page.goto(captcha_url);
+
+                await page.waitForNavigation({
+                    waitUntil: "networkidle2",
+                    timeout: 0,
+                });
+
+                if (!datadome) console.log("datadome cookie not found !");
+                await browser.close();
+            } else {
+                console.log("Add to cart failed", error.response.status);
+                throw error;
+            }
         }
-        */
-        console.log("Add to cart failed", error.response.status);
-        throw error;
     }
 }
 
 async function setEmail(tokens) {
     const headers = {
         referer: "https://www.footlocker.ca/en/checkout",
-        cookie: `${tokens.jsessionid}${tokens.cartguid}`,
+        cookie: `JSESSIONID=${tokens.jsessionid};cart-guid=${tokens.cartguid}`,
         "x-csrf-token": tokens.csrf,
     };
 
@@ -187,7 +249,7 @@ async function setEmail(tokens) {
 async function setShipping(tokens) {
     const headers = {
         referer: "https://www.footlocker.ca/en/checkout",
-        cookie: `${tokens.jsessionid}${tokens.cartguid}`,
+        cookie: `JSESSIONID=${tokens.jsessionid};cart-guid=${tokens.cartguid}`,
         "x-csrf-token": tokens.csrf,
     };
 
@@ -235,7 +297,7 @@ async function setShipping(tokens) {
 async function setBilling(tokens) {
     const headers = {
         referer: "https://www.footlocker.ca/en/checkout",
-        cookie: `${tokens.jsessionid}${tokens.cartguid}`,
+        cookie: `JSESSIONID=${tokens.jsessionid};cart-guid=${tokens.cartguid}`,
         "x-csrf-token": tokens.csrf,
     };
 
@@ -299,7 +361,7 @@ async function encrypt() {
 async function placeOrder(tokens, device_id) {
     const headers = {
         referer: "https://www.footlocker.ca/en/checkout",
-        cookie: `${tokens.jsessionid}${tokens.cartguid}`,
+        cookie: `JSESSIONID=${tokens.jsessionid};cart-guid=${tokens.cartguid}`,
         "x-csrf-token": tokens.csrf,
     };
 
@@ -341,43 +403,39 @@ function generateDeviceId() {
 
 async function main() {
     const delay = (await promptDelay()) * 1000;
+    const device_id = generateDeviceId();
+
     //eslint-disable-next-line
     while (true) {
         try {
-            const device_id = generateDeviceId();
-
             // const productInfo = await promptProduct();
             console.log("Init Session...");
             const tokens = await instanciateSession();
-
             console.log("Looking for in stock sneakers...");
-            const products = await getProductsCode("6161123");
-
-            const { code } = await promptProductSize(products);
+            const products = await getProductsCode("4103872");
+            // const { code } = await promptProductSize(products);
             console.log("Adding product to cart...");
-
             tokens.cartguid = await addToCart(
-                code,
-                "https://www.footlocker.ca/en/product/nike-air-max-90-boys-toddler/6161123.html",
+                "20439034",
+                "https://www.footlocker.ca/en/product/nike-air-force-1-low-mens/4103872.html",
                 tokens
             );
-
             console.log("Setting Email...");
             await setEmail(tokens);
-
             console.log("Setting Shipping Info...");
             await setShipping(tokens);
-
             console.log("Setting Billing Info...");
             await setBilling(tokens);
-
             console.log("Placing order...");
             await placeOrder(tokens, device_id);
-
             console.log("Sleeping...");
             await new Promise((r) => setTimeout(r, delay));
         } catch (err) {
-            console.log("Checkout failed...", err.response.status);
+            if (err.response) {
+                console.log("Checkout failed...", err.response.status);
+            } else {
+                console.log(err);
+            }
 
             console.log("Sleeping...");
             await new Promise((r) => setTimeout(r, delay));
