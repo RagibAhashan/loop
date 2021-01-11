@@ -66,6 +66,7 @@ async function instanciateSession() {
         jsessionid: JSESSIONID,
         csrf: csrfToken,
         cartguid: "",
+        datadome: undefined,
     };
 
     console.log("Session Init OK... ", response.status, tokens);
@@ -134,7 +135,6 @@ async function promptProductSize(products) {
 
 async function addToCart(code, productLink, tokens) {
     let added = false;
-    let datadome = undefined;
     while (!added) {
         try {
             console.log("trying to add");
@@ -145,8 +145,8 @@ async function addToCart(code, productLink, tokens) {
                 "x-csrf-token": tokens.csrf,
             };
 
-            if (datadome) {
-                headers.cookie = `${headers.cookie};datadome=${datadome}`;
+            if (tokens.datadome) {
+                headers.cookie = `${headers.cookie};datadome=${tokens.datadome}`;
                 console.log("TRYING AGAIN BUT WITH DATADOME", headers.cookie);
             }
 
@@ -194,13 +194,13 @@ async function addToCart(code, productLink, tokens) {
                     ) {
                         console.log("getting new datadome cookie !");
                         const cookie = await res.json();
-                        datadome = cookie_utils.extract(
+                        tokens.datadome = cookie_utils.extract(
                             cookie["cookie"],
                             "datadome"
                         );
                         console.log(
                             "datadome cookie found !, closing browser...",
-                            datadome
+                            tokens.datadome
                         );
                     }
                 });
@@ -220,7 +220,8 @@ async function addToCart(code, productLink, tokens) {
                     timeout: 0,
                 });
 
-                if (!datadome) console.log("datadome cookie not found !");
+                if (!tokens.datadome)
+                    console.log("datadome cookie not found !");
                 await browser.close();
             } else {
                 console.log("Add to cart failed", error.response.status);
@@ -237,6 +238,13 @@ async function setEmail(tokens) {
         "x-csrf-token": tokens.csrf,
     };
 
+    if (tokens.datadome) {
+        headers.cookie = `${headers.cookie};datadome=${tokens.datadome}`;
+        console.log("TRYING WITH DATADOME", headers.cookie);
+    }
+
+    console.log("email headers", headers);
+
     const response = await axiosSession.put(
         `/users/carts/current/email/${user.email}`,
         {},
@@ -252,6 +260,11 @@ async function setShipping(tokens) {
         cookie: `JSESSIONID=${tokens.jsessionid};cart-guid=${tokens.cartguid}`,
         "x-csrf-token": tokens.csrf,
     };
+
+    if (tokens.datadome) {
+        headers.cookie = `${headers.cookie};datadome=${tokens.datadome}`;
+        console.log("TRYING WITH DATADOME", headers.cookie);
+    }
 
     const body = {
         shippingAddress: {
@@ -300,6 +313,11 @@ async function setBilling(tokens) {
         cookie: `JSESSIONID=${tokens.jsessionid};cart-guid=${tokens.cartguid}`,
         "x-csrf-token": tokens.csrf,
     };
+
+    if (tokens.datadome) {
+        headers.cookie = `${headers.cookie};datadome=${tokens.datadome}`;
+        console.log("TRYING WITH DATADOME", headers.cookie);
+    }
 
     const body = {
         setAsDefaultBilling: false,
@@ -364,6 +382,11 @@ async function placeOrder(tokens, device_id) {
         cookie: `JSESSIONID=${tokens.jsessionid};cart-guid=${tokens.cartguid}`,
         "x-csrf-token": tokens.csrf,
     };
+
+    if (tokens.datadome) {
+        headers.cookie = `${headers.cookie};datadome=${tokens.datadome}`;
+        console.log("TRYING WITH DATADOME", headers.cookie);
+    }
 
     const { number, month, year, cvc } = await encrypt();
 
@@ -432,7 +455,11 @@ async function main() {
             await new Promise((r) => setTimeout(r, delay));
         } catch (err) {
             if (err.response) {
-                console.log("Checkout failed...", err.response.status);
+                console.log(
+                    "Checkout failed...",
+                    err.response.status,
+                    err.response.data
+                );
             } else {
                 console.log(err);
             }
