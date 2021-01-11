@@ -6,7 +6,7 @@ import * as Constants from '../constants';
 const ProxyPage = (props: any) => {
   const { setPage } = props;
   const [proxies, setProxies] = useState(new Map<string, []>()); // name -> proxies
-  const [keys, setKeys] = useState(new Map<number, string>()); // key -> name
+  const [proxyInput, setProxyInputs] = useState(new Map<number, []>()); // new sets being inputted by user (input_key -> nProxies)
 
 
   useEffect(() => {
@@ -30,7 +30,6 @@ const ProxyPage = (props: any) => {
         return null;
       }
       setProxies(proxies.set(values.proxies[i].name, values.proxies[i].proxy.split(" ")));
-      setKeys(keys.set(i, values.proxies[i].name));
     }
 
     localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())));
@@ -39,14 +38,10 @@ const ProxyPage = (props: any) => {
   };
 
   const onDeleteSet = (name: any) => {
-    console.log(name)
     proxies.delete(name.toString());
     setProxies(proxies);
     localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())))
-    setPage(Constants.BILLING)
-    setTimeout(() => {
-        setPage(Constants.PROXIES)
-    }, 0.2)
+    forceUpdate()
   }
 
   const content = (values: any, name: any) => (
@@ -119,6 +114,16 @@ const ProxyPage = (props: any) => {
     })
 }
 
+const realTimeNoProxies = (values: any, currentInputKey: number) => {
+  setProxyInputs(proxyInput.set(currentInputKey, values.target.value.split(" ")));
+}
+
+function useForceUpdate(){
+  const [value, setValue] = useState(0); // integer state
+  return () => setValue(value => value + 1); // update the state to force render
+}
+const forceUpdate = useForceUpdate();
+
   return (
     <Form name="dynamic_form_nest_item" onFinish={onFinish} autoComplete="off">
     <Row>
@@ -155,12 +160,13 @@ const ProxyPage = (props: any) => {
                     style={{ width: 'auto'}}
                     rules={[{ required: true, message: 'Missing proxies' }]}
                   >
-                    <Input style={{display: 'flex' }} placeholder="Copy Paste your list of proxies" />
+                    <Input  onChange={(values) => {realTimeNoProxies(values, field.fieldKey); forceUpdate()}}
+                            style={{display: 'flex' }} placeholder="Copy Paste your list of proxies" />
                   </Form.Item>
                 </Col>
                 <Col span={5} style={{marginRight: 10}}>
                   {/* value={proxies.size? proxies.get(keys.get(field.fieldKey)).length : 0} */}
-                    <Input  style={{ display: 'flex', textAlign: 'center' }} value={0} disabled={true} />
+                    <Input  style={{ display: 'flex', textAlign: 'center' }} value={(proxyInput.get(field.fieldKey))?.length} disabled={true} />
                 </Col>
                 <Col span={1}>
                   <MinusCircleTwoTone style={{marginTop:10}} onClick={()=> {remove(field.name);}} />
