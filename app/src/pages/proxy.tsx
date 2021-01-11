@@ -51,26 +51,48 @@ const ProxyPage = (props: any) => {
 
   const content = (values: any, name: any) => (
     <div>
-      <Row>
+      <Row style={{textAlign: 'center'}}>
         <Col>
-            <Divider> Name </Divider>
+            <Divider style={{textAlign: 'center', width: 300}}> Name </Divider>
             <p> {name} </p>
         </Col>
       </Row>
-      <Row>
+      <Row style={{textAlign: 'center'}}>
         <Col>
-            <Divider> Proxies </Divider>
-            {(values.join("<\n>"))}
+            <Divider style={{textAlign: 'center', width: 300}}> Proxies </Divider>
+            {showProxiesPopup(values)}
+            <Button type="dashed" style={{marginTop: 10}} htmlType="submit" onClick={()=>{downloadProxies(values, name)}}> Download full list </Button>
         </Col>
       </Row>
-      <Row>
+      <Row style={{textAlign: 'center'}}>
         <Col>
-            <Divider> No. of Proxies </Divider>
+            <Divider style={{textAlign: 'center', width: 300}}> No. of Proxies </Divider>
             <p> {values.length} </p>
         </Col>
       </Row>
     </div>
   );
+
+  const downloadProxies = (values: [], name: string) => {
+    const proxyFileName = name + "Proxies.txt";
+    const valuesNewLine = [values.join("\r\n")];
+    const element = document.createElement("a");
+    const file = new Blob(valuesNewLine, {type: 'text/plain'});
+    element.href = URL.createObjectURL(file);
+    element.download = proxyFileName;
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+  }
+
+  const showProxiesPopup = (proxies: []) => {
+    const PROXIES_TO_SHOW = 10;
+    const proxiesToShow = proxies.slice(0, PROXIES_TO_SHOW)
+    return proxiesToShow.map((value) => {
+      return (
+        <div> { value } </div>
+      )
+    })
+  }
 
   const ShowProxies = (proxies: Map<string, []>) => {
     let proxyArray = Array.from(proxies, ([name, proxies]) => ({ name, proxies }));
@@ -88,7 +110,7 @@ const ProxyPage = (props: any) => {
                 }
                 style={{ width: 200, height: 140, margin: 3 }}
             >
-                <p> {`Example: ${ex[0]}...`} </p>
+                <p> {`Preview: ${ex[0].substr(0, 12)}...`} </p>
                 <p> {`No. of Proxies: ${ex.length}`} </p>
 
             </Card>
