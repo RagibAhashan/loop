@@ -6,7 +6,6 @@ import {
   DesktopOutlined,
   PieChartOutlined,
   FileOutlined,
-  PlusOutlined,
   AimOutlined,
 } from '@ant-design/icons';
 

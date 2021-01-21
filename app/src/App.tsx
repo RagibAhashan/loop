@@ -4,6 +4,7 @@ import { Layout } from 'antd';
 import SideBar from './components/sidebar';
 import BillingPage from './pages/billing';
 import ProxyPage from './pages/proxy';
+import TaskPage from './pages/Task/task'
 import * as Constants from './constants';
 
 
@@ -25,15 +26,16 @@ const App = () => {
           setPage={setPage}
       />
 
-    <Layout className="site-layout">
-          <Header className="site-layout-background" style={{ padding: 0 }} />
-          <Content style={{ margin: '0 16px' }}>
+    <Layout >
+      {/* className="site-layout"> */}
+          <Content > 
+           {/* style={{ margin: '0 16px' }}> */}
             <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
 
               {page === Constants.MAIN    ? <div> MAINS </div> : ''}
               {page === Constants.BILLING ? <BillingPage setPage={setPage} /> : ''}
               {page === Constants.PROXIES ? <ProxyPage setPage={setPage} /> : ''}
-              {page === Constants.TASKS   ? <div> TASKS </div> : ''}
+              {page === Constants.TASKS   ? <TaskPage /> : ''}
 
             </div>
           </Content>
