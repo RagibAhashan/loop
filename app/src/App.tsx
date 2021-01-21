@@ -4,7 +4,6 @@ import { Layout } from 'antd';
 import SideBar from './components/sidebar';
 import BillingPage from './pages/billing';
 import ProxyPage from './pages/proxy';
-import CreateTaskPage from './pages/createTask';
 import * as Constants from './constants';
 
 
@@ -14,7 +13,7 @@ const App = () => {
 
 
 
-  const [page, setPage] = useState(Constants.BILLING)
+  const [page, setPage] = useState(Constants.MAIN)
 
 
   return (
@@ -35,7 +34,6 @@ const App = () => {
               {page === Constants.BILLING ? <BillingPage setPage={setPage} /> : ''}
               {page === Constants.PROXIES ? <ProxyPage setPage={setPage} /> : ''}
               {page === Constants.TASKS   ? <div> TASKS </div> : ''}
-              {page === Constants.NEW_TASK   ? <CreateTaskPage /> : ''}
 
             </div>
           </Content>

@@ -76,15 +76,6 @@ const SideBar = (props: any) => {
           Tasks
         </Menu.Item>
 
-        <Menu.Item
-          key="4"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            setPage(Constants.NEW_TASK);
-          }}
-        >
-          Create Task
-        </Menu.Item>
       </Menu>
     </Sider>
   );
