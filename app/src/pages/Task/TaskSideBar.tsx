@@ -11,6 +11,12 @@ const buttonStyle = {
 }
 
 
+const ListStores = [
+    'footlockerCa',
+    'Nike',
+    'Shopify'
+]
+
 
 
 const TaskSideBar = () => {
@@ -33,46 +39,30 @@ const TaskSideBar = () => {
 
     const menu = (
         <Menu style={{width:'300px'}}>
-          <Menu.Item style={{margin:'10px'}} onClick={
-              () => {
-                let temp = stores;
-                temp.push('FootlockerCa')
-                setStores(temp)
-                console.log(stores)
-                forceUpdate();
+            {
+                ListStores.map((value: string, index: int) => (
+                 <Menu.Item style={{margin:'10px'}}
+                 id={index.toString()}
+                 onClick={
+                        () => {
+                          let temp = stores;
+                          temp.push(value)
+                          setStores(temp)
+                          console.log(stores, index)
+                          forceUpdate();
+
+                      }
+                    }>
+                      {value}
+                    </Menu.Item>
+                ))
             }
-          }>
-            FootlockerCa
-          </Menu.Item>
-          <Menu.Item style={{margin:'10px'}} onClick={
-              () => {
-                let temp = stores;
-                temp.push('Shopify')
-                setStores(temp)
-                console.log(stores)
-                forceUpdate();
-            }
-          }>
-            Shopify
-          </Menu.Item>
-          <Menu.Item style={{margin:'10px'}} onClick={
-              () => {
-                let temp = stores;
-                temp.push('Nike')
-                setStores(temp)
-                console.log(stores)
-                forceUpdate();
-            }
-          }>
-            Nike
-          </Menu.Item>
         </Menu>
       );
 
 
     return (
         <div style={{ minHeight: '100vh' }}>
-            {/* <StoreButton name={'Footlocker'}/> */}
             <Dropdown overlay={menu} placement="bottomRight">
                 <Button style={{
                     backgroundColor: '#212427',
@@ -86,7 +76,17 @@ const TaskSideBar = () => {
                 }}> +Add Store</Button>
             </Dropdown>
 
-            {stores.map((val) => <Button style={buttonStyle}> {val} </Button>)}
+            {stores.map((val:string, index: int) => 
+                <Button
+                    style={buttonStyle}
+                    id={index.toString()}
+                    onClick={() =>
+                            console.log(val, index)
+                    }>
+                        {val}
+                </Button>
+                )
+            }
 
             
         </div>
