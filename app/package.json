@@ -27,7 +27,7 @@
         "test": "react-scripts test",
         "eject": "react-scripts eject",
         "start:electron": "webpack --config webpack.config.dev.js && cross-env NODE_ENV=prod electron .",
-        "package": "webpack --config webpack.config.prod.js electron-builder build"
+        "package": "webpack --config webpack.config.prod.js && electron-builder build"
     },
     "eslintConfig": {
         "extends": [
