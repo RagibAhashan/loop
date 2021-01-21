@@ -22,7 +22,6 @@ const TaskPage = () => {
             Tasks
 
         <Content style={{backgroundColor:'#212427'}}>
-            {/* dasds */}
             <TaskComponent />
         </Content>
 

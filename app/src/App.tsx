@@ -30,7 +30,8 @@ const App = () => {
       {/* className="site-layout"> */}
           <Content > 
            {/* style={{ margin: '0 16px' }}> */}
-            <div className="site-layout-background"
+            <div 
+            // className="site-layout-background"
             style={{ padding: 24, minHeight: 360, backgroundColor:'#212427' }}>
 
               {page === Constants.MAIN    ? <div> MAINS </div> : ''}
