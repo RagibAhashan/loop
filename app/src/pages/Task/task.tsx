@@ -8,6 +8,10 @@ const input_field = {
     border:'1px solid #858C94'
 }
 
+const col_styles = {
+    marginLeft: '10px'
+}
+
 const TaskComponent = (props: any) => {
     // const { Header, Content } = Layout;
 
@@ -18,7 +22,7 @@ const TaskComponent = (props: any) => {
                 <Form style={{backgroundColor:'#212427'}} >
 
                                 <Row>
-                                    <Col span={8}>
+                                    <Col style={{width: '320px'}}>
                                         <Form.Item name={['shipping', 'lastname']} rules={[{ required: true }]}>
                                             <Input
                                                 placeholder='keyword'
@@ -27,7 +31,7 @@ const TaskComponent = (props: any) => {
                                         </Form.Item>
                                     </Col>
 
-                                    <Col span={4}>
+                                    <Col  style={{marginLeft: '50px', width: '120px'}}>
                                     <Form.Item name={['shipping', 'lastname']} rules={[{ required: true }]}>
                                         <Input
                                             placeholder='Start Date'
@@ -36,7 +40,7 @@ const TaskComponent = (props: any) => {
                                     </Form.Item>
                                     </Col>
                                     
-                                    <Col span={4}>
+                                    <Col  style={{marginLeft: '30px', width: '120px'}}>
                                         <Form.Item name={['shipping', 'lastname']} rules={[{ required: true }]}>
                                             <Input
                                                 placeholder='Start Time'
@@ -44,6 +48,7 @@ const TaskComponent = (props: any) => {
                                                 />
                                         </Form.Item>
                                     </Col>
+                                    <Col style={{marginLeft: '30px', width: '150px'}}>
 
                                     <Form.Item name={['shipping', 'lastname']} rules={[{ required: true }]}>
                                         <Input
@@ -51,10 +56,11 @@ const TaskComponent = (props: any) => {
                                             style={input_field}
                                             />
                                     </Form.Item>
+                                    </Col>
                                     </Row>
 
                                     <Row>
-                                        <Col>
+                                        <Col style={{width: '320px'}}>
                                             <Form.Item name={['shipping', 'lastname']} rules={[{ required: true }]}>
                                                 <Input
                                                     placeholder='Size'
@@ -63,7 +69,7 @@ const TaskComponent = (props: any) => {
                                             </Form.Item>
                                         </Col>
 
-                                        <Col>
+                                        <Col  style={{marginLeft: '50px', width: '270px'}}>
                                             <Form.Item name={['shipping', 'lastname']} rules={[{ required: true }]}>
                                                 <Input
                                                     placeholder='Size'
@@ -72,7 +78,7 @@ const TaskComponent = (props: any) => {
                                             </Form.Item>
                                         </Col>
 
-                                        <Col>
+                                        <Col style={{marginLeft: '30px', width: '150px'}}>
                                             <Form.Item name={['shipping', 'lastname']} rules={[{ required: true }]}>
                                                 <Input
                                                     placeholder='Size'
@@ -85,7 +91,7 @@ const TaskComponent = (props: any) => {
 
 
                                     <Row>
-                                        <Col>
+                                        <Col style={{width: '320px'}}>
                                             <Form.Item name={['shipping', 'lastname']} rules={[{ required: true }]}>
                                                 <Input
                                                     placeholder='Size'
@@ -94,7 +100,7 @@ const TaskComponent = (props: any) => {
                                             </Form.Item>
                                         </Col>
 
-                                        <Col>
+                                        <Col  style={{marginLeft: '50px', width: '270px'}}>
                                             <Form.Item name={['shipping', 'lastname']} rules={[{ required: true }]}>
                                                 <Input
                                                     placeholder='Size'
@@ -103,7 +109,7 @@ const TaskComponent = (props: any) => {
                                             </Form.Item>
                                         </Col>
 
-                                        <Col>
+                                        <Col style={{marginLeft:'30px'}}>
                                             <Form.Item>
                                                 <Button type="primary" htmlType="submit">
                                                     Create tasks
@@ -120,7 +126,7 @@ const TaskComponent = (props: any) => {
                 minHeight: '100vh',
                 minWidth: '100vh'
             }}>
-                TASKS HERE!!
+                Active tasks here
             </div>
         </div>
     )

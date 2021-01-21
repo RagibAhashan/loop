@@ -227,7 +227,7 @@ const BillingPage = (props: any) => {
 
 
     return (
-        <div>
+        <div style={{padding: 24}}>
 
             {/* {profiles.length === 0 ? <div /> : */}
                 <Row>

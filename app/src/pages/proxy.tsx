@@ -125,7 +125,7 @@ function useForceUpdate(){
 const forceUpdate = useForceUpdate();
 
   return (
-    <Form name="dynamic_form_nest_item" onFinish={onFinish} autoComplete="off">
+    <Form name="dynamic_form_nest_item" onFinish={onFinish} autoComplete="off" style={{padding: 24}}>
     <Row>
      <Col span={22} style={{marginLeft: 10}}> <Divider> My Sets </Divider> </Col>
       {ShowProxies(proxies)}
