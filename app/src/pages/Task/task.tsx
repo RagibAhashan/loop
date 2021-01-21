@@ -10,10 +10,6 @@ const input_field = {
     border:'1px solid #858C94'
 }
 
-const col_styles = {
-    marginLeft: '10px'
-}
-
 function onChange(date: any, dateString: any) {
     console.log(date, dateString);
 }
@@ -143,7 +139,7 @@ const TaskComponent = (props: any) => {
                 minHeight: '100vh',
                 minWidth: '100vh'
             }}>
-                Active tasks here
+                tasks here
             </div>
         </div>
     )
