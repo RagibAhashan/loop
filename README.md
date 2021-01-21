@@ -1,28 +1,23 @@
 # sneaker
 
-Install dependencies :
+## Install dependencies
 
-`npm install`
+`cd app`
 
-Run prototype :
+`yarn install`
 
-`node main.js` _or_ `npm start`
+## Development
 
-## To set credit card info as environment variables in windows powershell
+Start the react dev server first
 
+`yarn start:react`
 
-POWERSHELL:
-```
-$env:NUMBER="4242 4242 4242 4242"
-$env:YEAR="2030"
-$env:MONTH="04"
-$env:CVC="123"
-```
+Start electron
 
-MAC/LINUX:
-```
-export NUMBER="4242 4242 4242 4242"
-export YEAR="2030"
-export MONTH="04"
-export CVC="123"
-```
+`yarn start:electron`
+
+## Build for production
+
+`yarn build` then `yarn package`
+
+The build will be in the `release` folder

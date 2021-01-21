@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Document</title>
+        <script>
+            window.addEventListener(
+                "message",
+                (event) => {
+                    console.log("received event", event.origin, event);
+                },
+                false
+            );
+        </script>
+    </head>
+    <body>
+        <iframe
+            width="500"
+            height="600"
+            scrolling="no"
+            sandbox="allow-scripts allow-same-origin"
+            src="https://geo.captcha-delivery.com/captcha/?initialCid=AHrlqAAAAAMAiU2vnJ2TsPcAQV6peg==&referer=www.footlocker.ca&hash=A55FBF4311ED6F1BF9911EB71931D5&t=fe&s=17434&cid=FX5dSBGAIYlaNfLk5RMxA2Pk2lLOo7tBgRoWHfP75fT2UdllNc8dgZGrAQvbV9aDcD67zDKe25zbLhB1ajya5a6TK2zW5jM1~z2~6f_d8z&referer=https://www.footlocker.ca/en/product/nike-air-force-1-low-mens/4103872.html"
+        ></iframe>
+    </body>
+</html>
