@@ -21,7 +21,7 @@ const TaskPage = () => {
         <Header style={{backgroundColor:'#212427'}}>
             Tasks
 
-        <Content style={{backgroundColor:'#212427'}}>
+        <Content >
             <TaskComponent />
         </Content>
 

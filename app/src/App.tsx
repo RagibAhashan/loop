@@ -8,7 +8,7 @@ import TaskPage from './pages/Task/taskPage'
 import * as Constants from './constants';
 
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 
 const App = () => {
 
@@ -19,7 +19,7 @@ const App = () => {
 
   return (
 
-    <Layout style={{ minHeight: '100vh', backgroundColor:'#212427' }} >
+    <Layout style={{ minHeight: '100vh'}} >
 
       <SideBar
           currentPage={page}
@@ -27,19 +27,12 @@ const App = () => {
       />
 
     <Layout >
-      {/* className="site-layout"> */}
           <Content > 
-           {/* style={{ margin: '0 16px' }}> */}
-            <div 
-            // className="site-layout-background"
-            // style={{ padding: 24, minHeight: 360, backgroundColor:'#212427' }}
-            >
-
+            <div >
               {page === Constants.MAIN    ? <div> MAINS </div> : ''}
               {page === Constants.BILLING ? <BillingPage setPage={setPage} /> : ''}
               {page === Constants.PROXIES ? <ProxyPage setPage={setPage} /> : ''}
               {page === Constants.TASKS   ? <TaskPage /> : ''}
-
             </div>
           </Content>
         </Layout>
