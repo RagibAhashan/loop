@@ -16,6 +16,7 @@ function createWindow() {
 
     if (process.env.NODE_ENV === 'development') {
         win.loadURL('http://localhost:3000');
+        win.webContents.openDevTools();
     } else {
         win.loadURL(`file://${__dirname}/../build/index.html`);
     }
@@ -59,7 +60,7 @@ ipcMain.on('start-task', (event, num) => {
     }
 
     const result = workers.map((w) => w.threadId);
-    event.reply('workers', result);
+    event.returnValue = result;
 });
 
 ipcMain.on('stop-task', () => {
