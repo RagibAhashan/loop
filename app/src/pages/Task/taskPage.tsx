@@ -22,34 +22,35 @@ const TaskPage = () => {
             <TaskSideBar />
         </Sider>
             <Content style={{marginLeft:'50px', marginRight:'50px'}}>
+                <Row style={{marginTop: '15px', marginBottom: '-20px'}}>
+                    <Col span={8}>
+                        <p style={{fontSize: '35px', color: 'orange'}}>
+                            Footlocker Tasks
+                        </p>
+                    </Col>
+                    <Col span={8} offset={8}>
+                        
+                        <div style={{marginLeft : '185px'}}>
+                            <Popconfirm placement="bottom" title={text} onConfirm={confirm} okText="Yes" cancelText="No">
+                            <Button type="primary" danger
+                                style={{
+                                    marginTop: '10px',
+                                    height: '39px'
+                                }}
+                                >
+                                Delete Store
+                            </Button>
+                            </ Popconfirm>
+                                {/* Discord Here */}
+                        </div>
+                    </Col>
+                </Row>
 
-        <Row style={{marginTop: '15px', marginBottom: '-20px'}}>
-            <Col span={8}>
-                <p style={{fontSize: '35px', color: 'orange'}}>
-                    Footlocker Tasks
-                </p>
-            </Col>
-            <Col span={8} offset={8}>
-                
-                <div style={{marginLeft : '185px'}}>
-                    <Popconfirm placement="bottom" title={text} onConfirm={confirm} okText="Yes" cancelText="No">
-                    <Button type="primary" danger
-                        style={{
-                            marginTop: '10px',
-                            height: '39px'
-                        }}
-                        >
-                        Delete Store
-                    </Button>
-                    </ Popconfirm>
-                        {/* Discord Here */}
-                </div>
-            </Col>
-        </Row>
-
-        <Row style={{marginTop: '0px'}}>
-            <TaskComponent />
-        </Row>
+                <Row style={{marginTop: '0px', height: '100%'}}>
+                    <Col span={24}>
+                        <TaskComponent />
+                    </Col>
+                </Row>
             </Content>
         
     </Layout>

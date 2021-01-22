@@ -8,10 +8,10 @@ function createWindow() {
         webPreferences: {
             nodeIntegration: true,
         },
-        resizable: false,
-        toolbar: false,
-        'skip-taskbar': true,
-        'auto-hide-menu-bar': true,
+        // resizable: false,
+        // toolbar: false,
+        // 'skip-taskbar': true,
+        // 'auto-hide-menu-bar': true,
     });
 
     if (process.env.NODE_ENV === 'development') {
