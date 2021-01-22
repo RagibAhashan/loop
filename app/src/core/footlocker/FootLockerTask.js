@@ -11,6 +11,8 @@ class FootLockerTask extends Task {
     static ccEncryptorEncryption = new CreditCardEncryption(ADYEN_KEY);
 
     async getSessionTokens() {
+        parentPort.postMessage('Getting Session...');
+
         const response = await this.axiosSession.get('/v4/session');
 
         const cookies = response.headers['set-cookie'].join();
@@ -21,6 +23,8 @@ class FootLockerTask extends Task {
     }
 
     async getProductCode() {
+        parentPort.postMessage('Checking Size...');
+
         const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
         const sellableUnits = response.data['sellableUnits'];
         const allShoes = sellableUnits
@@ -38,6 +42,8 @@ class FootLockerTask extends Task {
         return allShoes;
     }
     async addToCart(code) {
+        parentPort.postMessage('Adding to cart...');
+
         let added = false;
         while (!added) {
             try {
@@ -91,13 +97,16 @@ class FootLockerTask extends Task {
 
                     if (!receivedDatadome) throw new Error('Timeout exceeded - Captcha not solved');
                 } else {
-                    console.log('Add to cart failed', err.response.status);
+                    // console.log('Add to cart failed', err.response.status);
+                    console.log('Add to cart failed', err);
                     throw err;
                 }
             }
         }
     }
     async setEmail() {
+        parentPort.postMessage('Setting Email...');
+
         const headers = this.setHeaders();
 
         const response = await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.email}`, {}, { headers: headers });
@@ -105,6 +114,8 @@ class FootLockerTask extends Task {
         console.log('Setting Email OK... ', response.status);
     }
     async setShipping() {
+        parentPort.postMessage('Setting Shipping...');
+
         const headers = this.setHeaders();
 
         const body = { shippingAddress: this.getInfoForm() };
@@ -114,6 +125,8 @@ class FootLockerTask extends Task {
         console.log('Setting Shipping OK... ', response.status);
     }
     async setBilling() {
+        parentPort.postMessage('Setting Billing...');
+
         const headers = this.setHeaders();
 
         const body = this.getInfoForm();
@@ -123,6 +136,8 @@ class FootLockerTask extends Task {
         console.log('Setting Billing OK... ', response.status);
     }
     async placeOrder() {
+        parentPort.postMessage('Placing Order...');
+
         const headers = this.setHeaders();
 
         const encryptedCC = FootLockerTask.ccEncryptor.encrypt(this.userProfile.creditCard);
@@ -133,7 +148,7 @@ class FootLockerTask extends Task {
             headers: headers,
         });
 
-        console.log('Placed Order !', response.status);
+        parentPort.postMessage('Placed Order !');
     }
 
     getInfoForm() {
