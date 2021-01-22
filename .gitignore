@@ -2,3 +2,4 @@
 node_modules
 info.json
 .DS_Store
+src/map/map.prod.js

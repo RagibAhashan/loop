@@ -1,12 +1,13 @@
-const worker = require('worker_threads');
+const { threadId } = require('worker_threads');
 const { CookieJar } = require('./CookieJar');
+
 class Task {
     constructor(productLink, productSKU, size, deviceId, requestInstance, userProfile) {
         this.productLink = productLink;
         this.productSKU = productSKU;
         this.size = size;
         this.deviceId = deviceId;
-        this.threadId = worker.threadId;
+        this.threadId = threadId;
         this.axiosSession = requestInstance.axios;
         this.cookieJar = new CookieJar();
         this.userProfile = userProfile;
@@ -36,11 +37,10 @@ class Task {
     async execute() {
         await this.getSessionTokens();
         const code = await this.getProductCode();
-        console.log('got code', code);
-        // await this.addToCart(code);
-        // await this.setEmail();
-        // await this.setShipping();
-        // await this.setBilling();
+        await this.addToCart(code);
+        await this.setEmail();
+        await this.setShipping();
+        await this.setBilling();
     }
 }
 
