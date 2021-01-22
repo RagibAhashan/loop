@@ -4,7 +4,7 @@ class CookieJar {
     }
 
     _getCookie(cookie) {
-        if (!this.cookies.has(cookie)) throw new Error('Cookie does not exists');
+        if (!this.cookies.has(cookie)) return '';
         const value = this.getValue(cookie);
         return `${cookie}=${value};`;
     }
@@ -18,7 +18,7 @@ class CookieJar {
     }
 
     getValue(cookie) {
-        if (!this.cookies.has(cookie)) throw new Error('Cookie does not exists');
+        if (!this.cookies.has(cookie)) return '';
         return this.cookies.get(cookie);
     }
 
