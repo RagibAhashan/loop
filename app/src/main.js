@@ -8,8 +8,8 @@ function createWindow() {
         },
         resizable: false,
         toolbar: false,
-        "skip-taskbar": true,
-        "auto-hide-menu-bar": true,
+        'skip-taskbar': true,
+        'auto-hide-menu-bar': true,
     });
 
     if (process.env.NODE_ENV === 'development') {
@@ -36,4 +36,6 @@ app.on('activate', () => {
     }
 });
 
-app.dock.hide();
+if (process.platform === 'darwin') {
+    app.dock.hide();
+}

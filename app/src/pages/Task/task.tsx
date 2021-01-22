@@ -181,10 +181,6 @@ const TaskComponent = (props: any) => {
 
 
         </Row>
-
-
-
-
                 <Bot
                     store={'FootLocker'}
                     size={'10'}

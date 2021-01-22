@@ -12,6 +12,7 @@
 # production
 /build
 .eslintcache
+main.prod.js
 # misc
 .DS_Store
 .env.local
