@@ -1,4 +1,4 @@
-import { Button, Col, DatePicker, Form, Input, Row, Select, TimePicker, Layout } from 'antd';
+import { Button, Col, DatePicker, Form, Input, Layout, Row, Select, TimePicker } from 'antd';
 import React from 'react';
 import Bot from './bot';
 
@@ -7,8 +7,8 @@ const { Option } = Select;
 const format = 'HH:mm';
 
 const colStyle = {
-    margin:'auto'
-}
+    margin: 'auto',
+};
 
 const botStyle = {
     backgroundColor: 'black',
@@ -17,7 +17,7 @@ const botStyle = {
     marginTop: '10px',
     height: '45px',
     borderRadius: '6px',
-}
+};
 
 const input_field = {
     height: '39px',
@@ -39,17 +39,16 @@ for (let i = 4; i < 14; i += 0.5) {
     );
 }
 
+let dummy: any[] = [];
 
-let dummy: any[] = []
-
-for(let i=0; i < 40; i++) dummy.push(i);
+for (let i = 0; i < 40; i++) dummy.push(i);
 
 const TaskComponent = (props: any) => {
     const { Content } = Layout;
 
     return (
         <div>
-            <Form style={{height: '20vh'}}>
+            <Form style={{ height: '20vh' }}>
                 <Row>
                     <Col style={{ width: '320px' }}>
                         <Form.Item name={['task', 'keyword']} rules={[{ required: true }]}>
@@ -100,17 +99,17 @@ const TaskComponent = (props: any) => {
                 <Row>
                     <Col style={{ width: '320px' }}>
                         <Form.Item name={['task', 'monitordelay']} rules={[{ required: true }]}>
-                            <Input placeholder="Monitor delay in milliseconds" style={input_field} type='number' />
+                            <Input placeholder="Monitor delay in milliseconds" style={input_field} type="number" />
                         </Form.Item>
                     </Col>
 
                     <Col style={{ marginLeft: '50px', width: '290px' }}>
                         <Form.Item name={['task', 'retrydelay']} rules={[{ required: true }]}>
-                            <Input placeholder="Retry delay" style={input_field} type='number'/>
+                            <Input placeholder="Retry delay" style={input_field} type="number" />
                         </Form.Item>
                     </Col>
 
-                    <Col style={{ marginLeft: '30px'}}>
+                    <Col style={{ marginLeft: '30px' }}>
                         <Form.Item>
                             <Button
                                 type="primary"
@@ -133,17 +132,24 @@ const TaskComponent = (props: any) => {
             </Form>
 
             <Row>
-                <Col span={3} style={{marginLeft:'10px'}}>
-                    <Button style={{height: '40px', width: '100px', color: 'green', borderColor: 'green', border: '1px solid', fontSize: '14px'}}> Run all </Button>
+                <Col span={3} style={{ marginLeft: '10px' }}>
+                    <Button style={{ height: '40px', width: '100px', color: 'green', borderColor: 'green', border: '1px solid', fontSize: '14px' }}>
+                        {' '}
+                        Run all{' '}
+                    </Button>
                 </Col>
                 <Col span={3}>
-                    <Button style={{height: '40px', width: '100px',}} danger> Stop all </Button>
+                    <Button style={{ height: '40px', width: '100px' }} danger>
+                        {' '}
+                        Stop all{' '}
+                    </Button>
                 </Col>
-                <Col span={13}>
-                    
-                </Col>
+                <Col span={13}></Col>
                 <Col span={3}>
-                    <Button style={{height: '40px', width: '170px',}} type="primary" danger> Delete all </Button>
+                    <Button style={{ height: '40px', width: '170px' }} type="primary" danger>
+                        {' '}
+                        Delete all{' '}
+                    </Button>
                 </Col>
             </Row>
 
@@ -153,12 +159,12 @@ const TaskComponent = (props: any) => {
                     borderRadius: '6px',
                     backgroundColor: '#282C31',
                     width: '100%',
-                    marginTop:'10px',
+                    marginTop: '10px',
                     height: '60vh',
                 }}
             >
                 <Row style={botStyle}>
-                    <Col span={3} style={{margin:'auto', marginLeft: '10px'}}>
+                    <Col span={3} style={{ margin: 'auto', marginLeft: '10px' }}>
                         Store
                     </Col>
 
@@ -187,27 +193,16 @@ const TaskComponent = (props: any) => {
                     </Col>
                 </Row>
 
-                <div style={{ 
-                    overflow: 'auto',
-                    height: '53vh', }}>
-
-                    {
-                        dummy.map((val) => (
-                        <Bot
-                            store={'FootLocker'}
-                            size={val.toString()}
-                            profile={'BMO'}
-                            ip={'Local Host'}
-                            product={'Dunker'}
-                        />
-                        ))
-                    }
-
-                
-                    
-
+                <div
+                    style={{
+                        overflow: 'auto',
+                        height: '53vh',
+                    }}
+                >
+                    {dummy.map((val) => (
+                        <Bot store={`FootLocker ${val}`} size={val.toString()} profile={'BMO'} ip={'Local Host'} product={'Dunker'} />
+                    ))}
                 </div>
-
             </div>
         </div>
     );

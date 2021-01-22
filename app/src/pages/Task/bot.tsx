@@ -1,11 +1,7 @@
-import React from 'react';
-import { Row, Col, Button, Space } from 'antd';
 // import styles from './sidebar.module.css';
-import {
-    EditOutlined,
-    DeleteOutlined,
-    DoubleRightOutlined
-  } from '@ant-design/icons';
+import { DeleteOutlined, DoubleRightOutlined, EditOutlined } from '@ant-design/icons';
+import { Button, Col, Row, Space } from 'antd';
+import React from 'react';
 
 const botStyle = {
     backgroundColor: '#212427',
@@ -14,37 +10,40 @@ const botStyle = {
     marginTop: '10px',
     height: '45px',
     borderRadius: '6px',
-}
+};
 
 const colStyle = {
-    margin:'auto'
-}
+    margin: 'auto',
+};
 
 const editButton = {
-    border:'none',
+    border: 'none',
     borderRadius: '100%',
-    backgroundColor: 'orange'
-}
+    backgroundColor: 'orange',
+};
 
 const startButton = {
-    border:'none',
+    border: 'none',
     borderRadius: '100%',
-    backgroundColor: 'green'
-}
+    backgroundColor: 'green',
+};
 
 const deleteButton = {
-    border:'none',
+    border: 'none',
     borderRadius: '100%',
-    backgroundColor: 'red'
-}
+    backgroundColor: 'red',
+};
 
 const Bot = (props: any) => {
     const { store, product, size, profile, ip } = props;
 
+    const startTask = () => {
+        console.log('start task from', store);
+    };
 
     return (
         <Row style={botStyle}>
-            <Col span={3} style={{margin:'auto', marginLeft: '10px'}}>
+            <Col span={3} style={{ margin: 'auto', marginLeft: '10px' }}>
                 {store}
             </Col>
 
@@ -70,16 +69,19 @@ const Bot = (props: any) => {
 
             <Col span={4} style={colStyle}>
                 <Space>
-                    <Button style={startButton} icon={<DoubleRightOutlined />} />
-                    <Button style={editButton} icon={<EditOutlined  />} />
+                    <Button
+                        onClick={() => {
+                            startTask();
+                        }}
+                        style={startButton}
+                        icon={<DoubleRightOutlined />}
+                    />
+                    <Button style={editButton} icon={<EditOutlined />} />
                     <Button style={deleteButton} icon={<DeleteOutlined />} />
                 </Space>
             </Col>
-
-
         </Row>
-    )
-}
-
+    );
+};
 
 export default Bot;
