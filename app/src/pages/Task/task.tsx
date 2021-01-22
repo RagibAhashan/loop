@@ -1,4 +1,4 @@
-import { Button, Col, DatePicker, Form, Input, Row, Select, TimePicker } from 'antd';
+import { Button, Col, DatePicker, Form, Input, Row, Select, TimePicker, Layout } from 'antd';
 import React from 'react';
 import Bot from './bot';
 
@@ -11,7 +11,7 @@ const colStyle = {
 }
 
 const botStyle = {
-    backgroundColor: '#212427',
+    backgroundColor: 'black',
     marginLeft: '20px',
     marginRight: '20px',
     marginTop: '10px',
@@ -39,10 +39,17 @@ for (let i = 4; i < 14; i += 0.5) {
     );
 }
 
+
+let dummy: any[] = []
+
+for(let i=0; i < 40; i++) dummy.push(i);
+
 const TaskComponent = (props: any) => {
+    const { Content } = Layout;
+
     return (
         <div>
-            <Form>
+            <Form style={{height: '20vh'}}>
                 <Row>
                     <Col style={{ width: '320px' }}>
                         <Form.Item name={['task', 'keyword']} rules={[{ required: true }]}>
@@ -145,105 +152,61 @@ const TaskComponent = (props: any) => {
                     border: '1px solid #4D4D4D',
                     borderRadius: '6px',
                     backgroundColor: '#282C31',
-                    minHeight: '55vh',
-                    width: '900px',
+                    width: '100%',
                     marginTop:'10px',
+                    height: '60vh',
                 }}
             >
                 <Row style={botStyle}>
-            <Col span={3} style={{margin:'auto', marginLeft: '10px'}}>
-                Store
-            </Col>
+                    <Col span={3} style={{margin:'auto', marginLeft: '10px'}}>
+                        Store
+                    </Col>
 
-            <Col span={3} style={colStyle}>
-                Product
-            </Col>
+                    <Col span={3} style={colStyle}>
+                        Product
+                    </Col>
 
-            <Col span={2} style={colStyle}>
-                Size
-            </Col>
+                    <Col span={2} style={colStyle}>
+                        Size
+                    </Col>
 
-            <Col span={3} style={colStyle}>
-                Profile
-            </Col>
+                    <Col span={3} style={colStyle}>
+                        Profile
+                    </Col>
 
-            <Col span={4} style={colStyle}>
-                Proxy
-            </Col>
+                    <Col span={4} style={colStyle}>
+                        Proxy
+                    </Col>
 
-            <Col span={4} style={colStyle}>
-                Status
-            </Col>
+                    <Col span={4} style={colStyle}>
+                        Status
+                    </Col>
 
-            <Col span={4} style={colStyle}>
-                Actions
-            </Col>
+                    <Col span={4} style={colStyle}>
+                        Actions
+                    </Col>
+                </Row>
 
+                <div style={{ 
+                    overflow: 'auto',
+                    height: '53vh', }}>
 
-        </Row>
-                <Bot
-                    store={'FootLocker'}
-                    size={'10'}
-                    profile={'BMO'}
-                    ip={'Local Host'}
-                    product={'Dunker'}
-                />
+                    {
+                        dummy.map((val) => (
+                        <Bot
+                            store={'FootLocker'}
+                            size={val.toString()}
+                            profile={'BMO'}
+                            ip={'Local Host'}
+                            product={'Dunker'}
+                        />
+                        ))
+                    }
 
-                <Bot
-                    store={'FootLocker'}
-                    size={'10'}
-                    profile={'BMO'}
-                    ip={'Local Host'}
-                    product={'Dunker'}
-                />
+                
+                    
 
-                <Bot
-                    store={'FootLocker'}
-                    size={'10'}
-                    profile={'BMO'}
-                    ip={'Local Host'}
-                    product={'Dunker'}
-                />
-
-                <Bot
-                    store={'FootLocker'}
-                    size={'10'}
-                    profile={'BMO'}
-                    ip={'Local Host'}
-                    product={'Dunker'}
-                />
-
-                <Bot
-                    store={'FootLocker'}
-                    size={'10'}
-                    profile={'BMO'}
-                    ip={'Local Host'}
-                    product={'Dunker'}
-                />
-
-                <Bot
-                    store={'FootLocker'}
-                    size={'10'}
-                    profile={'BMO'}
-                    ip={'Local Host'}
-                    product={'Dunker'}
-                />
-
-                <Bot
-                    store={'FootLocker'}
-                    size={'10'}
-                    profile={'BMO'}
-                    ip={'Local Host'}
-                    product={'Dunker'}
-                />
-
-                <Bot
-                    store={'FootLocker'}
-                    size={'10'}
-                    profile={'BMO'}
-                    ip={'Local Host'}
-                    product={'Dunker'}
-                />
+                </div>
 
             </div>
         </div>
