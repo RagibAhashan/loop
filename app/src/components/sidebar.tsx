@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Menu } from 'antd';
+import { Layout, Menu, Row } from 'antd';
 import * as Constants from '../constants';
-import './sidebar.css';
+import styles from './sidebar.module.css';
 import {
   DesktopOutlined,
   PieChartOutlined,
   FileOutlined,
-  AimOutlined,
+  SettingOutlined,
+  HomeOutlined,
 } from '@ant-design/icons';
+import logo from '../assets/crown.png'
 
 const { Sider } = Layout;
 
@@ -28,25 +30,27 @@ const SideBar = (props: any) => {
         setCollapsed(collapsed);
       }}
     >
-      <div className="logo" />
+      <Row><img alt="Logo" src={logo} className={styles.logo}></img></Row>
       <Menu
-        style={{ marginTop: '30%' }}
+        className={styles.menu}
         theme="dark"
         defaultSelectedKeys={['0']}
         mode="inline"
       >
         <Menu.Item
           key="0"
-          icon={<AimOutlined />}
+          className={styles.menuItem}
+          icon={<HomeOutlined className={styles.icon} />}
           onClick={() => {
             setPage(Constants.MAIN);
           }}
         >
-          Main page test
+          Home
         </Menu.Item>
 
         <Menu.Item
           key="1"
+          className={styles.menuItem}
           icon={<PieChartOutlined />}
           onClick={() => {
             setPage(Constants.BILLING);
@@ -57,6 +61,7 @@ const SideBar = (props: any) => {
 
         <Menu.Item
           key="2"
+          className={styles.menuItem}
           icon={<DesktopOutlined />}
           onClick={() => {
             setPage(Constants.PROXIES);
@@ -67,12 +72,23 @@ const SideBar = (props: any) => {
 
         <Menu.Item
           key="3"
+          className={styles.menuItem}
           icon={<FileOutlined />}
           onClick={() => {
             setPage(Constants.TASKS);
           }}
         >
           Tasks
+        </Menu.Item>
+        <Menu.Item
+          key="4"
+          className={styles.menuItem}
+          icon={<SettingOutlined />}
+          onClick={() => {
+            setPage(Constants.SETTINGS);
+          }}
+        >
+          Settings
         </Menu.Item>
 
       </Menu>

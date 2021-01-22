@@ -14,28 +14,26 @@ const TaskPage = () => {
 
 
     <Layout>
-        <Sider 
-            style={{backgroundColor: '#282C31'}}
-        >
+        <Sider style={{backgroundColor: '#282C31'}}>
             <TaskSideBar />
         </Sider>
             <Content style={{marginLeft:'50px', marginRight:'50px'}}>
 
-        <Row style={{marginTop: '15px'}}>
+        <Row style={{marginTop: '15px', marginBottom: '-20px'}}>
             <Col span={8}>
-                Tasks
+                <p style={{fontSize: '35px', color: 'orange'}}>
+                    Footlocker Tasks
+                </p>
             </Col>
             <Col span={8} offset={8}>
                 Discord
             </Col>
         </Row>
 
-        <Row style={{marginTop: '30px'}}>
+        <Row style={{marginTop: '0px'}}>
                 <TaskComponent />
         </Row>
             </Content>
-
-        {/* </Header> */}
         
     </Layout>
         </div>
