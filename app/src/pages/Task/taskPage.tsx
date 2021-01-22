@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import TaskSideBar from './TaskSideBar'
-import { Layout, Row, Col } from 'antd';
+import { Layout, Row, Col, Button, Popconfirm, message } from 'antd';
 import TaskComponent from './task'
 
+
+const text = 'Are you sure to delete this store?\nAll running tasks will be terminated.'
 
 const TaskPage = () => {
     const { Sider, Content } = Layout;
 
-
+    function confirm() {
+        message.success('Store deleted!');
+    }
 
     return (
         <div>
@@ -26,12 +30,25 @@ const TaskPage = () => {
                 </p>
             </Col>
             <Col span={8} offset={8}>
-                Discord
+                
+                <div style={{marginLeft : '185px'}}>
+                    <Popconfirm placement="bottom" title={text} onConfirm={confirm} okText="Yes" cancelText="No">
+                    <Button type="primary" danger
+                        style={{
+                            marginTop: '10px',
+                            height: '39px'
+                        }}
+                        >
+                        Delete Store
+                    </Button>
+                    </ Popconfirm>
+                        {/* Discord Here */}
+                </div>
             </Col>
         </Row>
 
         <Row style={{marginTop: '0px'}}>
-                <TaskComponent />
+            <TaskComponent />
         </Row>
             </Content>
         
