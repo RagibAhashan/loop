@@ -1,4 +1,4 @@
-const { threadId } = require('worker_threads');
+const { threadId, parentPort } = require('worker_threads');
 const { CookieJar } = require('./CookieJar');
 
 class Task {
@@ -35,12 +35,17 @@ class Task {
     }
 
     async execute() {
-        await this.getSessionTokens();
-        const code = await this.getProductCode();
-        await this.addToCart(code);
-        await this.setEmail();
-        await this.setShipping();
-        await this.setBilling();
+        try {
+            await this.getSessionTokens();
+            const code = await this.getProductCode();
+            await this.addToCart(code);
+            await this.setEmail();
+            await this.setShipping();
+            await this.setBilling();
+            await this.placeOrder();
+        } catch (err) {
+            parentPort.postMessage('There was an error somewhere');
+        }
     }
 }
 

@@ -8,10 +8,10 @@ const { CreditCardEncryption } = require('./CreditCardEncryption');
 const CAPTCHA_TIMEOUT_SEC = 60;
 
 class FootLockerTask extends Task {
-    static ccEncryptorEncryption = new CreditCardEncryption(ADYEN_KEY);
+    static ccEncryptor = new CreditCardEncryption(ADYEN_KEY);
 
     async getSessionTokens() {
-        parentPort.postMessage('Getting Session...');
+        parentPort.postMessage({ message: 'Getting Session...', threadId: this.threadId });
 
         const response = await this.axiosSession.get('/v4/session');
 
@@ -23,7 +23,7 @@ class FootLockerTask extends Task {
     }
 
     async getProductCode() {
-        parentPort.postMessage('Checking Size...');
+        parentPort.postMessage({ message: 'Checking Size...', threadId: this.threadId });
 
         const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
         const sellableUnits = response.data['sellableUnits'];
@@ -42,10 +42,9 @@ class FootLockerTask extends Task {
         return allShoes;
     }
     async addToCart(code) {
-        parentPort.postMessage('Adding to cart...');
-
         let added = false;
         while (!added) {
+            parentPort.postMessage({ message: 'Adding to cart...', threadId: this.threadId });
             try {
                 const headers = {
                     referer: this.productLink,
@@ -66,7 +65,7 @@ class FootLockerTask extends Task {
                 const cookies = response.headers['set-cookie'].join();
                 this.cookieJar.setFromRaw(cookies, Cookie.CART_GUID);
 
-                console.log('Adding to cart OK... ', response.status);
+                // console.log('Adding to cart OK... ', response.status);
                 added = true;
             } catch (err) {
                 // TODO WIP Captcha
@@ -105,16 +104,16 @@ class FootLockerTask extends Task {
         }
     }
     async setEmail() {
-        parentPort.postMessage('Setting Email...');
+        parentPort.postMessage({ message: 'Setting Email...', threadId: this.threadId });
 
         const headers = this.setHeaders();
 
         const response = await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.email}`, {}, { headers: headers });
 
-        console.log('Setting Email OK... ', response.status);
+        // console.log('Setting Email OK... ', response.status);
     }
     async setShipping() {
-        parentPort.postMessage('Setting Shipping...');
+        parentPort.postMessage({ message: 'Setting Shipping...', threadId: this.threadId });
 
         const headers = this.setHeaders();
 
@@ -122,10 +121,10 @@ class FootLockerTask extends Task {
 
         const response = await this.axiosSession.post('/users/carts/current/addresses/shipping', body, { headers: headers });
 
-        console.log('Setting Shipping OK... ', response.status);
+        // console.log('Setting Shipping OK... ', response.status);
     }
     async setBilling() {
-        parentPort.postMessage('Setting Billing...');
+        parentPort.postMessage({ message: 'Setting Billing...', threadId: this.threadId });
 
         const headers = this.setHeaders();
 
@@ -133,10 +132,10 @@ class FootLockerTask extends Task {
 
         const response = await this.axiosSession.post('/users/carts/current/set-billing', body, { headers: headers });
 
-        console.log('Setting Billing OK... ', response.status);
+        // console.log('Setting Billing OK... ', response.status);
     }
     async placeOrder() {
-        parentPort.postMessage('Placing Order...');
+        parentPort.postMessage({ message: 'Placing Order...', threadId: this.threadId });
 
         const headers = this.setHeaders();
 
@@ -148,7 +147,7 @@ class FootLockerTask extends Task {
             headers: headers,
         });
 
-        parentPort.postMessage('Placed Order !');
+        parentPort.postMessage({ message: 'Placed Order !', threadId: this.threadId });
     }
 
     getInfoForm() {

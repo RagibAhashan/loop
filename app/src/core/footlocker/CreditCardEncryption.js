@@ -2,8 +2,6 @@ require('browser-env')();
 require('./scripts/2615645779051917');
 
 class CreditCardEncryption {
-    adyenKey;
-    cse;
     constructor(adyenKey) {
         this.adyenKey = adyenKey;
         this.cse = global.adyen.encrypt.createEncryption(this.adyenKey, {});

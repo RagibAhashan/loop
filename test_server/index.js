@@ -8,7 +8,7 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const random = () => {
-    let random = Math.round(Math.random() * 1000);
+    let random = Math.round(Math.random() * 2500 + 400);
     console.log(random);
     return random;
 };

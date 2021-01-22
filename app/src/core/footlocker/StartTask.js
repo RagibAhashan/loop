@@ -1,12 +1,12 @@
 const { FOOTLOCKER_CA_HEADERS } = require('../constants/DefaultHeaders');
-const { UserProfile } = require('../interface/UserProfile');
+const { UserProfile, CreditCard } = require('../interface/UserProfile');
 const { RequestInstance } = require('../RequestInstance');
 const { FootLockerTask } = require('./FootLockerTask');
 const { Fingerprint } = require('../Fingerprint');
 
 const deviceId = Fingerprint.getDeviceId();
 
-const userProfile = new UserProfile();
+const userProfile = new UserProfile('test@gmail.com', '', '', '', '', '', '', '', '', new CreditCard('', '', '', '', ''));
 const axios = new RequestInstance('http://localhost:3200/api', { timestamp: Date.now() }, FOOTLOCKER_CA_HEADERS);
 
 const fl = new FootLockerTask(
