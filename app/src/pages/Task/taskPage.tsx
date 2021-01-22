@@ -5,7 +5,7 @@ import TaskComponent from './task'
 
 
 const TaskPage = () => {
-    const { Sider, Header, Content } = Layout;
+    const { Sider, Content } = Layout;
 
 
 
@@ -17,15 +17,23 @@ const TaskPage = () => {
         <Sider style={{backgroundColor: '#282C31'}}>
             <TaskSideBar />
         </Sider>
+            <Content style={{marginLeft:'50px', marginRight:'50px'}}>
 
-        <Header style={{backgroundColor:'#212427'}}>
-            Tasks
+        <Row style={{marginTop: '15px', marginBottom: '-20px'}}>
+            <Col span={8}>
+                <p style={{fontSize: '35px', color: 'orange'}}>
+                    Footlocker Tasks
+                </p>
+            </Col>
+            <Col span={8} offset={8}>
+                Discord
+            </Col>
+        </Row>
 
-        <Content >
-            <TaskComponent />
-        </Content>
-
-        </Header>
+        <Row style={{marginTop: '0px'}}>
+                <TaskComponent />
+        </Row>
+            </Content>
         
     </Layout>
         </div>

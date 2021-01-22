@@ -18,7 +18,7 @@ const App = () => {
             <Layout>
                 <Content>
                     <div>
-                        {page === Constants.MAIN ? <div> MAINS ALLo </div> : ""}
+                        {page === Constants.MAIN ? <div> Welcome </div> : ""}
                         {page === Constants.BILLING ? (
                             <BillingPage setPage={setPage} />
                         ) : (
