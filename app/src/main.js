@@ -1,4 +1,6 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
+const { Worker } = require('worker_threads');
+const path = require('path');
 function createWindow() {
     const win = new BrowserWindow({
         width: 1400,
@@ -39,3 +41,31 @@ app.on('activate', () => {
 if (process.platform === 'darwin') {
     app.dock.hide();
 }
+
+// IPC EVENTS
+let workers = [];
+
+ipcMain.on('start-task', (event, num) => {
+    workers = [];
+    console.log('starting', num, 'tasks !');
+    for (let i = 0; i < num; i++) {
+        const worker = new Worker(path.join(__dirname, '/core/WorkerWrapper.js'));
+
+        workers.push(worker);
+
+        worker.on('message', (message) => {
+            event.reply('task-reply', message);
+        });
+    }
+
+    const result = workers.map((w) => w.threadId);
+    event.reply('workers', result);
+});
+
+ipcMain.on('stop-task', () => {
+    console.log('stopping tasks !');
+
+    for (let i = 0; i < workers.length; i++) {
+        workers[i].terminate();
+    }
+});
