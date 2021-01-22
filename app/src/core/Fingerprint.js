@@ -1,4 +1,4 @@
-const ioGetBlackbox = require('./scripts/snare');
+const ioGetBlackbox = require('./footlocker/scripts/snare');
 
 /*
 Static class that generate a device id used by footlocker and adyen payment system

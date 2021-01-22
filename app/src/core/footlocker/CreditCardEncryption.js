@@ -1,5 +1,3 @@
-console.log('CREDIT CART ENCRYPTOR SHOULD BE CALLED ONECE ONLY !!!!!');
-
 require('browser-env')();
 require('./scripts/2615645779051917');
 
