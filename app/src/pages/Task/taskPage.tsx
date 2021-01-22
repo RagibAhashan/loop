@@ -5,7 +5,7 @@ import TaskComponent from './task'
 
 
 const TaskPage = () => {
-    const { Sider, Header, Content } = Layout;
+    const { Sider, Content } = Layout;
 
 
 
@@ -21,12 +21,12 @@ const TaskPage = () => {
         </Sider>
             <Content style={{marginLeft:'50px', marginRight:'50px'}}>
 
-        <Row>
-            <Col span={12} style={{backgroundColor: 'blue'}}>
+        <Row style={{marginTop: '15px'}}>
+            <Col span={8}>
                 Tasks
             </Col>
-            <Col span={12} style={{backgroundColor: 'red'}}>
-                Avatar
+            <Col span={8} offset={8}>
+                Discord
             </Col>
         </Row>
 
