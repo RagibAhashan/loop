@@ -41,7 +41,6 @@ class FootLockerTask extends Task {
         let added = false;
         while (!added) {
             try {
-                console.log('trying to add');
                 const headers = {
                     referer: this.productLink,
                     cookie: this.cookieJar.getCookie(Cookie.JSESSIONID),
@@ -54,19 +53,15 @@ class FootLockerTask extends Task {
                     console.log('TRYING AGAIN BUT WITH DATADOME', headers.cookie);
                 }
 
-                console.log(headers);
-
                 const body = { productQuantity: '1', productId: code };
 
                 const response = await this.axiosSession.post('/users/carts/current/entries', body, { headers: headers });
 
-                console.log('getting cookies');
                 const cookies = response.headers['set-cookie'].join();
                 this.cookieJar.setFromRaw(cookies, Cookie.CART_GUID);
 
                 console.log('Adding to cart OK... ', response.status);
                 added = true;
-                console.log('CARt GUID', this.cookieJar.getValue(Cookie.CART_GUID));
             } catch (err) {
                 // TODO WIP Captcha
                 if (err.response && 'url' in err.response.data) {
@@ -103,34 +98,14 @@ class FootLockerTask extends Task {
         }
     }
     async setEmail() {
-        const headers = {
-            referer: 'https://www.footlocker.ca/en/checkout',
-            cookie: this.cookieJar.getCookie(Cookie.JSESSIONID, Cookie.CART_GUID),
-            'x-csrf-token': this.cookieJar.getValue(Cookie.CSRF),
-        };
-
-        if (this.cookieJar.has(Cookie.DATADOME)) {
-            headers.cookie += this.cookieJar.getCookie(Cookie.DATADOME);
-            console.log('TRYING WITH DATADOME', headers.cookie);
-        }
-
-        console.log('email headers', headers);
+        const headers = this.setHeaders();
 
         const response = await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.email}`, {}, { headers: headers });
 
         console.log('Setting Email OK... ', response.status);
     }
     async setShipping() {
-        const headers = {
-            referer: 'https://www.footlocker.ca/en/checkout',
-            cookie: this.cookieJar.getCookie(Cookie.JSESSIONID, Cookie.CART_GUID),
-            'x-csrf-token': this.cookieJar.getValue(Cookie.CSRF),
-        };
-
-        if (this.cookieJar.has(Cookie.DATADOME)) {
-            headers.cookie += this.cookieJar.getCookie(Cookie.DATADOME);
-            console.log('TRYING WITH DATADOME', headers.cookie);
-        }
+        const headers = this.setHeaders();
 
         const body = { shippingAddress: this.getInfoForm() };
 
@@ -139,16 +114,7 @@ class FootLockerTask extends Task {
         console.log('Setting Shipping OK... ', response.status);
     }
     async setBilling() {
-        const headers = {
-            referer: 'https://www.footlocker.ca/en/checkout',
-            cookie: this.cookieJar.getCookie(Cookie.JSESSIONID, Cookie.CART_GUID),
-            'x-csrf-token': this.cookieJar.getValue(Cookie.CSRF),
-        };
-
-        if (this.cookieJar.has(Cookie.DATADOME)) {
-            headers.cookie += this.cookieJar.getCookie(Cookie.DATADOME);
-            console.log('TRYING WITH DATADOME', headers.cookie);
-        }
+        const headers = this.setHeaders();
 
         const body = this.getInfoForm();
 
@@ -157,16 +123,7 @@ class FootLockerTask extends Task {
         console.log('Setting Billing OK... ', response.status);
     }
     async placeOrder() {
-        const headers = {
-            referer: 'https://www.footlocker.ca/en/checkout',
-            cookie: this.cookieJar.getCookie(Cookie.JSESSIONID, Cookie.CART_GUID),
-            'x-csrf-token': this.cookieJar.getValue(Cookie.CSRF),
-        };
-
-        if (this.cookieJar.has(Cookie.DATADOME)) {
-            headers.cookie += this.cookieJar.getCookie(Cookie.DATADOME);
-            console.log('TRYING WITH DATADOME', headers.cookie);
-        }
+        const headers = this.setHeaders();
 
         const encryptedCC = FootLockerTask.ccEncryptor.encrypt(this.userProfile.creditCard);
 
@@ -191,6 +148,20 @@ class FootLockerTask extends Task {
             this.userProfile.region,
             this.userProfile.town,
         );
+    }
+
+    setHeaders() {
+        const headers = {
+            referer: 'https://www.footlocker.ca/en/checkout',
+            cookie: this.cookieJar.getCookie(Cookie.JSESSIONID, Cookie.CART_GUID),
+            'x-csrf-token': this.cookieJar.getValue(Cookie.CSRF),
+        };
+
+        if (this.cookieJar.has(Cookie.DATADOME)) {
+            headers.cookie += this.cookieJar.getCookie(Cookie.DATADOME);
+        }
+
+        return headers;
     }
 
     getOrderForm(encCC) {
