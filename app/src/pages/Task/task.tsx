@@ -5,10 +5,10 @@ const { Option } = Select;
 const format = 'HH:mm';
 
 const input_field = {
-    height: '59px',
-    borderRadius: '6px',
-    backgroundColor: '#282C31',
-    border: '1px solid #858C94',
+    height: '39px',
+    // borderRadius: '6px',
+    // backgroundColor: '#282C31',
+    // border: '1px solid #858C94',
 };
 
 function onChange(date: any, dateString: any) {
@@ -37,10 +37,6 @@ const TaskComponent = (props: any) => {
 
                     <Col style={{ marginLeft: '50px', width: '140px' }}>
                         <Form.Item name={['task', 'startdate']} rules={[{ required: true }]}>
-                            {/* <Input
-                                
-                                
-                            /> */}
                             <DatePicker onChange={onChange} style={input_field} />
                         </Form.Item>
                     </Col>
@@ -98,11 +94,12 @@ const TaskComponent = (props: any) => {
                                 type="primary"
                                 htmlType="submit"
                                 style={{
-                                    backgroundColor: '#282C31',
+                                    backgroundColor: '#000000',
+                                    // backgroundColor: '#282C31',
                                     color: '#F0A30D',
-                                    height: '48px',
+                                    height: '39px',
                                     width: '150px',
-                                    borderRadius: '6px',
+                                    // borderRadius: '6px',
                                     borderColor: '#F0A30D',
                                 }}
                             >

@@ -1,11 +1,15 @@
 const { app, BrowserWindow } = require('electron');
 function createWindow() {
     const win = new BrowserWindow({
-        width: 1200,
-        height: 900,
+        width: 1400,
+        height: 800,
         webPreferences: {
             nodeIntegration: true,
         },
+        resizable: false,
+        toolbar: false,
+        "skip-taskbar": true,
+        "auto-hide-menu-bar": true,
     });
 
     if (process.env.NODE_ENV === 'development') {
@@ -13,6 +17,9 @@ function createWindow() {
     } else {
         win.loadURL(`file://${__dirname}/../build/index.html`);
     }
+
+    win.setMenuBarVisibility(false);
+    win.setAutoHideMenuBar(true);
 }
 
 app.whenReady().then(createWindow);
@@ -28,3 +35,5 @@ app.on('activate', () => {
         createWindow();
     }
 });
+
+app.dock.hide();
