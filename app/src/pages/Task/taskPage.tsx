@@ -14,18 +14,28 @@ const TaskPage = () => {
 
 
     <Layout>
-        <Sider style={{backgroundColor: '#282C31'}}>
+        <Sider 
+            style={{backgroundColor: '#282C31'}}
+        >
             <TaskSideBar />
         </Sider>
+            <Content style={{marginLeft:'50px', marginRight:'50px'}}>
 
-        <Header style={{backgroundColor:'#212427'}}>
-            Tasks
+        <Row>
+            <Col span={12} style={{backgroundColor: 'blue'}}>
+                Tasks
+            </Col>
+            <Col span={12} style={{backgroundColor: 'red'}}>
+                Avatar
+            </Col>
+        </Row>
 
-        <Content >
-            <TaskComponent />
-        </Content>
+        <Row style={{marginTop: '30px'}}>
+                <TaskComponent />
+        </Row>
+            </Content>
 
-        </Header>
+        {/* </Header> */}
         
     </Layout>
         </div>
