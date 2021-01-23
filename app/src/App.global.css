@@ -6,7 +6,7 @@
     --menuItem: #282c31;
     --defaultThemeColor: orange;
     --siderIconSize: 20px;
-    --siderShadow: 1px 0px 5px 0.5px black;
+    --siderShadow: 1px 0px 5px 0.1px black;
 }
 
 /* Sider */
@@ -24,6 +24,7 @@
     color: var(--defaultThemeColor);
     box-shadow: var(--siderShadow);
     font-size: var(--siderIconSize);
+    z-index: 0;
 }
 
 /* Menu */
