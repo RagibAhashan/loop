@@ -1,5 +1,5 @@
-import { Button, Col, DatePicker, Form, Input, Row, Select, TimePicker } from 'antd';
-import React, { useCallback, useEffect, useState } from 'react';
+import { Button, Col, DatePicker, Form, Input, Row, Select, TimePicker, Divider } from 'antd';
+import React, { useState, useEffect, useCallback } from 'react';
 import Bot from './bot';
 const { uuid } = require('uuidv4');
 
@@ -11,20 +11,22 @@ const colStyle = {
     margin: 'auto',
 };
 
+const buttonStyle: React.CSSProperties = {
+    width: '100%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+};
+
 const botStyle = {
-    backgroundColor: 'black',
+    // backgroundColor: 'black',
     marginLeft: '20px',
     marginRight: '20px',
     marginTop: '10px',
-    height: '45px',
+    marginBottom: '0px',
+    height: '15px',
     borderRadius: '6px',
-};
-
-const input_field = {
-    height: '39px',
-    // borderRadius: '6px',
-    // backgroundColor: '#282C31',
-    // border: '1px solid #858C94',
+    color: 'orange',
+    fontSize: '18px',
 };
 
 function onChange(date: any, dateString: any) {
@@ -51,49 +53,65 @@ const validateMessages = {
     },
 };
 
-const new_obj = {
-    uuid: '',
-    store: 'store',
-    keyword: 'keyword',
-    startdate: 'startdate',
-    starttime: 'starttime',
-    profile: 'profile',
-    sizes: 'sizes',
-    proxyset: 'proxyset',
-    quantity: 'quantity',
-    monitordelay: 'monitordelay',
-    retrydelay: 'retrydelay',
-};
+interface Job {
+    uuid: String;
+    store: String;
+    keyword: String;
+    startdate: String;
+    starttime: String;
+    profile: String;
+    sizes: Array<String>;
+    proxyset: String;
+    quantity: String;
+    monitordelay: Number;
+    retrydelay: Number;
+}
 
-const TaskComponent = (props: any) => {
-    const [jobs, setJobs] = useState([new_obj]);
+const TaskComponent = () => {
+    const [jobs, setJobs] = useState(new Array<Job>());
     const [proxies, setProxies] = useState([]);
-    const [selectedProxies, setSelectedProxies] = useState(new Map<string, Array<string>>());
+    const [profiles, setProfiles] = useState([]);
     const [, updateState] = useState();
     const forceUpdate = useCallback(() => updateState({} as any), []);
 
     useEffect(() => {
         setProxies(getProxies());
+        setProfiles(getProfiles());
     }, []);
 
+    const getProfiles = () => {
+        const profilesTemp: any = [];
+        let profs: any = localStorage.getItem('profiles');
+
+        if (profs) {
+            profs = JSON.parse(profs);
+            if (profs) {
+                profs.map((p: any) => {
+                    profilesTemp.push({
+                        label: p['profile'],
+                        value: p,
+                    });
+                });
+            }
+        }
+
+        return profilesTemp;
+    };
+
     const getProxies = (): any => {
-        const proxiesOptions: any = [];
+        const proxiesOptions: any = [{ label: 'localhost', value: 'localhost' }];
         let prox: any = localStorage.getItem('proxies');
         if (prox) {
             prox = JSON.parse(prox);
             if (prox) {
-                let hm = new Map<string, Array<string>>();
                 prox.map((set: any) => {
-                    hm.set(set[0], set[1]);
                     proxiesOptions.push({
                         label: `${set[0]} (${set[1].length} proxies)`,
                         value: `${set[0]}`,
                     });
                 });
-                setSelectedProxies(hm);
             }
         }
-
         return proxiesOptions;
     };
 
@@ -121,7 +139,7 @@ const TaskComponent = (props: any) => {
                 </Col>
 
                 <Col span={2} style={colStyle}>
-                    Size
+                    Proxy
                 </Col>
 
                 <Col span={3} style={colStyle}>
@@ -129,7 +147,7 @@ const TaskComponent = (props: any) => {
                 </Col>
 
                 <Col span={7} style={colStyle}>
-                    Proxy
+                    Sizes
                 </Col>
 
                 <Col span={3} style={colStyle}>
@@ -143,30 +161,24 @@ const TaskComponent = (props: any) => {
         );
     };
 
-    const onFinish = (data: any) => {
+    const addTasks = (data: any) => {
         let temp = jobs;
 
-        let selected_proxies = selectedProxies.get(data['task'].proxyset);
-        console.log('selected_proxies', selected_proxies);
         if (temp !== null) {
             for (let i = 0; i < Number(data['task'].quantity); i++) {
-                for (let j = 0; j < data['task'].sizes.length; j++) {
-                    selectedProxies.get(data['task'].proxyset)?.map((proxy_selected) => {
-                        temp.push({
-                            uuid: uuid(),
-                            store: 'Footlocker',
-                            keyword: data['task'].keyword,
-                            startdate: data['task'].startdate,
-                            starttime: data['task'].starttime,
-                            profile: data['task'].profile,
-                            sizes: data['task'].sizes[j],
-                            proxyset: proxy_selected,
-                            quantity: data['task'].quantity,
-                            monitordelay: data['task'].monitordelay,
-                            retrydelay: data['task'].retrydelay,
-                        });
-                    });
-                }
+                temp.push({
+                    uuid: uuid(),
+                    store: 'Footlocker',
+                    keyword: data['task'].keyword,
+                    startdate: data['task'].startdate,
+                    starttime: data['task'].starttime,
+                    profile: data['task'].profile,
+                    sizes: data['task'].sizes,
+                    proxyset: data['task'].proxyset,
+                    quantity: data['task'].quantity,
+                    monitordelay: data['task'].monitordelay,
+                    retrydelay: data['task'].retrydelay,
+                });
             }
             setJobs(temp);
         }
@@ -174,88 +186,84 @@ const TaskComponent = (props: any) => {
     };
 
     const deleteAllTasks = () => {
-        setJobs([new_obj]);
+        setJobs(new Array<Job>());
         forceUpdate();
     };
 
     useEffect(() => {});
+
+    const ROW_GUTTER: [number, number] = [24, 0];
+
+    useEffect(() => {});
     return (
         <div>
-            <Form style={{ height: '20vh' }} onFinish={onFinish} validateMessages={validateMessages}>
-                <Row>
-                    <Col style={{ width: '320px' }}>
+            <Form onFinish={addTasks} validateMessages={validateMessages}>
+                <Row gutter={ROW_GUTTER} justify="space-between">
+                    <Col span={6}>
                         <Form.Item name={['task', 'keyword']} rules={[{ required: true }]}>
-                            <Input placeholder="keyword" style={input_field} />
+                            <Input placeholder="keyword" />
                         </Form.Item>
                     </Col>
 
-                    <Col style={{ marginLeft: '50px', width: '140px' }}>
+                    <Col span={4}>
                         <Form.Item name={['task', 'startdate']} rules={[{ required: true }]}>
-                            <DatePicker onChange={onChange} style={input_field} />
+                            <DatePicker onChange={onChange} />
                         </Form.Item>
                     </Col>
-
-                    <Col style={{ marginLeft: '30px', width: '120px' }}>
-                        <Form.Item name={['task', 'starttime']} rules={[{ required: true }]}>
-                            <TimePicker style={input_field} format={format} />
+                    <Col span={4}></Col>
+                    <Col span={4}>
+                        <Form.Item style={{ width: '100%' }} name={['task', 'starttime']} rules={[{ required: true }]}>
+                            <TimePicker style={{ width: '100%' }} format={format} />
                         </Form.Item>
                     </Col>
-                    <Col style={{ marginLeft: '30px', width: '210px' }}>
+                    <Col span={6}>
                         <Form.Item name={['task', 'profile']} rules={[{ required: true }]}>
-                            <Input placeholder="Profile Set" style={input_field} />
+                            <Input placeholder="Profile Set" />
                         </Form.Item>
                     </Col>
                 </Row>
 
-                <Row>
-                    <Col style={{ width: '320px' }}>
+                <Row gutter={ROW_GUTTER}>
+                    <Col span={6}>
                         <Form.Item name={['task', 'sizes']} rules={[{ required: true }]}>
-                            <Select placeholder="Size" style={input_field} mode="multiple" allowClear>
+                            <Select placeholder="Size" mode="multiple" allowClear>
                                 {allSizes}
                             </Select>
                         </Form.Item>
                     </Col>
 
-                    <Col style={{ marginLeft: '50px', width: '290px' }}>
+                    <Col span={12}>
                         <Form.Item name={['task', 'proxyset']} rules={[{ required: true }]}>
-                            <Select placeholder="Proxy Set" allowClear options={proxies}></Select>
+                            <Select placeholder="Proxy Set" allowClear options={proxies} defaultValue={'No proxies'}></Select>
                         </Form.Item>
                     </Col>
 
-                    <Col style={{ marginLeft: '30px', width: '210px' }}>
+                    <Col span={6}>
                         <Form.Item name={['task', 'quantity']} rules={[{ required: true }]}>
-                            <Input placeholder="Quantity" style={input_field} type="number" />
+                            <Input placeholder="Quantity" type="number" defaultValue={1} />
                         </Form.Item>
                     </Col>
                 </Row>
 
-                <Row>
-                    <Col style={{ width: '320px' }}>
+                <Row gutter={ROW_GUTTER}>
+                    <Col span={6}>
                         <Form.Item name={['task', 'monitordelay']} rules={[{ required: true }]}>
-                            <Input placeholder="Monitor delay in milliseconds" style={input_field} type="number" />
+                            <Input placeholder="Monitor delay in milliseconds" type="number" />
                         </Form.Item>
                     </Col>
 
-                    <Col style={{ marginLeft: '50px', width: '290px' }}>
+                    <Col span={12}>
                         <Form.Item name={['task', 'retrydelay']} rules={[{ required: true }]}>
-                            <Input placeholder="Retry delay" style={input_field} type="number" />
+                            <Input placeholder="Retry delay" type="number" />
                         </Form.Item>
                     </Col>
 
-                    <Col style={{ marginLeft: '30px' }}>
+                    <Col span={6}>
                         <Form.Item>
                             <Button
                                 type="primary"
                                 htmlType="submit"
-                                style={{
-                                    backgroundColor: '#000000',
-                                    // backgroundColor: '#282C31',
-                                    color: '#F0A30D',
-                                    height: '39px',
-                                    width: '210px',
-                                    // borderRadius: '6px',
-                                    borderColor: '#F0A30D',
-                                }}
+                                style={{ ...buttonStyle, backgroundColor: '#000000', color: '#F0A30D', borderColor: '#F0A30D' }}
                             >
                                 Add tasks
                             </Button>
@@ -263,26 +271,6 @@ const TaskComponent = (props: any) => {
                     </Col>
                 </Row>
             </Form>
-
-            <Row>
-                <Col span={3} style={{ marginLeft: '10px' }}>
-                    <Button style={{ height: '40px', width: '100px', color: 'green', borderColor: 'green', border: '1px solid', fontSize: '14px' }}>
-                        Run all
-                    </Button>
-                </Col>
-                <Col span={3}>
-                    <Button style={{ height: '40px', width: '100px' }} danger>
-                        {' '}
-                        Stop all{' '}
-                    </Button>
-                </Col>
-                <Col span={13}></Col>
-                <Col span={3}>
-                    <Button style={{ height: '40px', width: '170px' }} type="primary" danger onClick={() => deleteAllTasks()}>
-                        Delete all
-                    </Button>
-                </Col>
-            </Row>
 
             <div
                 style={{
@@ -295,6 +283,7 @@ const TaskComponent = (props: any) => {
                 }}
             >
                 <Headers />
+                <Divider style={{ marginBottom: '10px' }} />
 
                 <div
                     style={{
@@ -319,6 +308,25 @@ const TaskComponent = (props: any) => {
                     ))}
                 </div>
             </div>
+
+            <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10 }}>
+                <Col span={3}>
+                    <Button type="default" style={{ ...buttonStyle, backgroundColor: 'green' }}>
+                        Run all
+                    </Button>
+                </Col>
+                <Col span={3}>
+                    <Button style={buttonStyle} type="primary" danger>
+                        Stop all
+                    </Button>
+                </Col>
+                <Col span={12}></Col>
+                <Col span={6}>
+                    <Button style={buttonStyle} type="primary" danger onClick={() => deleteAllTasks()}>
+                        Delete all
+                    </Button>
+                </Col>
+            </Row>
         </div>
     );
 };

@@ -1,7 +1,7 @@
 // import styles from './sidebar.module.css';
 import { DeleteOutlined, DoubleRightOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Col, Row, Space } from 'antd';
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 const botStyle = {
     backgroundColor: '#212427',
@@ -9,7 +9,7 @@ const botStyle = {
     marginRight: '20px',
     marginTop: '10px',
     height: '45px',
-    borderRadius: '6px',
+    borderRadius: '60px',
 };
 
 const colStyle = {
@@ -34,53 +34,41 @@ const deleteButton = {
     backgroundColor: 'red',
 };
 
-
-/**
- *  store:          'Footlocker',
-    keyword:        data['task'].keyword,
-    startdate:      data['task'].startdate,
-    starttime:      data['task'].starttime,
-    profile:        data['task'].profile,
-    sizes:          data['task'].sizes[j],
-    proxyset:       data['task'].proxyset[k],
-    quantity:       data['task'].quantity,
-    monitordelay:   data['task'].monitordelay,
-    retrydelay:     data['task'].retrydelay,
-*/
 const Bot = (props: any) => {
-    const {
-        uuid,
-        store,
-        keyword,
-        startdate,
-        starttime,
-        profile,
-        sizes,
-        proxyset,
-        quantity,
-        monitordelay,
-        retrydelay,
-        deleteBot
-    } = props;
+    const { uuid, store, keyword, startdate, starttime, profile, sizes, proxyset, quantity, monitordelay, retrydelay, deleteBot } = props;
 
     const [, updateState] = useState();
     const forceUpdate = useCallback(() => updateState({} as any), []);
-
-
-    const [_store, setStore] = useState(store);
-
-    useEffect(() => {
-        
-    })
 
     const startTask = () => {
         console.log('start task from', store);
     };
 
+    useEffect(() => {
+        let sizes_string = sizes[0];
+        if (sizes.length > 1) {
+            for (let i = 1; i < sizes.length; i++) {
+                sizes_string += ' - ' + sizes[i];
+            }
+        }
+        console.log(sizes_string);
+    }, []);
+
+    const allSizes = () => {
+        let sizes_string = sizes[0];
+        if (sizes.length > 1) {
+            for (let i = 1; i < sizes.length; i++) {
+                sizes_string += ' - ' + sizes[i];
+            }
+        }
+        console.log(sizes_string);
+        return sizes_string;
+    };
+
     return (
         <Row style={botStyle}>
             <Col span={2} style={{ margin: 'auto', marginLeft: '10px' }}>
-                {_store}
+                {'Footlocker'}
             </Col>
 
             <Col span={3} style={colStyle}>
@@ -88,7 +76,7 @@ const Bot = (props: any) => {
             </Col>
 
             <Col span={2} style={colStyle}>
-                {sizes}
+                {proxyset}
             </Col>
 
             <Col span={3} style={colStyle}>
@@ -96,11 +84,11 @@ const Bot = (props: any) => {
             </Col>
 
             <Col span={7} style={colStyle}>
-                {proxyset}
+                {allSizes()}
             </Col>
 
             <Col span={3} style={colStyle}>
-                Adding to cart
+                <p style={{ color: 'yellow', margin: 'auto' }}>idle</p>
             </Col>
 
             <Col span={3} style={colStyle}>
@@ -115,9 +103,10 @@ const Bot = (props: any) => {
                     <Button style={editButton} icon={<EditOutlined />} />
                     <Button
                         onClick={() => {
-                            deleteBot(uuid)
+                            deleteBot(uuid);
                         }}
-                        style={deleteButton} icon={<DeleteOutlined />} 
+                        style={deleteButton}
+                        icon={<DeleteOutlined />}
                     />
                 </Space>
             </Col>
