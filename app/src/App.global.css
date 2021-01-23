@@ -60,6 +60,10 @@
     color: var(--defaultThemeColor);
 }
 
+.ant-layout.ant-layout-has-sider {
+    background-color: #212427;
+}
+
 html,
 body {
     margin: 0;
