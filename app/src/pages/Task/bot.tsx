@@ -60,7 +60,7 @@ const Bot = (props: any) => {
         quantity,
         monitordelay,
         retrydelay,
-        deleteProxy
+        deleteBot
     } = props;
 
     const [, updateState] = useState();
@@ -115,7 +115,7 @@ const Bot = (props: any) => {
                     <Button style={editButton} icon={<EditOutlined />} />
                     <Button
                         onClick={() => {
-                            deleteProxy(uuid)
+                            deleteBot(uuid)
                         }}
                         style={deleteButton} icon={<DeleteOutlined />} 
                     />

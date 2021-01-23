@@ -101,16 +101,16 @@ const TaskComponent = (props: any) => {
     }
 
 
-    const deleteProxy = (uuid: string) => {
+    const deleteBot = (uuid: string) => {
         console.log('Delete this: ', uuid)
 
         for(let i=0; i < jobs.length; i++) {
             if(jobs[i].uuid === uuid) {
-                jobs.splice(i,i);
-                forceUpdate();
-                return;
+                jobs.splice(i,1);
+                break;
             }
         }
+        forceUpdate();
     }
 
 
@@ -321,7 +321,7 @@ const TaskComponent = (props: any) => {
                             proxyset={botTask.proxyset}
                             monitordelay={botTask.monitordelay}
                             retrydelay={botTask.retrydelay}
-                            deleteProxy={deleteProxy}
+                            deleteBot={deleteBot}
                         />
                     ))}
                 </div>
