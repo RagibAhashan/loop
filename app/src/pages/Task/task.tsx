@@ -13,6 +13,8 @@ const colStyle = {
 
 const buttonStyle: React.CSSProperties = {
     width: '100%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
 };
 
 const botStyle = {
@@ -245,23 +247,6 @@ const TaskComponent = () => {
                 </Row>
             </Form>
 
-            <Row gutter={ROW_GUTTER} justify="space-between">
-                <Col span={3}>
-                    <Button style={buttonStyle}>Run all</Button>
-                </Col>
-                <Col span={3}>
-                    <Button style={buttonStyle} type="primary" danger>
-                        Stop all
-                    </Button>
-                </Col>
-                <Col span={12}></Col>
-                <Col span={6}>
-                    <Button style={buttonStyle} type="primary" danger onClick={() => deleteAllTasks()}>
-                        Delete all
-                    </Button>
-                </Col>
-            </Row>
-
             <div
                 style={{
                     border: '1px solid #4D4D4D',
@@ -297,6 +282,25 @@ const TaskComponent = () => {
                     ))}
                 </div>
             </div>
+
+            <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10 }}>
+                <Col span={3}>
+                    <Button type="default" style={{ ...buttonStyle, backgroundColor: 'green' }}>
+                        Run all
+                    </Button>
+                </Col>
+                <Col span={3}>
+                    <Button style={buttonStyle} type="primary" danger>
+                        Stop all
+                    </Button>
+                </Col>
+                <Col span={12}></Col>
+                <Col span={6}>
+                    <Button style={buttonStyle} type="primary" danger onClick={() => deleteAllTasks()}>
+                        Delete all
+                    </Button>
+                </Col>
+            </Row>
         </div>
     );
 };
