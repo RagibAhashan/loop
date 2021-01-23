@@ -18,13 +18,13 @@ const App = () => {
 
             <Layout>
                 <Content>
-                    <div>
+                    <div style={{ backgroundColor: '#212427', height: '1000vh' }}>
                         {page === Constants.MAIN ? <div> Welcome </div> : ''}
                         {page === Constants.BILLING ? <BillingPage setPage={setPage} /> : ''}
                         {page === Constants.PROXIES ? <ProxyPage setPage={setPage} /> : ''}
                         {page === Constants.TEST ? <TestPage /> : ''}
 
-                        {page === Constants.TASKS ? '': <div style={{ height: '1000vh'}}/>}
+                        {page === Constants.TASKS ? '' : <div style={{ height: '1000vh' }} />}
                         <TaskPage />
                     </div>
                 </Content>
