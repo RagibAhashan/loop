@@ -11,6 +11,10 @@ const colStyle = {
     margin: 'auto',
 };
 
+const buttonStyle: React.CSSProperties = {
+    width: '100%',
+};
+
 const botStyle = {
     backgroundColor: 'black',
     marginLeft: '20px',
@@ -18,13 +22,6 @@ const botStyle = {
     marginTop: '10px',
     height: '45px',
     borderRadius: '6px',
-};
-
-const input_field = {
-    height: '39px',
-    // borderRadius: '6px',
-    // backgroundColor: '#282C31',
-    // border: '1px solid #858C94',
 };
 
 function onChange(date: any, dateString: any) {
@@ -40,7 +37,6 @@ for (let i = 4; i < 14; i += 0.5) {
     );
 }
 
-
 const validateMessages = {
     required: 'Required!',
     types: {
@@ -52,19 +48,18 @@ const validateMessages = {
     },
 };
 
-
 interface Job {
-    uuid:           String;
-    store:          String;
-    keyword:        String;
-    startdate:      String;
-    starttime:      String;
-    profile:        String;
-    sizes:          Array<String>;
-    proxyset:       String;
-    quantity:       String;
-    monitordelay:   Number;
-    retrydelay:     Number;
+    uuid: String;
+    store: String;
+    keyword: String;
+    startdate: String;
+    starttime: String;
+    profile: String;
+    sizes: Array<String>;
+    proxyset: String;
+    quantity: String;
+    monitordelay: Number;
+    retrydelay: Number;
 }
 
 const TaskComponent = () => {
@@ -77,9 +72,8 @@ const TaskComponent = () => {
         setProxies(getProxies());
     }, []);
 
-
     const getProxies = (): any => {
-        const proxiesOptions: any = [{label: 'localhost', value:'localhost'}]
+        const proxiesOptions: any = [{ label: 'localhost', value: 'localhost' }];
         let prox: any = localStorage.getItem('proxies');
         if (prox) {
             prox = JSON.parse(prox);
@@ -93,163 +87,156 @@ const TaskComponent = () => {
             }
         }
         return proxiesOptions;
-    }
-
+    };
 
     const deleteBot = (uuid: string) => {
-        console.log('Delete this: ', uuid)
+        console.log('Delete this: ', uuid);
 
-        for(let i=0; i < jobs.length; i++) {
-            if(jobs[i].uuid === uuid) {
-                jobs.splice(i,1);
+        for (let i = 0; i < jobs.length; i++) {
+            if (jobs[i].uuid === uuid) {
+                jobs.splice(i, 1);
                 break;
             }
         }
         forceUpdate();
-    }
-
+    };
 
     const Headers = () => {
         return (
             <Row style={botStyle}>
-                    <Col span={2} style={{ margin: 'auto', marginLeft: '10px' }}>
-                        Store
-                    </Col>
+                <Col span={2} style={{ margin: 'auto', marginLeft: '10px' }}>
+                    Store
+                </Col>
 
-                    <Col span={3} style={colStyle}>
-                        Product
-                    </Col>
+                <Col span={3} style={colStyle}>
+                    Product
+                </Col>
 
-                    <Col span={2} style={colStyle}>
-                        Proxy
-                    </Col>
+                <Col span={2} style={colStyle}>
+                    Proxy
+                </Col>
 
-                    <Col span={3} style={colStyle}>
-                        Profile
-                    </Col>
+                <Col span={3} style={colStyle}>
+                    Profile
+                </Col>
 
-                    <Col span={7} style={colStyle}>
-                        Sizes
-                    </Col>
+                <Col span={7} style={colStyle}>
+                    Sizes
+                </Col>
 
-                    <Col span={3} style={colStyle}>
-                        Status
-                    </Col>
+                <Col span={3} style={colStyle}>
+                    Status
+                </Col>
 
-                    <Col span={3} style={colStyle}>
-                        Actions
-                    </Col>
-                </Row>
-        )
-    }
+                <Col span={3} style={colStyle}>
+                    Actions
+                </Col>
+            </Row>
+        );
+    };
 
     const addTasks = (data: any) => {
         let temp = jobs;
-        
-        if (temp !== null) {
-            for(let i =0; i < Number(data['task'].quantity); i++) {
 
+        if (temp !== null) {
+            for (let i = 0; i < Number(data['task'].quantity); i++) {
                 temp.push({
-                    uuid:           uuid(),
-                    store:          'Footlocker',
-                    keyword:        data['task'].keyword,
-                    startdate:      data['task'].startdate,
-                    starttime:      data['task'].starttime,
-                    profile:        data['task'].profile,
-                    sizes:          data['task'].sizes,
-                    proxyset:       data['task'].proxyset,
-                    quantity:       data['task'].quantity,
-                    monitordelay:   data['task'].monitordelay,
-                    retrydelay:     data['task'].retrydelay,
+                    uuid: uuid(),
+                    store: 'Footlocker',
+                    keyword: data['task'].keyword,
+                    startdate: data['task'].startdate,
+                    starttime: data['task'].starttime,
+                    profile: data['task'].profile,
+                    sizes: data['task'].sizes,
+                    proxyset: data['task'].proxyset,
+                    quantity: data['task'].quantity,
+                    monitordelay: data['task'].monitordelay,
+                    retrydelay: data['task'].retrydelay,
                 });
             }
             setJobs(temp);
         }
-        forceUpdate()
-    }
-
+        forceUpdate();
+    };
 
     const deleteAllTasks = () => {
-        setJobs(new Array<Job>())
-        forceUpdate()
-    }
+        setJobs(new Array<Job>());
+        forceUpdate();
+    };
 
+    useEffect(() => {});
+
+    const ROW_GUTTER: [number, number] = [24, 0];
 
     return (
         <div>
-            <Form style={{ height: '20vh' }} onFinish={addTasks} validateMessages={validateMessages}>
-                <Row>
-                    <Col style={{ width: '320px' }}>
+            <Form onFinish={addTasks} validateMessages={validateMessages}>
+                <Row gutter={ROW_GUTTER} justify="space-between">
+                    <Col span={6}>
                         <Form.Item name={['task', 'keyword']} rules={[{ required: true }]}>
-                            <Input placeholder="keyword" style={input_field} />
+                            <Input placeholder="keyword" />
                         </Form.Item>
                     </Col>
 
-                    <Col style={{ marginLeft: '50px', width: '140px' }}>
+                    <Col span={4}>
                         <Form.Item name={['task', 'startdate']} rules={[{ required: true }]}>
-                            <DatePicker onChange={onChange} style={input_field} />
+                            <DatePicker onChange={onChange} />
                         </Form.Item>
                     </Col>
-
-                    <Col style={{ marginLeft: '30px', width: '120px' }}>
-                        <Form.Item name={['task', 'starttime']} rules={[{ required: true }]}>
-                            <TimePicker style={input_field} format={format} />
+                    <Col span={4}></Col>
+                    <Col span={4}>
+                        <Form.Item style={{ width: '100%' }} name={['task', 'starttime']} rules={[{ required: true }]}>
+                            <TimePicker style={{ width: '100%' }} format={format} />
                         </Form.Item>
                     </Col>
-                    <Col style={{ marginLeft: '30px', width: '210px' }}>
+                    <Col span={6}>
                         <Form.Item name={['task', 'profile']} rules={[{ required: true }]}>
-                            <Input placeholder="Profile Set" style={input_field} />
+                            <Input placeholder="Profile Set" />
                         </Form.Item>
                     </Col>
                 </Row>
 
-                <Row>
-                    <Col style={{ width: '320px' }}>
+                <Row gutter={ROW_GUTTER}>
+                    <Col span={6}>
                         <Form.Item name={['task', 'sizes']} rules={[{ required: true }]}>
-                            <Select placeholder="Size" style={input_field} mode="multiple" allowClear>
+                            <Select placeholder="Size" mode="multiple" allowClear>
                                 {allSizes}
                             </Select>
                         </Form.Item>
                     </Col>
 
-                    <Col style={{ marginLeft: '50px', width: '290px' }}>
-                        <Form.Item name={['task', 'proxyset']} rules={[{ required: false }]}>
-                            <Select placeholder="Proxy Set" allowClear options={proxies} defaultValue={'localhost'}></Select>
+                    <Col span={12}>
+                        <Form.Item name={['task', 'proxyset']} rules={[{ required: true }]}>
+                            <Select placeholder="Proxy Set" allowClear options={proxies} defaultValue={'No proxies'}></Select>
                         </Form.Item>
                     </Col>
 
-                    <Col style={{ marginLeft: '30px', width: '210px' }}>
+                    <Col span={6}>
                         <Form.Item name={['task', 'quantity']} rules={[{ required: true }]}>
-                            <Input placeholder="Quantity" style={input_field} type='number' defaultValue={1}/>
+                            <Input placeholder="Quantity" type="number" defaultValue={1} />
                         </Form.Item>
                     </Col>
                 </Row>
 
-                <Row>
-                    <Col style={{ width: '320px' }}>
+                <Row gutter={ROW_GUTTER}>
+                    <Col span={6}>
                         <Form.Item name={['task', 'monitordelay']} rules={[{ required: true }]}>
-                            <Input placeholder="Monitor delay in milliseconds" style={input_field} type="number" />
+                            <Input placeholder="Monitor delay in milliseconds" type="number" />
                         </Form.Item>
                     </Col>
 
-                    <Col style={{ marginLeft: '50px', width: '290px' }}>
+                    <Col span={12}>
                         <Form.Item name={['task', 'retrydelay']} rules={[{ required: true }]}>
-                            <Input placeholder="Retry delay" style={input_field} type="number" />
+                            <Input placeholder="Retry delay" type="number" />
                         </Form.Item>
                     </Col>
 
-                    <Col style={{ marginLeft: '30px' }}>
+                    <Col span={6}>
                         <Form.Item>
                             <Button
                                 type="primary"
                                 htmlType="submit"
-                                style={{
-                                    backgroundColor: '#000000',
-                                    color: '#F0A30D',
-                                    height: '39px',
-                                    width: '210px',
-                                    borderColor: '#F0A30D',
-                                }}
+                                style={{ ...buttonStyle, backgroundColor: '#000000', color: '#F0A30D', borderColor: '#F0A30D' }}
                             >
                                 Add tasks
                             </Button>
@@ -258,23 +245,18 @@ const TaskComponent = () => {
                 </Row>
             </Form>
 
-            <Row>
-                <Col span={3} style={{ marginLeft: '10px' }}>
-                    <Button style={{ height: '40px', width: '100px', color: 'green', borderColor: 'green', border: '1px solid', fontSize: '14px' }}>
-                        Run all
-                    </Button>
+            <Row gutter={ROW_GUTTER} justify="space-between">
+                <Col span={3}>
+                    <Button style={buttonStyle}>Run all</Button>
                 </Col>
                 <Col span={3}>
-                    <Button style={{ height: '40px', width: '100px' }} danger>
-                        {' '}
-                        Stop all{' '}
+                    <Button style={buttonStyle} type="primary" danger>
+                        Stop all
                     </Button>
                 </Col>
-                <Col span={13}></Col>
-                <Col span={3}>
-                    <Button style={{ height: '40px', width: '170px' }} type="primary" danger
-                        onClick={() => deleteAllTasks()}
-                    >
+                <Col span={12}></Col>
+                <Col span={6}>
+                    <Button style={buttonStyle} type="primary" danger onClick={() => deleteAllTasks()}>
                         Delete all
                     </Button>
                 </Col>
@@ -292,11 +274,12 @@ const TaskComponent = () => {
             >
                 <Headers />
 
-                <div style={{
-                    overflow: 'auto',
-                    height: '53vh',
-                }}>
-
+                <div
+                    style={{
+                        overflow: 'auto',
+                        height: '53vh',
+                    }}
+                >
                     {jobs.map((botTask) => (
                         <Bot
                             uuid={botTask.uuid}

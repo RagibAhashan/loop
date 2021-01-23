@@ -1,7 +1,7 @@
 // import styles from './sidebar.module.css';
 import { DeleteOutlined, DoubleRightOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Col, Row, Space } from 'antd';
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 const botStyle = {
     backgroundColor: '#212427',
@@ -35,20 +35,7 @@ const deleteButton = {
 };
 
 const Bot = (props: any) => {
-    const {
-        uuid,
-        store,
-        keyword,
-        startdate,
-        starttime,
-        profile,
-        sizes,
-        proxyset,
-        quantity,
-        monitordelay,
-        retrydelay,
-        deleteBot
-    } = props;
+    const { uuid, store, keyword, startdate, starttime, profile, sizes, proxyset, quantity, monitordelay, retrydelay, deleteBot } = props;
 
     const [, updateState] = useState();
     const forceUpdate = useCallback(() => updateState({} as any), []);
@@ -59,26 +46,24 @@ const Bot = (props: any) => {
 
     useEffect(() => {
         let sizes_string = sizes[0];
-        if (sizes.length >1){
-
-            for(let i = 1; i< sizes.length; i++) {
-                sizes_string += ' - ' + sizes[i]
+        if (sizes.length > 1) {
+            for (let i = 1; i < sizes.length; i++) {
+                sizes_string += ' - ' + sizes[i];
             }
         }
-        console.log(sizes_string)
-    }, [])
+        console.log(sizes_string);
+    }, []);
 
     const allSizes = () => {
         let sizes_string = sizes[0];
-        if (sizes.length >1){
-
-            for(let i = 1; i< sizes.length; i++) {
-                sizes_string += ' - ' + sizes[i]
+        if (sizes.length > 1) {
+            for (let i = 1; i < sizes.length; i++) {
+                sizes_string += ' - ' + sizes[i];
             }
         }
-        console.log(sizes_string)
+        console.log(sizes_string);
         return sizes_string;
-    }
+    };
 
     return (
         <Row style={botStyle}>
@@ -103,9 +88,7 @@ const Bot = (props: any) => {
             </Col>
 
             <Col span={3} style={colStyle}>
-                <p style={{color:'yellow', margin:'auto'}}>
-                    idle
-                </p>
+                <p style={{ color: 'yellow', margin: 'auto' }}>idle</p>
             </Col>
 
             <Col span={3} style={colStyle}>
@@ -120,9 +103,10 @@ const Bot = (props: any) => {
                     <Button style={editButton} icon={<EditOutlined />} />
                     <Button
                         onClick={() => {
-                            deleteBot(uuid)
+                            deleteBot(uuid);
                         }}
-                        style={deleteButton} icon={<DeleteOutlined />} 
+                        style={deleteButton}
+                        icon={<DeleteOutlined />}
                     />
                 </Space>
             </Col>
