@@ -34,19 +34,6 @@ const deleteButton = {
     backgroundColor: 'red',
 };
 
-
-/**
- *  store:          'Footlocker',
-    keyword:        data['task'].keyword,
-    startdate:      data['task'].startdate,
-    starttime:      data['task'].starttime,
-    profile:        data['task'].profile,
-    sizes:          data['task'].sizes[j],
-    proxyset:       data['task'].proxyset[k],
-    quantity:       data['task'].quantity,
-    monitordelay:   data['task'].monitordelay,
-    retrydelay:     data['task'].retrydelay,
-*/
 const Bot = (props: any) => {
     const {
         uuid,
@@ -66,21 +53,37 @@ const Bot = (props: any) => {
     const [, updateState] = useState();
     const forceUpdate = useCallback(() => updateState({} as any), []);
 
-
-    const [_store, setStore] = useState(store);
-
-    useEffect(() => {
-        
-    })
-
     const startTask = () => {
         console.log('start task from', store);
     };
 
+    useEffect(() => {
+        let sizes_string = sizes[0];
+        if (sizes.length >1){
+
+            for(let i = 1; i< sizes.length; i++) {
+                sizes_string += ' - ' + sizes[i]
+            }
+        }
+        console.log(sizes_string)
+    }, [])
+
+    const allSizes = () => {
+        let sizes_string = sizes[0];
+        if (sizes.length >1){
+
+            for(let i = 1; i< sizes.length; i++) {
+                sizes_string += ' - ' + sizes[i]
+            }
+        }
+        console.log(sizes_string)
+        return sizes_string;
+    }
+
     return (
         <Row style={botStyle}>
             <Col span={2} style={{ margin: 'auto', marginLeft: '10px' }}>
-                {_store}
+                {'Footlocker'}
             </Col>
 
             <Col span={3} style={colStyle}>
@@ -88,7 +91,7 @@ const Bot = (props: any) => {
             </Col>
 
             <Col span={2} style={colStyle}>
-                {sizes}
+                {proxyset}
             </Col>
 
             <Col span={3} style={colStyle}>
@@ -96,11 +99,13 @@ const Bot = (props: any) => {
             </Col>
 
             <Col span={7} style={colStyle}>
-                {proxyset}
+                {allSizes()}
             </Col>
 
             <Col span={3} style={colStyle}>
-                Adding to cart
+                <p style={{color:'yellow', margin:'auto'}}>
+                    idle
+                </p>
             </Col>
 
             <Col span={3} style={colStyle}>

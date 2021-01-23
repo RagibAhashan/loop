@@ -53,24 +53,23 @@ const validateMessages = {
 };
 
 
-const new_obj = {
-    uuid:           '',
-    store:          'store',
-    keyword:        'keyword',
-    startdate:      'startdate',
-    starttime:      'starttime',
-    profile:        'profile',
-    sizes:          'sizes',
-    proxyset:       'proxyset',
-    quantity:       'quantity',
-    monitordelay:   'monitordelay',
-    retrydelay:     'retrydelay',
+interface Job {
+    uuid:           String;
+    store:          String;
+    keyword:        String;
+    startdate:      String;
+    starttime:      String;
+    profile:        String;
+    sizes:          Array<String>;
+    proxyset:       String;
+    quantity:       String;
+    monitordelay:   Number;
+    retrydelay:     Number;
 }
 
-const TaskComponent = (props: any) => {
-    const [jobs, setJobs] = useState([new_obj]);
+const TaskComponent = () => {
+    const [jobs, setJobs] = useState(new Array<Job>());
     const [proxies, setProxies] = useState([]);
-    const [selectedProxies, setSelectedProxies] = useState(new Map<string, Array<string>>());
     const [, updateState] = useState();
     const forceUpdate = useCallback(() => updateState({} as any), []);
 
@@ -80,23 +79,19 @@ const TaskComponent = (props: any) => {
 
 
     const getProxies = (): any => {
-        const proxiesOptions: any = []
+        const proxiesOptions: any = [{label: 'localhost', value:'localhost'}]
         let prox: any = localStorage.getItem('proxies');
         if (prox) {
             prox = JSON.parse(prox);
             if (prox) {
-                let hm = new Map<string, Array<string>>();
                 prox.map((set: any) => {
-                    hm.set(set[0], set[1]);
                     proxiesOptions.push({
                         label: `${set[0]} (${set[1].length} proxies)`,
                         value: `${set[0]}`,
                     });
                 });
-                setSelectedProxies(hm);
             }
         }
-        
         return proxiesOptions;
     }
 
@@ -126,7 +121,7 @@ const TaskComponent = (props: any) => {
                     </Col>
 
                     <Col span={2} style={colStyle}>
-                        Size
+                        Proxy
                     </Col>
 
                     <Col span={3} style={colStyle}>
@@ -134,7 +129,7 @@ const TaskComponent = (props: any) => {
                     </Col>
 
                     <Col span={7} style={colStyle}>
-                        Proxy
+                        Sizes
                     </Col>
 
                     <Col span={3} style={colStyle}>
@@ -148,30 +143,25 @@ const TaskComponent = (props: any) => {
         )
     }
 
-    const onFinish = (data: any) => {
+    const addTasks = (data: any) => {
         let temp = jobs;
-
-        let selected_proxies = selectedProxies.get(data['task'].proxyset)
-        console.log('selected_proxies', selected_proxies)
+        
         if (temp !== null) {
             for(let i =0; i < Number(data['task'].quantity); i++) {
-                for(let j=0; j < data['task'].sizes.length; j++) {
-                    selectedProxies.get(data['task'].proxyset)?.map((proxy_selected) => {
-                        temp.push({
-                            uuid:           uuid(),
-                            store:          'Footlocker',
-                            keyword:        data['task'].keyword,
-                            startdate:      data['task'].startdate,
-                            starttime:      data['task'].starttime,
-                            profile:        data['task'].profile,
-                            sizes:          data['task'].sizes[j],
-                            proxyset:       proxy_selected,
-                            quantity:       data['task'].quantity,
-                            monitordelay:   data['task'].monitordelay,
-                            retrydelay:     data['task'].retrydelay,
-                        });
-                    });
-                }
+
+                temp.push({
+                    uuid:           uuid(),
+                    store:          'Footlocker',
+                    keyword:        data['task'].keyword,
+                    startdate:      data['task'].startdate,
+                    starttime:      data['task'].starttime,
+                    profile:        data['task'].profile,
+                    sizes:          data['task'].sizes,
+                    proxyset:       data['task'].proxyset,
+                    quantity:       data['task'].quantity,
+                    monitordelay:   data['task'].monitordelay,
+                    retrydelay:     data['task'].retrydelay,
+                });
             }
             setJobs(temp);
         }
@@ -180,14 +170,14 @@ const TaskComponent = (props: any) => {
 
 
     const deleteAllTasks = () => {
-        setJobs([new_obj])
+        setJobs(new Array<Job>())
         forceUpdate()
     }
 
 
     return (
         <div>
-            <Form style={{ height: '20vh' }} onFinish={onFinish} validateMessages={validateMessages}>
+            <Form style={{ height: '20vh' }} onFinish={addTasks} validateMessages={validateMessages}>
                 <Row>
                     <Col style={{ width: '320px' }}>
                         <Form.Item name={['task', 'keyword']} rules={[{ required: true }]}>
@@ -223,14 +213,14 @@ const TaskComponent = (props: any) => {
                     </Col>
 
                     <Col style={{ marginLeft: '50px', width: '290px' }}>
-                        <Form.Item name={['task', 'proxyset']} rules={[{ required: true }]}>
-                            <Select placeholder="Proxy Set" allowClear options={proxies}></Select>
+                        <Form.Item name={['task', 'proxyset']} rules={[{ required: false }]}>
+                            <Select placeholder="Proxy Set" allowClear options={proxies} defaultValue={'localhost'}></Select>
                         </Form.Item>
                     </Col>
 
                     <Col style={{ marginLeft: '30px', width: '210px' }}>
                         <Form.Item name={['task', 'quantity']} rules={[{ required: true }]}>
-                            <Input placeholder="Quantity" style={input_field} type='number'/>
+                            <Input placeholder="Quantity" style={input_field} type='number' defaultValue={1}/>
                         </Form.Item>
                     </Col>
                 </Row>
@@ -255,11 +245,9 @@ const TaskComponent = (props: any) => {
                                 htmlType="submit"
                                 style={{
                                     backgroundColor: '#000000',
-                                    // backgroundColor: '#282C31',
                                     color: '#F0A30D',
                                     height: '39px',
                                     width: '210px',
-                                    // borderRadius: '6px',
                                     borderColor: '#F0A30D',
                                 }}
                             >
