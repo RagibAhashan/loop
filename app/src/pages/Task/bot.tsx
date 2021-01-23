@@ -9,7 +9,7 @@ const botStyle = {
     marginRight: '20px',
     marginTop: '10px',
     height: '45px',
-    borderRadius: '6px',
+    borderRadius: '60px',
 };
 
 const colStyle = {

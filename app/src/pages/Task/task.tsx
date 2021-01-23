@@ -1,4 +1,4 @@
-import { Button, Col, DatePicker, Form, Input, Row, Select, TimePicker } from 'antd';
+import { Button, Col, DatePicker, Form, Input, Row, Select, TimePicker, Divider } from 'antd';
 import React, { useState, useEffect, useCallback } from 'react';
 import Bot from './bot';
 const { uuid } = require('uuidv4');
@@ -18,12 +18,15 @@ const buttonStyle: React.CSSProperties = {
 };
 
 const botStyle = {
-    backgroundColor: 'black',
+    // backgroundColor: 'black',
     marginLeft: '20px',
     marginRight: '20px',
     marginTop: '10px',
-    height: '45px',
+    marginBottom: '0px',
+    height: '15px',
     borderRadius: '6px',
+    color: 'orange',
+    fontSize: '18px',
 };
 
 function onChange(date: any, dateString: any) {
@@ -67,12 +70,33 @@ interface Job {
 const TaskComponent = () => {
     const [jobs, setJobs] = useState(new Array<Job>());
     const [proxies, setProxies] = useState([]);
+    const [profiles, setProfiles] = useState([]);
     const [, updateState] = useState();
     const forceUpdate = useCallback(() => updateState({} as any), []);
 
     useEffect(() => {
         setProxies(getProxies());
+        setProfiles(getProfiles());
     }, []);
+
+    const getProfiles = () => {
+        const profilesTemp: any = [];
+        let profs: any = localStorage.getItem('profiles');
+
+        if (profs) {
+            profs = JSON.parse(profs);
+            if (profs) {
+                profs.map((p: any) => {
+                    profilesTemp.push({
+                        label: p['profile'],
+                        value: p,
+                    });
+                });
+            }
+        }
+
+        return profilesTemp;
+    };
 
     const getProxies = (): any => {
         const proxiesOptions: any = [{ label: 'localhost', value: 'localhost' }];
@@ -258,6 +282,7 @@ const TaskComponent = () => {
                 }}
             >
                 <Headers />
+                <Divider style={{ marginBottom: '10px' }} />
 
                 <div
                     style={{
