@@ -22,8 +22,10 @@ const App = () => {
                         {page === Constants.MAIN ? <div> Welcome </div> : ''}
                         {page === Constants.BILLING ? <BillingPage setPage={setPage} /> : ''}
                         {page === Constants.PROXIES ? <ProxyPage setPage={setPage} /> : ''}
-                        {page === Constants.TASKS ? <TaskPage /> : ''}
                         {page === Constants.TEST ? <TestPage /> : ''}
+
+                        {page === Constants.TASKS ? '': <div style={{ height: '1000vh'}}/>}
+                        <TaskPage />
                     </div>
                 </Content>
             </Layout>

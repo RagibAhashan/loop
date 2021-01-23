@@ -1,6 +1,7 @@
-import { Button, Col, DatePicker, Form, Input, Layout, Row, Select, TimePicker } from 'antd';
-import React from 'react';
+import { Button, Col, DatePicker, Form, Input, Row, Select, TimePicker } from 'antd';
+import React, { useState, useEffect, useCallback } from 'react';
 import Bot from './bot';
+const { uuid } = require('uuidv4');
 
 const { Option } = Select;
 
@@ -39,16 +40,150 @@ for (let i = 4; i < 14; i += 0.5) {
     );
 }
 
-let dummy: any[] = [];
 
-for (let i = 0; i < 40; i++) dummy.push(i);
+const validateMessages = {
+    required: 'Required!',
+    types: {
+        email: '${name} is not a valid email!',
+        number: '${name} is not a valid number!',
+    },
+    number: {
+        range: '${name} must be 3 digits or less.',
+    },
+};
+
+
+const new_obj = {
+    uuid:           '',
+    store:          'store',
+    keyword:        'keyword',
+    startdate:      'startdate',
+    starttime:      'starttime',
+    profile:        'profile',
+    sizes:          'sizes',
+    proxyset:       'proxyset',
+    quantity:       'quantity',
+    monitordelay:   'monitordelay',
+    retrydelay:     'retrydelay',
+}
 
 const TaskComponent = (props: any) => {
-    const { Content } = Layout;
+    const [jobs, setJobs] = useState([new_obj]);
+    const [proxies, setProxies] = useState([]);
+    const [, updateState] = useState();
+    const forceUpdate = useCallback(() => updateState({} as any), []);
+
+    useEffect(() => {
+        setProxies(getProxies());
+    }, []);
+
+
+    const getProxies = (): any => {
+        const proxiesOptions: any = []
+        let prox: any = localStorage.getItem('proxies');
+        if (prox) {
+            prox = JSON.parse(prox);
+            if (prox) {
+                prox.map((set: any) => {
+                    proxiesOptions.push({
+                        label: set[0],
+                        value: set[1],
+                    });
+                })
+            }
+        }
+        
+        return proxiesOptions;
+    }
+
+
+    const deleteProxy = (uuid: string) => {
+        console.log('Delete this: ', uuid)
+
+        for(let i=0; i < jobs.length; i++) {
+            if(jobs[i].uuid === uuid) {
+                jobs.splice(i,i);
+                forceUpdate();
+                return;
+            }
+        }
+    }
+
+
+    const Headers = () => {
+        return (
+            <Row style={botStyle}>
+                    <Col span={3} style={{ margin: 'auto', marginLeft: '10px' }}>
+                        Store
+                    </Col>
+
+                    <Col span={3} style={colStyle}>
+                        Product
+                    </Col>
+
+                    <Col span={2} style={colStyle}>
+                        Size
+                    </Col>
+
+                    <Col span={3} style={colStyle}>
+                        Profile
+                    </Col>
+
+                    <Col span={4} style={colStyle}>
+                        Proxy
+                    </Col>
+
+                    <Col span={4} style={colStyle}>
+                        Status
+                    </Col>
+
+                    <Col span={4} style={colStyle}>
+                        Actions
+                    </Col>
+                </Row>
+        )
+    }
+
+    const onFinish = (data: any) => {
+        let temp = jobs;
+
+        console.log('data ===== data', data)
+
+        if (temp !== null) {
+            for(let i =0; i < Number(data['task'].quantity); i++) {
+                for(let j=0; j < data['task'].sizes.length; j++) {
+                    for(let k=0; k < data['task'].proxyset.length; k++) {
+                        temp.push({
+                            uuid:           uuid(),
+                            store:          'Footlocker',
+                            keyword:        data['task'].keyword,
+                            startdate:      data['task'].startdate,
+                            starttime:      data['task'].starttime,
+                            profile:        data['task'].profile,
+                            sizes:          data['task'].sizes[j],
+                            proxyset:       data['task'].proxyset[k],
+                            quantity:       data['task'].quantity,
+                            monitordelay:   data['task'].monitordelay,
+                            retrydelay:     data['task'].retrydelay,
+                        });
+                    }
+                }
+            }
+            setJobs(temp);
+        }
+        forceUpdate()
+    }
+
+
+    const deleteAllTasks = () => {
+        setJobs([new_obj])
+        forceUpdate()
+    }
+
 
     return (
         <div>
-            <Form style={{ height: '20vh' }}>
+            <Form style={{ height: '20vh' }} onFinish={onFinish} validateMessages={validateMessages}>
                 <Row>
                     <Col style={{ width: '320px' }}>
                         <Form.Item name={['task', 'keyword']} rules={[{ required: true }]}>
@@ -85,13 +220,13 @@ const TaskComponent = (props: any) => {
 
                     <Col style={{ marginLeft: '50px', width: '290px' }}>
                         <Form.Item name={['task', 'proxyset']} rules={[{ required: true }]}>
-                            <Input placeholder="Proxy Set" style={input_field} />
+                            <Select placeholder="Proxy Set" allowClear options={proxies}></Select>
                         </Form.Item>
                     </Col>
 
                     <Col style={{ marginLeft: '30px', width: '210px' }}>
                         <Form.Item name={['task', 'quantity']} rules={[{ required: true }]}>
-                            <Input placeholder="Quantity" style={input_field} />
+                            <Input placeholder="Quantity" style={input_field} type='number'/>
                         </Form.Item>
                     </Col>
                 </Row>
@@ -124,7 +259,7 @@ const TaskComponent = (props: any) => {
                                     borderColor: '#F0A30D',
                                 }}
                             >
-                                Create tasks
+                                Add tasks
                             </Button>
                         </Form.Item>
                     </Col>
@@ -134,8 +269,7 @@ const TaskComponent = (props: any) => {
             <Row>
                 <Col span={3} style={{ marginLeft: '10px' }}>
                     <Button style={{ height: '40px', width: '100px', color: 'green', borderColor: 'green', border: '1px solid', fontSize: '14px' }}>
-                        {' '}
-                        Run all{' '}
+                        Run all
                     </Button>
                 </Col>
                 <Col span={3}>
@@ -146,9 +280,10 @@ const TaskComponent = (props: any) => {
                 </Col>
                 <Col span={13}></Col>
                 <Col span={3}>
-                    <Button style={{ height: '40px', width: '170px' }} type="primary" danger>
-                        {' '}
-                        Delete all{' '}
+                    <Button style={{ height: '40px', width: '170px' }} type="primary" danger
+                        onClick={() => deleteAllTasks()}
+                    >
+                        Delete all
                     </Button>
                 </Col>
             </Row>
@@ -163,35 +298,7 @@ const TaskComponent = (props: any) => {
                     height: '60vh',
                 }}
             >
-                <Row style={botStyle}>
-                    <Col span={3} style={{ margin: 'auto', marginLeft: '10px' }}>
-                        Store
-                    </Col>
-
-                    <Col span={3} style={colStyle}>
-                        Product
-                    </Col>
-
-                    <Col span={2} style={colStyle}>
-                        Size
-                    </Col>
-
-                    <Col span={3} style={colStyle}>
-                        Profile
-                    </Col>
-
-                    <Col span={4} style={colStyle}>
-                        Proxy
-                    </Col>
-
-                    <Col span={4} style={colStyle}>
-                        Status
-                    </Col>
-
-                    <Col span={4} style={colStyle}>
-                        Actions
-                    </Col>
-                </Row>
+                <Headers />
 
                 <div
                     style={{
@@ -199,8 +306,21 @@ const TaskComponent = (props: any) => {
                         height: '53vh',
                     }}
                 >
-                    {dummy.map((val) => (
-                        <Bot store={`FootLocker ${val}`} size={val.toString()} profile={'BMO'} ip={'Local Host'} product={'Dunker'} />
+
+                    {jobs.map((botTask) => (
+                        <Bot
+                            uuid={botTask.uuid}
+                            store={botTask.store}
+                            keyword={botTask.keyword}
+                            startdate={botTask.startdate}
+                            starttime={botTask.starttime}
+                            profile={botTask.profile}
+                            sizes={botTask.sizes}
+                            proxyset={botTask.proxyset}
+                            monitordelay={botTask.monitordelay}
+                            retrydelay={botTask.retrydelay}
+                            deleteProxy={deleteProxy}
+                        />
                     ))}
                 </div>
             </div>

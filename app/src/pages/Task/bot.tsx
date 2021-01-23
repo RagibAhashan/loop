@@ -1,7 +1,7 @@
 // import styles from './sidebar.module.css';
 import { DeleteOutlined, DoubleRightOutlined, EditOutlined } from '@ant-design/icons';
 import { Button, Col, Row, Space } from 'antd';
-import React from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 
 const botStyle = {
     backgroundColor: '#212427',
@@ -34,8 +34,44 @@ const deleteButton = {
     backgroundColor: 'red',
 };
 
+
+/**
+ *  store:          'Footlocker',
+    keyword:        data['task'].keyword,
+    startdate:      data['task'].startdate,
+    starttime:      data['task'].starttime,
+    profile:        data['task'].profile,
+    sizes:          data['task'].sizes[j],
+    proxyset:       data['task'].proxyset[k],
+    quantity:       data['task'].quantity,
+    monitordelay:   data['task'].monitordelay,
+    retrydelay:     data['task'].retrydelay,
+*/
 const Bot = (props: any) => {
-    const { store, product, size, profile, ip } = props;
+    const {
+        uuid,
+        store,
+        keyword,
+        startdate,
+        starttime,
+        profile,
+        sizes,
+        proxyset,
+        quantity,
+        monitordelay,
+        retrydelay,
+        deleteProxy
+    } = props;
+
+    const [, updateState] = useState();
+    const forceUpdate = useCallback(() => updateState({} as any), []);
+
+
+    const [_store, setStore] = useState(store);
+
+    useEffect(() => {
+        
+    })
 
     const startTask = () => {
         console.log('start task from', store);
@@ -44,15 +80,15 @@ const Bot = (props: any) => {
     return (
         <Row style={botStyle}>
             <Col span={3} style={{ margin: 'auto', marginLeft: '10px' }}>
-                {store}
+                {_store}
             </Col>
 
             <Col span={3} style={colStyle}>
-                {product}
+                {keyword}
             </Col>
 
             <Col span={2} style={colStyle}>
-                {size}
+                {sizes}
             </Col>
 
             <Col span={3} style={colStyle}>
@@ -60,7 +96,7 @@ const Bot = (props: any) => {
             </Col>
 
             <Col span={4} style={colStyle}>
-                {ip}
+                {proxyset}
             </Col>
 
             <Col span={4} style={colStyle}>
@@ -77,7 +113,12 @@ const Bot = (props: any) => {
                         icon={<DoubleRightOutlined />}
                     />
                     <Button style={editButton} icon={<EditOutlined />} />
-                    <Button style={deleteButton} icon={<DeleteOutlined />} />
+                    <Button
+                        onClick={() => {
+                            deleteProxy(uuid)
+                        }}
+                        style={deleteButton} icon={<DeleteOutlined />} 
+                    />
                 </Space>
             </Col>
         </Row>
