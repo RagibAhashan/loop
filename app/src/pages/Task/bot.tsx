@@ -79,7 +79,7 @@ const Bot = (props: any) => {
 
     return (
         <Row style={botStyle}>
-            <Col span={3} style={{ margin: 'auto', marginLeft: '10px' }}>
+            <Col span={2} style={{ margin: 'auto', marginLeft: '10px' }}>
                 {_store}
             </Col>
 
@@ -95,15 +95,15 @@ const Bot = (props: any) => {
                 {profile}
             </Col>
 
-            <Col span={4} style={colStyle}>
+            <Col span={7} style={colStyle}>
                 {proxyset}
             </Col>
 
-            <Col span={4} style={colStyle}>
+            <Col span={3} style={colStyle}>
                 Adding to cart
             </Col>
 
-            <Col span={4} style={colStyle}>
+            <Col span={3} style={colStyle}>
                 <Space>
                     <Button
                         onClick={() => {

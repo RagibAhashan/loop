@@ -70,6 +70,7 @@ const new_obj = {
 const TaskComponent = (props: any) => {
     const [jobs, setJobs] = useState([new_obj]);
     const [proxies, setProxies] = useState([]);
+    const [selectedProxies, setSelectedProxies] = useState(new Map<string, Array<string>>());
     const [, updateState] = useState();
     const forceUpdate = useCallback(() => updateState({} as any), []);
 
@@ -84,12 +85,15 @@ const TaskComponent = (props: any) => {
         if (prox) {
             prox = JSON.parse(prox);
             if (prox) {
+                let hm = new Map<string, Array<string>>();
                 prox.map((set: any) => {
+                    hm.set(set[0], set[1]);
                     proxiesOptions.push({
-                        label: set[0],
-                        value: set[1],
+                        label: `${set[0]} (${set[1].length} proxies)`,
+                        value: `${set[0]}`,
                     });
-                })
+                });
+                setSelectedProxies(hm);
             }
         }
         
@@ -113,7 +117,7 @@ const TaskComponent = (props: any) => {
     const Headers = () => {
         return (
             <Row style={botStyle}>
-                    <Col span={3} style={{ margin: 'auto', marginLeft: '10px' }}>
+                    <Col span={2} style={{ margin: 'auto', marginLeft: '10px' }}>
                         Store
                     </Col>
 
@@ -129,15 +133,15 @@ const TaskComponent = (props: any) => {
                         Profile
                     </Col>
 
-                    <Col span={4} style={colStyle}>
+                    <Col span={7} style={colStyle}>
                         Proxy
                     </Col>
 
-                    <Col span={4} style={colStyle}>
+                    <Col span={3} style={colStyle}>
                         Status
                     </Col>
 
-                    <Col span={4} style={colStyle}>
+                    <Col span={3} style={colStyle}>
                         Actions
                     </Col>
                 </Row>
@@ -147,12 +151,12 @@ const TaskComponent = (props: any) => {
     const onFinish = (data: any) => {
         let temp = jobs;
 
-        console.log('data ===== data', data)
-
+        let selected_proxies = selectedProxies.get(data['task'].proxyset)
+        console.log('selected_proxies', selected_proxies)
         if (temp !== null) {
             for(let i =0; i < Number(data['task'].quantity); i++) {
                 for(let j=0; j < data['task'].sizes.length; j++) {
-                    for(let k=0; k < data['task'].proxyset.length; k++) {
+                    selectedProxies.get(data['task'].proxyset)?.map((proxy_selected) => {
                         temp.push({
                             uuid:           uuid(),
                             store:          'Footlocker',
@@ -161,12 +165,12 @@ const TaskComponent = (props: any) => {
                             starttime:      data['task'].starttime,
                             profile:        data['task'].profile,
                             sizes:          data['task'].sizes[j],
-                            proxyset:       data['task'].proxyset[k],
+                            proxyset:       proxy_selected,
                             quantity:       data['task'].quantity,
                             monitordelay:   data['task'].monitordelay,
                             retrydelay:     data['task'].retrydelay,
                         });
-                    }
+                    });
                 }
             }
             setJobs(temp);
@@ -300,12 +304,10 @@ const TaskComponent = (props: any) => {
             >
                 <Headers />
 
-                <div
-                    style={{
-                        overflow: 'auto',
-                        height: '53vh',
-                    }}
-                >
+                <div style={{
+                    overflow: 'auto',
+                    height: '53vh',
+                }}>
 
                     {jobs.map((botTask) => (
                         <Bot
