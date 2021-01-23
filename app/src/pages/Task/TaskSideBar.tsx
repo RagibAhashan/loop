@@ -24,9 +24,7 @@ const TaskSideBar = () => {
 
     const allStores = () => stores.map((val) => <Button style={buttonStyle}> {val} </Button>);
 
-    useEffect(() => {
-        console.log(allStores);
-    }, [stores, setStores]);
+    useEffect(() => {}, [stores, setStores]);
 
     const menu = (
         <Menu style={{ width: '300px' }}>
@@ -38,7 +36,7 @@ const TaskSideBar = () => {
                         let temp: any[] = stores;
                         temp.push(value);
                         setStores(temp as any);
-                        console.log(stores, index);
+                        // console.log('set state', stores, index);
                         forceUpdate();
                     }}
                 >

@@ -1,5 +1,5 @@
 import { Button, Col, DatePicker, Form, Input, Row, Select, TimePicker } from 'antd';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Bot from './bot';
 const { uuid } = require('uuidv4');
 
@@ -40,7 +40,6 @@ for (let i = 4; i < 14; i += 0.5) {
     );
 }
 
-
 const validateMessages = {
     required: 'Required!',
     types: {
@@ -52,20 +51,19 @@ const validateMessages = {
     },
 };
 
-
 const new_obj = {
-    uuid:           '',
-    store:          'store',
-    keyword:        'keyword',
-    startdate:      'startdate',
-    starttime:      'starttime',
-    profile:        'profile',
-    sizes:          'sizes',
-    proxyset:       'proxyset',
-    quantity:       'quantity',
-    monitordelay:   'monitordelay',
-    retrydelay:     'retrydelay',
-}
+    uuid: '',
+    store: 'store',
+    keyword: 'keyword',
+    startdate: 'startdate',
+    starttime: 'starttime',
+    profile: 'profile',
+    sizes: 'sizes',
+    proxyset: 'proxyset',
+    quantity: 'quantity',
+    monitordelay: 'monitordelay',
+    retrydelay: 'retrydelay',
+};
 
 const TaskComponent = (props: any) => {
     const [jobs, setJobs] = useState([new_obj]);
@@ -78,9 +76,8 @@ const TaskComponent = (props: any) => {
         setProxies(getProxies());
     }, []);
 
-
     const getProxies = (): any => {
-        const proxiesOptions: any = []
+        const proxiesOptions: any = [];
         let prox: any = localStorage.getItem('proxies');
         if (prox) {
             prox = JSON.parse(prox);
@@ -96,95 +93,92 @@ const TaskComponent = (props: any) => {
                 setSelectedProxies(hm);
             }
         }
-        
-        return proxiesOptions;
-    }
 
+        return proxiesOptions;
+    };
 
     const deleteBot = (uuid: string) => {
-        console.log('Delete this: ', uuid)
+        console.log('Delete this: ', uuid);
 
-        for(let i=0; i < jobs.length; i++) {
-            if(jobs[i].uuid === uuid) {
-                jobs.splice(i,1);
+        for (let i = 0; i < jobs.length; i++) {
+            if (jobs[i].uuid === uuid) {
+                jobs.splice(i, 1);
                 break;
             }
         }
         forceUpdate();
-    }
-
+    };
 
     const Headers = () => {
         return (
             <Row style={botStyle}>
-                    <Col span={2} style={{ margin: 'auto', marginLeft: '10px' }}>
-                        Store
-                    </Col>
+                <Col span={2} style={{ margin: 'auto', marginLeft: '10px' }}>
+                    Store
+                </Col>
 
-                    <Col span={3} style={colStyle}>
-                        Product
-                    </Col>
+                <Col span={3} style={colStyle}>
+                    Product
+                </Col>
 
-                    <Col span={2} style={colStyle}>
-                        Size
-                    </Col>
+                <Col span={2} style={colStyle}>
+                    Size
+                </Col>
 
-                    <Col span={3} style={colStyle}>
-                        Profile
-                    </Col>
+                <Col span={3} style={colStyle}>
+                    Profile
+                </Col>
 
-                    <Col span={7} style={colStyle}>
-                        Proxy
-                    </Col>
+                <Col span={7} style={colStyle}>
+                    Proxy
+                </Col>
 
-                    <Col span={3} style={colStyle}>
-                        Status
-                    </Col>
+                <Col span={3} style={colStyle}>
+                    Status
+                </Col>
 
-                    <Col span={3} style={colStyle}>
-                        Actions
-                    </Col>
-                </Row>
-        )
-    }
+                <Col span={3} style={colStyle}>
+                    Actions
+                </Col>
+            </Row>
+        );
+    };
 
     const onFinish = (data: any) => {
         let temp = jobs;
 
-        let selected_proxies = selectedProxies.get(data['task'].proxyset)
-        console.log('selected_proxies', selected_proxies)
+        let selected_proxies = selectedProxies.get(data['task'].proxyset);
+        console.log('selected_proxies', selected_proxies);
         if (temp !== null) {
-            for(let i =0; i < Number(data['task'].quantity); i++) {
-                for(let j=0; j < data['task'].sizes.length; j++) {
+            for (let i = 0; i < Number(data['task'].quantity); i++) {
+                for (let j = 0; j < data['task'].sizes.length; j++) {
                     selectedProxies.get(data['task'].proxyset)?.map((proxy_selected) => {
                         temp.push({
-                            uuid:           uuid(),
-                            store:          'Footlocker',
-                            keyword:        data['task'].keyword,
-                            startdate:      data['task'].startdate,
-                            starttime:      data['task'].starttime,
-                            profile:        data['task'].profile,
-                            sizes:          data['task'].sizes[j],
-                            proxyset:       proxy_selected,
-                            quantity:       data['task'].quantity,
-                            monitordelay:   data['task'].monitordelay,
-                            retrydelay:     data['task'].retrydelay,
+                            uuid: uuid(),
+                            store: 'Footlocker',
+                            keyword: data['task'].keyword,
+                            startdate: data['task'].startdate,
+                            starttime: data['task'].starttime,
+                            profile: data['task'].profile,
+                            sizes: data['task'].sizes[j],
+                            proxyset: proxy_selected,
+                            quantity: data['task'].quantity,
+                            monitordelay: data['task'].monitordelay,
+                            retrydelay: data['task'].retrydelay,
                         });
                     });
                 }
             }
             setJobs(temp);
         }
-        forceUpdate()
-    }
-
+        forceUpdate();
+    };
 
     const deleteAllTasks = () => {
-        setJobs([new_obj])
-        forceUpdate()
-    }
+        setJobs([new_obj]);
+        forceUpdate();
+    };
 
-
+    useEffect(() => {});
     return (
         <div>
             <Form style={{ height: '20vh' }} onFinish={onFinish} validateMessages={validateMessages}>
@@ -230,7 +224,7 @@ const TaskComponent = (props: any) => {
 
                     <Col style={{ marginLeft: '30px', width: '210px' }}>
                         <Form.Item name={['task', 'quantity']} rules={[{ required: true }]}>
-                            <Input placeholder="Quantity" style={input_field} type='number'/>
+                            <Input placeholder="Quantity" style={input_field} type="number" />
                         </Form.Item>
                     </Col>
                 </Row>
@@ -284,9 +278,7 @@ const TaskComponent = (props: any) => {
                 </Col>
                 <Col span={13}></Col>
                 <Col span={3}>
-                    <Button style={{ height: '40px', width: '170px' }} type="primary" danger
-                        onClick={() => deleteAllTasks()}
-                    >
+                    <Button style={{ height: '40px', width: '170px' }} type="primary" danger onClick={() => deleteAllTasks()}>
                         Delete all
                     </Button>
                 </Col>
@@ -304,11 +296,12 @@ const TaskComponent = (props: any) => {
             >
                 <Headers />
 
-                <div style={{
-                    overflow: 'auto',
-                    height: '53vh',
-                }}>
-
+                <div
+                    style={{
+                        overflow: 'auto',
+                        height: '53vh',
+                    }}
+                >
                     {jobs.map((botTask) => (
                         <Bot
                             uuid={botTask.uuid}
