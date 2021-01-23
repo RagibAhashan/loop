@@ -25,7 +25,7 @@ const SideBar = (props: any) => {
             }}
         >
             <Row>
-                <img alt="Logo" src={logo} className={styles.logo}></img>
+                <img alt="Logo" src={logo} className={collapsed ? styles.collapsedLogo : styles.uncollapsedLogo}></img>
             </Row>
             <Menu className={styles.menu} theme="dark" defaultSelectedKeys={['0']} mode="inline">
                 <Menu.Item
