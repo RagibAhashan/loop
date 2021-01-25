@@ -1,12 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Form, Input, Button, Divider, Popover, Space, Card, message } from 'antd';
+import { Row, Col, Form, Input, Button, Divider, Popover, Modal, Radio, Card, message} from 'antd';
 import { MinusCircleTwoTone, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 import * as Constants from '../constants';
+import '../App.global.css'
+import { Tooltip } from '@material-ui/core';
 
 const ProxyPage = (props: any) => {
   const { setPage } = props;
   const [proxies, setProxies] = useState(new Map<string, []>()); // name -> proxies
   const [proxyInput, setProxyInputs] = useState(new Map<number, []>()); // new sets being inputted by user (input_key -> nProxies)
+  const [visible, setVisible] = useState(false);
+
+  const onCreate = (values: any) => {
+    console.log('Received values of form: ', values);
+    setVisible(false);
+  };
 
 
   useEffect(() => {
@@ -91,7 +99,7 @@ const ProxyPage = (props: any) => {
 
   const ShowProxies = (proxies: Map<string, []>) => {
     let proxyArray = Array.from(proxies, ([name, proxies]) => ({ name, proxies }));
-    if (!proxies.size) return (<h1> No Sets Found. </h1>)
+    if (!proxies.size) return (<h1>  </h1>)
     return proxyArray.map( (value) => {
       const ex = proxies.get(value.name) as Array<string>;
       return (
@@ -124,17 +132,103 @@ function useForceUpdate(){
 }
 const forceUpdate = useForceUpdate();
 
+const CollectionCreateForm = ({ visible, onCreate, onCancel }:any) => {
+  const [form] = Form.useForm();
+  return (
+    <Modal
+      visible={visible}
+      title="Create a new set"
+      okText="Create"
+      cancelText="Cancel"
+      onCancel={onCancel}
+      onOk={() => {
+        form
+          .validateFields()
+          .then((values) => {
+            form.resetFields();
+            onCreate(values);
+          })
+          .catch((info) => {
+            console.log('Validate Failed:', info);
+          });
+      }}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        name="form_in_modal"
+        initialValues={{
+          modifier: 'public',
+        }}
+      >
+        <Form.Item
+          name="name"
+          label="Name"
+          rules={[
+            {
+              required: true,
+              message: 'Please input the name of the set!',
+            },
+          ]}
+        >
+          <Input placeholder="Input set same"/>
+        </Form.Item>
+        <Form.Item 
+          name="proxies"
+          label="Proxies"
+          rules={[
+            {
+              required: true,
+              message: 'Please input the list of proxies!',
+            },
+          ]}
+        >
+          <Input type="textarea" placeholder="Copy Paste your list of proxies"/>
+        </Form.Item>
+        <Form.Item name="modifier" className="collection-create-form_last-form-item">
+          <Radio.Group>
+            <Radio value="public">Public</Radio>
+            <Radio value="private">Private</Radio>
+          </Radio.Group>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+};
+
   return (
     <Form name="dynamic_form_nest_item" onFinish={onFinish} autoComplete="off" style={{padding: 24}}>
     <Row>
-     <Col span={22} style={{marginLeft: 10}}> <Divider> My Sets </Divider> </Col>
+      <Col span={2} style={{fontSize: 30}} className="pageTitle"> Proxies </Col>
+      <Col span={20}>
+        <div style={{marginLeft: 20, marginTop: 10}}>
+        <Tooltip placement="right" title={"Add New Set"}>
+        <PlusOutlined
+            style={{color:'green', fontSize: 30, fontWeight: 'bold'}}
+            onClick={() => {
+              setVisible(true);
+            }}
+          />
+        </Tooltip>
+          <CollectionCreateForm
+            visible={visible}
+            onCreate={onCreate}
+            onCancel={() => {
+              setVisible(false);
+            }}
+          />
+        </div> 
+      </Col>
+    </Row>
+    <Row>
+     <Col span={24}> <Divider> My Sets </Divider> </Col>
       {ShowProxies(proxies)}
     </Row>
     <Row>
       <Col span={5}   style={{ marginRight: 10 }}>  <Divider> Set Name        </Divider>  </Col>
-      <Col span={12}  style={{ marginRight: 10}}>   <Divider> Proxies         </Divider>  </Col>
-      <Col span={5}   style={{ marginRight: 10}}>   <Divider> No. of Proxies  </Divider>  </Col>
-      <Col span={2}   style={{ marginRight: 10}}>   </Col>
+      <Col span={12}  style={{ marginRight: 10 }}>   <Divider> Proxies         </Divider>  </Col>
+      <Col span={5}   style={{ marginRight: 10 }}>   <Divider> No. of Proxies  </Divider>  </Col>
+      <Col span={2}   style={{ marginRight: 10 }}>   </Col>
     </Row>
     <Form.List name="proxies">
       {(fields, { add, remove }) => (
@@ -165,7 +259,6 @@ const forceUpdate = useForceUpdate();
                   </Form.Item>
                 </Col>
                 <Col span={5} style={{marginRight: 10}}>
-                  {/* value={proxies.size? proxies.get(keys.get(field.fieldKey)).length : 0} */}
                     <Input  style={{ display: 'flex', textAlign: 'center' }} value={(proxyInput.get(field.fieldKey))?.length} disabled={true} />
                 </Col>
                 <Col span={1}>
