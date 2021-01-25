@@ -5,36 +5,7 @@ const { ipcRenderer } = window.require('electron');
 const TestPage = () => {
     const [data, setData] = useState({ id: '', message: '' } as any);
 
-    // const columns = [
-    //     {
-    //         title: 'Task id',
-    //         dataIndex: 'threadId',
-    //         key: 'threadId',
-    //     },
-    //     {
-    //         title: 'Status',
-    //         dataIndex: 'message',
-    //         key: 'message',
-    //     },
-    // ];
-
-    const startTask = async () => {
-        console.log('sending start');
-        const workers: number[] = ipcRenderer.sendSync('start-task', 5);
-        console.log('WORKERS', workers);
-        let temp = {} as any;
-        workers.forEach((val) => {
-            temp[val] = { id: val, message: 'Not Started' };
-        });
-        setData(temp);
-        console.log(data);
-        // ipcRenderer.on('task-reply', (event, message) => {
-        //     console.log('task reply', message.message, 'from task', message.threadId);
-        //     console.log('daaataa', data);
-        //     // data[message.threadId].message = message.message;
-        //     // setData(data);
-        // });
-    };
+    const startTask = async () => {};
 
     const stop = () => {
         ipcRenderer.send('stop-task');

@@ -1,6 +1,4 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
-const { Worker } = require('worker_threads');
-const path = require('path');
 function createWindow() {
     const win = new BrowserWindow({
         width: 1700,
@@ -44,29 +42,31 @@ if (process.platform === 'darwin') {
 }
 
 // IPC EVENTS
-let workers = [];
-
 ipcMain.on('start-task', (event, num) => {
-    workers = [];
-    console.log('starting', num, 'tasks !');
-    for (let i = 0; i < num; i++) {
-        const worker = new Worker(path.join(__dirname, '/core/WorkerWrapper.js'));
-
-        workers.push(worker);
-
-        worker.on('message', (message) => {
-            event.reply('task-reply', message);
-        });
-    }
-
-    const result = workers.map((w) => w.threadId);
-    event.returnValue = result;
+    // const { FOOTLOCKER_CA_HEADERS } = require('./core/constants/Constants');
+    // const { UserProfile, CreditCard } = require('./core/interface/UserProfile');
+    // const { RequestInstance } = require('./core/RequestInstance');
+    // const { FootLockerTask } = require('./core/footlocker/FootLockerTask');
+    // const { Fingerprint } = require('./core/Fingerprint');
+    // const deviceId = Fingerprint.getDeviceId();
+    // const userProfile = new UserProfile('test@gmail.com', '', '', '', '', '', '', '', '', new CreditCard('', '', '', '', ''));
+    // const axios = new RequestInstance('http://localhost:3200/api', { timestamp: Date.now() }, FOOTLOCKER_CA_HEADERS);
+    // console.log('starting', num, 'tasks !');
+    // for (let i = 0; i < num; i++) {
+    //     const fl = new FootLockerTask(
+    //         'https://www.footlocker.ca/en/product/nike-air-force-1-low-mens/4101086.html',
+    //         '4101086',
+    //         8.5,
+    //         deviceId,
+    //         axios,
+    //         userProfile,
+    //     );
+    //     fl.on('status', (message) => {
+    //         event.reply(message);
+    //     });
+    // }
 });
 
 ipcMain.on('stop-task', () => {
     console.log('stopping tasks !');
-
-    for (let i = 0; i < workers.length; i++) {
-        workers[i].terminate();
-    }
 });
