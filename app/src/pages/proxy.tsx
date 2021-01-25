@@ -54,22 +54,22 @@ const ProxyPage = (props: any) => {
 
   const content = (values: any, name: any) => (
     <div>
-      <Row style={{textAlign: 'center'}}>
+      {/* <Row style={{textAlign: 'center'}}>
         <Col>
             <Divider style={{textAlign: 'center', width: 300}}> Name </Divider>
             <p> {name} </p>
         </Col>
-      </Row>
+      </Row> */}
       <Row style={{textAlign: 'center'}}>
         <Col>
-            <Divider style={{textAlign: 'center', width: 300}}> Proxies </Divider>
+            <Divider style={{textAlign: 'center', width: 350}}> Proxies </Divider>
             {showProxiesPopup(values)}
             <Button type="dashed" style={{marginTop: 10}} htmlType="submit" onClick={()=>{downloadProxies(values, name)}}> Download full list </Button>
         </Col>
       </Row>
       <Row style={{textAlign: 'center'}}>
         <Col>
-            <Divider style={{textAlign: 'center', width: 300}}> No. of Proxies </Divider>
+            <Divider style={{textAlign: 'center', width: 350}}> No. of Proxies </Divider>
             <p> {values.length} </p>
         </Col>
       </Row>
@@ -88,7 +88,7 @@ const ProxyPage = (props: any) => {
   }
 
   const showProxiesPopup = (proxies: []) => {
-    const PROXIES_TO_SHOW = 10;
+    const PROXIES_TO_SHOW = 5;
     const proxiesToShow = proxies.slice(0, PROXIES_TO_SHOW)
     return proxiesToShow.map((value) => {
       return (
@@ -103,7 +103,7 @@ const ProxyPage = (props: any) => {
     return proxyArray.map( (value) => {
       const ex = proxies.get(value.name) as Array<string>;
       return (
-        <Popover content={content(value.proxies, value.name)} placement="right">
+        // <Popover content={content(value.proxies, value.name)} placement="right">
             <Card size="small"
                 title={value.name}
                 extra={
@@ -111,13 +111,14 @@ const ProxyPage = (props: any) => {
                         onClick={() => onDeleteSet(value.name)}
                     />
                 }
-                style={{ width: 200, height: 140, margin: 3 }}
+                style={{ width: 400, height: 400, margin: 20, marginLeft: 0}}
             >
-                <p> {`Preview: ${ex[0].substr(0, 12)}...`} </p>
-                <p> {`No. of Proxies: ${ex.length}`} </p>
+              { content(value.proxies, value.name) }
+                {/* <p> {`Preview: ${ex[0].substr(0, 12)}...`} </p>
+                <p> {`No. of Proxies: ${ex.length}`} </p> */}
 
             </Card>
-        </Popover>
+        // </Popover>
       )
     })
 }
@@ -204,7 +205,7 @@ const CollectionCreateForm = ({ visible, onCreate, onCancel }:any) => {
         <div style={{marginLeft: 20, marginTop: 10}}>
         <Tooltip placement="right" title={"Add New Set"}>
         <PlusOutlined
-            style={{color:'green', fontSize: 30, fontWeight: 'bold'}}
+            style={{color:'orange', fontSize: 30, fontWeight: 'bold'}}
             onClick={() => {
               setVisible(true);
             }}
@@ -221,7 +222,6 @@ const CollectionCreateForm = ({ visible, onCreate, onCancel }:any) => {
       </Col>
     </Row>
     <Row>
-     <Col span={24}> <Divider> My Sets </Divider> </Col>
       {ShowProxies(proxies)}
     </Row>
     <Row>

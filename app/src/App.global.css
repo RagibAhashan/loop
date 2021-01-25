@@ -59,11 +59,27 @@
 .ant-menu-dark .ant-menu-item-selected .anticon + span {
     color: var(--defaultThemeColor);
 }
-
 .ant-layout.ant-layout-has-sider {
     background-color: #212427;
 }
 
+/* Cards */
+.ant-card {
+    background: var(--siderColor);
+}
+.ant-card .anticon svg {
+    color: var(--defaultThemeColor);
+}
+.ant-card-head {
+    border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+}
+.ant-card-head-title {
+    color: var(--defaultThemeColor);
+    text-align: center;
+}
+.ant-card-bordered {
+    border: 2px solid rgba(0, 0, 0, 0.4);
+}
 
 html,
 body {
