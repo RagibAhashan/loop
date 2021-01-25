@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-    devtool: 'inline-source-map',
+    devtool: 'source-map',
     target: 'electron-main',
     mode: 'development',
     entry: './src/main.js',

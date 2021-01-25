@@ -1,4 +1,13 @@
-const { parentPort } = require('worker_threads');
+const {
+    SESSION_INFO_MESSAGE,
+    CHECKING_SIZE_INFO_MESSAGE,
+    ADD_CART_INFO_MESSAGE,
+    EMAIL_INFO_MESSAGE,
+    SHIPPING_INFO_MESSAGE,
+    BILLING_INFO_MESSAGE,
+    PLACING_ORDER_INFO_MESSAGE,
+    CHECKOUT_SUCCESS_MESSAGE,
+} = require('../constants/Constants');
 const { Cookie } = require('../constants/Cookies');
 const { FLCInfoForm, FLCOrderForm } = require('../interface/FootLockerCA');
 const { Task } = require('../Task');
@@ -11,7 +20,7 @@ class FootLockerTask extends Task {
     static ccEncryptor = new CreditCardEncryption(ADYEN_KEY);
 
     async getSessionTokens() {
-        parentPort.postMessage({ message: 'Getting Session...', threadId: this.threadId });
+        this.emit('status', { status: SESSION_INFO_MESSAGE, level: 'info' });
 
         const response = await this.axiosSession.get('/v4/session');
 
@@ -23,7 +32,7 @@ class FootLockerTask extends Task {
     }
 
     async getProductCode() {
-        parentPort.postMessage({ message: 'Checking Size...', threadId: this.threadId });
+        this.emit('status', { status: CHECKING_SIZE_INFO_MESSAGE, level: 'info' });
 
         const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
         const sellableUnits = response.data['sellableUnits'];
@@ -44,7 +53,8 @@ class FootLockerTask extends Task {
     async addToCart(code) {
         let added = false;
         while (!added) {
-            parentPort.postMessage({ message: 'Adding to cart...', threadId: this.threadId });
+            this.emit('status', { status: ADD_CART_INFO_MESSAGE, level: 'info' });
+
             try {
                 const headers = {
                     referer: this.productLink,
@@ -65,36 +75,34 @@ class FootLockerTask extends Task {
                 const cookies = response.headers['set-cookie'].join();
                 this.cookieJar.setFromRaw(cookies, Cookie.CART_GUID);
 
-                // console.log('Adding to cart OK... ', response.status);
                 added = true;
             } catch (err) {
                 // TODO WIP Captcha
                 if (err.response && 'url' in err.response.data) {
-                    console.log('trying to solve captcha');
                     const cookies = err.response?.headers['set-cookie'][0];
                     const capDatadome = this.cookieJar.extract(cookies, Cookie.DATADOME);
                     const captcha_url = `${err.response?.data['url']}&cid=${capDatadome}&referer=${this.productLink}`;
 
                     console.log(captcha_url);
                     // here post message
-                    parentPort?.postMessage(captcha_url);
+                    // parentPort?.postMessage(captcha_url);
 
-                    let receivedDatadome = false;
-                    let startTime = performance.now();
-                    let timeout = 0;
+                    // let receivedDatadome = false;
+                    // let startTime = performance.now();
+                    // let timeout = 0;
 
-                    parentPort?.once('datadome', (datadomeRaw) => {
-                        console.log('RECEIVED DATADOME COOKIE !', datadomeRaw);
-                        this.cookieJar.setFromRaw(datadomeRaw, Cookie.DATADOME);
-                        receivedDatadome = true;
-                    });
+                    // parentPort?.once('datadome', (datadomeRaw) => {
+                    //     console.log('RECEIVED DATADOME COOKIE !', datadomeRaw);
+                    //     this.cookieJar.setFromRaw(datadomeRaw, Cookie.DATADOME);
+                    //     receivedDatadome = true;
+                    // });
 
                     // busy wait
-                    while (!receivedDatadome || timeout > CAPTCHA_TIMEOUT_SEC) {
-                        timeout = Math.round((performance.now() - startTime) / 1000);
-                    }
+                    // while (!receivedDatadome || timeout > CAPTCHA_TIMEOUT_SEC) {
+                    //     timeout = Math.round((performance.now() - startTime) / 1000);
+                    // }
 
-                    if (!receivedDatadome) throw new Error('Timeout exceeded - Captcha not solved');
+                    // if (!receivedDatadome) throw new Error('Timeout exceeded - Captcha not solved');
                 } else {
                     // console.log('Add to cart failed', err.response.status);
                     console.log('Add to cart failed', err);
@@ -104,38 +112,32 @@ class FootLockerTask extends Task {
         }
     }
     async setEmail() {
-        parentPort.postMessage({ message: 'Setting Email...', threadId: this.threadId });
+        this.emit('status', { status: EMAIL_INFO_MESSAGE, level: 'info' });
 
         const headers = this.setHeaders();
 
         const response = await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.email}`, {}, { headers: headers });
-
-        // console.log('Setting Email OK... ', response.status);
     }
     async setShipping() {
-        parentPort.postMessage({ message: 'Setting Shipping...', threadId: this.threadId });
+        this.emit('status', { status: SHIPPING_INFO_MESSAGE, level: 'info' });
 
         const headers = this.setHeaders();
 
         const body = { shippingAddress: this.getInfoForm() };
 
         const response = await this.axiosSession.post('/users/carts/current/addresses/shipping', body, { headers: headers });
-
-        // console.log('Setting Shipping OK... ', response.status);
     }
     async setBilling() {
-        parentPort.postMessage({ message: 'Setting Billing...', threadId: this.threadId });
+        this.emit('status', { status: BILLING_INFO_MESSAGE, level: 'info' });
 
         const headers = this.setHeaders();
 
         const body = this.getInfoForm();
 
         const response = await this.axiosSession.post('/users/carts/current/set-billing', body, { headers: headers });
-
-        // console.log('Setting Billing OK... ', response.status);
     }
     async placeOrder() {
-        parentPort.postMessage({ message: 'Placing Order...', threadId: this.threadId });
+        this.emit('status', { status: PLACING_ORDER_INFO_MESSAGE, level: 'info' });
 
         const headers = this.setHeaders();
 
@@ -147,7 +149,7 @@ class FootLockerTask extends Task {
             headers: headers,
         });
 
-        parentPort.postMessage({ message: 'Placed Order !', threadId: this.threadId });
+        this.emit('status', { status: CHECKOUT_SUCCESS_MESSAGE, level: 'success' });
     }
 
     getInfoForm() {
