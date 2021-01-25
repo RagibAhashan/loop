@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Form, Input, Button, Divider, Popover, Modal, Radio, Card, message} from 'antd';
-import { MinusCircleTwoTone, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import {  Row, Col, Form, Input, Button, Divider, 
+          Popover, Modal, Radio, Card, message,
+          Upload, } from 'antd';
+import { MinusCircleTwoTone, PlusOutlined, DeleteOutlined, InboxOutlined } from '@ant-design/icons';
 import * as Constants from '../constants';
 import '../App.global.css'
 import { Tooltip } from '@material-ui/core';
@@ -88,7 +90,7 @@ const ProxyPage = (props: any) => {
   }
 
   const showProxiesPopup = (proxies: []) => {
-    const PROXIES_TO_SHOW = 5;
+    const PROXIES_TO_SHOW = 15;
     const proxiesToShow = proxies.slice(0, PROXIES_TO_SHOW)
     return proxiesToShow.map((value) => {
       return (
@@ -111,7 +113,7 @@ const ProxyPage = (props: any) => {
                         onClick={() => onDeleteSet(value.name)}
                     />
                 }
-                style={{ width: 400, height: 400, margin: 20, marginLeft: 0}}
+                style={{ width: '30%', height: '60%', margin: 25, marginLeft: 0, marginTop: 10}}
             >
               { content(value.proxies, value.name) }
                 {/* <p> {`Preview: ${ex[0].substr(0, 12)}...`} </p>
@@ -184,7 +186,16 @@ const CollectionCreateForm = ({ visible, onCreate, onCancel }:any) => {
             },
           ]}
         >
-          <Input type="textarea" placeholder="Copy Paste your list of proxies"/>
+          <Dragger {...prop}>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">Click or drag files to this area to upload</p>
+            <p className="ant-upload-hint">
+              Make sure that your list of proxies is separated by new lines!
+            </p>
+          </Dragger>
+          {/* <Input type="textarea" placeholder="Copy Paste your list of proxies"/> */}
         </Form.Item>
         <Form.Item name="modifier" className="collection-create-form_last-form-item">
           <Radio.Group>
@@ -195,6 +206,25 @@ const CollectionCreateForm = ({ visible, onCreate, onCancel }:any) => {
       </Form>
     </Modal>
   );
+};
+
+const { Dragger } = Upload;
+
+const prop = {
+  name: 'file',
+  multiple: true,
+  action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+  onChange(info: any) {
+    const { status } = info.file;
+    if (status !== 'uploading') {
+      console.log(info.file, info.fileList);
+    }
+    if (status === 'done') {
+      message.success(`${info.file.name} file uploaded successfully.`);
+    } else if (status === 'error') {
+      message.error(`${info.file.name} file upload failed.`);
+    }
+  },
 };
 
   return (
