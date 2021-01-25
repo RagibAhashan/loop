@@ -7,6 +7,7 @@
     --defaultThemeColor: orange;
     --siderIconSize: 20px;
     --siderShadow: 1px 0px 5px 0.1px black;
+    --cardShadow: 0px 0px 5px 0.1px black;
 }
 
 /* Sider */
@@ -59,9 +60,27 @@
 .ant-menu-dark .ant-menu-item-selected .anticon + span {
     color: var(--defaultThemeColor);
 }
-
 .ant-layout.ant-layout-has-sider {
     background-color: #212427;
+}
+
+/* Cards */
+.ant-card {
+    background: var(--siderColor);
+    box-shadow: var(--cardShadow);
+}
+.ant-card .anticon svg {
+    color: var(--defaultThemeColor);
+}
+.ant-card-head {
+    border-bottom: 2px solid rgba(0, 0, 0, 0.4);
+}
+.ant-card-head-title {
+    color: var(--defaultThemeColor);
+    text-align: center;
+}
+.ant-card-bordered {
+    border: 2px solid var(--siderColor);
 }
 
 html,

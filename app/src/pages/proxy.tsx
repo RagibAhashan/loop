@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Form, Input, Button, Divider, Popover, Space, Card, message } from 'antd';
-import { MinusCircleTwoTone, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import {  Row, Col, Form, Input, Button, Divider, 
+          Popover, Modal, Radio, Card, message,
+          Upload, } from 'antd';
+import { MinusCircleTwoTone, PlusOutlined, DeleteOutlined, InboxOutlined } from '@ant-design/icons';
 import * as Constants from '../constants';
+import '../App.global.css'
+import { Tooltip } from '@material-ui/core';
 
 const ProxyPage = (props: any) => {
   const { setPage } = props;
   const [proxies, setProxies] = useState(new Map<string, []>()); // name -> proxies
   const [proxyInput, setProxyInputs] = useState(new Map<number, []>()); // new sets being inputted by user (input_key -> nProxies)
+  const [visible, setVisible] = useState(false);
+
+  const onCreate = (values: any) => {
+    console.log('Received values of form: ', values);
+    setVisible(false);
+  };
 
 
   useEffect(() => {
@@ -46,22 +56,22 @@ const ProxyPage = (props: any) => {
 
   const content = (values: any, name: any) => (
     <div>
-      <Row style={{textAlign: 'center'}}>
+      {/* <Row style={{textAlign: 'center'}}>
         <Col>
             <Divider style={{textAlign: 'center', width: 300}}> Name </Divider>
             <p> {name} </p>
         </Col>
-      </Row>
+      </Row> */}
       <Row style={{textAlign: 'center'}}>
         <Col>
-            <Divider style={{textAlign: 'center', width: 300}}> Proxies </Divider>
+            <Divider style={{textAlign: 'center', width: 350}}> Proxies </Divider>
             {showProxiesPopup(values)}
             <Button type="dashed" style={{marginTop: 10}} htmlType="submit" onClick={()=>{downloadProxies(values, name)}}> Download full list </Button>
         </Col>
       </Row>
       <Row style={{textAlign: 'center'}}>
         <Col>
-            <Divider style={{textAlign: 'center', width: 300}}> No. of Proxies </Divider>
+            <Divider style={{textAlign: 'center', width: 350}}> No. of Proxies </Divider>
             <p> {values.length} </p>
         </Col>
       </Row>
@@ -80,7 +90,7 @@ const ProxyPage = (props: any) => {
   }
 
   const showProxiesPopup = (proxies: []) => {
-    const PROXIES_TO_SHOW = 10;
+    const PROXIES_TO_SHOW = 15;
     const proxiesToShow = proxies.slice(0, PROXIES_TO_SHOW)
     return proxiesToShow.map((value) => {
       return (
@@ -91,11 +101,11 @@ const ProxyPage = (props: any) => {
 
   const ShowProxies = (proxies: Map<string, []>) => {
     let proxyArray = Array.from(proxies, ([name, proxies]) => ({ name, proxies }));
-    if (!proxies.size) return (<h1> No Sets Found. </h1>)
+    if (!proxies.size) return (<h1>  </h1>)
     return proxyArray.map( (value) => {
       const ex = proxies.get(value.name) as Array<string>;
       return (
-        <Popover content={content(value.proxies, value.name)} placement="right">
+        // <Popover content={content(value.proxies, value.name)} placement="right">
             <Card size="small"
                 title={value.name}
                 extra={
@@ -103,13 +113,14 @@ const ProxyPage = (props: any) => {
                         onClick={() => onDeleteSet(value.name)}
                     />
                 }
-                style={{ width: 200, height: 140, margin: 3 }}
+                style={{ width: '30%', height: '60%', margin: 25, marginLeft: 0, marginTop: 10}}
             >
-                <p> {`Preview: ${ex[0].substr(0, 12)}...`} </p>
-                <p> {`No. of Proxies: ${ex.length}`} </p>
+              { content(value.proxies, value.name) }
+                {/* <p> {`Preview: ${ex[0].substr(0, 12)}...`} </p>
+                <p> {`No. of Proxies: ${ex.length}`} </p> */}
 
             </Card>
-        </Popover>
+        // </Popover>
       )
     })
 }
@@ -124,17 +135,130 @@ function useForceUpdate(){
 }
 const forceUpdate = useForceUpdate();
 
+const CollectionCreateForm = ({ visible, onCreate, onCancel }:any) => {
+  const [form] = Form.useForm();
+  return (
+    <Modal
+      visible={visible}
+      title="Create a new set"
+      okText="Create"
+      cancelText="Cancel"
+      onCancel={onCancel}
+      onOk={() => {
+        form
+          .validateFields()
+          .then((values) => {
+            form.resetFields();
+            onCreate(values);
+          })
+          .catch((info) => {
+            console.log('Validate Failed:', info);
+          });
+      }}
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        name="form_in_modal"
+        initialValues={{
+          modifier: 'public',
+        }}
+      >
+        <Form.Item
+          name="name"
+          label="Name"
+          rules={[
+            {
+              required: true,
+              message: 'Please input the name of the set!',
+            },
+          ]}
+        >
+          <Input placeholder="Input set same"/>
+        </Form.Item>
+        <Form.Item 
+          name="proxies"
+          label="Proxies"
+          rules={[
+            {
+              required: true,
+              message: 'Please input the list of proxies!',
+            },
+          ]}
+        >
+          <Dragger {...prop}>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">Click or drag files to this area to upload</p>
+            <p className="ant-upload-hint">
+              Make sure that your list of proxies is separated by new lines!
+            </p>
+          </Dragger>
+          {/* <Input type="textarea" placeholder="Copy Paste your list of proxies"/> */}
+        </Form.Item>
+        <Form.Item name="modifier" className="collection-create-form_last-form-item">
+          <Radio.Group>
+            <Radio value="public">Public</Radio>
+            <Radio value="private">Private</Radio>
+          </Radio.Group>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+};
+
+const { Dragger } = Upload;
+
+const prop = {
+  name: 'file',
+  multiple: true,
+  action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+  onChange(info: any) {
+    const { status } = info.file;
+    if (status !== 'uploading') {
+      console.log(info.file, info.fileList);
+    }
+    if (status === 'done') {
+      message.success(`${info.file.name} file uploaded successfully.`);
+    } else if (status === 'error') {
+      message.error(`${info.file.name} file upload failed.`);
+    }
+  },
+};
+
   return (
     <Form name="dynamic_form_nest_item" onFinish={onFinish} autoComplete="off" style={{padding: 24}}>
     <Row>
-     <Col span={22} style={{marginLeft: 10}}> <Divider> My Sets </Divider> </Col>
+      <Col span={2} style={{fontSize: 30}} className="pageTitle"> Proxies </Col>
+      <Col span={20}>
+        <div style={{marginLeft: 20, marginTop: 10}}>
+        <Tooltip placement="right" title={"Add New Set"}>
+        <PlusOutlined
+            style={{color:'orange', fontSize: 30, fontWeight: 'bold'}}
+            onClick={() => {
+              setVisible(true);
+            }}
+          />
+        </Tooltip>
+          <CollectionCreateForm
+            visible={visible}
+            onCreate={onCreate}
+            onCancel={() => {
+              setVisible(false);
+            }}
+          />
+        </div> 
+      </Col>
+    </Row>
+    <Row>
       {ShowProxies(proxies)}
     </Row>
     <Row>
       <Col span={5}   style={{ marginRight: 10 }}>  <Divider> Set Name        </Divider>  </Col>
-      <Col span={12}  style={{ marginRight: 10}}>   <Divider> Proxies         </Divider>  </Col>
-      <Col span={5}   style={{ marginRight: 10}}>   <Divider> No. of Proxies  </Divider>  </Col>
-      <Col span={2}   style={{ marginRight: 10}}>   </Col>
+      <Col span={12}  style={{ marginRight: 10 }}>   <Divider> Proxies         </Divider>  </Col>
+      <Col span={5}   style={{ marginRight: 10 }}>   <Divider> No. of Proxies  </Divider>  </Col>
+      <Col span={2}   style={{ marginRight: 10 }}>   </Col>
     </Row>
     <Form.List name="proxies">
       {(fields, { add, remove }) => (
@@ -165,7 +289,6 @@ const forceUpdate = useForceUpdate();
                   </Form.Item>
                 </Col>
                 <Col span={5} style={{marginRight: 10}}>
-                  {/* value={proxies.size? proxies.get(keys.get(field.fieldKey)).length : 0} */}
                     <Input  style={{ display: 'flex', textAlign: 'center' }} value={(proxyInput.get(field.fieldKey))?.length} disabled={true} />
                 </Col>
                 <Col span={1}>
