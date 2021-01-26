@@ -7,7 +7,6 @@ import ProxyPage from './pages/proxy';
 import TaskPage from './pages/Task/taskPage';
 import TestPage from './pages/testPage';
 import { Fingerprint } from './services/Fingerprint';
-
 const { Content } = Layout;
 
 const generateFingerPrint = () => {
