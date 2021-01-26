@@ -42,29 +42,28 @@ if (process.platform === 'darwin') {
 }
 
 // IPC EVENTS
-ipcMain.on('start-task', (event, num) => {
-    // const { FOOTLOCKER_CA_HEADERS } = require('./core/constants/Constants');
-    // const { UserProfile, CreditCard } = require('./core/interface/UserProfile');
-    // const { RequestInstance } = require('./core/RequestInstance');
-    // const { FootLockerTask } = require('./core/footlocker/FootLockerTask');
-    // const { Fingerprint } = require('./core/Fingerprint');
-    // const deviceId = Fingerprint.getDeviceId();
-    // const userProfile = new UserProfile('test@gmail.com', '', '', '', '', '', '', '', '', new CreditCard('', '', '', '', ''));
-    // const axios = new RequestInstance('http://localhost:3200/api', { timestamp: Date.now() }, FOOTLOCKER_CA_HEADERS);
-    // console.log('starting', num, 'tasks !');
-    // for (let i = 0; i < num; i++) {
-    //     const fl = new FootLockerTask(
-    //         'https://www.footlocker.ca/en/product/nike-air-force-1-low-mens/4101086.html',
-    //         '4101086',
-    //         8.5,
-    //         deviceId,
-    //         axios,
-    //         userProfile,
-    //     );
-    //     fl.on('status', (message) => {
-    //         event.reply(message);
-    //     });
-    // }
+ipcMain.on('start-task', (event, uuid) => {
+    console.log('starting taks !');
+    const { FOOTLOCKER_CA_HEADERS } = require('./core/constants/Constants');
+    const { UserProfile, CreditCard } = require('./core/interface/UserProfile');
+    const { RequestInstance } = require('./core/RequestInstance');
+    const { FootLockerTask } = require('./core/footlocker/FootLockerTask');
+    const userProfile = new UserProfile('test@gmail.com', '', '', '', '', '', '', '', '', new CreditCard('', '', '', '', ''));
+    const axios = new RequestInstance('http://localhost:3200/api', { timestamp: Date.now() }, FOOTLOCKER_CA_HEADERS);
+    const fl = new FootLockerTask(
+        'https://www.footlocker.ca/en/product/nike-air-force-1-low-mens/4101086.html',
+        '4101086',
+        8.5,
+        'deviceid',
+        axios,
+        userProfile,
+    );
+
+    fl.on('status', (message) => {
+        event.reply(uuid, message);
+    });
+
+    fl.execute();
 });
 
 ipcMain.on('stop-task', () => {

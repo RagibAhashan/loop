@@ -11,14 +11,10 @@ const {
 const { Cookie } = require('../constants/Cookies');
 const { FLCInfoForm, FLCOrderForm } = require('../interface/FootLockerCA');
 const { Task } = require('../Task');
-const { ADYEN_KEY } = require('./../constants/AdyenKey');
-const { CreditCardEncryption } = require('./CreditCardEncryption');
 
 const CAPTCHA_TIMEOUT_SEC = 60;
 
 class FootLockerTask extends Task {
-    static ccEncryptor = new CreditCardEncryption(ADYEN_KEY);
-
     async getSessionTokens() {
         this.emit('status', { status: SESSION_INFO_MESSAGE, level: 'info' });
 
@@ -79,29 +75,24 @@ class FootLockerTask extends Task {
             } catch (err) {
                 // TODO WIP Captcha
                 if (err.response && 'url' in err.response.data) {
-                    const cookies = err.response?.headers['set-cookie'][0];
-                    const capDatadome = this.cookieJar.extract(cookies, Cookie.DATADOME);
-                    const captcha_url = `${err.response?.data['url']}&cid=${capDatadome}&referer=${this.productLink}`;
-
-                    console.log(captcha_url);
+                    // const cookies = err.response?.headers['set-cookie'][0];
+                    // const capDatadome = this.cookieJar.extract(cookies, Cookie.DATADOME);
+                    // const captcha_url = `${err.response?.data['url']}&cid=${capDatadome}&referer=${this.productLink}`;
+                    // console.log(captcha_url);
                     // here post message
                     // parentPort?.postMessage(captcha_url);
-
                     // let receivedDatadome = false;
                     // let startTime = performance.now();
                     // let timeout = 0;
-
                     // parentPort?.once('datadome', (datadomeRaw) => {
                     //     console.log('RECEIVED DATADOME COOKIE !', datadomeRaw);
                     //     this.cookieJar.setFromRaw(datadomeRaw, Cookie.DATADOME);
                     //     receivedDatadome = true;
                     // });
-
                     // busy wait
                     // while (!receivedDatadome || timeout > CAPTCHA_TIMEOUT_SEC) {
                     //     timeout = Math.round((performance.now() - startTime) / 1000);
                     // }
-
                     // if (!receivedDatadome) throw new Error('Timeout exceeded - Captcha not solved');
                 } else {
                     // console.log('Add to cart failed', err.response.status);
@@ -141,9 +132,9 @@ class FootLockerTask extends Task {
 
         const headers = this.setHeaders();
 
-        const encryptedCC = FootLockerTask.ccEncryptor.encrypt(this.userProfile.creditCard);
+        // const encryptedCC = ccEncryptor.encrypt(this.userProfile.creditCard);
 
-        const body = this.getOrderForm(encryptedCC);
+        const body = this.getOrderForm({ number: '', expiryMonth: '', expiryYear: '', cvc: '' });
 
         const response = await this.axiosSession.post('/v2/users/orders', body, {
             headers: headers,

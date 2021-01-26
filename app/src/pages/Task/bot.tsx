@@ -1,7 +1,14 @@
 // import styles from './sidebar.module.css';
-import { DeleteOutlined, DoubleRightOutlined, EditOutlined } from '@ant-design/icons';
+import { DeleteOutlined, DoubleRightOutlined, EditOutlined, StopOutlined } from '@ant-design/icons';
 import { Button, Col, Row, Space } from 'antd';
-import React, { useCallback, useEffect, useState } from 'react';
+import { stat } from 'fs';
+import React, { useEffect, useState } from 'react';
+const { ipcRenderer } = window.require('electron');
+
+interface Status {
+    status: string;
+    level: string;
+}
 
 const botStyle = {
     backgroundColor: '#212427',
@@ -28,20 +35,75 @@ const startButton = {
     backgroundColor: 'green',
 };
 
+const stopButton = {
+    border: 'none',
+    borderRadius: '100%',
+    backgroundColor: 'red',
+};
+
 const deleteButton = {
     border: 'none',
     borderRadius: '100%',
     backgroundColor: 'red',
 };
 
+const statusColor = (level: string) => {
+    switch (level) {
+        case 'idle':
+            return 'yellow';
+        case 'info':
+            return 'white';
+        case 'success':
+            return 'green';
+        case 'error':
+            return 'red';
+    }
+};
+
 const Bot = (props: any) => {
     const { uuid, store, keyword, startdate, starttime, profile, sizes, proxyset, quantity, monitordelay, retrydelay, deleteBot } = props;
 
-    const [, updateState] = useState();
-    const forceUpdate = useCallback(() => updateState({} as any), []);
+    const [status, setStatus] = useState('Idle');
+    const [running, setRunning] = useState(false);
+    const [statusLevel, setStatusLevel] = useState('idle');
+
+    ipcRenderer.on(uuid, (event, status: Status) => {
+        setStatus((prevStatus) => (prevStatus = status.status));
+        setStatusLevel((prevLevel) => (prevLevel = status.level));
+    });
 
     const startTask = () => {
-        console.log('start task from', store);
+        setRunning((prevRunning) => (prevRunning = !prevRunning));
+        ipcRenderer.send('start-task', uuid);
+    };
+
+    const stopTask = () => {
+        console.log('remove all listeners');
+        ipcRenderer.removeAllListeners(uuid);
+        setRunning((prevRunning) => (prevRunning = !prevRunning));
+        setStatusLevel((prevLevel) => (prevLevel = 'idle'));
+    };
+
+    const runButton = () => {
+        return running ? (
+            <Button
+                onClick={() => {
+                    stopTask();
+                }}
+                style={stopButton}
+                icon={<StopOutlined />}
+                size="small"
+            />
+        ) : (
+            <Button
+                onClick={() => {
+                    startTask();
+                }}
+                style={startButton}
+                icon={<DoubleRightOutlined />}
+                size="small"
+            />
+        );
     };
 
     useEffect(() => {
@@ -88,25 +150,20 @@ const Bot = (props: any) => {
             </Col>
 
             <Col span={3} style={colStyle}>
-                <p style={{ color: 'yellow', margin: 'auto' }}>idle</p>
+                <p style={{ color: statusColor(statusLevel), margin: 'auto' }}>{status}</p>
             </Col>
 
             <Col span={3} style={colStyle}>
                 <Space>
-                    <Button
-                        onClick={() => {
-                            startTask();
-                        }}
-                        style={startButton}
-                        icon={<DoubleRightOutlined />}
-                    />
-                    <Button style={editButton} icon={<EditOutlined />} />
+                    {runButton()}
+                    <Button style={editButton} size="small" icon={<EditOutlined />} />
                     <Button
                         onClick={() => {
                             deleteBot(uuid);
                         }}
                         style={deleteButton}
                         icon={<DeleteOutlined />}
+                        size="small"
                     />
                 </Space>
             </Col>

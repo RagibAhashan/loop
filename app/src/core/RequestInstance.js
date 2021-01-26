@@ -5,7 +5,7 @@ class RequestInstance {
             baseURL: baseURL,
             params: { params },
             headers: { headers },
-            httpsAgent: proxy?.getAgent(),
+            httpsAgent: proxy ? proxy.getAgent() : undefined,
         });
     }
 }
