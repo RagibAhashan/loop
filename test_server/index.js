@@ -9,6 +9,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 const random = () => {
     let random = Math.round(Math.random() * 2500);
+    console.log(random);
     return random;
 };
 
