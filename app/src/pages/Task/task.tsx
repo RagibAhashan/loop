@@ -1,7 +1,7 @@
 import { Button, Col, DatePicker, Form, Input, Row, Select, TimePicker, Divider } from 'antd';
 import React, { useState, useEffect, useCallback } from 'react';
 import Bot from './bot';
-const { uuid } = require('uuidv4');
+const { v4: uuid } = require('uuid');
 
 const { Option } = Select;
 
@@ -127,6 +127,9 @@ const TaskComponent = () => {
         forceUpdate();
     };
 
+    const runAll = () => {
+        console.log(jobs);
+    };
     const Headers = () => {
         return (
             <Row style={botStyle}>
@@ -194,6 +197,7 @@ const TaskComponent = () => {
 
     const ROW_GUTTER: [number, number] = [24, 0];
 
+    useEffect(() => {});
     return (
         <div>
             <Form onFinish={addTasks} validateMessages={validateMessages}>
@@ -310,7 +314,7 @@ const TaskComponent = () => {
 
             <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10 }}>
                 <Col span={3}>
-                    <Button type="default" style={{ ...buttonStyle, backgroundColor: 'green' }}>
+                    <Button onClick={() => runAll()} type="default" style={{ ...buttonStyle, backgroundColor: 'green' }}>
                         Run all
                     </Button>
                 </Col>

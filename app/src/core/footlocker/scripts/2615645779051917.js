@@ -1,168 +1,121 @@
+/* eslint-disable */
+/* tslint-disable */
+
 (function () {
     var adyen = (window.adyen = window.adyen || {});
     adyen.cse = adyen.cse || {};
-    adyen.cse.version = "0_1_18";
+    adyen.cse.version = '0_1_18';
 
-    adyen.cse.id = "2615645779051917";
+    adyen.cse.id = '2615645779051917';
     adyen.cse.available = true;
 
     adyen.cse.plugins = adyen.cse.plugins || {};
-    adyen.cse.plugins.version = "0_1_18";
+    adyen.cse.plugins.version = '0_1_18';
 
     // Plugins minified version: 0_1_18
     (function () {
         var adyen = (window.adyen = window.adyen || {}),
             cardTypes = (function () {
                 var Cards = new makeArray(27);
-                Cards[0] = new CardType(
-                    "mc",
-                    "51,52,53,54,55,22,23,24,25,26,27",
-                    "16"
-                );
+                Cards[0] = new CardType('mc', '51,52,53,54,55,22,23,24,25,26,27', '16');
                 var MasterCard = Cards[0];
-                Cards[1] = new CardType("visadankort", "4571", "16");
+                Cards[1] = new CardType('visadankort', '4571', '16');
                 var VisaDankort = Cards[1];
-                Cards[2] = new CardType("visa", "4", "13,16");
+                Cards[2] = new CardType('visa', '4', '13,16');
                 var VisaCard = Cards[2];
-                Cards[3] = new CardType("amex", "34,37", "15");
+                Cards[3] = new CardType('amex', '34,37', '15');
                 var AmExCard = Cards[3];
-                Cards[4] = new CardType("vias", "9", "16");
+                Cards[4] = new CardType('vias', '9', '16');
                 var AdyenCard = Cards[4];
-                Cards[5] = new CardType("diners", "36", "14");
+                Cards[5] = new CardType('diners', '36', '14');
                 var DinersClubCard = Cards[5];
-                Cards[6] = new CardType("maestrouk", "6759", "16,18,19");
+                Cards[6] = new CardType('maestrouk', '6759', '16,18,19');
                 var MaestroUKCard = Cards[6];
-                Cards[7] = new CardType("solo", "6767", "16,18,19");
+                Cards[7] = new CardType('solo', '6767', '16,18,19');
                 var SoloCard = Cards[7];
-                Cards[8] = new CardType(
-                    "laser",
-                    "6304,6706,677117,677120",
-                    "16,17,18,19"
-                );
+                Cards[8] = new CardType('laser', '6304,6706,677117,677120', '16,17,18,19');
                 var LaserCard = Cards[8];
-                Cards[9] = new CardType(
-                    "discover",
-                    "6011,644,645,646,647,648,649,65",
-                    "16"
-                );
+                Cards[9] = new CardType('discover', '6011,644,645,646,647,648,649,65', '16');
                 var DiscoverCard = Cards[9];
-                Cards[10] = new CardType(
-                    "jcb",
-                    "3528,3529,353,354,355,356,357,358",
-                    "16,19"
-                );
+                Cards[10] = new CardType('jcb', '3528,3529,353,354,355,356,357,358', '16,19');
                 var JCBCard = Cards[10];
-                Cards[11] = new CardType("bcmc", "6703", "16,17,18,19");
+                Cards[11] = new CardType('bcmc', '6703', '16,17,18,19');
                 var Bcmc = Cards[11];
-                Cards[12] = new CardType("bijcard", "5100081", "16");
+                Cards[12] = new CardType('bijcard', '5100081', '16');
                 var BijCard = Cards[12];
-                Cards[13] = new CardType("dankort", "5019", "16");
+                Cards[13] = new CardType('dankort', '5019', '16');
                 var Dankort = Cards[13];
-                Cards[14] = new CardType("hipercard", "606282", "16");
+                Cards[14] = new CardType('hipercard', '606282', '16');
                 var Hipercard = Cards[14];
-                Cards[15] = new CardType(
-                    "maestro",
-                    "50,56,57,58,6",
-                    "16,17,18,19"
-                );
+                Cards[15] = new CardType('maestro', '50,56,57,58,6', '16,17,18,19');
                 var MaestroCard = Cards[15];
                 Cards[16] = new CardType(
-                    "elo",
-                    "506699,50670,50671,50672,50673,50674,50675,50676,506770,506771,506772,506773,506774,506775,506776,506777,506778,401178,438935,451416,457631,457632,504175,627780,636297,636368",
-                    "16"
+                    'elo',
+                    '506699,50670,50671,50672,50673,50674,50675,50676,506770,506771,506772,506773,506774,506775,506776,506777,506778,401178,438935,451416,457631,457632,504175,627780,636297,636368',
+                    '16',
                 );
                 var Elo = Cards[16];
-                Cards[17] = new CardType("uatp", "1", "15");
+                Cards[17] = new CardType('uatp', '1', '15');
                 var Uatp = Cards[17];
-                Cards[18] = new CardType("cup", "62", "14,15,16,17,18,19");
+                Cards[18] = new CardType('cup', '62', '14,15,16,17,18,19');
                 var Cup = Cards[18];
-                Cards[19] = new CardType("cartebancaire", "4,5,6", "16");
+                Cards[19] = new CardType('cartebancaire', '4,5,6', '16');
                 var CarteBancaire = Cards[19];
-                Cards[20] = new CardType("visaalphabankbonus", "450903", "16");
+                Cards[20] = new CardType('visaalphabankbonus', '450903', '16');
                 var VisAlphaBankBonus = Cards[20];
-                Cards[21] = new CardType("mcalphabankbonus", "510099", "16");
+                Cards[21] = new CardType('mcalphabankbonus', '510099', '16');
                 var McAlphaBankBonus = Cards[21];
-                Cards[22] = new CardType(
-                    "hiper",
-                    "637095,637599,637609,637612",
-                    "16"
-                );
+                Cards[22] = new CardType('hiper', '637095,637599,637609,637612', '16');
                 var Hiper = Cards[22];
-                Cards[23] = new CardType("oasis", "982616", "16");
+                Cards[23] = new CardType('oasis', '982616', '16');
                 var Oasis = Cards[23];
-                Cards[24] = new CardType("karenmillen", "98261465", "16");
+                Cards[24] = new CardType('karenmillen', '98261465', '16');
                 var Karenmillen = Cards[24];
-                Cards[25] = new CardType("warehouse", "982633", "16");
+                Cards[25] = new CardType('warehouse', '982633', '16');
                 var Warehouse = Cards[25];
                 var LuhnCheckSum = (Cards[26] = new CardType());
 
-                function CheckCardNumber(
-                    cardNumber,
-                    expYear,
-                    expMon,
-                    cardType
-                ) {
+                function CheckCardNumber(cardNumber, expYear, expMon, cardType) {
                     var tmpyear;
                     if (cardNumber.length == 0) {
-                        alert("Please enter a Card Number.");
+                        alert('Please enter a Card Number.');
                         return false;
                     }
                     if (expYear.length == 0) {
-                        alert("Please enter the Expiration Year.");
+                        alert('Please enter the Expiration Year.');
                         return false;
                     }
                     if (expYear > 96) {
-                        tmpyear = "19" + expYear;
+                        tmpyear = '19' + expYear;
                     } else {
                         if (expYear < 21) {
-                            tmpyear = "20" + expYear;
+                            tmpyear = '20' + expYear;
                         } else {
-                            alert("The Expiration Year is not valid.");
+                            alert('The Expiration Year is not valid.');
                             return false;
                         }
                     }
                     tmpmonth = expMon;
                     if (!new CardType().isExpiryDate(tmpyear, tmpmonth)) {
-                        alert("This card has already expired.");
+                        alert('This card has already expired.');
                         return false;
                     }
                     card = cardType;
-                    var retval = eval(
-                        card +
-                            '.checkCardNumber("' +
-                            cardNumber +
-                            '", ' +
-                            tmpyear +
-                            ", " +
-                            tmpmonth +
-                            ");"
-                    );
-                    cardname = "";
+                    var retval = eval(card + '.checkCardNumber("' + cardNumber + '", ' + tmpyear + ', ' + tmpmonth + ');');
+                    cardname = '';
                     if (retval) {
                         return true;
                     } else {
                         for (var n = 0; n < Cards.size; n++) {
-                            if (
-                                Cards[n].checkCardNumber(
-                                    cardNumber,
-                                    tmpyear,
-                                    tmpmonth
-                                )
-                            ) {
+                            if (Cards[n].checkCardNumber(cardNumber, tmpyear, tmpmonth)) {
                                 cardname = Cards[n].getCardType();
                                 break;
                             }
                         }
                         if (cardname.length > 0) {
-                            alert(
-                                "This looks like a " +
-                                    cardname +
-                                    " number, not a " +
-                                    card +
-                                    " number."
-                            );
+                            alert('This looks like a ' + cardname + ' number, not a ' + card + ' number.');
                         } else {
-                            alert("This card number is not valid.");
+                            alert('This card number is not valid.');
                         }
                     }
                 }
@@ -171,10 +124,10 @@
                     var f;
                     var a = CardType.arguments;
                     var d = CardType.arguments.length;
-                    this.objname = "object CardType";
-                    var c = d > 0 ? a[0] : "CardObject";
-                    var e = d > 1 ? a[1] : "0,1,2,3,4,5,6,7,8,9";
-                    var b = d > 2 ? a[2] : "13,14,15,16,19";
+                    this.objname = 'object CardType';
+                    var c = d > 0 ? a[0] : 'CardObject';
+                    var e = d > 1 ? a[1] : '0,1,2,3,4,5,6,7,8,9';
+                    var b = d > 2 ? a[2] : '13,14,15,16,19';
                     this.setCardNumber = setCardNumber;
                     this.setCardType = setCardType;
                     this.setLen = setLen;
@@ -217,7 +170,7 @@
                 }
 
                 function getExpiryDate() {
-                    return this.month + "/" + this.year;
+                    return this.month + '/' + this.year;
                 }
 
                 function isCardNumber() {
@@ -230,10 +183,7 @@
                     for (var f = 0; f < this.len.size; f++) {
                         if (c.toString().length == this.len[f]) {
                             for (var a = 0; a < this.rules.size; a++) {
-                                var e = c.substring(
-                                    0,
-                                    this.rules[a].toString().length
-                                );
+                                var e = c.substring(0, this.rules[a].toString().length);
                                 if (e == this.rules[a]) {
                                     return true;
                                 }
@@ -249,10 +199,10 @@
                     var b = isExpiryDate.arguments.length;
                     year = b > 0 ? a[0] : this.year;
                     month = b > 1 ? a[1] : this.month;
-                    if (!isNum(year + "")) {
+                    if (!isNum(year + '')) {
                         return false;
                     }
-                    if (!isNum(month + "")) {
+                    if (!isNum(month + '')) {
                         return false;
                     }
                     today = new Date();
@@ -270,10 +220,7 @@
                         return false;
                     }
                     for (var b = 0; b < a.length; b++) {
-                        if (
-                            a.substring(b, b + 1) < "0" ||
-                            a.substring(b, b + 1) > "9"
-                        ) {
+                        if (a.substring(b, b + 1) < '0' || a.substring(b, b + 1) > '9') {
                             return false;
                         }
                     }
@@ -330,20 +277,20 @@
 
                 function setLen(a) {
                     if (a.length == 0 || a == null) {
-                        a = "13,14,15,16,19";
+                        a = '13,14,15,16,19';
                     }
                     var c = a;
                     n = 1;
-                    while (c.indexOf(",") != -1) {
-                        c = c.substring(c.indexOf(",") + 1, c.length);
+                    while (c.indexOf(',') != -1) {
+                        c = c.substring(c.indexOf(',') + 1, c.length);
                         n++;
                     }
                     this.len = new makeArray(n);
                     n = 0;
-                    while (a.indexOf(",") != -1) {
-                        var b = a.substring(0, a.indexOf(","));
+                    while (a.indexOf(',') != -1) {
+                        var b = a.substring(0, a.indexOf(','));
                         this.len[n] = b;
-                        a = a.substring(a.indexOf(",") + 1, a.length);
+                        a = a.substring(a.indexOf(',') + 1, a.length);
                         n++;
                     }
                     this.len[n] = a;
@@ -352,20 +299,20 @@
 
                 function setRules(c) {
                     if (c.length == 0 || c == null) {
-                        c = "0,1,2,3,4,5,6,7,8,9";
+                        c = '0,1,2,3,4,5,6,7,8,9';
                     }
                     var b = c;
                     n = 1;
-                    while (b.indexOf(",") != -1) {
-                        b = b.substring(b.indexOf(",") + 1, b.length);
+                    while (b.indexOf(',') != -1) {
+                        b = b.substring(b.indexOf(',') + 1, b.length);
                         n++;
                     }
                     this.rules = new makeArray(n);
                     n = 0;
-                    while (c.indexOf(",") != -1) {
-                        var a = c.substring(0, c.indexOf(","));
+                    while (c.indexOf(',') != -1) {
+                        var a = c.substring(0, c.indexOf(','));
                         this.rules[n] = a;
-                        c = c.substring(c.indexOf(",") + 1, c.length);
+                        c = c.substring(c.indexOf(',') + 1, c.length);
                         n++;
                     }
                     this.rules[n] = c;
@@ -392,18 +339,13 @@
                                         b = e.toString().length;
                                     }
                                     var g = e.substring(0, b);
-                                    var f = Cards[d].rules[a]
-                                        .toString()
-                                        .substring(0, b);
+                                    var f = Cards[d].rules[a].toString().substring(0, b);
                                     if (g === f) {
                                         if (contains(c, Cards[d].cardtype)) {
                                             return Cards[d];
                                         }
                                         if (contains(c, MasterCard.cardtype)) {
-                                            if (
-                                                Cards[d].cardtype ===
-                                                MaestroCard.cardtype
-                                            ) {
+                                            if (Cards[d].cardtype === MaestroCard.cardtype) {
                                                 return MasterCard;
                                             }
                                         }
@@ -442,17 +384,11 @@
                             }
                             if (card.setCardNumber(variant).isCardNumber()) {
                                 for (var c = 0; c < card.rules.size; c++) {
-                                    var len = Math.min(
-                                        variant.length,
-                                        card.rules[c].length
-                                    );
+                                    var len = Math.min(variant.length, card.rules[c].length);
                                     if (len < 3) {
                                         continue;
                                     }
-                                    if (
-                                        variant.substring(0, len) ===
-                                        card.rules[c].substring(0, len)
-                                    ) {
+                                    if (variant.substring(0, len) === card.rules[c].substring(0, len)) {
                                         if (len > currentMatchSize) {
                                             currentCardType = card;
                                             currentMatchSize = len;
@@ -463,10 +399,7 @@
                             card.setCardNumber(null);
                         }
                         if (currentCardType === null) {
-                            currentCardType = getBaseCard(
-                                variant,
-                                availableTypes
-                            );
+                            currentCardType = getBaseCard(variant, availableTypes);
                         }
                         determineCache[variant] = currentCardType;
                     }
@@ -475,34 +408,34 @@
                 return Cards;
             })(),
             nameForType = {
-                mc: "MasterCard",
-                visadankort: "Visa Dankort",
-                visa: "VISA",
-                amex: "American Express",
-                vias: "Adyen Card",
-                diners: "Diners Club",
-                maestrouk: "Maestro UK",
-                solo: "Solo",
-                laser: "Laser",
-                discover: "Discover",
-                jcb: "JCB",
-                bcmc: "Bancontact/Mister Cash",
-                bijcard: "de Bijenkorf Card",
-                dankort: "Dankort",
-                hipercard: "HiperCard",
-                maestro: "Maestro",
-                elo: "ELO",
-                uatp: "UATP",
-                cup: "China Union Pay",
-                cartebancaire: "Carte Bancaire",
-                visaalphabankbonus: "Alpha Bank Visa Bonus",
-                mcalphabankbonus: "Alpha Bank Mastercard Bonus",
-                karenmillen: "Karen Millen GiftCard",
-                oasis: "Oasis GiftCard",
-                warehouse: "Warehouse GiftCard",
+                mc: 'MasterCard',
+                visadankort: 'Visa Dankort',
+                visa: 'VISA',
+                amex: 'American Express',
+                vias: 'Adyen Card',
+                diners: 'Diners Club',
+                maestrouk: 'Maestro UK',
+                solo: 'Solo',
+                laser: 'Laser',
+                discover: 'Discover',
+                jcb: 'JCB',
+                bcmc: 'Bancontact/Mister Cash',
+                bijcard: 'de Bijenkorf Card',
+                dankort: 'Dankort',
+                hipercard: 'HiperCard',
+                maestro: 'Maestro',
+                elo: 'ELO',
+                uatp: 'UATP',
+                cup: 'China Union Pay',
+                cartebancaire: 'Carte Bancaire',
+                visaalphabankbonus: 'Alpha Bank Visa Bonus',
+                mcalphabankbonus: 'Alpha Bank Mastercard Bonus',
+                karenmillen: 'Karen Millen GiftCard',
+                oasis: 'Oasis GiftCard',
+                warehouse: 'Warehouse GiftCard',
             };
         adyen.CardTypeDetection = {
-            version: "0_1_18",
+            version: '0_1_18',
             getHandler: function (cardTypeElement) {
                 return function (ev) {
                     if (ev.cardTypeDetermined) {
@@ -511,24 +444,19 @@
                     ev.cardTypeDetermined = true;
                     var type = null,
                         node = ev.target || ev.srcElement,
-                        val = (node || {}).value || "";
-                    val = val.replace(/\D/g, "");
+                        val = (node || {}).value || '';
+                    val = val.replace(/\D/g, '');
                     if (val.length > 2) {
                         type = cardTypes.determine(val);
                     }
-                    var finalType = (type && type.cardtype) || "unknown";
-                    if (typeof cardTypeElement === "function") {
+                    var finalType = (type && type.cardtype) || 'unknown';
+                    if (typeof cardTypeElement === 'function') {
                         cardTypeElement(finalType, nameForType[finalType]);
                     } else {
-                        cardTypeElement.innerHTML =
-                            '<span class="cse-cardtype-label">' +
-                            (nameForType[finalType] || finalType) +
-                            "</span>";
+                        cardTypeElement.innerHTML = '<span class="cse-cardtype-label">' + (nameForType[finalType] || finalType) + '</span>';
                         cardTypeElement.className =
-                            (cardTypeElement.className || "")
-                                .replace(/(^|\s)cse-cardtype-\w+/gi, "")
-                                .replace(/^\s+|\s+$/g, "") +
-                            " cse-cardtype-" +
+                            (cardTypeElement.className || '').replace(/(^|\s)cse-cardtype-\w+/gi, '').replace(/^\s+|\s+$/g, '') +
+                            ' cse-cardtype-' +
                             finalType;
                     }
                 };
@@ -553,15 +481,11 @@
         var define,
             exports,
             df = function () {
-                return "";
+                return '';
             };
         (function () {
             try {
-                var b = [
-                    new Uint8Array(1),
-                    new Uint32Array(1),
-                    new Int32Array(1),
-                ];
+                var b = [new Uint8Array(1), new Uint32Array(1), new Int32Array(1)];
                 return;
             } catch (g) {}
 
@@ -580,7 +504,7 @@
 
             function d(e) {
                 var a;
-                if (typeof e === "number") {
+                if (typeof e === 'number') {
                     a = new Array(e);
                     for (var h = 0; h < e; ++h) {
                         a[h] = 0;
@@ -592,7 +516,7 @@
                 a.buffer = a;
                 a.byteLength = a.length;
                 a.set = c;
-                if (typeof e === "object" && e.buffer) {
+                if (typeof e === 'object' && e.buffer) {
                     a.buffer = e.buffer;
                 }
                 return a;
@@ -608,13 +532,12 @@
             } catch (g) {}
         })();
         (function () {
-            if ("btoa" in window) {
+            if ('btoa' in window) {
                 return;
             }
-            var a =
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+            var a = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
             window.btoa = function (g) {
-                var e = "";
+                var e = '';
                 var f, d;
                 for (f = 0, d = g.length; f < d; f += 3) {
                     var k = g.charCodeAt(f) & 255;
@@ -629,33 +552,31 @@
                 return e;
             };
         })();
-        if (typeof JSON !== "object") {
+        if (typeof JSON !== 'object') {
             JSON = {};
         }
         (function () {
             function f(n) {
-                return n < 10 ? "0" + n : n;
+                return n < 10 ? '0' + n : n;
             }
-            if (typeof Date.prototype.toJSON !== "function") {
+            if (typeof Date.prototype.toJSON !== 'function') {
                 Date.prototype.toJSON = function (key) {
                     return isFinite(this.valueOf())
                         ? this.getUTCFullYear() +
-                              "-" +
+                              '-' +
                               f(this.getUTCMonth() + 1) +
-                              "-" +
+                              '-' +
                               f(this.getUTCDate()) +
-                              "T" +
+                              'T' +
                               f(this.getUTCHours()) +
-                              ":" +
+                              ':' +
                               f(this.getUTCMinutes()) +
-                              ":" +
+                              ':' +
                               f(this.getUTCSeconds()) +
-                              "Z"
+                              'Z'
                         : null;
                 };
-                String.prototype.toJSON = Number.prototype.toJSON = Boolean.prototype.toJSON = function (
-                    key
-                ) {
+                String.prototype.toJSON = Number.prototype.toJSON = Boolean.prototype.toJSON = function (key) {
                     return this.valueOf();
                 };
             }
@@ -664,13 +585,13 @@
                 gap,
                 indent,
                 meta = {
-                    "\b": "\\b",
-                    "\t": "\\t",
-                    "\n": "\\n",
-                    "\f": "\\f",
-                    "\r": "\\r",
+                    '\b': '\\b',
+                    '\t': '\\t',
+                    '\n': '\\n',
+                    '\f': '\\f',
+                    '\r': '\\r',
                     '"': '\\"',
-                    "\\": "\\\\",
+                    '\\': '\\\\',
                 },
                 rep;
 
@@ -680,13 +601,7 @@
                     ? '"' +
                           string.replace(escapable, function (a) {
                               var c = meta[a];
-                              return typeof c === "string"
-                                  ? c
-                                  : "\\u" +
-                                        (
-                                            "0000" +
-                                            a.charCodeAt(0).toString(16)
-                                        ).slice(-4);
+                              return typeof c === 'string' ? c : '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
                           }) +
                           '"'
                     : '"' + string + '"';
@@ -700,126 +615,95 @@
                     mind = gap,
                     partial,
                     value = holder[key];
-                if (
-                    value &&
-                    typeof value === "object" &&
-                    typeof value.toJSON === "function"
-                ) {
+                if (value && typeof value === 'object' && typeof value.toJSON === 'function') {
                     value = value.toJSON(key);
                 }
-                if (typeof rep === "function") {
+                if (typeof rep === 'function') {
                     value = rep.call(holder, key, value);
                 }
                 switch (typeof value) {
-                    case "string":
+                    case 'string':
                         return quote(value);
-                    case "number":
-                        return isFinite(value) ? String(value) : "null";
-                    case "boolean":
-                    case "null":
+                    case 'number':
+                        return isFinite(value) ? String(value) : 'null';
+                    case 'boolean':
+                    case 'null':
                         return String(value);
-                    case "object":
+                    case 'object':
                         if (!value) {
-                            return "null";
+                            return 'null';
                         }
                         gap += indent;
                         partial = [];
-                        if (
-                            Object.prototype.toString.apply(value) ===
-                            "[object Array]"
-                        ) {
+                        if (Object.prototype.toString.apply(value) === '[object Array]') {
                             length = value.length;
                             for (i = 0; i < length; i += 1) {
-                                partial[i] = str(i, value) || "null";
+                                partial[i] = str(i, value) || 'null';
                             }
                             v =
                                 partial.length === 0
-                                    ? "[]"
+                                    ? '[]'
                                     : gap
-                                    ? "[\n" +
-                                      gap +
-                                      partial.join(",\n" + gap) +
-                                      "\n" +
-                                      mind +
-                                      "]"
-                                    : "[" + partial.join(",") + "]";
+                                    ? '[\n' + gap + partial.join(',\n' + gap) + '\n' + mind + ']'
+                                    : '[' + partial.join(',') + ']';
                             gap = mind;
                             return v;
                         }
-                        if (rep && typeof rep === "object") {
+                        if (rep && typeof rep === 'object') {
                             length = rep.length;
                             for (i = 0; i < length; i += 1) {
-                                if (typeof rep[i] === "string") {
+                                if (typeof rep[i] === 'string') {
                                     k = rep[i];
                                     v = str(k, value);
                                     if (v) {
-                                        partial.push(
-                                            quote(k) + (gap ? ": " : ":") + v
-                                        );
+                                        partial.push(quote(k) + (gap ? ': ' : ':') + v);
                                     }
                                 }
                             }
                         } else {
                             for (k in value) {
-                                if (
-                                    Object.prototype.hasOwnProperty.call(
-                                        value,
-                                        k
-                                    )
-                                ) {
+                                if (Object.prototype.hasOwnProperty.call(value, k)) {
                                     v = str(k, value);
                                     if (v) {
-                                        partial.push(
-                                            quote(k) + (gap ? ": " : ":") + v
-                                        );
+                                        partial.push(quote(k) + (gap ? ': ' : ':') + v);
                                     }
                                 }
                             }
                         }
                         v =
                             partial.length === 0
-                                ? "{}"
+                                ? '{}'
                                 : gap
-                                ? "{\n" +
-                                  gap +
-                                  partial.join(",\n" + gap) +
-                                  "\n" +
-                                  mind +
-                                  "}"
-                                : "{" + partial.join(",") + "}";
+                                ? '{\n' + gap + partial.join(',\n' + gap) + '\n' + mind + '}'
+                                : '{' + partial.join(',') + '}';
                         gap = mind;
                         return v;
                 }
             }
-            if (typeof JSON.stringify !== "function") {
+            if (typeof JSON.stringify !== 'function') {
                 JSON.stringify = function (value, replacer, space) {
                     var i;
-                    gap = "";
-                    indent = "";
-                    if (typeof space === "number") {
+                    gap = '';
+                    indent = '';
+                    if (typeof space === 'number') {
                         for (i = 0; i < space; i += 1) {
-                            indent += " ";
+                            indent += ' ';
                         }
                     } else {
-                        if (typeof space === "string") {
+                        if (typeof space === 'string') {
                             indent = space;
                         }
                     }
                     rep = replacer;
-                    if (
-                        replacer &&
-                        typeof replacer !== "function" &&
-                        (typeof replacer !== "object" ||
-                            typeof replacer.length !== "number")
-                    ) {
-                        throw new Error("JSON.stringify");
+                    if (replacer && typeof replacer !== 'function' && (typeof replacer !== 'object' || typeof replacer.length !== 'number')) {
+                        throw new Error('JSON.stringify');
                     }
-                    return str("", {
-                        "": value,
+                    return str('', {
+                        '': value,
                     });
                 };
             }
-            if (typeof JSON.parse !== "function") {
+            if (typeof JSON.parse !== 'function') {
                 JSON.parse = function (text, reviver) {
                     var j;
 
@@ -827,14 +711,9 @@
                         var k,
                             v,
                             value = holder[key];
-                        if (value && typeof value === "object") {
+                        if (value && typeof value === 'object') {
                             for (k in value) {
-                                if (
-                                    Object.prototype.hasOwnProperty.call(
-                                        value,
-                                        k
-                                    )
-                                ) {
+                                if (Object.prototype.hasOwnProperty.call(value, k)) {
                                     v = walk(value, k);
                                     if (v !== undefined) {
                                         value[k] = v;
@@ -850,50 +729,38 @@
                     cx.lastIndex = 0;
                     if (cx.test(text)) {
                         text = text.replace(cx, function (a) {
-                            return (
-                                "\\u" +
-                                ("0000" + a.charCodeAt(0).toString(16)).slice(
-                                    -4
-                                )
-                            );
+                            return '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
                         });
                     }
                     if (
                         /^[\],:{}\s]*$/.test(
                             text
-                                .replace(
-                                    /\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,
-                                    "@"
-                                )
-                                .replace(
-                                    /"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,
-                                    "]"
-                                )
-                                .replace(/(?:^|:|,)(?:\s*\[)+/g, "")
+                                .replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@')
+                                .replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']')
+                                .replace(/(?:^|:|,)(?:\s*\[)+/g, ''),
                         )
                     ) {
-                        j = eval("(" + text + ")");
-                        return typeof reviver === "function"
+                        j = eval('(' + text + ')');
+                        return typeof reviver === 'function'
                             ? walk(
                                   {
-                                      "": j,
+                                      '': j,
                                   },
-                                  ""
+                                  '',
                               )
                             : j;
                     }
-                    throw new SyntaxError("JSON.parse");
+                    throw new SyntaxError('JSON.parse');
                 };
             }
         })();
-        var b64map =
-            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-        var b64padchar = "=";
+        var b64map = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+        var b64padchar = '=';
 
         function hex2b64(d) {
             var b;
             var e;
-            var a = "";
+            var a = '';
             for (b = 0; b + 3 <= d.length; b += 3) {
                 e = parseInt(d.substring(b, b + 3), 16);
                 a += b64map.charAt(e >> 6) + b64map.charAt(e & 63);
@@ -914,7 +781,7 @@
         }
 
         function b64tohex(e) {
-            var c = "";
+            var c = '';
             var d;
             var a = 0;
             var b;
@@ -970,10 +837,10 @@
 
         function BigInteger(e, d, f) {
             if (e != null) {
-                if ("number" == typeof e) {
+                if ('number' == typeof e) {
                     this.fromNumber(e, d, f);
                 } else {
-                    if (d == null && "string" != typeof e) {
+                    if (d == null && 'string' != typeof e) {
                         this.fromString(e, 256);
                     } else {
                         this.fromString(e, d);
@@ -1022,11 +889,11 @@
             }
             return o;
         }
-        if (j_lm && navigator.appName == "Microsoft Internet Explorer") {
+        if (j_lm && navigator.appName == 'Microsoft Internet Explorer') {
             BigInteger.prototype.am = am2;
             dbits = 30;
         } else {
-            if (j_lm && navigator.appName != "Netscape") {
+            if (j_lm && navigator.appName != 'Netscape') {
                 BigInteger.prototype.am = am1;
                 dbits = 26;
             } else {
@@ -1041,18 +908,18 @@
         BigInteger.prototype.FV = Math.pow(2, BI_FP);
         BigInteger.prototype.F1 = BI_FP - dbits;
         BigInteger.prototype.F2 = 2 * dbits - BI_FP;
-        var BI_RM = "0123456789abcdefghijklmnopqrstuvwxyz";
+        var BI_RM = '0123456789abcdefghijklmnopqrstuvwxyz';
         var BI_RC = new Array();
         var rr, vv;
-        rr = "0".charCodeAt(0);
+        rr = '0'.charCodeAt(0);
         for (vv = 0; vv <= 9; ++vv) {
             BI_RC[rr++] = vv;
         }
-        rr = "a".charCodeAt(0);
+        rr = 'a'.charCodeAt(0);
         for (vv = 10; vv < 36; ++vv) {
             BI_RC[rr++] = vv;
         }
-        rr = "A".charCodeAt(0);
+        rr = 'A'.charCodeAt(0);
         for (vv = 10; vv < 36; ++vv) {
             BI_RC[rr++] = vv;
         }
@@ -1130,7 +997,7 @@
             while (--g >= 0) {
                 var a = e == 8 ? h[g] & 255 : intAt(h, g);
                 if (a < 0) {
-                    if (h.charAt(g) == "-") {
+                    if (h.charAt(g) == '-') {
                         d = true;
                     }
                     continue;
@@ -1140,8 +1007,7 @@
                     this[this.t++] = a;
                 } else {
                     if (f + e > this.DB) {
-                        this[this.t - 1] |=
-                            (a & ((1 << (this.DB - f)) - 1)) << f;
+                        this[this.t - 1] |= (a & ((1 << (this.DB - f)) - 1)) << f;
                         this[this.t++] = a >> (this.DB - f);
                     } else {
                         this[this.t - 1] |= a << f;
@@ -1173,7 +1039,7 @@
 
         function bnToString(c) {
             if (this.s < 0) {
-                return "-" + this.negate().toString(c);
+                return '-' + this.negate().toString(c);
             }
             var e;
             if (c == 16) {
@@ -1200,7 +1066,7 @@
             var g = (1 << e) - 1,
                 l,
                 a = false,
-                h = "",
+                h = '',
                 f = this.t;
             var j = this.DB - ((f * this.DB) % e);
             if (f-- > 0) {
@@ -1227,7 +1093,7 @@
                     }
                 }
             }
-            return a ? h : "0";
+            return a ? h : '0';
         }
 
         function bnNegate() {
@@ -1288,10 +1154,7 @@
             if (this.t <= 0) {
                 return 0;
             }
-            return (
-                this.DB * (this.t - 1) +
-                nbits(this[this.t - 1] ^ (this.s & this.DM))
-            );
+            return this.DB * (this.t - 1) + nbits(this[this.t - 1] ^ (this.s & this.DM));
         }
 
         function bnpDLShiftTo(c, b) {
@@ -1420,16 +1283,7 @@
             }
             for (b = 0; b < a.t - 1; ++b) {
                 var e = a.am(b, a[b], d, 2 * b, 0, 1);
-                if (
-                    (d[b + a.t] += a.am(
-                        b + 1,
-                        2 * a[b],
-                        d,
-                        2 * b + 1,
-                        e,
-                        a.t - b - 1
-                    )) >= a.DV
-                ) {
+                if ((d[b + a.t] += a.am(b + 1, 2 * a[b], d, 2 * b + 1, e, a.t - b - 1)) >= a.DV) {
                     d[b + a.t] -= a.DV;
                     d[b + a.t + 1] = 1;
                 }
@@ -1493,10 +1347,7 @@
                 d[d.t++] = 0;
             }
             while (--s >= 0) {
-                var c =
-                    g[--u] == b
-                        ? this.DM
-                        : Math.floor(g[u] * A + (g[u - 1] + x) * z);
+                var c = g[--u] == b ? this.DM : Math.floor(g[u] * A + (g[u - 1] + x) * z);
                 if ((g[u] += d.am(0, c, g, s, 0, p)) < c) {
                     d.dlShiftTo(s, f);
                     g.subTo(f, g);
@@ -1613,11 +1464,7 @@
             }
             for (var c = 0; c < this.m.t; ++c) {
                 var b = a[c] & 32767;
-                var d =
-                    (b * this.mpl +
-                        (((b * this.mph + (a[c] >> 15) * this.mpl) & this.um) <<
-                            15)) &
-                    a.DM;
+                var d = (b * this.mpl + (((b * this.mph + (a[c] >> 15) * this.mpl) & this.um) << 15)) & a.DM;
                 b = c + this.m.t;
                 a[b] += this.m.am(0, d, a, c, 0, this.m.t);
                 while (a[b] >= a.DV) {
@@ -1828,7 +1675,7 @@
 
         function pkcs1pad2(c, g) {
             if (g < c.length + 11) {
-                alert("Message too long for RSA");
+                alert('Message too long for RSA');
                 return null;
             }
             var f = new Array();
@@ -1867,7 +1714,7 @@
                 this.n = parseBigInt(b, 16);
                 this.e = parseInt(a, 16);
             } else {
-                alert("Invalid RSA public key");
+                alert('Invalid RSA public key');
             }
         }
 
@@ -1888,7 +1735,7 @@
             if ((d.length & 1) == 0) {
                 return d;
             } else {
-                return "0" + d;
+                return '0' + d;
             }
         }
 
@@ -1904,7 +1751,7 @@
         RSAKey.prototype.setPublic = RSASetPublic;
         RSAKey.prototype.encrypt = RSAEncrypt;
         RSAKey.prototype.encrypt_b64 = RSAEncryptB64;
-        ("use strict");
+        ('use strict');
 
         function q(b) {
             throw b;
@@ -1921,34 +1768,32 @@
             exception: {
                 corrupt: function (b) {
                     this.toString = function () {
-                        return "CORRUPT: " + this.message;
+                        return 'CORRUPT: ' + this.message;
                     };
                     this.message = b;
                 },
                 invalid: function (b) {
                     this.toString = function () {
-                        return "INVALID: " + this.message;
+                        return 'INVALID: ' + this.message;
                     };
                     this.message = b;
                 },
                 bug: function (b) {
                     this.toString = function () {
-                        return "BUG: " + this.message;
+                        return 'BUG: ' + this.message;
                     };
                     this.message = b;
                 },
                 notReady: function (b) {
                     this.toString = function () {
-                        return "NOT READY: " + this.message;
+                        return 'NOT READY: ' + this.message;
                     };
                     this.message = b;
                 },
             },
         };
-        "undefined" !== typeof module &&
-            module.exports &&
-            (module.exports = sjcl);
-        "function" === typeof define &&
+        'undefined' !== typeof module && module.exports && (module.exports = sjcl);
+        'function' === typeof define &&
             define([], function () {
                 return sjcl;
             });
@@ -1962,34 +1807,19 @@
                 l = this.k[1];
             i = j.length;
             var k = 1;
-            4 !== i &&
-                6 !== i &&
-                8 !== i &&
-                q(new sjcl.exception.invalid("invalid aes key size"));
+            4 !== i && 6 !== i && 8 !== i && q(new sjcl.exception.invalid('invalid aes key size'));
             this.b = [(o = j.slice(0)), (n = [])];
             for (j = i; j < 4 * i + 28; j++) {
                 p = o[j - 1];
                 if (0 === j % i || (8 === i && 4 === j % i)) {
-                    (p =
-                        (m[p >>> 24] << 24) ^
-                        (m[(p >> 16) & 255] << 16) ^
-                        (m[(p >> 8) & 255] << 8) ^
-                        m[p & 255]),
-                        0 === j % i &&
-                            ((p = (p << 8) ^ (p >>> 24) ^ (k << 24)),
-                            (k = (k << 1) ^ (283 * (k >> 7))));
+                    (p = (m[p >>> 24] << 24) ^ (m[(p >> 16) & 255] << 16) ^ (m[(p >> 8) & 255] << 8) ^ m[p & 255]),
+                        0 === j % i && ((p = (p << 8) ^ (p >>> 24) ^ (k << 24)), (k = (k << 1) ^ (283 * (k >> 7))));
                 }
                 o[j] = o[j - i] ^ p;
             }
             for (i = 0; j; i++, j--) {
                 (p = o[i & 3 ? j : j - 4]),
-                    (n[i] =
-                        4 >= j || 4 > i
-                            ? p
-                            : l[0][m[p >>> 24]] ^
-                              l[1][m[(p >> 16) & 255]] ^
-                              l[2][m[(p >> 8) & 255]] ^
-                              l[3][m[p & 255]]);
+                    (n[i] = 4 >= j || 4 > i ? p : l[0][m[p >>> 24]] ^ l[1][m[(p >> 16) & 255]] ^ l[2][m[(p >> 8) & 255]] ^ l[3][m[p & 255]]);
             }
         };
         sjcl.cipher.aes.prototype = {
@@ -2026,15 +1856,10 @@
                     P[x] = o;
                     O[o] = x;
                     j = v[(N = v[(s = v[x])])];
-                    i =
-                        (16843009 * j) ^
-                        (65537 * N) ^
-                        (257 * s) ^
-                        (16843008 * x);
+                    i = (16843009 * j) ^ (65537 * N) ^ (257 * s) ^ (16843008 * x);
                     j = (257 * v[o]) ^ (16843008 * o);
                     for (N = 0; 4 > N; N++) {
-                        (R[N][x] = j = (j << 24) ^ (j >>> 8)),
-                            (Q[N][o] = i = (i << 24) ^ (i >>> 8));
+                        (R[N][x] = j = (j << 24) ^ (j >>> 8)), (Q[N][o] = i = (i << 24) ^ (i >>> 8));
                     }
                 }
                 for (N = 0; 5 > N; N++) {
@@ -2044,8 +1869,7 @@
         };
 
         function y(ab, aa, Z) {
-            4 !== aa.length &&
-                q(new sjcl.exception.invalid("invalid aes block size"));
+            4 !== aa.length && q(new sjcl.exception.invalid('invalid aes block size'));
             var Y = ab.b[Z],
                 X = aa[0] ^ Y[0],
                 W = aa[Z ? 3 : 1] ^ Y[1],
@@ -2065,42 +1889,17 @@
                 j = U[3],
                 i = U[4];
             for (R = 0; R < Q; R++) {
-                (U =
-                    ab[X >>> 24] ^
-                    O[(W >> 16) & 255] ^
-                    o[(V >> 8) & 255] ^
-                    j[aa & 255] ^
-                    Y[P]),
-                    (S =
-                        ab[W >>> 24] ^
-                        O[(V >> 16) & 255] ^
-                        o[(aa >> 8) & 255] ^
-                        j[X & 255] ^
-                        Y[P + 1]),
-                    (T =
-                        ab[V >>> 24] ^
-                        O[(aa >> 16) & 255] ^
-                        o[(X >> 8) & 255] ^
-                        j[W & 255] ^
-                        Y[P + 2]),
-                    (aa =
-                        ab[aa >>> 24] ^
-                        O[(X >> 16) & 255] ^
-                        o[(W >> 8) & 255] ^
-                        j[V & 255] ^
-                        Y[P + 3]),
+                (U = ab[X >>> 24] ^ O[(W >> 16) & 255] ^ o[(V >> 8) & 255] ^ j[aa & 255] ^ Y[P]),
+                    (S = ab[W >>> 24] ^ O[(V >> 16) & 255] ^ o[(aa >> 8) & 255] ^ j[X & 255] ^ Y[P + 1]),
+                    (T = ab[V >>> 24] ^ O[(aa >> 16) & 255] ^ o[(X >> 8) & 255] ^ j[W & 255] ^ Y[P + 2]),
+                    (aa = ab[aa >>> 24] ^ O[(X >> 16) & 255] ^ o[(W >> 8) & 255] ^ j[V & 255] ^ Y[P + 3]),
                     (P += 4),
                     (X = U),
                     (W = S),
                     (V = T);
             }
             for (R = 0; 4 > R; R++) {
-                (N[Z ? 3 & -R : R] =
-                    (i[X >>> 24] << 24) ^
-                    (i[(W >> 16) & 255] << 16) ^
-                    (i[(V >> 8) & 255] << 8) ^
-                    i[aa & 255] ^
-                    Y[P++]),
+                (N[Z ? 3 & -R : R] = (i[X >>> 24] << 24) ^ (i[(W >> 16) & 255] << 16) ^ (i[(V >> 8) & 255] << 8) ^ i[aa & 255] ^ Y[P++]),
                     (U = X),
                     (X = W),
                     (W = V),
@@ -2117,11 +1916,7 @@
             extract: function (f, e, h) {
                 var g = Math.floor((-e - h) & 31);
                 return (
-                    (((e + h - 1) ^ e) & -32
-                        ? (f[(e / 32) | 0] << (32 - g)) ^
-                          (f[(e / 32 + 1) | 0] >>> g)
-                        : f[(e / 32) | 0] >>> g) &
-                    ((1 << h) - 1)
+                    (((e + h - 1) ^ e) & -32 ? (f[(e / 32) | 0] << (32 - g)) ^ (f[(e / 32 + 1) | 0] >>> g) : f[(e / 32) | 0] >>> g) & ((1 << h) - 1)
                 );
             },
             concat: function (f, e) {
@@ -2130,15 +1925,11 @@
                 }
                 var h = f[f.length - 1],
                     g = sjcl.bitArray.getPartial(h);
-                return 32 === g
-                    ? f.concat(e)
-                    : sjcl.bitArray.P(e, g, h | 0, f.slice(0, f.length - 1));
+                return 32 === g ? f.concat(e) : sjcl.bitArray.P(e, g, h | 0, f.slice(0, f.length - 1));
             },
             bitLength: function (d) {
                 var c = d.length;
-                return 0 === c
-                    ? 0
-                    : 32 * (c - 1) + sjcl.bitArray.getPartial(d[c - 1]);
+                return 0 === c ? 0 : 32 * (c - 1) + sjcl.bitArray.getPartial(d[c - 1]);
             },
             clamp: function (e, d) {
                 if (32 * e.length < d) {
@@ -2147,19 +1938,11 @@
                 e = e.slice(0, Math.ceil(d / 32));
                 var f = e.length;
                 d &= 31;
-                0 < f &&
-                    d &&
-                    (e[f - 1] = sjcl.bitArray.partial(
-                        d,
-                        e[f - 1] & (2147483648 >> (d - 1)),
-                        1
-                    ));
+                0 < f && d && (e[f - 1] = sjcl.bitArray.partial(d, e[f - 1] & (2147483648 >> (d - 1)), 1));
                 return e;
             },
             partial: function (e, d, f) {
-                return 32 === e
-                    ? d
-                    : (f ? d | 0 : d << (32 - e)) + 1099511627776 * e;
+                return 32 === e ? d : (f ? d | 0 : d << (32 - e)) + 1099511627776 * e;
             },
             getPartial: function (b) {
                 return Math.round(b / 1099511627776) || 32;
@@ -2189,13 +1972,7 @@
                 }
                 h = g.length ? g[g.length - 1] : 0;
                 g = sjcl.bitArray.getPartial(h);
-                i.push(
-                    sjcl.bitArray.partial(
-                        (f + g) & 31,
-                        32 < f + g ? j : i.pop(),
-                        1
-                    )
-                );
+                i.push(sjcl.bitArray.partial((f + g) & 31, 32 < f + g ? j : i.pop(), 1));
                 return i;
             },
             l: function (d, c) {
@@ -2204,26 +1981,19 @@
             byteswapM: function (e) {
                 var d, f;
                 for (d = 0; d < e.length; ++d) {
-                    (f = e[d]),
-                        (e[d] =
-                            (f >>> 24) |
-                            ((f >>> 8) & 65280) |
-                            ((f & 65280) << 8) |
-                            (f << 24));
+                    (f = e[d]), (e[d] = (f >>> 24) | ((f >>> 8) & 65280) | ((f & 65280) << 8) | (f << 24));
                 }
                 return e;
             },
         };
         sjcl.codec.utf8String = {
             fromBits: function (g) {
-                var f = "",
+                var f = '',
                     j = sjcl.bitArray.bitLength(g),
                     i,
                     h;
                 for (i = 0; i < j / 8; i++) {
-                    0 === (i & 3) && (h = g[i / 4]),
-                        (f += String.fromCharCode(h >>> 24)),
-                        (h <<= 8);
+                    0 === (i & 3) && (h = g[i / 4]), (f += String.fromCharCode(h >>> 24)), (h <<= 8);
                 }
                 return decodeURIComponent(escape(f));
             },
@@ -2233,8 +2003,7 @@
                     h,
                     g = 0;
                 for (h = 0; h < f.length; h++) {
-                    (g = (g << 8) | f.charCodeAt(h)),
-                        3 === (h & 3) && (e.push(g), (g = 0));
+                    (g = (g << 8) | f.charCodeAt(h)), 3 === (h & 3) && (e.push(g), (g = 0));
                 }
                 h & 3 && e.push(sjcl.bitArray.partial(8 * (h & 3), g));
                 return e;
@@ -2242,7 +2011,7 @@
         };
         sjcl.codec.hex = {
             fromBits: function (e) {
-                var d = "",
+                var d = '',
                     f;
                 for (f = 0; f < e.length; f++) {
                     d += ((e[f] | 0) + 263882790666240).toString(16).substr(4);
@@ -2253,9 +2022,9 @@
                 var e,
                     h = [],
                     g;
-                f = f.replace(/\s|0x/g, "");
+                f = f.replace(/\s|0x/g, '');
                 g = f.length;
-                f += "00000000";
+                f += '00000000';
                 for (e = 0; e < f.length; e += 8) {
                     h.push(parseInt(f.substr(e, 8), 16) ^ 0);
                 }
@@ -2263,44 +2032,35 @@
             },
         };
         sjcl.codec.base64 = {
-            J:
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/",
+            J: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/',
             fromBits: function (j, i, p) {
-                var o = "",
+                var o = '',
                     n = 0,
                     m = sjcl.codec.base64.J,
                     l = 0,
                     k = sjcl.bitArray.bitLength(j);
-                p && (m = m.substr(0, 62) + "-_");
+                p && (m = m.substr(0, 62) + '-_');
                 for (p = 0; 6 * o.length < k; ) {
-                    (o += m.charAt((l ^ (j[p] >>> n)) >>> 26)),
-                        6 > n
-                            ? ((l = j[p] << (6 - n)), (n += 26), p++)
-                            : ((l <<= 6), (n -= 6));
+                    (o += m.charAt((l ^ (j[p] >>> n)) >>> 26)), 6 > n ? ((l = j[p] << (6 - n)), (n += 26), p++) : ((l <<= 6), (n -= 6));
                 }
                 for (; o.length & 3 && !i; ) {
-                    o += "=";
+                    o += '=';
                 }
                 return o;
             },
             toBits: function (j, i) {
-                j = j.replace(/\s|=/g, "");
+                j = j.replace(/\s|=/g, '');
                 var p = [],
                     o,
                     n = 0,
                     m = sjcl.codec.base64.J,
                     l = 0,
                     k;
-                i && (m = m.substr(0, 62) + "-_");
+                i && (m = m.substr(0, 62) + '-_');
                 for (o = 0; o < j.length; o++) {
                     (k = m.indexOf(j.charAt(o))),
-                        0 > k &&
-                            q(new sjcl.exception.invalid("this isn't base64!")),
-                        26 < n
-                            ? ((n -= 26),
-                              p.push(l ^ (k >>> n)),
-                              (l = k << (32 - n)))
-                            : ((n += 6), (l ^= k << (32 - n)));
+                        0 > k && q(new sjcl.exception.invalid("this isn't base64!")),
+                        26 < n ? ((n -= 26), p.push(l ^ (k >>> n)), (l = k << (32 - n))) : ((n += 6), (l ^= k << (32 - n)));
                 }
                 n & 56 && p.push(sjcl.bitArray.partial(n & 56, l, 1));
                 return p;
@@ -2316,11 +2076,7 @@
         };
         sjcl.hash.sha256 = function (b) {
             this.b[0] || this.D();
-            b
-                ? ((this.r = b.r.slice(0)),
-                  (this.o = b.o.slice(0)),
-                  (this.h = b.h))
-                : this.reset();
+            b ? ((this.r = b.r.slice(0)), (this.o = b.o.slice(0)), (this.h = b.h)) : this.reset();
         };
         sjcl.hash.sha256.hash = function (b) {
             return new sjcl.hash.sha256().update(b).finalize();
@@ -2334,7 +2090,7 @@
                 return this;
             },
             update: function (e) {
-                "string" === typeof e && (e = sjcl.codec.utf8String.toBits(e));
+                'string' === typeof e && (e = sjcl.codec.utf8String.toBits(e));
                 var d,
                     f = (this.o = sjcl.bitArray.concat(this.o, e));
                 d = this.h;
@@ -2402,30 +2158,12 @@
                     : ((S = Q[(T + 1) & 15]),
                       (R = Q[(T + 14) & 15]),
                       (S = Q[T & 15] =
-                          (((S >>> 7) ^
-                              (S >>> 18) ^
-                              (S >>> 3) ^
-                              (S << 25) ^
-                              (S << 14)) +
-                              ((R >>> 17) ^
-                                  (R >>> 19) ^
-                                  (R >>> 10) ^
-                                  (R << 15) ^
-                                  (R << 13)) +
+                          (((S >>> 7) ^ (S >>> 18) ^ (S >>> 3) ^ (S << 25) ^ (S << 14)) +
+                              ((R >>> 17) ^ (R >>> 19) ^ (R >>> 10) ^ (R << 15) ^ (R << 13)) +
                               Q[T & 15] +
                               Q[(T + 9) & 15]) |
                           0)),
-                    (S =
-                        S +
-                        W +
-                        ((j >>> 6) ^
-                            (j >>> 11) ^
-                            (j >>> 25) ^
-                            (j << 26) ^
-                            (j << 21) ^
-                            (j << 7)) +
-                        (i ^ (j & (X ^ i))) +
-                        O[T]),
+                    (S = S + W + ((j >>> 6) ^ (j >>> 11) ^ (j >>> 25) ^ (j << 26) ^ (j << 21) ^ (j << 7)) + (i ^ (j & (X ^ i))) + O[T]),
                     (W = i),
                     (i = X),
                     (X = j),
@@ -2433,16 +2171,7 @@
                     (w = o),
                     (o = N),
                     (N = x),
-                    (x =
-                        (S +
-                            ((N & o) ^ (w & (N ^ o))) +
-                            ((N >>> 2) ^
-                                (N >>> 13) ^
-                                (N >>> 22) ^
-                                (N << 30) ^
-                                (N << 19) ^
-                                (N << 10))) |
-                        0);
+                    (x = (S + ((N & o) ^ (w & (N ^ o))) + ((N >>> 2) ^ (N >>> 13) ^ (N >>> 22) ^ (N << 30) ^ (N << 19) ^ (N << 10))) | 0);
             }
             P[0] = (P[0] + x) | 0;
             P[1] = (P[1] + N) | 0;
@@ -2454,7 +2183,7 @@
             P[7] = (P[7] + W) | 0;
         }
         sjcl.mode.ccm = {
-            name: "ccm",
+            name: 'ccm',
             encrypt: function (w, v, s, r, p) {
                 var o,
                     n = v.slice(0),
@@ -2463,12 +2192,7 @@
                     j = m.bitLength(n) / 8;
                 p = p || 64;
                 r = r || [];
-                7 > i &&
-                    q(
-                        new sjcl.exception.invalid(
-                            "ccm: iv must be at least 7 bytes"
-                        )
-                    );
+                7 > i && q(new sjcl.exception.invalid('ccm: iv must be at least 7 bytes'));
                 for (o = 2; 4 > o && j >>> (8 * o); o++) {}
                 o < 15 - i && (o = 15 - i);
                 s = m.clamp(s, 8 * (15 - o));
@@ -2485,19 +2209,13 @@
                     i = o.clamp(v, m - p),
                     j = o.bitSlice(v, m - p),
                     m = (m - p) / 8;
-                7 > n &&
-                    q(
-                        new sjcl.exception.invalid(
-                            "ccm: iv must be at least 7 bytes"
-                        )
-                    );
+                7 > n && q(new sjcl.exception.invalid('ccm: iv must be at least 7 bytes'));
                 for (v = 2; 4 > v && m >>> (8 * v); v++) {}
                 v < 15 - n && (v = 15 - n);
                 s = o.clamp(s, 8 * (15 - v));
                 i = sjcl.mode.ccm.p(w, i, s, j, p, v);
                 w = sjcl.mode.ccm.L(w, i.data, s, r, p, v);
-                o.equal(i.tag, w) ||
-                    q(new sjcl.exception.corrupt("ccm: tag doesn't match"));
+                o.equal(i.tag, w) || q(new sjcl.exception.corrupt("ccm: tag doesn't match"));
                 return i.data;
             },
             L: function (s, r, p, o, n, m) {
@@ -2505,34 +2223,18 @@
                     j = sjcl.bitArray,
                     i = j.l;
                 n /= 8;
-                (n % 2 || 4 > n || 16 < n) &&
-                    q(new sjcl.exception.invalid("ccm: invalid tag length"));
-                (4294967295 < o.length || 4294967295 < r.length) &&
-                    q(
-                        new sjcl.exception.bug(
-                            "ccm: can't deal with 4GiB or more data"
-                        )
-                    );
-                m = [
-                    j.partial(
-                        8,
-                        (o.length ? 64 : 0) | ((n - 2) << 2) | (m - 1)
-                    ),
-                ];
+                (n % 2 || 4 > n || 16 < n) && q(new sjcl.exception.invalid('ccm: invalid tag length'));
+                (4294967295 < o.length || 4294967295 < r.length) && q(new sjcl.exception.bug("ccm: can't deal with 4GiB or more data"));
+                m = [j.partial(8, (o.length ? 64 : 0) | ((n - 2) << 2) | (m - 1))];
                 m = j.concat(m, p);
                 m[3] |= j.bitLength(r) / 8;
                 m = s.encrypt(m);
                 if (o.length) {
                     p = j.bitLength(o) / 8;
-                    65279 >= p
-                        ? (k = [j.partial(16, p)])
-                        : 4294967295 >= p &&
-                          (k = j.concat([j.partial(16, 65534)], [p]));
+                    65279 >= p ? (k = [j.partial(16, p)]) : 4294967295 >= p && (k = j.concat([j.partial(16, 65534)], [p]));
                     k = j.concat(k, o);
                     for (o = 0; o < k.length; o += 4) {
-                        m = s.encrypt(
-                            i(m, k.slice(o, o + 4).concat([0, 0, 0]))
-                        );
+                        m = s.encrypt(i(m, k.slice(o, o + 4).concat([0, 0, 0])));
                     }
                 }
                 for (o = 0; o < r.length; o += 4) {
@@ -2558,12 +2260,7 @@
                     };
                 }
                 for (n = 0; n < i; n += 4) {
-                    s[3]++,
-                        (p = w.encrypt(s)),
-                        (v[n] ^= p[0]),
-                        (v[n + 1] ^= p[1]),
-                        (v[n + 2] ^= p[2]),
-                        (v[n + 3] ^= p[3]);
+                    s[3]++, (p = w.encrypt(s)), (v[n] ^= p[0]), (v[n + 1] ^= p[1]), (v[n + 2] ^= p[2]), (v[n + 3] ^= p[3]);
                 }
                 return {
                     tag: r,
@@ -2572,10 +2269,9 @@
             },
         };
         sjcl.mode.ocb2 = {
-            name: "ocb2",
+            name: 'ocb2',
             encrypt: function (R, Q, P, O, N, x) {
-                128 !== sjcl.bitArray.bitLength(P) &&
-                    q(new sjcl.exception.invalid("ocb iv must be 128 bits"));
+                128 !== sjcl.bitArray.bitLength(P) && q(new sjcl.exception.invalid('ocb iv must be 128 bits'));
                 var w,
                     v = sjcl.mode.ocb2.H,
                     r = sjcl.bitArray,
@@ -2587,10 +2283,7 @@
                 O = O || [];
                 N = N || 64;
                 for (w = 0; w + 4 < Q.length; w += 4) {
-                    (o = Q.slice(w, w + 4)),
-                        (j = s(j, o)),
-                        (i = i.concat(s(P, R.encrypt(s(P, o))))),
-                        (P = v(P));
+                    (o = Q.slice(w, w + 4)), (j = s(j, o)), (i = i.concat(s(P, R.encrypt(s(P, o))))), (P = v(P));
                 }
                 o = Q.slice(w);
                 Q = r.bitLength(o);
@@ -2602,8 +2295,7 @@
                 return i.concat(r.concat(o, r.clamp(j, N)));
             },
             decrypt: function (U, T, S, R, Q, P) {
-                128 !== sjcl.bitArray.bitLength(S) &&
-                    q(new sjcl.exception.invalid("ocb iv must be 128 bits"));
+                128 !== sjcl.bitArray.bitLength(S) && q(new sjcl.exception.invalid('ocb iv must be 128 bits'));
                 Q = Q || 64;
                 var O = sjcl.mode.ocb2.H,
                     N = sjcl.bitArray,
@@ -2616,10 +2308,7 @@
                     i = [];
                 R = R || [];
                 for (S = 0; S + 4 < V / 32; S += 4) {
-                    (v = w(o, U.decrypt(w(o, T.slice(S, S + 4))))),
-                        (x = w(x, v)),
-                        (i = i.concat(v)),
-                        (o = O(o));
+                    (v = w(o, U.decrypt(w(o, T.slice(S, S + 4))))), (x = w(x, v)), (i = i.concat(v)), (o = O(o));
                 }
                 j = V - 32 * S;
                 v = U.encrypt(w(o, [0, 0, 0, j]));
@@ -2627,8 +2316,7 @@
                 x = w(x, v);
                 x = U.encrypt(w(x, w(o, O(o))));
                 R.length && (x = w(x, P ? R : sjcl.mode.ocb2.pmac(U, R)));
-                N.equal(N.clamp(x, Q), N.bitSlice(T, V)) ||
-                    q(new sjcl.exception.corrupt("ocb: tag doesn't match"));
+                N.equal(N.clamp(x, Q), N.bitSlice(T, V)) || q(new sjcl.exception.corrupt("ocb: tag doesn't match"));
                 return i.concat(N.clamp(v, j));
             },
             pmac: function (j, i) {
@@ -2643,23 +2331,16 @@
                     (k = o(k)), (l = m(l, j.encrypt(m(k, i.slice(p, p + 4)))));
                 }
                 p = i.slice(p);
-                128 > n.bitLength(p) &&
-                    ((k = m(k, o(k))),
-                    (p = n.concat(p, [-2147483648, 0, 0, 0])));
+                128 > n.bitLength(p) && ((k = m(k, o(k))), (p = n.concat(p, [-2147483648, 0, 0, 0])));
                 l = m(l, p);
                 return j.encrypt(m(o(m(k, o(k))), l));
             },
             H: function (b) {
-                return [
-                    (b[0] << 1) ^ (b[1] >>> 31),
-                    (b[1] << 1) ^ (b[2] >>> 31),
-                    (b[2] << 1) ^ (b[3] >>> 31),
-                    (b[3] << 1) ^ (135 * (b[0] >>> 31)),
-                ];
+                return [(b[0] << 1) ^ (b[1] >>> 31), (b[1] << 1) ^ (b[2] >>> 31), (b[2] << 1) ^ (b[3] >>> 31), (b[3] << 1) ^ (135 * (b[0] >>> 31))];
             },
         };
         sjcl.mode.gcm = {
-            name: "gcm",
+            name: 'gcm',
             encrypt: function (h, g, l, k, j) {
                 var i = g.slice(0);
                 g = sjcl.bitArray;
@@ -2673,13 +2354,9 @@
                     k = l.bitLength(m);
                 n = n || 128;
                 o = o || [];
-                n <= k
-                    ? ((i = l.bitSlice(m, k - n)),
-                      (m = l.bitSlice(m, 0, k - n)))
-                    : ((i = m), (m = []));
+                n <= k ? ((i = l.bitSlice(m, k - n)), (m = l.bitSlice(m, 0, k - n))) : ((i = m), (m = []));
                 j = sjcl.mode.gcm.p(u, j, m, o, p, n);
-                l.equal(j.tag, i) ||
-                    q(new sjcl.exception.corrupt("gcm: tag doesn't match"));
+                l.equal(j.tag, i) || q(new sjcl.exception.corrupt("gcm: tag doesn't match"));
                 return j.data;
             },
             Z: function (j, i) {
@@ -2692,10 +2369,7 @@
                 n = [0, 0, 0, 0];
                 m = i.slice(0);
                 for (p = 0; 128 > p; p++) {
-                    (o =
-                        0 !==
-                        (j[Math.floor(p / 32)] & (1 << (31 - (p % 32))))) &&
-                        (n = k(n, m));
+                    (o = 0 !== (j[Math.floor(p / 32)] & (1 << (31 - (p % 32))))) && (n = k(n, m));
                     l = 0 !== (m[3] & 1);
                     for (o = 3; 0 < o; o--) {
                         m[o] = (m[o] >>> 1) | ((m[o - 1] & 1) << 31);
@@ -2735,33 +2409,17 @@
                 O = T.encrypt([0, 0, 0, 0]);
                 96 === N
                     ? ((Q = Q.slice(0)), (Q = i.concat(Q, [1])))
-                    : ((Q = sjcl.mode.gcm.g(O, [0, 0, 0, 0], Q)),
-                      (Q = sjcl.mode.gcm.g(O, Q, [
-                          0,
-                          0,
-                          Math.floor(N / 4294967296),
-                          N & 4294967295,
-                      ])));
+                    : ((Q = sjcl.mode.gcm.g(O, [0, 0, 0, 0], Q)), (Q = sjcl.mode.gcm.g(O, Q, [0, 0, Math.floor(N / 4294967296), N & 4294967295])));
                 N = sjcl.mode.gcm.g(O, [0, 0, 0, 0], R);
                 o = Q.slice(0);
                 R = N.slice(0);
                 U || (R = sjcl.mode.gcm.g(O, N, S));
                 for (x = 0; x < v; x += 4) {
-                    o[3]++,
-                        (w = T.encrypt(o)),
-                        (S[x] ^= w[0]),
-                        (S[x + 1] ^= w[1]),
-                        (S[x + 2] ^= w[2]),
-                        (S[x + 3] ^= w[3]);
+                    o[3]++, (w = T.encrypt(o)), (S[x] ^= w[0]), (S[x + 1] ^= w[1]), (S[x + 2] ^= w[2]), (S[x + 3] ^= w[3]);
                 }
                 S = i.clamp(S, j);
                 U && (R = sjcl.mode.gcm.g(O, N, S));
-                U = [
-                    Math.floor(V / 4294967296),
-                    V & 4294967295,
-                    Math.floor(j / 4294967296),
-                    j & 4294967295,
-                ];
+                U = [Math.floor(V / 4294967296), V & 4294967295, Math.floor(j / 4294967296), j & 4294967295];
                 R = sjcl.mode.gcm.g(O, R, U);
                 w = T.encrypt(Q);
                 R[0] ^= w[0];
@@ -2788,15 +2446,8 @@
             this.n[1].update(j[1]);
             this.G = new f(this.n[0]);
         };
-        sjcl.misc.hmac.prototype.encrypt = sjcl.misc.hmac.prototype.mac = function (
-            b
-        ) {
-            this.Q &&
-                q(
-                    new sjcl.exception.invalid(
-                        "encrypt on already updated hmac called!"
-                    )
-                );
+        sjcl.misc.hmac.prototype.encrypt = sjcl.misc.hmac.prototype.mac = function (b) {
+            this.Q && q(new sjcl.exception.invalid('encrypt on already updated hmac called!'));
             this.update(b);
             return this.digest(b);
         };
@@ -2816,10 +2467,9 @@
         };
         sjcl.misc.pbkdf2 = function (N, x, w, v, s) {
             w = w || 1000;
-            (0 > v || 0 > w) &&
-                q(sjcl.exception.invalid("invalid params to pbkdf2"));
-            "string" === typeof N && (N = sjcl.codec.utf8String.toBits(N));
-            "string" === typeof x && (x = sjcl.codec.utf8String.toBits(x));
+            (0 > v || 0 > w) && q(sjcl.exception.invalid('invalid params to pbkdf2'));
+            'string' === typeof N && (N = sjcl.codec.utf8String.toBits(N));
+            'string' === typeof x && (x = sjcl.codec.utf8String.toBits(x));
             s = s || sjcl.misc.hmac;
             N = new s(N);
             var r,
@@ -2872,8 +2522,7 @@
                     m;
                 m = this.isReady(h);
                 var l;
-                m === this.m &&
-                    q(new sjcl.exception.notReady("generator isn't seeded"));
+                m === this.m && q(new sjcl.exception.notReady("generator isn't seeded"));
                 if (m & this.u) {
                     m = !(m & this.t);
                     l = [];
@@ -2885,46 +2534,31 @@
                     }
                     for (
                         j = 0;
-                        j < this.c.length &&
-                        !((l = l.concat(this.c[j].finalize())),
-                        (k += this.i[j]),
-                        (this.i[j] = 0),
-                        !m && this.F & (1 << j));
+                        j < this.c.length && !((l = l.concat(this.c[j].finalize())), (k += this.i[j]), (this.i[j] = 0), !m && this.F & (1 << j));
                         j++
                     ) {}
-                    this.F >= 1 << this.c.length &&
-                        (this.c.push(new sjcl.hash.sha256()), this.i.push(0));
+                    this.F >= 1 << this.c.length && (this.c.push(new sjcl.hash.sha256()), this.i.push(0));
                     this.d -= k;
                     k > this.j && (this.j = k);
                     this.F++;
                     this.b = sjcl.hash.sha256.hash(this.b.concat(l));
                     this.A = new sjcl.cipher.aes(this.b);
-                    for (
-                        m = 0;
-                        4 > m &&
-                        !((this.f[m] = (this.f[m] + 1) | 0), this.f[m]);
-                        m++
-                    ) {}
+                    for (m = 0; 4 > m && !((this.f[m] = (this.f[m] + 1) | 0), this.f[m]); m++) {}
                 }
                 for (m = 0; m < i; m += 4) {
-                    0 === (m + 1) % this.S && A(this),
-                        (l = B(this)),
-                        n.push(l[0], l[1], l[2], l[3]);
+                    0 === (m + 1) % this.S && A(this), (l = B(this)), n.push(l[0], l[1], l[2], l[3]);
                 }
                 A(this);
                 return n.slice(0, i);
             },
             setDefaultParanoia: function (d, c) {
                 0 === d &&
-                    "Setting paranoia=0 will ruin your security; use it only for testing" !==
-                        c &&
-                    q(
-                        "Setting paranoia=0 will ruin your security; use it only for testing"
-                    );
+                    'Setting paranoia=0 will ruin your security; use it only for testing' !== c &&
+                    q('Setting paranoia=0 will ruin your security; use it only for testing');
                 this.B = d;
             },
             addEntropy: function (s, r, p) {
-                p = p || "user";
+                p = p || 'user';
                 var o,
                     n,
                     m = new Date().valueOf(),
@@ -2936,22 +2570,22 @@
                 k === t && (k = this.s[p] = 0);
                 this.s[p] = (this.s[p] + 1) % this.c.length;
                 switch (typeof s) {
-                    case "number":
+                    case 'number':
                         r === t && (r = 1);
                         this.c[k].update([o, this.C++, 1, r, m, 1, s | 0]);
                         break;
-                    case "object":
+                    case 'object':
                         p = Object.prototype.toString.call(s);
-                        if ("[object Uint32Array]" === p) {
+                        if ('[object Uint32Array]' === p) {
                             n = [];
                             for (p = 0; p < s.length; p++) {
                                 n.push(s[p]);
                             }
                             s = n;
                         } else {
-                            "[object Array]" !== p && (i = 1);
+                            '[object Array]' !== p && (i = 1);
                             for (p = 0; p < s.length && !i; p++) {
-                                "number" !== typeof s[p] && (i = 1);
+                                'number' !== typeof s[p] && (i = 1);
                             }
                         }
                         if (!i) {
@@ -2962,12 +2596,10 @@
                                     }
                                 }
                             }
-                            this.c[k].update(
-                                [o, this.C++, 2, r, m, s.length].concat(s)
-                            );
+                            this.c[k].update([o, this.C++, 2, r, m, s.length].concat(s));
                         }
                         break;
-                    case "string":
+                    case 'string':
                         r === t && (r = s.length);
                         this.c[k].update([o, this.C++, 3, r, m, s.length]);
                         this.c[k].update(s);
@@ -2975,18 +2607,10 @@
                     default:
                         i = 1;
                 }
-                i &&
-                    q(
-                        new sjcl.exception.bug(
-                            "random: addEntropy only supports number, array of numbers or string"
-                        )
-                    );
+                i && q(new sjcl.exception.bug('random: addEntropy only supports number, array of numbers or string'));
                 this.i[k] += r;
                 this.d += r;
-                j === this.m &&
-                    (this.isReady() !== this.m &&
-                        C("seeded", Math.max(this.j, this.d)),
-                    C("progress", this.getProgress()));
+                j === this.m && (this.isReady() !== this.m && C('seeded', Math.max(this.j, this.d)), C('progress', this.getProgress()));
             },
             isReady: function (b) {
                 b = this.I[b !== t ? b : this.B];
@@ -3011,78 +2635,28 @@
                         accelerometerCollector: D(this, this.U),
                     }),
                     window.addEventListener
-                        ? (window.addEventListener(
-                              "load",
-                              this.a.loadTimeCollector,
-                              u
-                          ),
-                          window.addEventListener(
-                              "mousemove",
-                              this.a.mouseCollector,
-                              u
-                          ),
-                          window.addEventListener(
-                              "keypress",
-                              this.a.keyboardCollector,
-                              u
-                          ),
-                          window.addEventListener(
-                              "devicemotion",
-                              this.a.accelerometerCollector,
-                              u
-                          ))
+                        ? (window.addEventListener('load', this.a.loadTimeCollector, u),
+                          window.addEventListener('mousemove', this.a.mouseCollector, u),
+                          window.addEventListener('keypress', this.a.keyboardCollector, u),
+                          window.addEventListener('devicemotion', this.a.accelerometerCollector, u))
                         : document.attachEvent
-                        ? (document.attachEvent(
-                              "onload",
-                              this.a.loadTimeCollector
-                          ),
-                          document.attachEvent(
-                              "onmousemove",
-                              this.a.mouseCollector
-                          ),
-                          document.attachEvent(
-                              "keypress",
-                              this.a.keyboardCollector
-                          ))
+                        ? (document.attachEvent('onload', this.a.loadTimeCollector),
+                          document.attachEvent('onmousemove', this.a.mouseCollector),
+                          document.attachEvent('keypress', this.a.keyboardCollector))
                         : q(new sjcl.exception.bug("can't attach event")),
                     (this.q = !0));
             },
             stopCollectors: function () {
                 this.q &&
                     (window.removeEventListener
-                        ? (window.removeEventListener(
-                              "load",
-                              this.a.loadTimeCollector,
-                              u
-                          ),
-                          window.removeEventListener(
-                              "mousemove",
-                              this.a.mouseCollector,
-                              u
-                          ),
-                          window.removeEventListener(
-                              "keypress",
-                              this.a.keyboardCollector,
-                              u
-                          ),
-                          window.removeEventListener(
-                              "devicemotion",
-                              this.a.accelerometerCollector,
-                              u
-                          ))
+                        ? (window.removeEventListener('load', this.a.loadTimeCollector, u),
+                          window.removeEventListener('mousemove', this.a.mouseCollector, u),
+                          window.removeEventListener('keypress', this.a.keyboardCollector, u),
+                          window.removeEventListener('devicemotion', this.a.accelerometerCollector, u))
                         : document.detachEvent &&
-                          (document.detachEvent(
-                              "onload",
-                              this.a.loadTimeCollector
-                          ),
-                          document.detachEvent(
-                              "onmousemove",
-                              this.a.mouseCollector
-                          ),
-                          document.detachEvent(
-                              "keypress",
-                              this.a.keyboardCollector
-                          )),
+                          (document.detachEvent('onload', this.a.loadTimeCollector),
+                          document.detachEvent('onmousemove', this.a.mouseCollector),
+                          document.detachEvent('keypress', this.a.keyboardCollector)),
                     (this.q = u));
             },
             addEventListener: function (d, c) {
@@ -3106,28 +2680,23 @@
             ba: function (f) {
                 var e, h;
                 try {
-                    (e = f.x || f.clientX || f.offsetX || 0),
-                        (h = f.y || f.clientY || f.offsetY || 0);
+                    (e = f.x || f.clientX || f.offsetX || 0), (h = f.y || f.clientY || f.offsetY || 0);
                 } catch (g) {
                     h = e = 0;
                 }
-                0 != e && 0 != h && sjcl.random.addEntropy([e, h], 2, "mouse");
+                0 != e && 0 != h && sjcl.random.addEntropy([e, h], 2, 'mouse');
                 E(0);
             },
             aa: function () {
                 E(2);
             },
             U: function (d) {
-                d =
-                    d.accelerationIncludingGravity.x ||
-                    d.accelerationIncludingGravity.y ||
-                    d.accelerationIncludingGravity.z;
+                d = d.accelerationIncludingGravity.x || d.accelerationIncludingGravity.y || d.accelerationIncludingGravity.z;
                 if (window.orientation) {
                     var c = window.orientation;
-                    "number" === typeof c &&
-                        sjcl.random.addEntropy(c, 1, "accelerometer");
+                    'number' === typeof c && sjcl.random.addEntropy(c, 1, 'accelerometer');
                 }
-                d && sjcl.random.addEntropy(d, 2, "accelerometer");
+                d && sjcl.random.addEntropy(d, 2, 'accelerometer');
                 E(0);
             },
         };
@@ -3145,15 +2714,9 @@
         }
 
         function E(b) {
-            "undefined" !== typeof window &&
-            window.performance &&
-            "function" === typeof window.performance.now
-                ? sjcl.random.addEntropy(
-                      window.performance.now(),
-                      b,
-                      "loadtime"
-                  )
-                : sjcl.random.addEntropy(new Date().valueOf(), b, "loadtime");
+            'undefined' !== typeof window && window.performance && 'function' === typeof window.performance.now
+                ? sjcl.random.addEntropy(window.performance.now(), b, 'loadtime')
+                : sjcl.random.addEntropy(new Date().valueOf(), b, 'loadtime');
         }
 
         function A(b) {
@@ -3162,11 +2725,7 @@
         }
 
         function B(d) {
-            for (
-                var c = 0;
-                4 > c && !((d.f[c] = (d.f[c] + 1) | 0), d.f[c]);
-                c++
-            ) {}
+            for (var c = 0; 4 > c && !((d.f[c] = (d.f[c] + 1) | 0), d.f[c]); c++) {}
             return d.A.encrypt(d.f);
         }
 
@@ -3178,12 +2737,12 @@
         sjcl.random = new sjcl.prng(6);
         a: try {
             var F, G, H, I;
-            if ((I = "undefined" !== typeof module)) {
+            if ((I = 'undefined' !== typeof module)) {
                 var J;
                 if ((J = module.exports)) {
                     var K;
                     try {
-                        K = require("crypto");
+                        K = require('crypto');
                     } catch (L) {
                         K = null;
                     }
@@ -3192,41 +2751,26 @@
                 I = J;
             }
             if (I) {
-                (F = G.randomBytes(128)),
-                    (F = new Uint32Array(new Uint8Array(F).buffer)),
-                    sjcl.random.addEntropy(F, 1024, "crypto['randomBytes']");
+                (F = G.randomBytes(128)), (F = new Uint32Array(new Uint8Array(F).buffer)), sjcl.random.addEntropy(F, 1024, "crypto['randomBytes']");
             } else {
-                if (
-                    "undefined" !== typeof window &&
-                    "undefined" !== typeof Uint32Array
-                ) {
+                if ('undefined' !== typeof window && 'undefined' !== typeof Uint32Array) {
                     H = new Uint32Array(32);
                     if (window.crypto && window.crypto.getRandomValues) {
                         window.crypto.getRandomValues(H);
                     } else {
-                        if (
-                            window.msCrypto &&
-                            window.msCrypto.getRandomValues
-                        ) {
+                        if (window.msCrypto && window.msCrypto.getRandomValues) {
                             window.msCrypto.getRandomValues(H);
                         } else {
                             break a;
                         }
                     }
-                    sjcl.random.addEntropy(
-                        H,
-                        1024,
-                        "crypto['getRandomValues']"
-                    );
+                    sjcl.random.addEntropy(H, 1024, "crypto['getRandomValues']");
                 }
             }
         } catch (M) {
-            "undefined" !== typeof window &&
+            'undefined' !== typeof window &&
                 window.console &&
-                (console.log(
-                    "There was an error collecting entropy from the browser:"
-                ),
-                console.log(M));
+                (console.log('There was an error collecting entropy from the browser:'), console.log(M));
         }
         sjcl.json = {
             defaults: {
@@ -3234,9 +2778,9 @@
                 iter: 1000,
                 ks: 128,
                 ts: 64,
-                mode: "ccm",
-                adata: "",
-                cipher: "aes",
+                mode: 'ccm',
+                adata: '',
+                cipher: 'aes',
             },
             Y: function (i, h, n, m) {
                 n = n || {};
@@ -3246,38 +2790,26 @@
                         {
                             iv: sjcl.random.randomWords(4, 0),
                         },
-                        l.defaults
+                        l.defaults,
                     ),
                     j;
                 l.e(k, n);
                 n = k.adata;
-                "string" === typeof k.salt &&
-                    (k.salt = sjcl.codec.base64.toBits(k.salt));
-                "string" === typeof k.iv &&
-                    (k.iv = sjcl.codec.base64.toBits(k.iv));
+                'string' === typeof k.salt && (k.salt = sjcl.codec.base64.toBits(k.salt));
+                'string' === typeof k.iv && (k.iv = sjcl.codec.base64.toBits(k.iv));
                 (!sjcl.mode[k.mode] ||
                     !sjcl.cipher[k.cipher] ||
-                    ("string" === typeof i && 100 >= k.iter) ||
+                    ('string' === typeof i && 100 >= k.iter) ||
                     (64 !== k.ts && 96 !== k.ts && 128 !== k.ts) ||
                     (128 !== k.ks && 192 !== k.ks && 256 !== k.ks) ||
                     2 > k.iv.length ||
                     4 < k.iv.length) &&
-                    q(
-                        new sjcl.exception.invalid(
-                            "json encrypt: invalid parameters"
-                        )
-                    );
-                "string" === typeof i
-                    ? ((j = sjcl.misc.cachedPbkdf2(i, k)),
-                      (i = j.key.slice(0, k.ks / 32)),
-                      (k.salt = j.salt))
-                    : sjcl.ecc &&
-                      i instanceof sjcl.ecc.elGamal.publicKey &&
-                      ((j = i.kem()),
-                      (k.kemtag = j.tag),
-                      (i = j.key.slice(0, k.ks / 32)));
-                "string" === typeof h && (h = sjcl.codec.utf8String.toBits(h));
-                "string" === typeof n && (n = sjcl.codec.utf8String.toBits(n));
+                    q(new sjcl.exception.invalid('json encrypt: invalid parameters'));
+                'string' === typeof i
+                    ? ((j = sjcl.misc.cachedPbkdf2(i, k)), (i = j.key.slice(0, k.ks / 32)), (k.salt = j.salt))
+                    : sjcl.ecc && i instanceof sjcl.ecc.elGamal.publicKey && ((j = i.kem()), (k.kemtag = j.tag), (i = j.key.slice(0, k.ks / 32)));
+                'string' === typeof h && (h = sjcl.codec.utf8String.toBits(h));
+                'string' === typeof n && (n = sjcl.codec.utf8String.toBits(n));
                 j = new sjcl.cipher[k.cipher](i);
                 l.e(m, k);
                 m.key = i;
@@ -3296,33 +2828,21 @@
                 h = l.e(l.e(l.e({}, l.defaults), h), n, !0);
                 var k, j;
                 k = h.adata;
-                "string" === typeof h.salt &&
-                    (h.salt = sjcl.codec.base64.toBits(h.salt));
-                "string" === typeof h.iv &&
-                    (h.iv = sjcl.codec.base64.toBits(h.iv));
+                'string' === typeof h.salt && (h.salt = sjcl.codec.base64.toBits(h.salt));
+                'string' === typeof h.iv && (h.iv = sjcl.codec.base64.toBits(h.iv));
                 (!sjcl.mode[h.mode] ||
                     !sjcl.cipher[h.cipher] ||
-                    ("string" === typeof i && 100 >= h.iter) ||
+                    ('string' === typeof i && 100 >= h.iter) ||
                     (64 !== h.ts && 96 !== h.ts && 128 !== h.ts) ||
                     (128 !== h.ks && 192 !== h.ks && 256 !== h.ks) ||
                     !h.iv ||
                     2 > h.iv.length ||
                     4 < h.iv.length) &&
-                    q(
-                        new sjcl.exception.invalid(
-                            "json decrypt: invalid parameters"
-                        )
-                    );
-                "string" === typeof i
-                    ? ((j = sjcl.misc.cachedPbkdf2(i, h)),
-                      (i = j.key.slice(0, h.ks / 32)),
-                      (h.salt = j.salt))
-                    : sjcl.ecc &&
-                      i instanceof sjcl.ecc.elGamal.secretKey &&
-                      (i = i
-                          .unkem(sjcl.codec.base64.toBits(h.kemtag))
-                          .slice(0, h.ks / 32));
-                "string" === typeof k && (k = sjcl.codec.utf8String.toBits(k));
+                    q(new sjcl.exception.invalid('json decrypt: invalid parameters'));
+                'string' === typeof i
+                    ? ((j = sjcl.misc.cachedPbkdf2(i, h)), (i = j.key.slice(0, h.ks / 32)), (h.salt = j.salt))
+                    : sjcl.ecc && i instanceof sjcl.ecc.elGamal.secretKey && (i = i.unkem(sjcl.codec.base64.toBits(h.kemtag)).slice(0, h.ks / 32));
+                'string' === typeof k && (k = sjcl.codec.utf8String.toBits(k));
                 j = new sjcl.cipher[h.cipher](i);
                 k = sjcl.mode[h.mode].decrypt(j, h.ct, h.iv, k, h.ts);
                 l.e(m, h);
@@ -3335,71 +2855,44 @@
             },
             encode: function (f) {
                 var e,
-                    h = "{",
-                    g = "";
+                    h = '{',
+                    g = '';
                 for (e in f) {
                     if (f.hasOwnProperty(e)) {
                         switch (
-                            (e.match(/^[a-z0-9]+$/i) ||
-                                q(
-                                    new sjcl.exception.invalid(
-                                        "json encode: invalid property name"
-                                    )
-                                ),
+                            (e.match(/^[a-z0-9]+$/i) || q(new sjcl.exception.invalid('json encode: invalid property name')),
                             (h += g + '"' + e + '":'),
-                            (g = ","),
+                            (g = ','),
                             typeof f[e])
                         ) {
-                            case "number":
-                            case "boolean":
+                            case 'number':
+                            case 'boolean':
                                 h += f[e];
                                 break;
-                            case "string":
+                            case 'string':
                                 h += '"' + escape(f[e]) + '"';
                                 break;
-                            case "object":
-                                h +=
-                                    '"' +
-                                    sjcl.codec.base64.fromBits(f[e], 0) +
-                                    '"';
+                            case 'object':
+                                h += '"' + sjcl.codec.base64.fromBits(f[e], 0) + '"';
                                 break;
                             default:
-                                q(
-                                    new sjcl.exception.bug(
-                                        "json encode: unsupported type"
-                                    )
-                                );
+                                q(new sjcl.exception.bug('json encode: unsupported type'));
                         }
                     }
                 }
-                return h + "}";
+                return h + '}';
             },
             decode: function (f) {
-                f = f.replace(/\s/g, "");
-                f.match(/^\{.*\}$/) ||
-                    q(
-                        new sjcl.exception.invalid(
-                            "json decode: this isn't json!"
-                        )
-                    );
-                f = f.replace(/^\{|\}$/g, "").split(/,/);
+                f = f.replace(/\s/g, '');
+                f.match(/^\{.*\}$/) || q(new sjcl.exception.invalid("json decode: this isn't json!"));
+                f = f.replace(/^\{|\}$/g, '').split(/,/);
                 var e = {},
                     h,
                     g;
                 for (h = 0; h < f.length; h++) {
-                    (g = f[h].match(
-                        /^(?:(["']?)([a-z][a-z0-9]*)\1):(?:(\d+)|"([a-z0-9+\/%*_.@=\-]*)")$/i
-                    )) ||
-                        q(
-                            new sjcl.exception.invalid(
-                                "json decode: this isn't json!"
-                            )
-                        ),
-                        (e[g[2]] = g[3]
-                            ? parseInt(g[3], 10)
-                            : g[2].match(/^(ct|salt|iv)$/)
-                            ? sjcl.codec.base64.toBits(g[4])
-                            : unescape(g[4]));
+                    (g = f[h].match(/^(?:(["']?)([a-z][a-z0-9]*)\1):(?:(\d+)|"([a-z0-9+\/%*_.@=\-]*)")$/i)) ||
+                        q(new sjcl.exception.invalid("json decode: this isn't json!")),
+                        (e[g[2]] = g[3] ? parseInt(g[3], 10) : g[2].match(/^(ct|salt|iv)$/) ? sjcl.codec.base64.toBits(g[4]) : unescape(g[4]));
                 }
                 return e;
             },
@@ -3410,15 +2903,7 @@
                 }
                 for (var g in e) {
                     e.hasOwnProperty(g) &&
-                        (h &&
-                            f[g] !== t &&
-                            f[g] !== e[g] &&
-                            q(
-                                new sjcl.exception.invalid(
-                                    "required parameter overridden"
-                                )
-                            ),
-                        (f[g] = e[g]));
+                        (h && f[g] !== t && f[g] !== e[g] && q(new sjcl.exception.invalid('required parameter overridden')), (f[g] = e[g]));
                 }
                 return f;
             },
@@ -3449,10 +2934,7 @@
             g = e.iter || 1000;
             h = h[f] = h[f] || {};
             g = h[g] = h[g] || {
-                firstSalt:
-                    e.salt && e.salt.length
-                        ? e.salt.slice(0)
-                        : sjcl.random.randomWords(2, 0),
+                firstSalt: e.salt && e.salt.length ? e.salt.slice(0) : sjcl.random.randomWords(2, 0),
             };
             h = e.salt === t ? g.firstSalt : e.salt;
             g[h] = g[h] || sjcl.misc.pbkdf2(f, h, e.iter);
@@ -3503,18 +2985,13 @@
             var a = new Date().getTime();
 
             function c(e, f, g, d) {
-                if (typeof e.addEventListener === "function") {
+                if (typeof e.addEventListener === 'function') {
                     e.addEventListener(f, g, d);
                 } else {
                     if (e.attachEvent) {
-                        e.attachEvent("on" + f, g);
+                        e.attachEvent('on' + f, g);
                     } else {
-                        throw new Error(
-                            encrypt.errors.UNABLETOBIND +
-                                ": Unable to bind " +
-                                f +
-                                "-event"
-                        );
+                        throw new Error(encrypt.errors.UNABLETOBIND + ': Unable to bind ' + f + '-event');
                     }
                 }
             }
@@ -3523,182 +3000,170 @@
                 (function () {
                     var d = {};
                     return function (j, h, e) {
-                        if (j === "bind") {
-                            evLog(e + "Bind");
+                        if (j === 'bind') {
+                            evLog(e + 'Bind');
                             c(
                                 h,
-                                "change",
+                                'change',
                                 function (i) {
-                                    evLog(e + "FieldChangeCount");
-                                    evLog("log", e, "ch");
+                                    evLog(e + 'FieldChangeCount');
+                                    evLog('log', e, 'ch');
                                     try {
-                                        evLog("set", e + "FieldEvHa", b(h));
+                                        evLog('set', e + 'FieldEvHa', b(h));
                                     } catch (l) {
-                                        evLog("set", e + "FieldEvHa", "Err");
+                                        evLog('set', e + 'FieldEvHa', 'Err');
                                     }
                                 },
-                                true
+                                true,
                             );
                             c(
                                 h,
-                                "click",
+                                'click',
                                 function () {
-                                    evLog(e + "FieldClickCount");
-                                    evLog("log", e, "cl");
+                                    evLog(e + 'FieldClickCount');
+                                    evLog('log', e, 'cl');
                                 },
-                                true
+                                true,
                             );
                             c(
                                 h,
-                                "focus",
+                                'focus',
                                 function () {
-                                    evLog(e + "FieldFocusCount");
-                                    evLog("log", e, "fo");
+                                    evLog(e + 'FieldFocusCount');
+                                    evLog('log', e, 'fo');
                                 },
-                                true
+                                true,
                             );
                             c(
                                 h,
-                                "blur",
+                                'blur',
                                 function () {
-                                    evLog(e + "FieldBlurCount");
-                                    evLog("log", e, "bl");
+                                    evLog(e + 'FieldBlurCount');
+                                    evLog('log', e, 'bl');
                                 },
-                                true
+                                true,
                             );
                             c(
                                 h,
-                                "touchstart",
+                                'touchstart',
                                 function () {
-                                    evLog(e + "FieldTouchStartCount");
-                                    evLog("log", e, "Ts");
+                                    evLog(e + 'FieldTouchStartCount');
+                                    evLog('log', e, 'Ts');
                                 },
-                                true
+                                true,
                             );
                             c(
                                 h,
-                                "touchend",
+                                'touchend',
                                 function () {
-                                    evLog(e + "FieldTouchEndCount");
-                                    evLog("log", e, "Te");
+                                    evLog(e + 'FieldTouchEndCount');
+                                    evLog('log', e, 'Te');
                                 },
-                                true
+                                true,
                             );
                             c(
                                 h,
-                                "touchcancel",
+                                'touchcancel',
                                 function () {
-                                    evLog(e + "FieldTouchCancelCount");
-                                    evLog("log", e, "Tc");
+                                    evLog(e + 'FieldTouchCancelCount');
+                                    evLog('log', e, 'Tc');
                                 },
-                                true
+                                true,
                             );
-                            c(h, "keyup", function (i) {
+                            c(h, 'keyup', function (i) {
                                 if (i.keyCode == 16) {
-                                    evLog("log", e, "Su");
+                                    evLog('log', e, 'Su');
                                 } else {
                                     if (i.keyCode == 17) {
-                                        evLog("log", e, "Cu");
+                                        evLog('log', e, 'Cu');
                                     } else {
                                         if (i.keyCode == 18) {
-                                            evLog("log", e, "Au");
+                                            evLog('log', e, 'Au');
                                         }
                                     }
                                 }
                             });
                             c(
                                 h,
-                                "keydown",
+                                'keydown',
                                 function (i) {
-                                    evLog(e + "FieldKeyCount");
+                                    evLog(e + 'FieldKeyCount');
                                     switch (i && i.keyCode) {
                                         case 8:
-                                            evLog("log", e, "Kb");
+                                            evLog('log', e, 'Kb');
                                             break;
                                         case 16:
-                                            evLog("log", e, "Sd");
+                                            evLog('log', e, 'Sd');
                                             break;
                                         case 17:
-                                            evLog("log", e, "Cd");
+                                            evLog('log', e, 'Cd');
                                             break;
                                         case 18:
-                                            evLog("log", e, "Ad");
+                                            evLog('log', e, 'Ad');
                                             break;
                                         case 37:
-                                            evLog("log", e, "Kl");
+                                            evLog('log', e, 'Kl');
                                             break;
                                         case 39:
-                                            evLog("log", e, "Kr");
+                                            evLog('log', e, 'Kr');
                                             break;
                                         case 46:
-                                            evLog("log", e, "Kd");
+                                            evLog('log', e, 'Kd');
                                             break;
                                         case 32:
-                                            evLog("log", e, "Ks");
+                                            evLog('log', e, 'Ks');
                                             break;
                                         default:
-                                            if (
-                                                (i.keyCode >= 48 &&
-                                                    i.keyCode <= 57) ||
-                                                (i.keyCode >= 96 &&
-                                                    i.keyCode <= 105)
-                                            ) {
-                                                evLog("log", e, "KN");
+                                            if ((i.keyCode >= 48 && i.keyCode <= 57) || (i.keyCode >= 96 && i.keyCode <= 105)) {
+                                                evLog('log', e, 'KN');
                                             } else {
-                                                if (
-                                                    i.keyCode >= 65 &&
-                                                    i.keyCode <= 90
-                                                ) {
-                                                    evLog("log", e, "KL");
+                                                if (i.keyCode >= 65 && i.keyCode <= 90) {
+                                                    evLog('log', e, 'KL');
                                                 } else {
-                                                    evLog("log", e, "KU");
-                                                    evLog(
-                                                        "log",
-                                                        e + "UnkKeys",
-                                                        i.keyCode
-                                                    );
+                                                    evLog('log', e, 'KU');
+                                                    evLog('log', e + 'UnkKeys', i.keyCode);
                                                 }
                                             }
                                             break;
                                     }
                                 },
-                                true
+                                true,
                             );
                             return;
                         }
-                        if (j === "set") {
+                        if (j === 'set') {
                             d[h] = e;
                             return;
                         }
-                        if (j === "log") {
-                            var k = h + "FieldLog";
+                        if (j === 'log') {
+                            var k = h + 'FieldLog';
                             var f = new Date().getTime() - a;
                             f = Math.round(f / 100);
                             if (!d.hasOwnProperty(k)) {
-                                d[k] = e + "@" + f;
+                                d[k] = e + '@' + f;
                             } else {
-                                d[k] += "," + e + "@" + f;
+                                d[k] += ',' + e + '@' + f;
                             }
                             if (d[k].length > 1500) {
                                 d[k] = d[k].substring(d[k].length - 1500);
-                                d[k] = d[k].substring(d[k].indexOf(",") + 1);
+                                d[k] = d[k].substring(d[k].indexOf(',') + 1);
                             }
                             return;
                         }
-                        if (j === "extend") {
+                        if (j === 'extend') {
                             for (var g in d) {
                                 if (
-                                    g === "number" ||
-                                    g === "expiryMonth" ||
-                                    g === "expiryYear" ||
-                                    g === "generationtime" ||
-                                    g === "holderName" ||
-                                    g === "cvc"
+                                    g === 'number' ||
+                                    g === 'expiryMonth' ||
+                                    g === 'expiryYear' ||
+                                    g === 'generationtime' ||
+                                    g === 'holderName' ||
+                                    g === 'cvc'
                                 ) {
                                     continue;
                                 }
                                 if (d.hasOwnProperty(g)) {
-                                    h[g] = "" + d[g];
+                                    h[g] = '' + d[g];
                                 }
                             }
                             return;
@@ -3715,33 +3180,33 @@
                 var p = function () {
                     return {};
                 };
-                if (window.jQuery && typeof window.jQuery._data == "function") {
+                if (window.jQuery && typeof window.jQuery._data == 'function') {
                     p = function (o) {
-                        return window.jQuery._data(o, "events");
+                        return window.jQuery._data(o, 'events');
                     };
                 }
                 var n = j,
                     d = 0,
                     q = [],
                     u = [
-                        "onmousedown",
-                        "onmouseup",
-                        "onmouseover",
-                        "onmouseout",
-                        "onclick",
-                        "onmousemove",
-                        "ondblclick",
-                        "onerror",
-                        "onresize",
-                        "onscroll",
-                        "onkeydown",
-                        "onkeyup",
-                        "onkeypress",
-                        "onchange",
-                        "onsubmit",
+                        'onmousedown',
+                        'onmouseup',
+                        'onmouseover',
+                        'onmouseout',
+                        'onclick',
+                        'onmousemove',
+                        'ondblclick',
+                        'onerror',
+                        'onresize',
+                        'onscroll',
+                        'onkeydown',
+                        'onkeyup',
+                        'onkeypress',
+                        'onchange',
+                        'onsubmit',
                     ],
-                    k = "Own",
-                    s = "Par",
+                    k = 'Own',
+                    s = 'Par',
                     t = u.length;
                 var i = 0;
                 while (n && n !== n.documentElement) {
@@ -3749,9 +3214,7 @@
                     var m = t,
                         g,
                         l,
-                        h = (n.nodeName || n.tagName || "")
-                            .toUpperCase()
-                            .substring(0, 3);
+                        h = (n.nodeName || n.tagName || '').toUpperCase().substring(0, 3);
                     while (m--) {
                         g = u[m];
                         if (n[name]) {
@@ -3762,7 +3225,7 @@
                         }
                     }
                     var r = p(n);
-                    if (typeof r === "object") {
+                    if (typeof r === 'object') {
                         for (var g in r) {
                             if (r.hasOwnProperty(g)) {
                                 l = r[g].length;
@@ -3778,20 +3241,20 @@
                     }
                     n = n.parentNode;
                 }
-                var e = ["total=" + d];
+                var e = ['total=' + d];
                 for (var f in q) {
                     if (q.hasOwnProperty(f) && q[f] > 0) {
-                        e.push(f + "=" + q[f]);
+                        e.push(f + '=' + q[f]);
                     }
                 }
-                return e.join("&");
+                return e.join('&');
             }
             if (window && (window.attachEvent || window.addEventListener)) {
-                c(window, "focus", function () {
-                    evLog("activate");
+                c(window, 'focus', function () {
+                    evLog('activate');
                 });
-                c(window, "blur", function () {
-                    evLog("deactivate");
+                c(window, 'blur', function () {
+                    evLog('deactivate');
                 });
             }
         })();
@@ -3804,12 +3267,12 @@
                 return new Encryption(key, options);
             },
         });
-        if (typeof fnDefine === "function" && fnDefine.amd) {
-            fnDefine("adyen/encrypt", [], function () {
+        if (typeof fnDefine === 'function' && fnDefine.amd) {
+            fnDefine('adyen/encrypt', [], function () {
                 return encrypt;
             });
         } else {
-            if (typeof module !== "undefined" && module.exports) {
+            if (typeof module !== 'undefined' && module.exports) {
                 module.exports = encrypt;
             }
         }
@@ -7211,32 +6674,22 @@
         //     }
         // })(document, window);
         encrypt.errors = encrypt.errors || {};
-        encrypt.errors.UNABLETOBIND = "CSEB01";
+        encrypt.errors.UNABLETOBIND = 'CSEB01';
 
         function addEvent(element, event, callback, capture) {
-            if (typeof element.addEventListener === "function") {
+            if (typeof element.addEventListener === 'function') {
                 element.addEventListener(event, callback, capture);
             } else {
                 if (element.attachEvent) {
-                    element.attachEvent("on" + event, callback);
+                    element.attachEvent('on' + event, callback);
                 } else {
-                    throw new Error(
-                        encrypt.errors.UNABLETOBIND +
-                            ": Unable to bind " +
-                            event +
-                            "-event"
-                    );
+                    throw new Error(encrypt.errors.UNABLETOBIND + ': Unable to bind ' + event + '-event');
                 }
             }
         }
 
         function hasClass(elem, className) {
-            return (
-                elem &&
-                new RegExp(" " + className + " ").test(
-                    " " + (elem.className || "") + " "
-                )
-            );
+            return elem && new RegExp(' ' + className + ' ').test(' ' + (elem.className || '') + ' ');
         }
 
         function addClass(elem, className) {
@@ -7244,7 +6697,7 @@
                 return;
             }
             if (!hasClass(elem, className)) {
-                elem.className += " " + className;
+                elem.className += ' ' + className;
             }
         }
 
@@ -7252,12 +6705,12 @@
             if (!elem) {
                 return;
             }
-            var newClass = " " + elem.className.replace(/[\t\r\n]/g, " ") + " ";
+            var newClass = ' ' + elem.className.replace(/[\t\r\n]/g, ' ') + ' ';
             if (hasClass(elem, className)) {
-                while (newClass.indexOf(" " + className + " ") >= 0) {
-                    newClass = newClass.replace(" " + className + " ", " ");
+                while (newClass.indexOf(' ' + className + ' ') >= 0) {
+                    newClass = newClass.replace(' ' + className + ' ', ' ');
                 }
-                elem.className = newClass.replace(/^\s+|\s+$/g, "");
+                elem.className = newClass.replace(/^\s+|\s+$/g, '');
             }
         }
 
@@ -7268,22 +6721,17 @@
                 return defaultValue;
             }
         }
-        encrypt.version = "0_1_18";
+        encrypt.version = '0_1_18';
         if (!Function.prototype.bind) {
             Function.prototype.bind = function (oThis) {
-                if (typeof this !== "function") {
-                    throw new TypeError(
-                        "Function.prototype.bind - what is trying to be bound is not callable"
-                    );
+                if (typeof this !== 'function') {
+                    throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
                 }
                 var aArgs = Array.prototype.slice.call(arguments, 1),
                     fToBind = this,
                     fNOP = function () {},
                     fBound = function () {
-                        return fToBind.apply(
-                            this instanceof fNOP && oThis ? this : oThis,
-                            aArgs.concat(Array.prototype.slice.call(arguments))
-                        );
+                        return fToBind.apply(this instanceof fNOP && oThis ? this : oThis, aArgs.concat(Array.prototype.slice.call(arguments)));
                     };
                 fNOP.prototype = this.prototype;
                 fBound.prototype = new fNOP();
@@ -7294,28 +6742,26 @@
             (function () {
                 function pad(number) {
                     if (number < 10) {
-                        return "0" + number;
+                        return '0' + number;
                     }
                     return number;
                 }
                 Date.prototype.toISOString = function () {
                     return (
                         this.getUTCFullYear() +
-                        "-" +
+                        '-' +
                         pad(this.getUTCMonth() + 1) +
-                        "-" +
+                        '-' +
                         pad(this.getUTCDate()) +
-                        "T" +
+                        'T' +
                         pad(this.getUTCHours()) +
-                        ":" +
+                        ':' +
                         pad(this.getUTCMinutes()) +
-                        ":" +
+                        ':' +
                         pad(this.getUTCSeconds()) +
-                        "." +
-                        (this.getUTCMilliseconds() / 1000)
-                            .toFixed(3)
-                            .slice(2, 5) +
-                        "Z"
+                        '.' +
+                        (this.getUTCMilliseconds() / 1000).toFixed(3).slice(2, 5) +
+                        'Z'
                     );
                 };
             })();
@@ -7333,9 +6779,9 @@
                 var no_digit = CardNumber.length;
                 var oddoeven = no_digit & 1;
                 var sum = 0;
-                if (typeof luhnCache[CardNumber] === "undefined") {
+                if (typeof luhnCache[CardNumber] === 'undefined') {
                     if (no_digit >= 14) {
-                        evLog("luhnCount");
+                        evLog('luhnCount');
                     }
                     for (var count = 0; count < no_digit; count++) {
                         var digit = parseInt(CardNumber.charAt(count), 10);
@@ -7348,10 +6794,10 @@
                         sum += digit;
                     }
                     if (sum % 10 === 0) {
-                        evLog("luhnOkCount");
+                        evLog('luhnOkCount');
                         luhnCache[CardNumber] = true;
                     } else {
-                        evLog("luhnFailCount");
+                        evLog('luhnFailCount');
                         luhnCache[CardNumber] = false;
                     }
                 }
@@ -7361,15 +6807,12 @@
                         luhnCacheTries++;
                     }
                 }
-                evLog("set", "luhnSameLengthCount", luhnCacheTries);
+                evLog('set', 'luhnSameLengthCount', luhnCacheTries);
                 return luhnCache[CardNumber];
             };
         })();
         validations.numberCheck = function (val) {
-            return (val || "").replace(/[^\d]/g, "").match(/^\d{10,20}$/) &&
-                validations.luhnCheck(val)
-                ? true
-                : false;
+            return (val || '').replace(/[^\d]/g, '').match(/^\d{10,20}$/) && validations.luhnCheck(val) ? true : false;
         };
         validations.cvcCheck = function (val) {
             return val && val.match && val.match(/^\d{3,4}$/) ? true : false;
@@ -7383,12 +6826,8 @@
             return year >= currentYear - 2 && year <= currentYear + 15;
         };
         validations.monthCheck = function (val) {
-            var myVal = (val || "").replace(/^0(\d)$/, "$1");
-            return myVal.match(/^([1-9]|10|11|12)$/) &&
-                parseInt(myVal, 10) >= 1 &&
-                parseInt(myVal, 10) <= 12
-                ? true
-                : false;
+            var myVal = (val || '').replace(/^0(\d)$/, '$1');
+            return myVal.match(/^([1-9]|10|11|12)$/) && parseInt(myVal, 10) >= 1 && parseInt(myVal, 10) <= 12 ? true : false;
         };
         validations.holderNameCheck = function (val) {
             return val && val.match && val.match(/\S/) ? true : false;
@@ -7402,19 +6841,19 @@
             } catch (e) {}
             this.key = key;
             this.options = options || {};
-            if (typeof this.options.numberIgnoreNonNumeric === "undefined") {
+            if (typeof this.options.numberIgnoreNonNumeric === 'undefined') {
                 this.options.numberIgnoreNonNumeric = true;
             }
-            if (typeof this.options.cvcIgnoreFornumber !== "undefined") {
+            if (typeof this.options.cvcIgnoreFornumber !== 'undefined') {
                 delete this.options.cvcIgnoreFornumber;
             }
-            if (typeof this.options.fourDigitCvcForBins === "undefined") {
-                this.options.fourDigitCvcForBins = "34,37";
+            if (typeof this.options.fourDigitCvcForBins === 'undefined') {
+                this.options.fourDigitCvcForBins = '34,37';
             }
-            if (typeof this.options.cvcLengthFornumber !== "undefined") {
+            if (typeof this.options.cvcLengthFornumber !== 'undefined') {
                 delete this.options.cvcLengthFornumber;
             }
-            if (typeof this.options.cvcIgnoreBins === "string") {
+            if (typeof this.options.cvcIgnoreBins === 'string') {
                 var binsToIgnore = [];
                 this.options.cvcIgnoreBins.replace(/\d+/g, function (m) {
                     if (m.length > 0 && !isNaN(parseInt(m, 10))) {
@@ -7423,16 +6862,14 @@
                     return m;
                 });
                 if (binsToIgnore.length > 0) {
-                    this.options.cvcIgnoreFornumber = new RegExp(
-                        "^\\s*(" + binsToIgnore.join("|") + ")"
-                    );
+                    this.options.cvcIgnoreFornumber = new RegExp('^\\s*(' + binsToIgnore.join('|') + ')');
                 }
             } else {
-                if (typeof this.options.cvcIgnoreBins !== "undefined") {
+                if (typeof this.options.cvcIgnoreBins !== 'undefined') {
                     delete this.options.cvcIgnoreBins;
                 }
             }
-            if (typeof this.options.fourDigitCvcForBins === "string") {
+            if (typeof this.options.fourDigitCvcForBins === 'string') {
                 var cvcGroups = [];
                 this.options.fourDigitCvcForBins.replace(/\d+/g, function (m) {
                     if (m.length > 0 && !isNaN(parseInt(m, 10))) {
@@ -7442,20 +6879,18 @@
                 });
                 if (cvcGroups.length > 0) {
                     this.options.cvcLengthFornumber = {
-                        matcher: new RegExp(
-                            "^\\s*(" + cvcGroups.join("|") + ")"
-                        ),
+                        matcher: new RegExp('^\\s*(' + cvcGroups.join('|') + ')'),
                         requiredLength: 4,
                     };
                 }
             }
             delete this.options.fourDigitCvcForBins;
-            evLog("initializeCount");
+            evLog('initializeCount');
         };
         Encryption.prototype.createRSAKey = function () {
-            var k = this.key.split("|");
+            var k = this.key.split('|');
             if (k.length != 2) {
-                throw "Malformed public key";
+                throw 'Malformed public key';
             }
             var exp = k[0];
             var mod = k[1];
@@ -7474,28 +6909,25 @@
                 encrypted,
                 prefix,
                 validationObject = {};
-            if (typeof data.number !== "undefined") {
+            if (typeof data.number !== 'undefined') {
                 validationObject.number = data.number;
             }
-            if (typeof data.cvc !== "undefined") {
+            if (typeof data.cvc !== 'undefined') {
                 validationObject.cvc = data.cvc;
             }
-            if (typeof data.expiryMonth !== "undefined") {
+            if (typeof data.expiryMonth !== 'undefined') {
                 validationObject.month = data.expiryMonth;
             }
-            if (typeof data.expiryYear !== "undefined") {
+            if (typeof data.expiryYear !== 'undefined') {
                 validationObject.year = data.expiryYear;
             }
-            if (typeof data.holderName !== "undefined") {
+            if (typeof data.holderName !== 'undefined') {
                 validationObject.holderName = data.holderName;
             }
-            if (
-                this.options.enableValidations !== false &&
-                this.validate(validationObject).valid === false
-            ) {
+            if (this.options.enableValidations !== false && this.validate(validationObject).valid === false) {
                 return false;
             }
-            evLog("extend", data);
+            evLog('extend', data);
             try {
                 data.dfValue = df();
             } catch (e) {}
@@ -7504,39 +6936,29 @@
             cipher = aes.encrypt(JSON.stringify(data));
             keybytes = sjcl.codec.bytes.fromBits(aes.key);
             encrypted = rsa.encrypt_b64(keybytes);
-            prefix = "adyenjs_" + encrypt.version + "$";
-            return [prefix, encrypted, "$", cipher].join("");
+            prefix = 'adyenjs_' + encrypt.version + '$';
+            return [prefix, encrypted, '$', cipher].join('');
         };
         Encryption.prototype.validate = function (data) {
             var result = {};
             result.valid = true;
-            if (typeof data !== "object") {
+            if (typeof data !== 'object') {
                 result.valid = false;
                 return result;
             }
             for (var field in data) {
-                if (
-                    !data.hasOwnProperty(field) ||
-                    typeof data[field] === "undefined"
-                ) {
+                if (!data.hasOwnProperty(field) || typeof data[field] === 'undefined') {
                     continue;
                 }
                 var val = data[field];
-                if (this.options[field + "IgnoreNonNumeric"]) {
-                    val = val.replace(/\D/g, "");
+                if (this.options[field + 'IgnoreNonNumeric']) {
+                    val = val.replace(/\D/g, '');
                 }
                 for (var relatedField in data) {
                     if (data.hasOwnProperty(relatedField)) {
-                        var possibleOption = this.options[
-                            field + "IgnoreFor" + relatedField
-                        ];
-                        var lengthOption = this.options[
-                            field + "LengthFor" + relatedField
-                        ];
-                        if (
-                            possibleOption &&
-                            data[relatedField].match(possibleOption)
-                        ) {
+                        var possibleOption = this.options[field + 'IgnoreFor' + relatedField];
+                        var lengthOption = this.options[field + 'LengthFor' + relatedField];
+                        if (possibleOption && data[relatedField].match(possibleOption)) {
                             result[field] = true;
                             continue;
                         } else {
@@ -7546,9 +6968,7 @@
                                 lengthOption.requiredLength &&
                                 data[relatedField].match(lengthOption.matcher)
                             ) {
-                                if (
-                                    val.length !== lengthOption.requiredLength
-                                ) {
+                                if (val.length !== lengthOption.requiredLength) {
                                     result[field] = false;
                                     continue;
                                 }
@@ -7561,28 +6981,28 @@
                     continue;
                 }
                 switch (field) {
-                    case "number":
+                    case 'number':
                         result.number = validations.numberCheck(val);
                         result.luhn = result.number;
                         result.valid = result.valid && result.number;
                         break;
-                    case "expiryYear":
-                    case "year":
+                    case 'expiryYear':
+                    case 'year':
                         result.year = validations.yearCheck(val);
                         result.expiryYear = result.year;
                         result.valid = result.valid && result.year;
                         break;
-                    case "cvc":
+                    case 'cvc':
                         result.cvc = validations.cvcCheck(val);
                         result.valid = result.valid && result.cvc;
                         break;
-                    case "expiryMonth":
-                    case "month":
+                    case 'expiryMonth':
+                    case 'month':
                         result.month = validations.monthCheck(val);
                         result.expiryMonth = result.month;
                         result.valid = result.valid && result.month;
                         break;
-                    case "holderName":
+                    case 'holderName':
                         result.holderName = validations.holderNameCheck(val);
                         result.valid = result.valid && result.holderName;
                         break;
@@ -7600,14 +7020,13 @@
             };
             var ce = function (ev) {
                 var node = ev.target || ev.srcElement,
-                    val = (node || {}).value || "";
-                var isInitializing =
-                    typeof ev.isInitializing === "boolean" && ev.isInitializing;
-                if (node.options && typeof node.selectedIndex !== "undefined") {
+                    val = (node || {}).value || '';
+                var isInitializing = typeof ev.isInitializing === 'boolean' && ev.isInitializing;
+                if (node.options && typeof node.selectedIndex !== 'undefined') {
                     val = node.options[node.selectedIndex].value;
                 }
-                if (cse.options[field + "IgnoreNonNumeric"]) {
-                    val = val.replace(/\D/g, "");
+                if (cse.options[field + 'IgnoreNonNumeric']) {
+                    val = val.replace(/\D/g, '');
                 }
                 var fieldData = cse.toJSON(cse.getEncryptedFields(cse.element));
                 var validationData = {
@@ -7624,41 +7043,41 @@
                     }
                 }
                 if (cse.validity[field]) {
-                    removeClass(node, "invalid-" + field);
-                    addClass(node, "valid-" + field);
+                    removeClass(node, 'invalid-' + field);
+                    addClass(node, 'valid-' + field);
                 } else {
-                    if (!isInitializing || val !== "") {
-                        addClass(node, "invalid-" + field);
+                    if (!isInitializing || val !== '') {
+                        addClass(node, 'invalid-' + field);
                     }
-                    removeClass(node, "valid-" + field);
+                    removeClass(node, 'valid-' + field);
                 }
                 cse.validity.luhn = cse.validity.number;
-                if ((node.className || "").match(/invalid-number/)) {
-                    addClass(node, "invalid-luhn");
-                    removeClass(node, "valid-luhn");
+                if ((node.className || '').match(/invalid-number/)) {
+                    addClass(node, 'invalid-luhn');
+                    removeClass(node, 'valid-luhn');
                 } else {
-                    if ((node.className || "").match(/valid-number/)) {
-                        removeClass(node, "invalid-luhn");
-                        addClass(node, "valid-luhn");
+                    if ((node.className || '').match(/valid-number/)) {
+                        removeClass(node, 'invalid-luhn');
+                        addClass(node, 'valid-luhn');
                     }
                 }
-                if (allowEmpty && val === "") {
-                    removeClass(node, "valid-" + field);
-                    removeClass(node, "invalid-" + field);
+                if (allowEmpty && val === '') {
+                    removeClass(node, 'valid-' + field);
+                    removeClass(node, 'invalid-' + field);
                 }
-                if ((node.className || "").match(/invalid-/)) {
-                    addClass(node, "invalid");
+                if ((node.className || '').match(/invalid-/)) {
+                    addClass(node, 'invalid');
                 } else {
-                    removeClass(node, "invalid");
+                    removeClass(node, 'invalid');
                 }
                 if (cse.options.disabledValidClass !== true) {
-                    if ((node.className || "").match(/invalid-/)) {
-                        removeClass(node, "valid");
+                    if ((node.className || '').match(/invalid-/)) {
+                        removeClass(node, 'valid');
                     } else {
-                        addClass(node, "valid");
+                        addClass(node, 'valid');
                     }
                 }
-                if (typeof ceConfig.chained === "function") {
+                if (typeof ceConfig.chained === 'function') {
                     ceConfig.chained(ev);
                 } else {
                     if (!isInitializing) {
@@ -7671,58 +7090,37 @@
             };
             return ce;
         };
-        var DEFAULT_FIELDNAME_ATTRIBUTE = "data-encrypted-name";
+        var DEFAULT_FIELDNAME_ATTRIBUTE = 'data-encrypted-name';
         var EncryptedForm = function (element, key, options) {
-            if (
-                typeof element !== "object" ||
-                typeof element.ownerDocument !== "object"
-            ) {
-                throw new Error(
-                    "Expected target element to be a HTML Form element"
-                );
+            if (typeof element !== 'object' || typeof element.ownerDocument !== 'object') {
+                throw new Error('Expected target element to be a HTML Form element');
             }
-            if (
-                "form" !==
-                (element.nodeName || element.tagName || "").toLowerCase()
-            ) {
-                throw new Error(
-                    "Expected target element to be a HTML Form element"
-                );
+            if ('form' !== (element.nodeName || element.tagName || '').toLowerCase()) {
+                throw new Error('Expected target element to be a HTML Form element');
             }
             this.element = element;
             this.key = key;
             this.validity = {};
-            evLog("initializeFormCount");
+            evLog('initializeFormCount');
             this.options = options = options || {};
-            if (typeof options !== "object") {
-                throw new Error("Expected options to be an object");
+            if (typeof options !== 'object') {
+                throw new Error('Expected options to be an object');
             }
-            if (typeof options.numberIgnoreNonNumeric === "undefined") {
+            if (typeof options.numberIgnoreNonNumeric === 'undefined') {
                 options.numberIgnoreNonNumeric = true;
             }
-            if (
-                typeof options.fieldNameAttribute !== "string" ||
-                !options.fieldNameAttribute.match(/^data(-\w+)+$/i)
-            ) {
+            if (typeof options.fieldNameAttribute !== 'string' || !options.fieldNameAttribute.match(/^data(-\w+)+$/i)) {
                 options.fieldNameAttribute = DEFAULT_FIELDNAME_ATTRIBUTE;
             }
-            this.name = options.name || "adyen-encrypted-data";
-            this.fieldNameAttribute =
-                options.fieldNameAttribute || DEFAULT_FIELDNAME_ATTRIBUTE;
+            this.name = options.name || 'adyen-encrypted-data';
+            this.fieldNameAttribute = options.fieldNameAttribute || DEFAULT_FIELDNAME_ATTRIBUTE;
             this.onsubmit = options.onsubmit || function () {};
             this.encryption = new Encryption(key, options);
             if (this.element.addEventListener) {
-                this.element.addEventListener(
-                    "submit",
-                    this.handleSubmit.bind(this),
-                    false
-                );
+                this.element.addEventListener('submit', this.handleSubmit.bind(this), false);
             } else {
                 if (this.element.attachEvent) {
-                    this.element.attachEvent(
-                        "onsubmit",
-                        this.handleSubmit.bind(this)
-                    );
+                    this.element.attachEvent('onsubmit', this.handleSubmit.bind(this));
                 }
             }
             if (options.enableValidations !== false) {
@@ -7732,25 +7130,16 @@
                 if (!element.elements[i]) {
                     continue;
                 }
-                var attr = getAttribute(
-                    element.elements[i],
-                    this.options.fieldNameAttribute
-                );
-                if (
-                    typeof attr !== "undefined" &&
-                    attr !== null &&
-                    attr !== ""
-                ) {
-                    evLog("bind", element.elements[i], attr);
+                var attr = getAttribute(element.elements[i], this.options.fieldNameAttribute);
+                if (typeof attr !== 'undefined' && attr !== null && attr !== '') {
+                    evLog('bind', element.elements[i], attr);
                 }
             }
         };
         EncryptedForm.prototype = {
             constructor: EncryptedForm,
             hasAttribute:
-                document &&
-                document.documentElement &&
-                document.documentElement.hasAttribute
+                document && document.documentElement && document.documentElement.hasAttribute
                     ? function (node, attrName) {
                           return node.hasAttribute(attrName);
                       }
@@ -7760,7 +7149,7 @@
             handleSubmit: function (e) {
                 if (this.options.enableValidations !== false) {
                     if (!this.isValid()) {
-                        this.createEncryptedField("false");
+                        this.createEncryptedField('false');
                         if (e.preventDefault) {
                             e.preventDefault();
                         }
@@ -7779,9 +7168,7 @@
             },
             getEncryptedFields: function (node, fields) {
                 if (node.querySelectorAll) {
-                    return node.querySelectorAll(
-                        "[" + this.fieldNameAttribute + "]"
-                    );
+                    return node.querySelectorAll('[' + this.fieldNameAttribute + ']');
                 }
                 fields = fields || [];
                 var children = node.children;
@@ -7803,13 +7190,10 @@
                     value;
                 for (var i = fields.length - 1; i >= 0; i--) {
                     field = fields[i];
-                    field.removeAttribute("name");
+                    field.removeAttribute('name');
                     key = field.getAttribute(this.fieldNameAttribute);
                     value = field.value;
-                    if (
-                        field.options &&
-                        typeof field.selectedIndex !== "undefined"
-                    ) {
+                    if (field.options && typeof field.selectedIndex !== 'undefined') {
                         value = field.options[field.selectedIndex].value;
                     }
                     data[key] = value;
@@ -7818,19 +7202,17 @@
             },
             encrypt: function () {
                 console.log(this.toJSON(this.getEncryptedFields(this.element)));
-                return this.encryption.encrypt(
-                    this.toJSON(this.getEncryptedFields(this.element))
-                );
+                return this.encryption.encrypt(this.toJSON(this.getEncryptedFields(this.element)));
             },
             createEncryptedField: function (data) {
                 var element = document.getElementById(this.name);
                 if (!element) {
-                    element = document.createElement("input");
-                    element.type = "hidden";
+                    element = document.createElement('input');
+                    element.type = 'hidden';
                     element.name = element.id = this.name;
                     this.element.appendChild(element);
                 }
-                element.setAttribute("value", data);
+                element.setAttribute('value', data);
             },
             addValidations: function () {
                 var cse = this,
@@ -7844,150 +7226,54 @@
                     if (!element || !element.getAttribute) {
                         continue;
                     }
-                    var fieldName = element.getAttribute(
-                        this.fieldNameAttribute
-                    );
+                    var fieldName = element.getAttribute(this.fieldNameAttribute);
                     elementsByName[fieldName] = element;
-                    if (fieldName === "number") {
-                        handlers.luhnHandler =
-                            handlers.luhnHandler ||
-                            validations.createChangeHandler(
-                                cse,
-                                "number",
-                                true
-                            );
-                        addEvent(
-                            element,
-                            "change",
-                            handlers.luhnHandler,
-                            false
-                        );
-                        addEvent(element, "keyup", handlers.luhnHandler, false);
-                        addEvent(element, "blur", handlers.luhnHandler, false);
+                    if (fieldName === 'number') {
+                        handlers.luhnHandler = handlers.luhnHandler || validations.createChangeHandler(cse, 'number', true);
+                        addEvent(element, 'change', handlers.luhnHandler, false);
+                        addEvent(element, 'keyup', handlers.luhnHandler, false);
+                        addEvent(element, 'blur', handlers.luhnHandler, false);
                         handlers.luhnHandler({
                             target: element,
                             isInitializing: true,
                         });
                     } else {
-                        if (fieldName === "cvc") {
-                            handlers.cvcHandler =
-                                handlers.cvcHandler ||
-                                validations.createChangeHandler(
-                                    cse,
-                                    "cvc",
-                                    true
-                                );
-                            addEvent(
-                                element,
-                                "change",
-                                handlers.cvcHandler,
-                                false
-                            );
-                            addEvent(
-                                element,
-                                "keyup",
-                                handlers.cvcHandler,
-                                false
-                            );
-                            addEvent(
-                                element,
-                                "blur",
-                                handlers.cvcHandler,
-                                false
-                            );
+                        if (fieldName === 'cvc') {
+                            handlers.cvcHandler = handlers.cvcHandler || validations.createChangeHandler(cse, 'cvc', true);
+                            addEvent(element, 'change', handlers.cvcHandler, false);
+                            addEvent(element, 'keyup', handlers.cvcHandler, false);
+                            addEvent(element, 'blur', handlers.cvcHandler, false);
                             handlers.cvcHandler({
                                 target: element,
                                 isInitializing: true,
                             });
                         } else {
-                            if (fieldName === "expiryYear") {
-                                handlers.expiryYearHandler =
-                                    handlers.expiryYearHandler ||
-                                    validations.createChangeHandler(
-                                        cse,
-                                        "year",
-                                        true
-                                    );
-                                addEvent(
-                                    element,
-                                    "change",
-                                    handlers.expiryYearHandler,
-                                    false
-                                );
-                                addEvent(
-                                    element,
-                                    "keyup",
-                                    handlers.expiryYearHandler,
-                                    false
-                                );
-                                addEvent(
-                                    element,
-                                    "blur",
-                                    handlers.expiryYearHandler,
-                                    false
-                                );
+                            if (fieldName === 'expiryYear') {
+                                handlers.expiryYearHandler = handlers.expiryYearHandler || validations.createChangeHandler(cse, 'year', true);
+                                addEvent(element, 'change', handlers.expiryYearHandler, false);
+                                addEvent(element, 'keyup', handlers.expiryYearHandler, false);
+                                addEvent(element, 'blur', handlers.expiryYearHandler, false);
                                 handlers.expiryYearHandler({
                                     target: element,
                                     isInitializing: true,
                                 });
                             } else {
-                                if (fieldName === "expiryMonth") {
-                                    handlers.expiryMonthHandler =
-                                        handlers.expiryMonthHandler ||
-                                        validations.createChangeHandler(
-                                            cse,
-                                            "month",
-                                            true
-                                        );
-                                    addEvent(
-                                        element,
-                                        "change",
-                                        handlers.expiryMonthHandler,
-                                        false
-                                    );
-                                    addEvent(
-                                        element,
-                                        "keyup",
-                                        handlers.expiryMonthHandler,
-                                        false
-                                    );
-                                    addEvent(
-                                        element,
-                                        "blur",
-                                        handlers.expiryMonthHandler,
-                                        false
-                                    );
+                                if (fieldName === 'expiryMonth') {
+                                    handlers.expiryMonthHandler = handlers.expiryMonthHandler || validations.createChangeHandler(cse, 'month', true);
+                                    addEvent(element, 'change', handlers.expiryMonthHandler, false);
+                                    addEvent(element, 'keyup', handlers.expiryMonthHandler, false);
+                                    addEvent(element, 'blur', handlers.expiryMonthHandler, false);
                                     handlers.expiryMonthHandler({
                                         target: element,
                                         isInitializing: true,
                                     });
                                 } else {
-                                    if (fieldName === "holderName") {
+                                    if (fieldName === 'holderName') {
                                         handlers.holderNameHandler =
-                                            handlers.holderNameHandler ||
-                                            validations.createChangeHandler(
-                                                cse,
-                                                "holderName",
-                                                false
-                                            );
-                                        addEvent(
-                                            element,
-                                            "change",
-                                            handlers.holderNameHandler,
-                                            false
-                                        );
-                                        addEvent(
-                                            element,
-                                            "keyup",
-                                            handlers.holderNameHandler,
-                                            false
-                                        );
-                                        addEvent(
-                                            element,
-                                            "blur",
-                                            handlers.holderNameHandler,
-                                            false
-                                        );
+                                            handlers.holderNameHandler || validations.createChangeHandler(cse, 'holderName', false);
+                                        addEvent(element, 'change', handlers.holderNameHandler, false);
+                                        addEvent(element, 'keyup', handlers.holderNameHandler, false);
+                                        addEvent(element, 'blur', handlers.holderNameHandler, false);
                                         handlers.holderNameHandler({
                                             target: element,
                                             isInitializing: true,
@@ -7998,12 +7284,7 @@
                         }
                     }
                 }
-                if (
-                    handlers.luhnHandler &&
-                    handlers.cvcHandler &&
-                    elementsByName.number &&
-                    elementsByName.cvc
-                ) {
+                if (handlers.luhnHandler && handlers.cvcHandler && elementsByName.number && elementsByName.cvc) {
                     handlers.luhnHandler.chain(function (ev) {
                         handlers.cvcHandler({
                             target: elementsByName.cvc,
@@ -8015,20 +7296,10 @@
                 }
             },
             addCardTypeDetection: function (cardTypeElement) {
-                if (
-                    typeof adyen.CardTypeDetection === "undefined" ||
-                    typeof adyen.CardTypeDetection.getHandler !== "function"
-                ) {
-                    return (
-                        window.console &&
-                        window.console.warn(
-                            "[CSE] Card type detection not available"
-                        )
-                    );
+                if (typeof adyen.CardTypeDetection === 'undefined' || typeof adyen.CardTypeDetection.getHandler !== 'function') {
+                    return window.console && window.console.warn('[CSE] Card type detection not available');
                 }
-                var updateCardTypeDetection = adyen.CardTypeDetection.getHandler(
-                    cardTypeElement
-                );
+                var updateCardTypeDetection = adyen.CardTypeDetection.getHandler(cardTypeElement);
                 var cse = this,
                     elements = this.element.elements,
                     c = elements.length,
@@ -8039,28 +7310,10 @@
                     if (!element || !element.getAttribute) {
                         continue;
                     } else {
-                        if (
-                            element.getAttribute(this.fieldNameAttribute) ===
-                            "number"
-                        ) {
-                            addEvent(
-                                element,
-                                "change",
-                                updateCardTypeDetection,
-                                false
-                            );
-                            addEvent(
-                                element,
-                                "input",
-                                updateCardTypeDetection,
-                                false
-                            );
-                            addEvent(
-                                element,
-                                "keyup",
-                                updateCardTypeDetection,
-                                false
-                            );
+                        if (element.getAttribute(this.fieldNameAttribute) === 'number') {
+                            addEvent(element, 'change', updateCardTypeDetection, false);
+                            addEvent(element, 'input', updateCardTypeDetection, false);
+                            addEvent(element, 'keyup', updateCardTypeDetection, false);
                             updateCardTypeDetection({
                                 target: element,
                             });
@@ -8090,31 +7343,19 @@
                 var valid = this.isValid(),
                     elements = this.element.elements,
                     enabled;
-                enabled =
-                    valid === true ||
-                    (this.options &&
-                        this.options.submitButtonAlwaysEnabled === true);
+                enabled = valid === true || (this.options && this.options.submitButtonAlwaysEnabled === true);
                 for (var c = elements.length; c-- > 0; ) {
-                    if (
-                        elements[c] &&
-                        (elements[c].type || "").toLowerCase() === "submit"
-                    ) {
+                    if (elements[c] && (elements[c].type || '').toLowerCase() === 'submit') {
                         elements[c].disabled = !enabled;
                     }
                 }
-                if (typeof this.options.onvalidate === "function") {
+                if (typeof this.options.onvalidate === 'function') {
                     try {
                         this.options.onvalidate(this.validity);
                     } catch (e) {
-                        if (
-                            window.console &&
-                            window.console.warn &&
-                            window.console.log
-                        ) {
-                            console.warn(
-                                "[CSE] Error in custom validationComplete handler"
-                            );
-                            console.log("Caught error was ", e);
+                        if (window.console && window.console.warn && window.console.log) {
+                            console.warn('[CSE] Error in custom validationComplete handler');
+                            console.log('Caught error was ', e);
                         }
                     }
                 }
@@ -8140,7 +7381,7 @@
                 return sjcl.codec.base64.fromBits(cipherIV);
             },
         };
-    })(this, typeof define === "function" ? define : null);
+    })(this, typeof define === 'function' ? define : null);
 
     // if (typeof adyen.encrypt.createEncryptedForm === "function") {
     //     (function () {

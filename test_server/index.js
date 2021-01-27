@@ -8,7 +8,7 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 const random = () => {
-    let random = Math.round(Math.random() * 2500 + 400);
+    let random = Math.round(Math.random() * 2500);
     console.log(random);
     return random;
 };
@@ -16,7 +16,6 @@ const random = () => {
 app.use((req, res, next) => {
     setTimeout(next, random());
 });
-
 app.get('/api/v4/session', (req, res) => {
     res.cookie('JSESSIONID', 'hereacookielol');
     res.json({ data: { csrfToken: 'csrf123' } }).status(200);

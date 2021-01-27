@@ -1,13 +1,13 @@
-const { threadId, parentPort } = require('worker_threads');
+const EventEmitter = require('events');
 const { CookieJar } = require('./CookieJar');
 
-class Task {
+class Task extends EventEmitter {
     constructor(productLink, productSKU, size, deviceId, requestInstance, userProfile) {
+        super();
         this.productLink = productLink;
         this.productSKU = productSKU;
         this.size = size;
         this.deviceId = deviceId;
-        this.threadId = threadId;
         this.axiosSession = requestInstance.axios;
         this.cookieJar = new CookieJar();
         this.userProfile = userProfile;
@@ -44,7 +44,7 @@ class Task {
             await this.setBilling();
             await this.placeOrder();
         } catch (err) {
-            parentPort.postMessage('There was an error somewhere');
+            console.log('error');
         }
     }
 }

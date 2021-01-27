@@ -4,11 +4,14 @@ module.exports = {
         commonjs: true,
         es2021: true,
     },
-    extends: "eslint:recommended",
+    extends: 'eslint:recommended',
     parserOptions: {
         ecmaVersion: 12,
     },
     rules: {
-        "no-unused-vars": "off",
+        'no-unused-vars': 'off',
+        'no-underf': 'off',
+        'no-useless-escape': 'off',
+        'no-empty': 'off',
     },
 };
