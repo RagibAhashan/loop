@@ -4,7 +4,6 @@ import {  Row, Col, Form, Input, Button, Divider,
           Upload, Layout, Menu, Dropdown, Tabs} from 'antd';
 import { DownOutlined, PlusOutlined, DeleteOutlined, InboxOutlined, UserOutlined } from '@ant-design/icons';
 import * as Constants from '../constants';
-import '../App.global.css'
 import { Tooltip } from '@material-ui/core';
 
 const { Header, Content, Footer, Sider } = Layout;
