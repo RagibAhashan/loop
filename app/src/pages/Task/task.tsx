@@ -1,5 +1,5 @@
 import { Button, Col, DatePicker, Form, Input, Row, Select, TimePicker, Divider } from 'antd';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Bot from './bot';
 const { v4: uuid } = require('uuid');
 
@@ -54,17 +54,17 @@ const validateMessages = {
 };
 
 interface Job {
-    uuid: String;
-    store: String;
-    keyword: String;
-    startdate: String;
-    starttime: String;
-    profile: String;
-    sizes: Array<String>;
-    proxyset: String;
-    quantity: String;
-    monitordelay: Number;
-    retrydelay: Number;
+    uuid: string;
+    store: string;
+    keyword: string;
+    startdate: string;
+    starttime: string;
+    profile: string;
+    sizes: Array<string>;
+    proxyset: string;
+    quantity: string;
+    monitordelay: number;
+    retrydelay: number;
 }
 
 const TaskComponent = () => {
@@ -127,8 +127,11 @@ const TaskComponent = () => {
         forceUpdate();
     };
 
+    const botRef = useRef();
+
     const runAll = () => {
         console.log(jobs);
+        (botRef.current as any).run();
     };
     const Headers = () => {
         return (
@@ -193,11 +196,8 @@ const TaskComponent = () => {
         forceUpdate();
     };
 
-    useEffect(() => {});
-
     const ROW_GUTTER: [number, number] = [24, 0];
 
-    useEffect(() => {});
     return (
         <div>
             <Form onFinish={addTasks} validateMessages={validateMessages}>
@@ -296,6 +296,8 @@ const TaskComponent = () => {
                 >
                     {jobs.map((botTask) => (
                         <Bot
+                            ref={botRef}
+                            key={botTask.uuid}
                             uuid={botTask.uuid}
                             store={botTask.store}
                             keyword={botTask.keyword}

@@ -2,7 +2,7 @@
 import { DeleteOutlined, DoubleRightOutlined, EditOutlined, StopOutlined } from '@ant-design/icons';
 import { Button, Col, Row, Space } from 'antd';
 import { stat } from 'fs';
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 const { ipcRenderer } = window.require('electron');
 
 interface Status {
@@ -60,28 +60,42 @@ const statusColor = (level: string) => {
     }
 };
 
-const Bot = (props: any) => {
+const Bot = forwardRef((props: any, ref) => {
     const { uuid, store, keyword, startdate, starttime, profile, sizes, proxyset, quantity, monitordelay, retrydelay, deleteBot } = props;
 
     const [status, setStatus] = useState('Idle');
     const [running, setRunning] = useState(false);
     const [statusLevel, setStatusLevel] = useState('idle');
 
-    ipcRenderer.on(uuid, (event, status: Status) => {
-        setStatus((prevStatus) => (prevStatus = status.status));
-        setStatusLevel((prevLevel) => (prevLevel = status.level));
-    });
+    const registerTaskStatusListener = () => {
+        ipcRenderer.on(uuid, (event, status: Status) => {
+            setStatus((prevStatus) => (prevStatus = status.status));
+            setStatusLevel((prevLevel) => (prevLevel = status.level));
+        });
+    };
 
     const startTask = () => {
         setRunning((prevRunning) => (prevRunning = !prevRunning));
         ipcRenderer.send('start-task', uuid);
     };
 
+    useEffect(() => {
+        registerTaskStatusListener();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useImperativeHandle(ref, () => ({
+        run() {
+            startTask();
+        },
+    }));
+
     const stopTask = () => {
-        console.log('remove all listeners');
+        // console.log('remove all listeners');
         ipcRenderer.removeAllListeners(uuid);
         setRunning((prevRunning) => (prevRunning = !prevRunning));
         setStatusLevel((prevLevel) => (prevLevel = 'idle'));
+        setStatus((prevStatus) => (prevStatus = 'Idle'));
     };
 
     const runButton = () => {
@@ -106,27 +120,6 @@ const Bot = (props: any) => {
         );
     };
 
-    useEffect(() => {
-        let sizes_string = sizes[0];
-        if (sizes.length > 1) {
-            for (let i = 1; i < sizes.length; i++) {
-                sizes_string += ' - ' + sizes[i];
-            }
-        }
-        console.log(sizes_string);
-    }, []);
-
-    const allSizes = () => {
-        let sizes_string = sizes[0];
-        if (sizes.length > 1) {
-            for (let i = 1; i < sizes.length; i++) {
-                sizes_string += ' - ' + sizes[i];
-            }
-        }
-        console.log(sizes_string);
-        return sizes_string;
-    };
-
     return (
         <Row style={botStyle}>
             <Col span={2} style={{ margin: 'auto', marginLeft: '10px' }}>
@@ -146,7 +139,7 @@ const Bot = (props: any) => {
             </Col>
 
             <Col span={7} style={colStyle}>
-                {allSizes()}
+                size
             </Col>
 
             <Col span={3} style={colStyle}>
@@ -169,6 +162,6 @@ const Bot = (props: any) => {
             </Col>
         </Row>
     );
-};
+});
 
 export default Bot;
