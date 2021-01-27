@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {  Row, Col, Form, Input, Button, Divider, 
-          Popover, Modal, Radio, Card, message,
-          Upload, } from 'antd';
-import { MinusCircleTwoTone, PlusOutlined, DeleteOutlined, InboxOutlined } from '@ant-design/icons';
+          Table, Modal, Tag, Space, Card, message,
+          Upload, Layout, Menu, Dropdown, Tabs} from 'antd';
+import { DownOutlined, PlusOutlined, DeleteOutlined, InboxOutlined, UserOutlined } from '@ant-design/icons';
 import * as Constants from '../constants';
 import '../App.global.css'
 import { Tooltip } from '@material-ui/core';
+
+const { Header, Content, Footer, Sider } = Layout;
 
 const ProxyPage = (props: any) => {
   const { setPage } = props;
@@ -197,12 +199,6 @@ const CollectionCreateForm = ({ visible, onCreate, onCancel }:any) => {
           </Dragger>
           {/* <Input type="textarea" placeholder="Copy Paste your list of proxies"/> */}
         </Form.Item>
-        <Form.Item name="modifier" className="collection-create-form_last-form-item">
-          <Radio.Group>
-            <Radio value="public">Public</Radio>
-            <Radio value="private">Private</Radio>
-          </Radio.Group>
-        </Form.Item>
       </Form>
     </Modal>
   );
@@ -227,97 +223,147 @@ const prop = {
   },
 };
 
-  return (
-    <Form name="dynamic_form_nest_item" onFinish={onFinish} autoComplete="off" style={{padding: 24}}>
-    <Row>
-      <Col span={2} style={{fontSize: 30}} className="pageTitle"> Proxies </Col>
-      <Col span={20}>
-        <div style={{marginLeft: 20, marginTop: 10}}>
-        <Tooltip placement="right" title={"Add New Set"}>
-        <PlusOutlined
-            style={{color:'orange', fontSize: 30, fontWeight: 'bold'}}
-            onClick={() => {
-              setVisible(true);
-            }}
-          />
-        </Tooltip>
-          <CollectionCreateForm
-            visible={visible}
-            onCreate={onCreate}
-            onCancel={() => {
-              setVisible(false);
-            }}
-          />
-        </div> 
-      </Col>
-    </Row>
-    <Row>
-      {ShowProxies(proxies)}
-    </Row>
-    <Row>
-      <Col span={5}   style={{ marginRight: 10 }}>  <Divider> Set Name        </Divider>  </Col>
-      <Col span={12}  style={{ marginRight: 10 }}>   <Divider> Proxies         </Divider>  </Col>
-      <Col span={5}   style={{ marginRight: 10 }}>   <Divider> No. of Proxies  </Divider>  </Col>
-      <Col span={2}   style={{ marginRight: 10 }}>   </Col>
-    </Row>
-    <Form.List name="proxies">
-      {(fields, { add, remove }) => (
-        <>
-          {fields.map(field => (
-              <Row  key={field.key}>
-                <Col span={5} style={{marginRight: 10}}>
-                  <Form.Item
-                    {...field}
-                    name={[field.name, 'name']}
-                    fieldKey={[field.fieldKey, 'name']}
-                    style={{ width: 'auto'}}
-                    rules={[{ required: true, message: 'Missing set name' }]}
-                  >
-                    <Input   placeholder="Set Name" />
-                  </Form.Item>
-                </Col>
-                <Col span={12} style={{marginRight: 10}}>
-                  <Form.Item
-                    {...field}
-                    name={[field.name, 'proxy']}
-                    fieldKey={[field.fieldKey, 'proxy']}
-                    style={{ width: 'auto'}}
-                    rules={[{ required: true, message: 'Missing proxies' }]}
-                  >
-                    <Input  onChange={(values) => {realTimeNoProxies(values, field.fieldKey); forceUpdate()}}
-                            style={{display: 'flex' }} placeholder="Copy Paste your list of proxies" />
-                  </Form.Item>
-                </Col>
-                <Col span={5} style={{marginRight: 10}}>
-                    <Input  style={{ display: 'flex', textAlign: 'center' }} value={(proxyInput.get(field.fieldKey))?.length} disabled={true} />
-                </Col>
-                <Col span={1}>
-                  <MinusCircleTwoTone style={{marginTop:10}} onClick={()=> {remove(field.name);}} />
-                </Col>
-          </Row>))}
-          <Row>
-            <Col span={5}  style={{marginRight: 10}}>
-            <Form.Item>
-              <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />}>
-                New Set
-              </Button>
-            </Form.Item>
-            </Col>
-            <Col span={12} style={{marginRight: 10}}> </Col>
+const handleMenuClick = () => {
 
-            <Col span={5} >
-            <Form.Item>
-              <Button style={{float:'right'}} onClick={()=> {}} disabled={fields.length === 0} type="primary" htmlType="submit">
-                Comfirm Sets
-              </Button>
-            </Form.Item>
-            </Col>
-            <Col span={1}></Col>
-          </Row>
-        </>
-      )}
-    </Form.List>
-  </Form>
+}
+
+const menu = (
+  <Menu onClick={handleMenuClick}>
+    <Menu.Item key="1" icon={<UserOutlined />}>
+      1st menu item
+    </Menu.Item>
+    <Menu.Item key="2" icon={<UserOutlined />}>
+      2nd menu item
+    </Menu.Item>
+    <Menu.Item key="3" icon={<UserOutlined />}>
+      3rd menu item
+    </Menu.Item>
+  </Menu>
+);
+
+
+
+const columns = [
+  {
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
+    render: (text:any) => <a>{text}</a>,
+  },
+  {
+    title: 'Age',
+    dataIndex: 'age',
+    key: 'age',
+  },
+  {
+    title: 'Address',
+    dataIndex: 'address',
+    key: 'address',
+  },
+  {
+    title: 'Tags',
+    key: 'tags',
+    dataIndex: 'tags',
+    render: (tags:any) => (
+      <>
+        {tags.map((tag:any) => {
+          let color = tag.length > 5 ? 'geekblue' : 'green';
+          if (tag === 'loser') {
+            color = 'volcano';
+          }
+          return (
+            <Tag color={color} key={tag}>
+              {tag.toUpperCase()}
+            </Tag>
+          );
+        })}
+      </>
+    ),
+  },
+  {
+    title: 'Action',
+    key: 'action',
+    render: (text:any, record:any) => (
+      <Space size="middle">
+        <a>Invite {record.name}</a>
+        <a>Delete</a>
+      </Space>
+    ),
+  },
+];
+
+const data = [
+  {
+    key: '1',
+    name: 'John Brown',
+    age: 32,
+    address: 'New York No. 1 Lake Park',
+    tags: ['nice', 'developer'],
+  },
+  {
+    key: '2',
+    name: 'Jim Green',
+    age: 42,
+    address: 'London No. 1 Lake Park',
+    tags: ['loser'],
+  },
+  {
+    key: '3',
+    name: 'Joe Black',
+    age: 32,
+    address: 'Sidney No. 1 Lake Park',
+    tags: ['cool', 'teacher'],
+  },
+];
+
+const onChange = () => {
+
+}
+
+const { TabPane } = Tabs;
+
+function callback(key:any) {
+  console.log(key);
+}
+
+const Sets = () => (
+  <Tabs defaultActiveKey="1" onChange={callback} style={{padding:'0 50px'}}>
+    <TabPane tab="Tab 1" key="1">
+      <Table columns={columns} dataSource={data} onChange={onChange} />
+    </TabPane>
+    <TabPane tab="Tab 2" key="2">
+      Content of Tab Pane 2
+    </TabPane>
+    <TabPane tab="Tab 3" key="3">
+      Content of Tab Pane 3
+    </TabPane>
+  </Tabs>
+);
+
+
+  return (
+    <Layout>
+      <Header>
+        <Row>
+          <Col span={2} style={{fontSize: 30}}> Proxies </Col>
+          <Col span={22} style={{textAlign: 'right'}}>
+            <div>
+            <Button type="primary" onClick={() => {setVisible(true);}}>Add new set</Button>
+              <CollectionCreateForm
+                visible={visible}
+                onCreate={onCreate}
+                onCancel={() => {
+                  setVisible(false);
+                }}
+              />
+            </div> 
+          </Col>
+        </Row> 
+      </Header>
+      <Content>
+          <Sets />
+      </Content>
+  </Layout>
   );
 }
 
