@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {  Row, Col, Form, Input, Button, Divider, 
           Table, Modal, Tag, Space, Card, message,
-          Upload, Layout, Menu, Dropdown, Tabs} from 'antd';
-import { DownOutlined, PlusOutlined, DeleteOutlined, InboxOutlined, UserOutlined } from '@ant-design/icons';
+          Upload, Layout, Menu, Tabs} from 'antd';
+import {DeleteOutlined, InboxOutlined, UserOutlined } from '@ant-design/icons';
 import * as Constants from '../constants';
-import { Tooltip } from '@material-ui/core';
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Header, Content } = Layout;
 
 const ProxyPage = (props: any) => {
   const { setPage } = props;
   const [proxies, setProxies] = useState(new Map<string, []>()); // name -> proxies
-  const [proxyInput, setProxyInputs] = useState(new Map<number, []>()); // new sets being inputted by user (input_key -> nProxies)
   const [visible, setVisible] = useState(false);
 
   const onCreate = (values: any) => {
@@ -104,7 +102,7 @@ const ProxyPage = (props: any) => {
     let proxyArray = Array.from(proxies, ([name, proxies]) => ({ name, proxies }));
     if (!proxies.size) return (<h1>  </h1>)
     return proxyArray.map( (value) => {
-      const ex = proxies.get(value.name) as Array<string>;
+      // const ex = proxies.get(value.name) as Array<string>;
       return (
         // <Popover content={content(value.proxies, value.name)} placement="right">
             <Card size="small"
@@ -124,10 +122,6 @@ const ProxyPage = (props: any) => {
         // </Popover>
       )
     })
-}
-
-const realTimeNoProxies = (values: any, currentInputKey: number) => {
-  setProxyInputs(proxyInput.set(currentInputKey, values.target.value.split(" ")));
 }
 
 function useForceUpdate(){
@@ -247,7 +241,7 @@ const columns = [
     title: 'Name',
     dataIndex: 'name',
     key: 'name',
-    render: (text:any) => <a>{text}</a>,
+    render: (text:any) => <button>{text}</button>,
   },
   {
     title: 'Age',
@@ -284,8 +278,8 @@ const columns = [
     key: 'action',
     render: (text:any, record:any) => (
       <Space size="middle">
-        <a>Invite {record.name}</a>
-        <a>Delete</a>
+        <button>Invite {record.name}</button>
+        <button>Delete</button>
       </Space>
     ),
   },
