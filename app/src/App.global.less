@@ -1,15 +1,17 @@
 @import '~antd/dist/antd.dark.less';
-
-@import 'dynasty-dark.less';
+@import 'dynasty-light.less';
+// @import 'dynasty-dark.less';
 
 /* https://stackoverflow.com/questions/15831657/creating-css-global-variables-stylesheet-theme-management */
 :root {
     --siderColor: #282c31;
     --menuItem: #282c31;
     --defaultThemeColor: orange;
+    --defaultThemeHover: rgba(255, 165, 0, 0.8);
     --siderIconSize: 20px;
     --siderShadow: 1px 0px 5px 0.1px black;
     --cardShadow: 0px 0px 5px 0.1px black;
+    --workspaceColor: #212427;
 }
 
 /* Sider */
@@ -85,11 +87,68 @@
     border: 2px solid var(--siderColor);
 }
 
+/* Modals */
+.ant-modal-body, .ant-modal-header, .ant-modal-footer {
+    background: var(--siderColor);
+}
+
+/* Buttons */
+.ant-btn-primary {
+    color: #fff;
+    background: var(--defaultThemeColor);
+    border-color: var(--defaultThemeColor);
+}
+.ant-btn-primary:hover {
+    color: #fff;
+    background: var(--defaultThemeHover);
+    border-color: var(--defaultThemeHover);
+}
+
+/* Table */
+.ant-table-tbody > tr > td {
+    border-top: 10px solid var(--workspaceColor);
+    border-bottom: 0;
+    background: var(--siderColor);
+}
+.ant-table-thead > tr > th {
+    border-bottom: 0;
+    background: var(--workspaceColor)
+}
+.ant-table-tbody > tr > td {
+    border-bottom: 0;
+    background: var(--siderColor);
+}
+.ant-table-thead > tr > th, .ant-table-tbody > tr > td, .ant-table tfoot > tr > th, .ant-table tfoot > tr > td {
+    position: relative;
+    padding: 16px;
+    overflow-wrap: break-word;
+}
+
+/* Tabs */
+.ant-tabs {
+    background-color: var(--workspaceColor);
+}
+
+::selection {
+    color: #fff;
+    background:var(--defaultThemeColor);
+}
+
+/* .ant-upload-list-item-info */
+.ant-upload-list-item-info {
+    transition: background-color 0.3s;
+    position: relative;
+    height: 66px;
+    padding: 15px;
+    border: 0.5px solid var(--defaultThemeColor);
+}
+
 html,
 body {
     margin: 0;
     height: 100%;
     overflow: hidden;
+    flex:auto;
 }
 
 /* sidebar */

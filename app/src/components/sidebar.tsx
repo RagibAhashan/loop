@@ -1,20 +1,14 @@
 import { DesktopOutlined, FileOutlined, HomeOutlined, PieChartOutlined, SettingOutlined } from '@ant-design/icons';
 import { Layout, Menu, Row } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
+import { withRouter } from 'react-router-dom';
 import logo from '../assets/crown.png';
-import * as Constants from '../constants';
 import styles from './sidebar.module.css';
 
 const { Sider } = Layout;
 
-const SideBar = (props: any) => {
-    const { currentPage, setPage } = props;
-
+const SideBar = withRouter(({ history }) => {
     const [collapsed, setCollapsed] = useState(false);
-
-    useEffect(() => {
-        console.log(props);
-    }, []);
 
     return (
         <Sider
@@ -33,7 +27,7 @@ const SideBar = (props: any) => {
                     className={styles.menuItem}
                     icon={<HomeOutlined className={styles.icon} />}
                     onClick={() => {
-                        setPage(Constants.MAIN);
+                        history.push('/main');
                     }}
                 >
                     Home
@@ -44,7 +38,7 @@ const SideBar = (props: any) => {
                     className={styles.menuItem}
                     icon={<PieChartOutlined />}
                     onClick={() => {
-                        setPage(Constants.BILLING);
+                        history.push('/billing');
                     }}
                 >
                     Billing Information
@@ -55,7 +49,7 @@ const SideBar = (props: any) => {
                     className={styles.menuItem}
                     icon={<DesktopOutlined />}
                     onClick={() => {
-                        setPage(Constants.PROXIES);
+                        history.push('/proxies');
                     }}
                 >
                     Manage Proxies
@@ -66,7 +60,7 @@ const SideBar = (props: any) => {
                     className={styles.menuItem}
                     icon={<FileOutlined />}
                     onClick={() => {
-                        setPage(Constants.TASKS);
+                        history.push('/tasks');
                     }}
                 >
                     Tasks
@@ -76,25 +70,14 @@ const SideBar = (props: any) => {
                     className={styles.menuItem}
                     icon={<SettingOutlined />}
                     onClick={() => {
-                        setPage(Constants.SETTINGS);
+                        history.push('/settings');
                     }}
                 >
                     Settings
                 </Menu.Item>
-
-                <Menu.Item
-                    key="5"
-                    className={styles.menuItem}
-                    icon={<SettingOutlined />}
-                    onClick={() => {
-                        setPage(Constants.TEST);
-                    }}
-                >
-                    Test Page
-                </Menu.Item>
             </Menu>
         </Sider>
     );
-};
+});
 
 export default SideBar;
