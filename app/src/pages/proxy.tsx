@@ -13,7 +13,17 @@ const ProxyPage = (props: any) => {
   const [visible, setVisible] = useState(false);
 
   const onCreate = (values: any) => {
-    console.log('Received values of form: ', values);
+    // console.log('Received values of form: ', values);
+    const name = values.name;
+    const files = values.proxies.fileList;
+    const proxyArray: any = [];
+    // Read files
+    let reader = new FileReader();
+    reader.onload = (e) => { // called after readAsText
+      proxyArray.push(e.target?.result)
+      console.log(proxyArray);
+    }
+    reader.readAsText(files[0].originFileObj);
     setVisible(false);
   };
 
@@ -185,7 +195,7 @@ const CollectionCreateForm = ({ visible, onCreate, onCancel }:any) => {
             <p className="ant-upload-drag-icon">
               <InboxOutlined />
             </p>
-            <p className="ant-upload-text">Click or drag files to this area to upload</p>
+            <p className="ant-upload-text">Click or drag file to this area to upload</p>
             <p className="ant-upload-hint">
               Make sure that your list of proxies is separated by new lines!
             </p>
@@ -199,10 +209,18 @@ const CollectionCreateForm = ({ visible, onCreate, onCancel }:any) => {
 
 const { Dragger } = Upload;
 
+const dummyRequest = ({ file, onSuccess }: any) => {
+  setTimeout(() => {
+    onSuccess("ok");
+  }, 0);
+};
+
 const prop = {
+  accept: '.txt',
   name: 'file',
-  multiple: true,
-  action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+  multiple: false,
+  maxCount: 1,
+  customRequest: dummyRequest,
   onChange(info: any) {
     const { status } = info.file;
     if (status !== 'uploading') {
@@ -241,7 +259,7 @@ const columns = [
     title: 'Name',
     dataIndex: 'name',
     key: 'name',
-    render: (text:any) => <button>{text}</button>,
+    render: (text:any) => <a>{text}</a>,
   },
   {
     title: 'Age',
@@ -278,8 +296,8 @@ const columns = [
     key: 'action',
     render: (text:any, record:any) => (
       <Space size="middle">
-        <button>Invite {record.name}</button>
-        <button>Delete</button>
+        <a>Invite {record.name}</a>
+        <a>Delete</a>
       </Space>
     ),
   },

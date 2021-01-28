@@ -49,8 +49,8 @@
 /* Menu item selected */
 .ant-menu-dark.ant-menu-dark:not(.ant-menu-horizontal) .ant-menu-item-selected {
     background-color: var(--defaultThemeColor);
-    background-image: linear-gradient('to right', var(--siderColor), var(--siderColor) 99%, transparent 98%, transparent 100%);
-    background-image: -webkit-linear-gradient('to right', var(--siderColor), var(--siderColor) 99%, transparent 98%, transparent 100%);
+    background-image: linear-gradient(right, var(--siderColor), var(--siderColor) 99%, transparent 98%, transparent 100%);
+    background-image: -webkit-linear-gradient(right, var(--siderColor), var(--siderColor) 99%, transparent 98%, transparent 100%);
 }
 
 /* Menu item icon */
@@ -132,6 +132,15 @@
 ::selection {
     color: #fff;
     background:var(--defaultThemeColor);
+}
+
+/* .ant-upload-list-item-info */
+.ant-upload-list-item-info {
+    transition: background-color 0.3s;
+    position: relative;
+    height: 66px;
+    padding: 15px;
+    border: 0.5px solid var(--defaultThemeColor);
 }
 
 html,
