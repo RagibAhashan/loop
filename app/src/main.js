@@ -49,18 +49,23 @@ ipcMain.on('start-task', (event, uuid) => {
     const { RequestInstance } = require('./core/RequestInstance');
     const { FootLockerTask } = require('./core/footlocker/FootLockerTask');
     const userProfile = new UserProfile('test@gmail.com', '', '', '', '', '', '', '', '', new CreditCard('', '', '', '', ''));
-    const axios = new RequestInstance('http://localhost:3200/api', { timestamp: Date.now() }, FOOTLOCKER_CA_HEADERS);
+    const axios = new RequestInstance('https://www.footlocker.ca/api', { timestamp: Date.now() }, FOOTLOCKER_CA_HEADERS);
     const fl = new FootLockerTask(
         'https://www.footlocker.ca/en/product/nike-air-force-1-low-mens/4101086.html',
         '4101086',
-        8.5,
+        [8.5],
         'deviceid',
         axios,
         userProfile,
+        3500,
     );
 
     fl.on('status', (message) => {
         event.reply(uuid, message);
+    });
+
+    fl.on('captcha', (url) => {
+        event.reply(uuid + 'captcha', url);
     });
 
     fl.execute();

@@ -1,10 +1,12 @@
 const STATUS_EVENT = 'status';
 const SESSION_INFO_MESSAGE = 'Getting Session';
 const SESSION_ERROR_MESSAGE = 'Getting Session Failed';
-const CHECKING_SIZE_INFO_MESSAGE = 'Checking in Stock Size';
-const CHECKING_SIZE_ERROR_MESSAGE = 'Checking Size Failed';
+const CHECKING_SIZE_INFO_MESSAGE = 'Checking Stock';
+const CHECKING_SIZE_ERROR_MESSAGE = 'Checking Stock Failed';
+const CHECKING_SIZE_RETRY_MESSAGE = 'Out of Stock, retrying';
 const ADD_CART_INFO_MESSAGE = 'Adding to Cart';
 const ADD_CART_ERROR_MESSAGE = 'Adding to Cart Failed';
+const WAIT_CAPTCHA_MESSAGE = 'Waiting on Captcha';
 const BILLING_INFO_MESSAGE = 'Setting Billing Info';
 const BILLING_ERROR_MESSAGE = 'Setting Billing Failed';
 const SHIPPING_INFO_MESSAGE = 'Setting Shipping Info';
@@ -48,4 +50,6 @@ module.exports = {
     PLACING_ORDER_INFO_MESSAGE,
     CHECKOUT_FAILED_MESSAGE,
     CHECKOUT_SUCCESS_MESSAGE,
+    WAIT_CAPTCHA_MESSAGE,
+    CHECKING_SIZE_RETRY_MESSAGE,
 };
