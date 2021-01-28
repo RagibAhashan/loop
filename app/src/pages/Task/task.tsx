@@ -193,11 +193,8 @@ const TaskComponent = () => {
         forceUpdate();
     };
 
-    useEffect(() => {});
-
     const ROW_GUTTER: [number, number] = [24, 0];
 
-    useEffect(() => {});
     return (
         <div>
             <Form onFinish={addTasks} validateMessages={validateMessages}>

@@ -1,7 +1,6 @@
 // import styles from './sidebar.module.css';
 import { DeleteOutlined, DoubleRightOutlined, EditOutlined, StopOutlined } from '@ant-design/icons';
 import { Button, Col, Row, Space } from 'antd';
-import { stat } from 'fs';
 import React, { useEffect, useState } from 'react';
 const { ipcRenderer } = window.require('electron');
 

@@ -6,7 +6,9 @@ import BillingPage from './pages/billing';
 import ProxyPage from './pages/proxy';
 import TaskPage from './pages/Task/taskPage';
 import TestPage from './pages/testPage';
+import { BrowserRouter, MemoryRouter, Route, Switch } from 'react-router-dom';
 import { Fingerprint } from './services/Fingerprint';
+import Home from './pages/Home';
 const { Content } = Layout;
 
 const generateFingerPrint = () => {
@@ -19,25 +21,24 @@ const App = () => {
     useEffect(() => {
         generateFingerPrint();
     }, []);
-    const [page, setPage] = useState(Constants.MAIN);
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <SideBar currentPage={page} setPage={setPage} />
-
-            <Layout>
-                <Content>
-                    <div style={{ backgroundColor: '#212427', height: '1000vh' }}>
-                        {page === Constants.MAIN ? <div> Welcome </div> : ''}
-                        {page === Constants.BILLING ? <BillingPage setPage={setPage} /> : ''}
-                        {page === Constants.PROXIES ? <ProxyPage setPage={setPage} /> : ''}
-                        {page === Constants.TEST ? <TestPage /> : ''}
-
-                        {page === Constants.TASKS ? '' : <div style={{ height: '1000vh' }} />}
-                        <TaskPage />
-                    </div>
-                </Content>
-            </Layout>
+            <MemoryRouter>
+                <SideBar />
+                <Layout>
+                    <Content>
+                        <div style={{ backgroundColor: '#212427', height: '1000vh' }}>
+                            <Switch>
+                                <Route path="/main" exact component={Home} />
+                                <Route path="/billing" exact component={BillingPage} />
+                                <Route path="/proxies" exact component={ProxyPage} />
+                                <Route path="/tasks" exact component={TaskPage} />
+                            </Switch>
+                        </div>
+                    </Content>
+                </Layout>
+            </MemoryRouter>
         </Layout>
     );
 };

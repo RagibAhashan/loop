@@ -115,8 +115,7 @@ const content = (UserFormData: any) => (
     </div>
 );
 
-const BillingPage = (props: any) => {
-    const { setPage } = props;
+const BillingPage = () => {
     const [yearOptions, setYearOptions] = useState([]);
     const [same, setSame] = useState(false);
     const [profiles, setUserProfiles] = useState([UserFormData, UserFormData, UserFormData, UserFormData, UserFormData, UserFormData]);
@@ -154,8 +153,6 @@ const BillingPage = (props: any) => {
 
         setUserProfiles(prev_profiles);
         localStorage.setItem('profiles', JSON.stringify(prev_profiles));
-        setPage(Constants.PROXIES);
-        setPage(Constants.BILLING);
     };
 
     const onDeleteProfile = (profileID: String): void => {
@@ -163,8 +160,7 @@ const BillingPage = (props: any) => {
             localStorage.removeItem('profiles');
             setUserProfiles([]);
             localStorage.setItem('profiles', JSON.stringify([]));
-            setPage(Constants.PROXIES);
-            setPage(Constants.BILLING);
+
             return;
         }
 
@@ -176,10 +172,6 @@ const BillingPage = (props: any) => {
                 // localStorage.removeItem('profiles');
                 localStorage.setItem('profiles', JSON.stringify(old_profiles));
                 setUserProfiles(old_profiles);
-                setPage(Constants.PROXIES);
-                setTimeout(() => {
-                    setPage(Constants.BILLING);
-                }, 0.5);
 
                 return;
             }
