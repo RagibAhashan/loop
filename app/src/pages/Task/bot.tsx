@@ -7,7 +7,7 @@ const { ipcRenderer } = window.require('electron');
 
 interface Status {
     status: string;
-    level: string;
+    level: 'error' | 'status' | 'info' | 'idle';
 }
 
 const botStyle = {
