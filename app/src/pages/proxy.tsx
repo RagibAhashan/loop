@@ -10,19 +10,27 @@ const ProxyPage = () => {
     const [visible, setVisible] = useState(false);
 
     const onCreate = (values: any) => {
-        // console.log('Received values of form: ', values);
         const name = values.name;
         const files = values.proxies.fileList;
         const proxyArray: any = [];
+
+        // Check if already exists
+        if (proxies.get(name)) {
+          message.error(`Proxy Set "${name}" already exists!`);
+          return null;
+        }
+
         // Read files
         let reader = new FileReader();
         reader.onload = (e) => {
             // called after readAsText
             proxyArray.push(e.target?.result);
-            console.log(proxyArray);
+            setProxies(proxies.set(name, proxyArray));
+            localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())));
+            forceUpdate();
+            setVisible(false);
         };
         reader.readAsText(files[0].originFileObj);
-        setVisible(false);
     };
 
     useEffect(() => {
@@ -39,58 +47,12 @@ const ProxyPage = () => {
         }
     }, []);
 
-    const onFinish = (values: any) => {
-        for (let i = 0; i < values.proxies.length; i++) {
-            if (proxies.get(values.proxies[i].name)) {
-                message.error(`Proxy Set "${values.proxies[i].name}" already exists!`);
-                return null;
-            }
-            setProxies(proxies.set(values.proxies[i].name, values.proxies[i].proxy.split(' ')));
-        }
-
-        localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())));
-    };
-
     const onDeleteSet = (name: any) => {
         proxies.delete(name.toString());
         setProxies(proxies);
         localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())));
         forceUpdate();
     };
-
-    const content = (values: any, name: any) => (
-        <div>
-            {/* <Row style={{textAlign: 'center'}}>
-        <Col>
-            <Divider style={{textAlign: 'center', width: 300}}> Name </Divider>
-            <p> {name} </p>
-        </Col>
-      </Row> */}
-            <Row style={{ textAlign: 'center' }}>
-                <Col>
-                    <Divider style={{ textAlign: 'center', width: 350 }}> Proxies </Divider>
-                    {showProxiesPopup(values)}
-                    <Button
-                        type="dashed"
-                        style={{ marginTop: 10 }}
-                        htmlType="submit"
-                        onClick={() => {
-                            downloadProxies(values, name);
-                        }}
-                    >
-                        {' '}
-                        Download full list{' '}
-                    </Button>
-                </Col>
-            </Row>
-            <Row style={{ textAlign: 'center' }}>
-                <Col>
-                    <Divider style={{ textAlign: 'center', width: 350 }}> No. of Proxies </Divider>
-                    <p> {values.length} </p>
-                </Col>
-            </Row>
-        </div>
-    );
 
     const downloadProxies = (values: [], name: string) => {
         const proxyFileName = name + 'Proxies.txt';
@@ -111,28 +73,6 @@ const ProxyPage = () => {
         });
     };
 
-    const ShowProxies = (proxies: Map<string, []>) => {
-        let proxyArray = Array.from(proxies, ([name, proxies]) => ({ name, proxies }));
-        if (!proxies.size) return <h1> </h1>;
-        return proxyArray.map((value) => {
-            // const ex = proxies.get(value.name) as Array<string>;
-            return (
-                // <Popover content={content(value.proxies, value.name)} placement="right">
-                <Card
-                    size="small"
-                    title={value.name}
-                    extra={<Button type="link" danger icon={<DeleteOutlined />} onClick={() => onDeleteSet(value.name)} />}
-                    style={{ width: '30%', height: '60%', margin: 25, marginLeft: 0, marginTop: 10 }}
-                >
-                    {content(value.proxies, value.name)}
-                    {/* <p> {`Preview: ${ex[0].substr(0, 12)}...`} </p>
-                <p> {`No. of Proxies: ${ex.length}`} </p> */}
-                </Card>
-                // </Popover>
-            );
-        });
-    };
-
     function useForceUpdate() {
         const [value, setValue] = useState(0); // integer state
         return () => setValue((value) => value + 1); // update the state to force render
@@ -140,72 +80,72 @@ const ProxyPage = () => {
     const forceUpdate = useForceUpdate();
 
     const CollectionCreateForm = ({ visible, onCreate, onCancel }: any) => {
-        const [form] = Form.useForm();
-        return (
-            <Modal
-                visible={visible}
-                title="Create a new set"
-                okText="Create"
-                cancelText="Cancel"
-                onCancel={onCancel}
-                onOk={() => {
-                    form.validateFields()
-                        .then((values) => {
-                            form.resetFields();
-                            onCreate(values);
-                        })
-                        .catch((info) => {
-                            console.log('Validate Failed:', info);
-                        });
-                }}
+      const [form] = Form.useForm();
+      return (
+        <Modal
+          visible={visible}
+          title="Create a new set"
+          okText="Create"
+          cancelText="Cancel"
+          onCancel={onCancel}
+          onOk={() => {
+            form.validateFields()
+              .then((values) => {
+                form.resetFields();
+                onCreate(values);
+              })
+              .catch((info) => {
+                console.log('Validate Failed:', info);
+              });
+          }}
+        >
+            <Form
+              form={form}
+              layout="vertical"
+              name="form_in_modal"
+              initialValues={{
+                  modifier: 'public',
+              }}
             >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    name="form_in_modal"
-                    initialValues={{
-                        modifier: 'public',
-                    }}
-                >
-                    <Form.Item
-                        name="name"
-                        label="Name"
-                        rules={[
-                            {
-                                required: true,
-                                message: 'Please input the name of the set!',
-                            },
-                        ]}
-                    >
-                        <Input placeholder="Input set same" />
-                    </Form.Item>
-                    <Form.Item
-                        name="proxies"
-                        label="Proxies"
-                        rules={[
-                            {
-                                required: true,
-                                message: 'Please input the list of proxies!',
-                            },
-                        ]}
-                    >
-                        <Dragger {...prop}>
-                            <p className="ant-upload-drag-icon">
-                                <InboxOutlined />
-                            </p>
-                            <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                            <p className="ant-upload-hint">Make sure that your list of proxies is separated by new lines!</p>
-                        </Dragger>
-                        {/* <Input type="textarea" placeholder="Copy Paste your list of proxies"/> */}
-                    </Form.Item>
-                </Form>
-            </Modal>
-        );
+              <Form.Item
+                name="name"
+                label="Name"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please input the name of the set!',
+                  },
+                ]}
+              >
+                <Input placeholder="Input set same" />
+              </Form.Item>
+              <Form.Item
+                name="proxies"
+                label="Proxies"
+                rules={[
+                  {
+                    required: true,
+                    message: 'Please input the list of proxies!',
+                  },
+                ]}
+              >
+                <Dragger {...prop}>
+                  <p className="ant-upload-drag-icon">
+                      <InboxOutlined />
+                  </p>
+                  <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                  <p className="ant-upload-hint">Make sure that your list of proxies is separated by new lines!</p>
+                </Dragger>
+                    {/* <Input type="textarea" placeholder="Copy Paste your list of proxies"/> */}
+              </Form.Item>
+            </Form>
+        </Modal>
+      );
     };
 
     const { Dragger } = Upload;
 
-    const dummyRequest = ({ file, onSuccess }: any) => {
+    const dummyRequest = ({ onSuccess }: any) => {
         setTimeout(() => {
             onSuccess('ok');
         }, 0);
@@ -230,92 +170,37 @@ const ProxyPage = () => {
         },
     };
 
-    const handleMenuClick = () => {};
-
-    const menu = (
-        <Menu onClick={handleMenuClick}>
-            <Menu.Item key="1" icon={<UserOutlined />}>
-                1st menu item
-            </Menu.Item>
-            <Menu.Item key="2" icon={<UserOutlined />}>
-                2nd menu item
-            </Menu.Item>
-            <Menu.Item key="3" icon={<UserOutlined />}>
-                3rd menu item
-            </Menu.Item>
-        </Menu>
-    );
-
     const columns = [
         {
-            title: 'Name',
-            dataIndex: 'name',
-            key: 'name',
+            title: 'ID',
+            dataIndex: 'id',
+            key: 'id',
             render: (text: any) => <a>{text}</a>,
         },
         {
-            title: 'Age',
-            dataIndex: 'age',
-            key: 'age',
+            title: 'IP',
+            dataIndex: 'ip',
+            key: 'ip',
         },
         {
-            title: 'Address',
-            dataIndex: 'address',
-            key: 'address',
+            title: 'Port',
+            dataIndex: 'port',
+            key: 'port',
         },
         {
-            title: 'Tags',
-            key: 'tags',
-            dataIndex: 'tags',
-            render: (tags: any) => (
-                <>
-                    {tags.map((tag: any) => {
-                        let color = tag.length > 5 ? 'geekblue' : 'green';
-                        if (tag === 'loser') {
-                            color = 'volcano';
-                        }
-                        return (
-                            <Tag color={color} key={tag}>
-                                {tag.toUpperCase()}
-                            </Tag>
-                        );
-                    })}
-                </>
-            ),
+            title: 'Status',
+            key: 'status',
+            dataIndex: 'status',
         },
         {
             title: 'Action',
             key: 'action',
             render: (text: any, record: any) => (
                 <Space size="middle">
-                    <a>Invite {record.name}</a>
+                    <a>Test</a>
                     <a>Delete</a>
                 </Space>
             ),
-        },
-    ];
-
-    const data = [
-        {
-            key: '1',
-            name: 'John Brown',
-            age: 32,
-            address: 'New York No. 1 Lake Park',
-            tags: ['nice', 'developer'],
-        },
-        {
-            key: '2',
-            name: 'Jim Green',
-            age: 42,
-            address: 'London No. 1 Lake Park',
-            tags: ['loser'],
-        },
-        {
-            key: '3',
-            name: 'Joe Black',
-            age: 32,
-            address: 'Sidney No. 1 Lake Park',
-            tags: ['cool', 'teacher'],
         },
     ];
 
@@ -328,18 +213,41 @@ const ProxyPage = () => {
     }
 
     const Sets = () => (
-        <Tabs defaultActiveKey="1" onChange={callback} style={{ padding: '0 50px' }}>
-            <TabPane tab="Tab 1" key="1">
-                <Table columns={columns} dataSource={data} onChange={onChange} />
-            </TabPane>
-            <TabPane tab="Tab 2" key="2">
-                Content of Tab Pane 2
-            </TabPane>
-            <TabPane tab="Tab 3" key="3">
-                Content of Tab Pane 3
-            </TabPane>
+        <Tabs defaultActiveKey="1" onChange={callback} style={{ padding: '20px 50px' }}>
+            { TabPanes() }
         </Tabs>
     );
+
+    const TabPanes = () => {
+      let proxyArray = Array.from(proxies, ([name, proxies]) => ({ name, proxies }));
+        if (!proxies.size) return [];
+        let i = 0;
+        return proxyArray.map((value) => {
+            return ([
+              <TabPane tab={value.name} key={++i}>
+                <Table columns={columns} pagination={{ pageSize: 8 }} dataSource={ShowProxies(value.name)} onChange={onChange} />
+              </TabPane>
+            ]);
+        });
+    }
+
+    const ShowProxies = (name:string) => {
+      let proxyArray = proxies.get(name) || ['0'];
+      let array = proxyArray[0]?.split("\n")
+      console.log(array)
+      if (!proxies.size) return [];
+      return array?.map((value) => {
+          return ([
+              {
+                  id: value,
+                  ip: value,
+                  port: 32,
+                  status: value,
+                  action: value,
+              },
+          ]);
+      });
+  };
 
     return (
         <Layout>
