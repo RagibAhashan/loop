@@ -2,15 +2,16 @@ const EventEmitter = require('events');
 const { CookieJar } = require('./CookieJar');
 
 class Task extends EventEmitter {
-    constructor(productLink, productSKU, size, deviceId, requestInstance, userProfile) {
+    constructor(productLink, productSKU, sizes, deviceId, requestInstance, userProfile) {
         super();
         this.productLink = productLink;
         this.productSKU = productSKU;
-        this.size = size;
+        this.sizes = sizes;
         this.deviceId = deviceId;
         this.axiosSession = requestInstance.axios;
         this.cookieJar = new CookieJar();
         this.userProfile = userProfile;
+        this.productCode = '';
     }
     getSessionTokens() {
         throw new Error('Method must be implemented');
@@ -37,14 +38,14 @@ class Task extends EventEmitter {
     async execute() {
         try {
             await this.getSessionTokens();
-            const code = await this.getProductCode();
-            await this.addToCart(code);
+            this.productCode = await this.getProductCode();
+            await this.addToCart();
             await this.setEmail();
             await this.setShipping();
             await this.setBilling();
             await this.placeOrder();
         } catch (err) {
-            console.log('error');
+            console.log('error', err);
         }
     }
 }

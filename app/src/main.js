@@ -21,6 +21,20 @@ function createWindow() {
 
     win.setMenuBarVisibility(false);
     win.setAutoHideMenuBar(true);
+
+    win.webContents.on('new-window', (event, url, frameName) => {
+        if (frameName === 'new-captcha-window') {
+            console.log('new window');
+            event.preventDefault();
+            Object.assign({
+                modal: true,
+                parent: win,
+                width: 100,
+                height: 700,
+            });
+            event.newGuest = new BrowserWindow();
+        }
+    });
 }
 
 app.whenReady().then(createWindow);

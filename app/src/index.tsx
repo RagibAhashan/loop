@@ -8,7 +8,7 @@ import CaptchaFrame from './components/CaptchaFrame';
 render(
     <BrowserRouter>
         <Switch>
-            <Route path="/main" component={App} />
+            <Route path="/main/:page" component={App} />
             <Route path="/captcha" exact component={CaptchaFrame} />
         </Switch>
     </BrowserRouter>,

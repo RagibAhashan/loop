@@ -135,7 +135,7 @@ const TaskComponent = () => {
     };
 
     const openCaptcha = () => {
-        window.open(window.location.origin + '/captcha');
+        window.open(window.location.origin + '/captcha', '_blank', 'new-captcha-window');
     };
     const Headers = () => {
         return (
