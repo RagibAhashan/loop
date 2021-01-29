@@ -30,10 +30,10 @@ const App = () => {
                 <Content>
                     <div style={{ backgroundColor: '#212427', height: '1000vh' }}>
                         <Switch>
-                            <Route path="/main/home" exact component={Home} />
-                            <Route path="/main/billing" exact component={BillingPage} />
-                            <Route path="/main/proxies" exact component={ProxyPage} />
-                            <Route path="/main/tasks" exact component={TaskPage} />
+                            <Route path="/home" exact component={Home} />
+                            <Route path="/billing" exact component={BillingPage} />
+                            <Route path="/proxies" exact component={ProxyPage} />
+                            <Route path="/tasks" exact component={TaskPage} />
                         </Switch>
                     </div>
                 </Content>

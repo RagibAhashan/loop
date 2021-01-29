@@ -1,7 +1,8 @@
 import { Button, Col, DatePicker, Form, Input, Row, Select, TimePicker, Divider } from 'antd';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Bot from './bot';
-import NewTaskModal from './newTaskModal'
+import NewTaskModal from './newTaskModal';
+const { ipcRenderer } = window.require('electron');
 
 const { v4: uuid } = require('uuid');
 
@@ -137,7 +138,8 @@ const TaskComponent = () => {
     };
 
     const openCaptcha = () => {
-        window.open(window.location.origin + '/captcha', '_blank', 'new-captcha-window');
+        console.log(window.location.hash);
+        ipcRenderer.send('new-window', '#captcha');
     };
     const Headers = () => {
         return (
@@ -206,11 +208,7 @@ const TaskComponent = () => {
 
     return (
         <div>
-            <NewTaskModal
-                store={'footlocker'}
-                addTasks={addTasks}
-                proxies={proxies}
-            />
+            <NewTaskModal store={'footlocker'} addTasks={addTasks} proxies={proxies} />
 
             <div
                 style={{
