@@ -133,6 +133,10 @@ const TaskComponent = () => {
         console.log(jobs);
         (botRef.current as any).run();
     };
+
+    const openCaptcha = () => {
+        window.open(window.location.origin + '/captcha');
+    };
     const Headers = () => {
         return (
             <Row style={botStyle}>
@@ -326,9 +330,14 @@ const TaskComponent = () => {
                     </Button>
                 </Col>
                 <Col span={12}></Col>
-                <Col span={6}>
+                <Col span={3}>
                     <Button style={buttonStyle} type="primary" danger onClick={() => deleteAllTasks()}>
                         Delete all
+                    </Button>
+                </Col>
+                <Col span={3}>
+                    <Button style={buttonStyle} type="primary" onClick={() => openCaptcha()}>
+                        Open cap
                     </Button>
                 </Col>
             </Row>

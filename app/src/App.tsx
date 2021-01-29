@@ -9,6 +9,7 @@ import TestPage from './pages/testPage';
 import { BrowserRouter, MemoryRouter, Route, Switch } from 'react-router-dom';
 import { Fingerprint } from './services/Fingerprint';
 import Home from './pages/Home';
+import CaptchaFrame from './components/CaptchaFrame';
 const { Content } = Layout;
 
 const generateFingerPrint = () => {
@@ -24,21 +25,19 @@ const App = () => {
 
     return (
         <Layout style={{ minHeight: '100vh' }}>
-            <MemoryRouter>
-                <SideBar />
-                <Layout>
-                    <Content>
-                        <div style={{ backgroundColor: '#212427', height: '1000vh' }}>
-                            <Switch>
-                                <Route path="/main" exact component={Home} />
-                                <Route path="/billing" exact component={BillingPage} />
-                                <Route path="/proxies" exact component={ProxyPage} />
-                                <Route path="/tasks" exact component={TaskPage} />
-                            </Switch>
-                        </div>
-                    </Content>
-                </Layout>
-            </MemoryRouter>
+            <SideBar />
+            <Layout>
+                <Content>
+                    <div style={{ backgroundColor: '#212427', height: '1000vh' }}>
+                        <Switch>
+                            <Route path="/main/home" exact component={Home} />
+                            <Route path="/main/billing" exact component={BillingPage} />
+                            <Route path="/main/proxies" exact component={ProxyPage} />
+                            <Route path="/main/tasks" exact component={TaskPage} />
+                        </Switch>
+                    </div>
+                </Content>
+            </Layout>
         </Layout>
     );
 };

@@ -27,7 +27,7 @@ const SideBar = withRouter(({ history }) => {
                     className={styles.menuItem}
                     icon={<HomeOutlined className={styles.icon} />}
                     onClick={() => {
-                        history.push('/main');
+                        history.push('/main/home');
                     }}
                 >
                     Home
@@ -38,7 +38,7 @@ const SideBar = withRouter(({ history }) => {
                     className={styles.menuItem}
                     icon={<PieChartOutlined />}
                     onClick={() => {
-                        history.push('/billing');
+                        history.push('/main/billing');
                     }}
                 >
                     Billing Information
@@ -49,7 +49,7 @@ const SideBar = withRouter(({ history }) => {
                     className={styles.menuItem}
                     icon={<DesktopOutlined />}
                     onClick={() => {
-                        history.push('/proxies');
+                        history.push('/main/proxies');
                     }}
                 >
                     Manage Proxies
@@ -60,7 +60,7 @@ const SideBar = withRouter(({ history }) => {
                     className={styles.menuItem}
                     icon={<FileOutlined />}
                     onClick={() => {
-                        history.push('/tasks');
+                        history.push('/main/tasks');
                     }}
                 >
                     Tasks
@@ -70,7 +70,7 @@ const SideBar = withRouter(({ history }) => {
                     className={styles.menuItem}
                     icon={<SettingOutlined />}
                     onClick={() => {
-                        history.push('/settings');
+                        history.push('/main/settings');
                     }}
                 >
                     Settings
