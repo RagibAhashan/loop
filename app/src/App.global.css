@@ -1,0 +1,72 @@
+@import '~antd/dist/antd.dark.css';
+
+/* https://stackoverflow.com/questions/15831657/creating-css-global-variables-stylesheet-theme-management */
+:root {
+    --siderColor: #282c31;
+    --menuItem: #282c31;
+    --defaultThemeColor: orange;
+    --siderIconSize: 20px;
+    --siderShadow: 1px 0px 5px 0.1px black;
+}
+
+/* Sider */
+.ant-layout-sider-children {
+    height: 100%;
+    margin-top: -0.1px;
+    padding-top: 0.1px;
+    background-color: var(--siderColor);
+    box-shadow: var(--siderShadow);
+}
+
+/* Sider trigger */
+.ant-layout-sider-trigger {
+    background-color: #282c31;
+    color: var(--defaultThemeColor);
+    box-shadow: var(--siderShadow);
+    font-size: var(--siderIconSize);
+    z-index: 0;
+}
+
+/* Menu */
+.ant-menu.ant-menu-dark,
+.ant-menu-dark .ant-menu-sub,
+.ant-menu.ant-menu-dark .ant-menu-sub {
+    background-color: var(--siderColor);
+}
+
+/* Menu item */
+.ant-menu-item {
+    background-color: var(--siderColor);
+    -webkit-transition: none;
+    transition: none;
+}
+
+/* Menu item selected */
+.ant-menu-dark.ant-menu-dark:not(.ant-menu-horizontal) .ant-menu-item-selected {
+    background-color: var(--defaultThemeColor);
+    background-image: linear-gradient(right, var(--siderColor), var(--siderColor) 99%, transparent 98%, transparent 100%);
+    background-image: -webkit-linear-gradient(right, var(--siderColor), var(--siderColor) 99%, transparent 98%, transparent 100%);
+}
+
+/* Menu item icon */
+.ant-menu-dark .ant-menu-item-selected .ant-menu-item-icon,
+.ant-menu-dark .ant-menu-item .ant-menu-item-icon {
+    margin-top: 2px;
+    font-size: var(--siderIconSize);
+}
+.ant-menu-dark .ant-menu-item-selected .ant-menu-item-icon,
+.ant-menu-dark .ant-menu-item-selected .ant-menu-item-icon + span,
+.ant-menu-dark .ant-menu-item-selected .anticon + span {
+    color: var(--defaultThemeColor);
+}
+
+.ant-layout.ant-layout-has-sider {
+    background-color: #212427;
+}
+
+html,
+body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+}

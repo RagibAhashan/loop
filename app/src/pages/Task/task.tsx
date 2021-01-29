@@ -1,6 +1,8 @@
 import { Button, Col, DatePicker, Form, Input, Row, Select, TimePicker, Divider } from 'antd';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Bot from './bot';
+import NewTaskModal from './newTaskModal'
+
 const { v4: uuid } = require('uuid');
 
 const { Option } = Select;
@@ -204,80 +206,11 @@ const TaskComponent = () => {
 
     return (
         <div>
-            <Form onFinish={addTasks} validateMessages={validateMessages}>
-                <Row gutter={ROW_GUTTER} justify="space-between">
-                    <Col span={6}>
-                        <Form.Item name={['task', 'keyword']} rules={[{ required: true }]}>
-                            <Input placeholder="keyword" />
-                        </Form.Item>
-                    </Col>
-
-                    <Col span={4}>
-                        <Form.Item name={['task', 'startdate']} rules={[{ required: true }]}>
-                            <DatePicker onChange={onChange} />
-                        </Form.Item>
-                    </Col>
-                    <Col span={4}></Col>
-                    <Col span={4}>
-                        <Form.Item style={{ width: '100%' }} name={['task', 'starttime']} rules={[{ required: true }]}>
-                            <TimePicker style={{ width: '100%' }} format={format} />
-                        </Form.Item>
-                    </Col>
-                    <Col span={6}>
-                        <Form.Item name={['task', 'profile']} rules={[{ required: true }]}>
-                            <Input placeholder="Profile Set" />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
-                <Row gutter={ROW_GUTTER}>
-                    <Col span={6}>
-                        <Form.Item name={['task', 'sizes']} rules={[{ required: true }]}>
-                            <Select placeholder="Size" mode="multiple" allowClear>
-                                {allSizes}
-                            </Select>
-                        </Form.Item>
-                    </Col>
-
-                    <Col span={12}>
-                        <Form.Item name={['task', 'proxyset']} rules={[{ required: true }]}>
-                            <Select placeholder="Proxy Set" allowClear options={proxies} defaultValue={'No proxies'}></Select>
-                        </Form.Item>
-                    </Col>
-
-                    <Col span={6}>
-                        <Form.Item name={['task', 'quantity']} rules={[{ required: true }]}>
-                            <Input placeholder="Quantity" type="number" defaultValue={1} />
-                        </Form.Item>
-                    </Col>
-                </Row>
-
-                <Row gutter={ROW_GUTTER}>
-                    <Col span={6}>
-                        <Form.Item name={['task', 'monitordelay']} rules={[{ required: true }]}>
-                            <Input placeholder="Monitor delay in milliseconds" type="number" />
-                        </Form.Item>
-                    </Col>
-
-                    <Col span={12}>
-                        <Form.Item name={['task', 'retrydelay']} rules={[{ required: true }]}>
-                            <Input placeholder="Retry delay" type="number" />
-                        </Form.Item>
-                    </Col>
-
-                    <Col span={6}>
-                        <Form.Item>
-                            <Button
-                                type="primary"
-                                htmlType="submit"
-                                style={{ ...buttonStyle, backgroundColor: '#000000', color: '#F0A30D', borderColor: '#F0A30D' }}
-                            >
-                                Add tasks
-                            </Button>
-                        </Form.Item>
-                    </Col>
-                </Row>
-            </Form>
+            <NewTaskModal
+                store={'footlocker'}
+                addTasks={addTasks}
+                proxies={proxies}
+            />
 
             <div
                 style={{
