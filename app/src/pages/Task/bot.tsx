@@ -14,8 +14,8 @@ const botStyle = {
     marginLeft: '20px',
     marginRight: '20px',
     marginTop: '10px',
-    height: '45px',
-    borderRadius: '60px',
+    height: '50px',
+    borderRadius: '8px',
 };
 
 const colStyle = {
