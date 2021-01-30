@@ -1,7 +1,7 @@
 import { Layout } from 'antd';
 import React, { useEffect } from 'react';
 import SideBar from './components/sidebar';
-import ProfilePage from './pages/billing';
+import ProfilePage from './pages/profiles';
 import ProxyPage from './pages/proxy';
 import TaskPage from './pages/Task/taskPage';
 import { Route, Switch } from 'react-router-dom';
