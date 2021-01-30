@@ -1,59 +1,10 @@
 import { Button, Col, Layout, message, Popconfirm, Row, Tabs, Table, Space, Tag } from 'antd';
 import React from 'react';
-import TaskComponent from './task';
-import TaskSideBar from './TaskSideBar';
+import Store from './task';
+// import Store from './TaskSideBar';
 
 const text = 'Are you sure to delete this store?\nAll running tasks will be terminated.';
 
-
-/*
-const TaskPage = () => {
-    const { Sider, Content } = Layout;
-
-    function confirm() {
-        message.success('Store deleted!');
-    }
-
-    return (
-        <div>
-            <Layout>
-                <Sider style={{ backgroundColor: '#282C31' }}>
-                    <TaskSideBar />
-                </Sider>
-                <Content style={{ marginLeft: '50px', marginRight: '50px' }}>
-                    <Row style={{ marginTop: '15px', marginBottom: '-20px' }}>
-                        <Col span={8}>
-                            <p style={{ fontSize: '35px', color: 'orange' }}>Footlocker Tasks</p>
-                        </Col>
-                        <Col span={8} offset={8}>
-                            <div style={{ marginLeft: '185px' }}>
-                                <Popconfirm placement="bottom" title={text} onConfirm={confirm} okText="Yes" cancelText="No">
-                                    <Button
-                                        type="primary"
-                                        danger
-                                        style={{
-                                            marginTop: '10px',
-                                            height: '39px',
-                                        }}
-                                    >
-                                        Delete Store
-                                    </Button>
-                                </Popconfirm>
-                            </div>
-                        </Col>
-                    </Row>
-
-                    <Row style={{ marginTop: '0px', height: '100%' }}>
-                        <Col span={24}>
-                            <TaskComponent />
-                        </Col>
-                    </Row>
-                </Content>
-            </Layout>
-        </div>
-    );
-};
-*/
 
 const TaskPage = () => {
     const { TabPane } = Tabs;
@@ -107,29 +58,7 @@ const TaskPage = () => {
     }
 
 
-    const data = [
-        {
-            key: '1',
-            name: 'John Brown',
-            age: 32,
-            address: 'New York No. 1 Lake Park',
-            tags: ['nice', 'developer'],
-        },
-        {
-            key: '2',
-            name: 'Jim Green',
-            age: 42,
-            address: 'London No. 1 Lake Park',
-            tags: ['loser'],
-        },
-        {
-            key: '3',
-            name: 'Joe Black',
-            age: 32,
-            address: 'Sidney No. 1 Lake Park',
-            tags: ['cool', 'teacher'],
-        },
-    ];
+
 
     const onChange = () => {};
 
@@ -144,25 +73,23 @@ const TaskPage = () => {
                 
             </Layout>
             <Tabs defaultActiveKey="1" onChange={callback} style={{ padding: '0 50px' }}>
-                <TabPane tab="All Tasks" key="1">
-                    <TaskComponent />
+                <TabPane tab="Footlocker" key="1">
+                    <Store
+                        
+                    />
                 </TabPane>
                 
                 
                 <TabPane tab="Footlocker" key="2">
-                    <Table
-                        columns={columns}
-                        dataSource={data}
-                        onChange={onChange} 
+                    <Store
+                        
                     />
                 </TabPane>
 
 
                 <TabPane tab="Nike" key="3">
-                    <Table
-                        columns={columns}
-                        dataSource={data}
-                        onChange={onChange} 
+                    <Store
+                        
                     />
                 </TabPane>
             </Tabs>

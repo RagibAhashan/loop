@@ -70,7 +70,7 @@ interface Job {
     retrydelay: number;
 }
 
-const TaskComponent = () => {
+const Store = () => {
     const [jobs, setJobs] = useState(new Array<Job>());
     const [proxies, setProxies] = useState([]);
     const [profiles, setProfiles] = useState([]);
@@ -216,7 +216,7 @@ const TaskComponent = () => {
                     backgroundColor: '#282C31',
                     width: '100%',
                     marginTop: '10px',
-                    height: '60vh',
+                    height: '75vh',
                 }}
             >
                 <Headers />
@@ -225,7 +225,7 @@ const TaskComponent = () => {
                 <div
                     style={{
                         overflow: 'auto',
-                        height: '53vh',
+                        height: '68vh',
                     }}
                 >
                     {jobs.map((botTask) => (
@@ -275,4 +275,4 @@ const TaskComponent = () => {
     );
 };
 
-export default TaskComponent;
+export default Store;
