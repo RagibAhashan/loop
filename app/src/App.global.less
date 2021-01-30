@@ -14,6 +14,7 @@
     --workspaceColor: #212427;
 }
 
+
 /* Sider */
 .ant-layout-sider-children {
     height: 100%;
@@ -93,8 +94,11 @@
 }
 
 /* Table */
+.ant-table table {
+    background-color: var(--workspaceColor)
+}
 .ant-table-tbody > tr > td {
-    border-top: 10px solid var(--workspaceColor);
+    // border-top: 10px solid var(--workspaceColor);
     border-bottom: 0;
     background: var(--siderColor);
 }
@@ -108,9 +112,51 @@
 }
 .ant-table-thead > tr > th, .ant-table-tbody > tr > td, .ant-table tfoot > tr > th, .ant-table tfoot > tr > td {
     position: relative;
-    padding: 16px;
+    padding: 15px;
     overflow-wrap: break-word;
+} 
+
+/* Starting from here is for rounded row borders*/
+table:first-child tr td:first-child { 
+    padding: 10;
+    border: 0;
+    margin: 10px;
+    border: 5px var(--workspaceColor) solid;
+    border-top-left-radius: 25px;
+    border-bottom-left-radius: 25px;
 }
+table:first-child tr td:nth-child(n+1) { 
+    padding: 10;
+    border: 0;
+    margin: 10px;
+    border-top: 5px var(--workspaceColor) solid;
+    border-bottom: 5px var(--workspaceColor) solid;
+}
+table:first-child tr td:last-child { 
+    padding: 10;
+    border: 0;
+    margin: 10px;
+    border: 5px var(--workspaceColor) solid;
+    border-top-right-radius: 25px;
+    border-bottom-right-radius: 25px;
+    border-left: none;
+}
+
+// tr {
+//     border: 0;
+//     display: block;
+//     margin: 10px;
+//     border: 2px var(--siderColor) solid;
+//     border-radius: 10px;
+// }
+// tr:hover {
+//     border: 0;
+//     display: block;
+//     margin: 10px;
+//     border: 2px var(--defaultThemeHover) solid;
+//     border-radius: 10px;
+// }
+
 
 /* Tabs */
 .ant-tabs {
