@@ -115,7 +115,7 @@ const content = (UserFormData: any) => (
     </div>
 );
 
-const BillingPage = () => {
+const ProfilePage = () => {
     const [yearOptions, setYearOptions] = useState([]);
     const [same, setSame] = useState(false);
     const [profiles, setUserProfiles] = useState([UserFormData, UserFormData, UserFormData, UserFormData, UserFormData, UserFormData]);
@@ -338,4 +338,4 @@ const BillingPage = () => {
     );
 };
 
-export default BillingPage;
+export default ProfilePage;

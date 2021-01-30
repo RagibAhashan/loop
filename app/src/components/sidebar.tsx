@@ -41,7 +41,7 @@ const SideBar = withRouter(({ history }) => {
                         history.push('/billing');
                     }}
                 >
-                    Billing Information
+                    Profiles
                 </Menu.Item>
 
                 <Menu.Item
