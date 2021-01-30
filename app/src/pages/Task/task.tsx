@@ -1,5 +1,5 @@
-import { Button, Col, DatePicker, Form, Input, Row, Select, TimePicker, Divider } from 'antd';
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Button, Col, Divider, Row, Select } from 'antd';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import Bot from './bot';
 import NewTaskModal from './newTaskModal';
 const { ipcRenderer } = window.require('electron');
@@ -138,8 +138,7 @@ const TaskComponent = () => {
     };
 
     const openCaptcha = () => {
-        console.log(window.location.hash);
-        ipcRenderer.send('new-window', '#captcha');
+        ipcRenderer.send('new-window');
     };
     const Headers = () => {
         return (

@@ -1,15 +1,12 @@
 import { Layout } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import SideBar from './components/sidebar';
-import * as Constants from './constants';
 import BillingPage from './pages/billing';
 import ProxyPage from './pages/proxy';
 import TaskPage from './pages/Task/taskPage';
-import TestPage from './pages/testPage';
-import { BrowserRouter, MemoryRouter, Route, Switch } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 import { Fingerprint } from './services/Fingerprint';
 import Home from './pages/Home';
-import CaptchaFrame from './components/CaptchaFrame';
 const { Content } = Layout;
 
 const generateFingerPrint = () => {

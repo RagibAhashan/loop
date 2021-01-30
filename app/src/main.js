@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
+const { CAPTCHA_ROUTE } = require('./common/Constants');
 function createWindow() {
     const win = new BrowserWindow({
         width: 1700,
@@ -22,18 +23,22 @@ function createWindow() {
     win.setMenuBarVisibility(false);
     win.setAutoHideMenuBar(true);
 
-    win.webContents.on('new-window', (event, url, frameName) => {
-        if (frameName === 'new-captcha-window') {
-            console.log('new window');
-            event.preventDefault();
-            Object.assign({
-                modal: true,
-                parent: win,
-                width: 100,
-                height: 700,
-            });
-            event.newGuest = new BrowserWindow();
-        }
+    ipcMain.on('new-window', (event, url) => {
+        const newWin = new BrowserWindow({
+            parent: win,
+            width: 400,
+            height: 700,
+            fullscreenable: false,
+            webPreferences: {
+                nodeIntegration: true,
+            },
+        });
+
+        newWin.loadURL(
+            process.env.NODE_ENV === 'development'
+                ? 'http://localhost:3000/#/' + CAPTCHA_ROUTE
+                : `file://${__dirname}/../build/index.html#${CAPTCHA_ROUTE}`,
+        );
     });
 }
 
