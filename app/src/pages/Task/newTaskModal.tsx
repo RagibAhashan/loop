@@ -30,6 +30,27 @@ const buttonStyle: React.CSSProperties = {
     textOverflow: 'ellipsis',
 };
 
+
+const getProfiles = () => {
+    const profilesTemp: any = [];
+    let profs: any = localStorage.getItem('profiles');
+
+    if (profs) {
+        profs = JSON.parse(profs);
+        if (profs) {
+            profs.map((p: any) => {
+                console.log(p);
+                profilesTemp.push({
+                    label: p['profile'].toString(),
+                    value: p['profile'].toString(),
+                });
+            });
+        }
+    }
+
+    return profilesTemp;
+};
+
 const NewTaskModal = (props: any) => {
     const { store, addTasks, proxies } = props;
     const [visible, setVisible] = useState(false);
@@ -84,7 +105,16 @@ const NewTaskModal = (props: any) => {
                 </Col>
                 <Col style={{ marginLeft: '10px', width: '46%'}}>
                     <Form.Item name={['task', 'profile']} rules={[{ required: true }]}>
-                        <Input placeholder="Profile Set" />
+                        {/* <Input placeholder="Profile Set" /> */}
+                        <Select style={{ width: '100%'}} placeholder="Profile" allowClear 
+                            options={getProfiles()}
+                            // options={[
+                            // {label: 'hello', value: 'hello'},
+                            // {label: 'hello1', value: 'hello'},
+                            // {label: 'hello2', value: 'hello'},
+                            // {label: 'hello3', value: 'hello'}
+                            // ]} 
+                        />
                     </Form.Item>    
                 </Col>
             </Row>
