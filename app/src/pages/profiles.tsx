@@ -199,7 +199,7 @@ const ProfilePage = () => {
     };
 
     return (
-        <div style={{ padding: 24 }}>
+        <div style={{ padding: 24, backgroundColor: '#212427', height: '1000vh' }}>
             {/* {profiles.length === 0 ? <div /> : */}
             <Row>
                 <Divider> My Profiles </Divider>

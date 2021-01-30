@@ -4,6 +4,7 @@ import SideBar from './components/sidebar';
 import ProfilePage from './pages/profiles';
 import ProxyPage from './pages/proxy';
 import TaskPage from './pages/Task/taskPage';
+import SettingsPage from './pages/settingsPage';
 import { Route, Switch } from 'react-router-dom';
 import { Fingerprint } from './services/Fingerprint';
 import Home from './pages/Home';
@@ -26,14 +27,13 @@ const App = () => {
             <Layout>
 
                 <Content>
-                    <div style={{ backgroundColor: '#212427', height: '1000vh' }}>
-                        <Switch>
-                            <Route path="/home"     exact component={Home} />
-                            <Route path="/billing"  exact component={ProfilePage} />
-                            <Route path="/proxies"  exact component={ProxyPage} />
-                            <Route path="/tasks"    exact component={TaskPage} />
-                        </Switch>
-                    </div>
+                    <Switch>
+                        <Route path="/home"     exact component={Home} />
+                        <Route path="/billing"  exact component={ProfilePage} />
+                        <Route path="/proxies"  exact component={ProxyPage} />
+                        <Route path="/settings" exact component={SettingsPage} />
+                    </Switch>
+                    <TaskPage />
                 </Content>
 
                 

@@ -275,7 +275,7 @@ const ProxyPage = () => {
   };
 
     return (
-        <Layout>
+        <Layout style={{ padding: 24, backgroundColor: '#212427', height: '1000vh' }}>
             <Header>
                 <Row>
                     <Col span={2} style={{ fontSize: 30 }}>

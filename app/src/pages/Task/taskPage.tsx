@@ -65,7 +65,7 @@ const TaskPage = () => {
     const { Sider, Content, Header } = Layout;
 
     return (
-        <div>
+        <div style={{ padding: 24, backgroundColor: '#212427', height: '1000vh' }}>
             <Layout>
                 <Header>
                     Tasks
