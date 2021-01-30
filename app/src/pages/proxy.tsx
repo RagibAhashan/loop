@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Form, Input, Button, Divider, Table, Modal, Tag, Space, Card, message, Upload, Layout, Menu, Tabs } from 'antd';
+import { Row, Col, Form, Input, Table, Modal, Select, Space, Card, message, Upload, Layout, Menu, Tabs, Button } from 'antd';
 import { DeleteTwoTone, InboxOutlined, PlusOutlined } from '@ant-design/icons';
 import { green } from '@material-ui/core/colors';
 
@@ -10,7 +10,7 @@ const ProxyPage = () => {
 
     const [visibleAdd, setVisibleAdd] = useState(false);
     const [visibleDelete, setVisibleDelete] = useState(false);
-    const [deleteSelection, setDeleteSelection] = useState([]);
+    const [deleteSelection, setDeleteSelection] = useState([''])
 
     const onAdd = (values: any) => {
         const name = values.name;
@@ -37,7 +37,14 @@ const ProxyPage = () => {
     };
 
     const onDelete = (values:any) => {
-
+        const arraySetToDelete = values.proxies;
+        console.log(proxies);
+        arraySetToDelete.forEach((name: any)=>{
+            proxies.delete(name);
+            setProxies(proxies);
+            localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())));
+        })
+        setVisibleDelete(false);
     }
 
     useEffect(() => {
@@ -53,13 +60,6 @@ const ProxyPage = () => {
             setProxies(tempProxyMap);
         }
     }, []);
-
-    const onDeleteSet = (name: any) => {
-        proxies.delete(name.toString());
-        setProxies(proxies);
-        localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())));
-        forceUpdate();
-    };
 
     const downloadProxies = (values: [], name: string) => {
         const proxyFileName = name + 'Proxies.txt';
@@ -93,10 +93,10 @@ const ProxyPage = () => {
                   modifier: 'public',
               }}
             >
-              <Form.Item name="name" label="Name" rules={[{required: true,    message: 'Please input the name of the set!',},]}>
+              <Form.Item name="name" label="Name" rules={[{required: true,    message: 'Please input the name of the set to add!',},]}>
                 <Input placeholder="Input set same" />
               </Form.Item>
-              <Form.Item name="proxies" label="Proxies" rules={[{required: true, message: 'Please input the list of proxies!',},]}>
+              <Form.Item name="proxies" label="Proxies" rules={[{required: true, message: 'Please input the list of proxiesto add!',},]}>
                 <Dragger {...prop}>
                   <p className="ant-upload-drag-icon">
                       <InboxOutlined />
@@ -111,12 +111,27 @@ const ProxyPage = () => {
       );
     };
 
-    const OPTIONS = ['Apples', 'Nails', 'Bananas', 'Helicopters'];
+    const OPTIONS = () => {
+        let setSelection: any = []
+        proxies.forEach((value, key, map)=> {
+            setSelection.push(key);
+        })
+       return(
+         setSelection
+       );
+    }
+
+    const handleChange = (selectedItems: any) => {
+
+    };
 
     const CollectionCreateFormDelete = ({ visible, onCreate, onCancel }: any) => {
         const [form] = Form.useForm();
+        const optionsArray = OPTIONS();
+        const filteredOptions = optionsArray.filter((o:any) => !deleteSelection.includes(o));
         return (
-          <Modal visible={visible} title="Delete an existing set" okText="Create" cancelText="Cancel" onCancel={onCancel}
+          <Modal visible={visible} title="Remove an existing set" okText="Create" cancelText="Cancel" onCancel={onCancel}
+            // footer={[<Button type="primary" key="1"> Remove </Button>]}
             onOk={() => { form.validateFields().then((values) => { form.resetFields(); onCreate(values);})
                 .catch((info) => {
                   console.log('Validate Failed:', info);
@@ -128,18 +143,20 @@ const ProxyPage = () => {
                     modifier: 'public',
                 }}
               >
-                <Form.Item name="name" label="Name" rules={[{required: true,    message: 'Please input the name of the set!',},]}>
-                  <Input placeholder="Input set same" />
-                </Form.Item>
-                <Form.Item name="proxies" label="Proxies" rules={[{required: true, message: 'Please input the list of proxies!',},]}>
-                  <Dragger {...prop}>
-                    <p className="ant-upload-drag-icon">
-                        <InboxOutlined />
-                    </p>
-                    <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                    <p className="ant-upload-hint">Make sure that your list of proxies is separated by new lines!</p>
-                  </Dragger>
-                      {/* <Input type="textarea" placeholder="Copy Paste your list of proxies"/> */}
+                <Form.Item name="proxies" label="Sets" rules={[{required: true, message: 'Please choose a set to delete!',},]}>
+                  <Select
+                      mode="multiple"
+                      placeholder="Choose sets to remove"
+                      value={deleteSelection}
+                      onChange={ handleChange }
+                      style={{ width: '100%' }}
+                  >
+                      {filteredOptions.map((item: any) => (
+                      <Select.Option key={item} value={item}>
+                          {item}
+                      </Select.Option>
+                      ))}
+                  </Select>
                 </Form.Item>
               </Form>
           </Modal>
@@ -228,29 +245,34 @@ const ProxyPage = () => {
         return proxyArray.map((value) => {
             return ([
               <TabPane tab={value.name} key={++i}>
-                <Table columns={columns} pagination={{ pageSize: 8 }} dataSource={ShowProxies(value.name)} onChange={onChange} />
+                <Table columns={columns} pagination={{ pageSize: 8 }} dataSource={ShowData(value.name)} onChange={onChange} />
               </TabPane>
             ]);
         });
     }
 
-    const ShowProxies = (name:string) => {
-        let proxyArray = Array.from(proxies, ([name, proxies]) => ({ name, proxies }));
-        if (!proxies.size) return [];
-        return proxyArray.map((value) => {
-          console.log(value);
-          return ([
-              {
-                  id: '1',
-                  ip: '198.162.25.33',
-                  port: '3200',
-                  status: 'Testing...',
-                  action: '',
-              },
-          ]);
-      });
+    const ShowData = (name:string) => {
+        let data: any = []
+        let tempProxies: any = []
+        tempProxies = proxies.get(name);
+        let id = 0;
+        tempProxies.forEach((value: any)=> {
+            var fields = value.split(':');
+            var ip = fields[0];
+            var port = fields[1];
+            let dataRow = {
+                id: ++id,
+                ip: ip,
+                port: port,
+                status: 'Testing...',
+                action: '',
+            }
+            data.push(dataRow);
+        })
+       return(
+         data
+       );
   };
-  
 
     return (
         <Layout>
@@ -261,9 +283,13 @@ const ProxyPage = () => {
                     </Col>
                     <Col span={22} style={{ textAlign: 'right' }}>
                         <div>
-                            <PlusOutlined style={{color:'green', fontSize: 30}} onClick={() => { setVisibleAdd(true);}}/>
+                            <PlusOutlined 
+                                style={{color:'green', fontSize: 30}} 
+                                onClick={() => { setVisibleAdd(true);}}/>
                             <CollectionCreateFormAdd visible={visibleAdd} onCreate={onAdd} onCancel={() => { setVisibleAdd(false); }} />
-                            <DeleteTwoTone style={{color:'orange', fontSize: 30}} onClick={() => { setVisibleDelete(true);}}/>
+                            <DeleteTwoTone 
+                                style={{color:'orange', fontSize: 30, marginTop:15, marginLeft:15}} 
+                                onClick={() => { setVisibleDelete(true);}}/>
                             <CollectionCreateFormDelete visible={visibleDelete} onCreate={onDelete} onCancel={() => { setVisibleDelete(false); }} />
                         </div>
                     </Col>
