@@ -92,11 +92,11 @@ const Bot = (props: any) => {
     }, []);
 
     const stopTask = () => {
-        // console.log('remove all listeners');
         ipcRenderer.removeAllListeners(uuid);
         setRunning((prevRunning) => (prevRunning = !prevRunning));
         setStatusLevel((prevLevel) => (prevLevel = 'idle'));
         setStatus((prevStatus) => (prevStatus = 'Idle'));
+        ipcRenderer.send('stop-task', uuid);
     };
 
     const runButton = () => {
