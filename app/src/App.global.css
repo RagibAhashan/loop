@@ -1,5 +1,6 @@
 @import '~antd/dist/antd.dark.css';
 
+
 /* https://stackoverflow.com/questions/15831657/creating-css-global-variables-stylesheet-theme-management */
 :root {
     --siderColor: #282c31;
@@ -69,4 +70,13 @@ body {
     margin: 0;
     height: 100%;
     overflow: hidden;
+}
+
+
+.profile-card {
+    background-color: aliceblue;
+}
+
+.profile-card:hover {
+    background-color: yellow;
 }

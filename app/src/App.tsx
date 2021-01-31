@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 import { Route, Switch } from 'react-router-dom';
 import SideBar from './components/sidebar';
 import Home from './pages/Home';
-import ProfilePage from './pages/profiles';
+import ProfilePage from './pages/Profile/profiles';
 import ProxyPage from './pages/proxy';
 import SettingsPage from './pages/settingsPage';
 import TaskPage from './pages/Task/TaskPage';
