@@ -1,3 +1,4 @@
+import { CloseOutlined } from '@ant-design/icons';
 import { Button, Layout, Select, Tabs } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
 import React, { useState } from 'react';
@@ -27,10 +28,12 @@ const TaskPage = () => {
     const addStore = () => {
         if (!storeName) return;
         setStoreModalVisible(false);
-        const newPane: Pane = { title: storeName, key: storeName };
-        panes.push(newPane); // for some reason this is updating the state idk why wtf
-        // setPanes((old) => [...old, ...panes]); // and this is not working wtffffffffffffffffff
-        localStorage.setItem('stores', JSON.stringify(panes));
+        const addedPane: Pane = { title: storeName, key: storeName };
+        setPanes((old) => {
+            const newState = [...old, addedPane];
+            localStorage.setItem('stores', JSON.stringify(newState));
+            return newState;
+        });
     };
 
     const openStoreModal = () => {
@@ -39,6 +42,10 @@ const TaskPage = () => {
 
     const onStoreSelect = (name: string) => {
         setStoreName((prevName) => (prevName = name));
+    };
+
+    const isStoreCreated = (store: string): boolean => {
+        return panes.find((s) => s.title === store) ? true : false;
     };
 
     const addMenu = <Button onClick={() => openStoreModal()}> Add Store </Button>;
@@ -52,7 +59,15 @@ const TaskPage = () => {
             </Layout>
             <Tabs style={{ marginTop: 10 }} defaultActiveKey="1" tabBarExtraContent={addMenu}>
                 {panes.map((pane) => (
-                    <TabPane tab={pane.title} key={pane.key}>
+                    <TabPane
+                        tab={
+                            <span>
+                                <Button size="small" shape="circle" type="text" icon={<CloseOutlined />} />
+                                {pane.title}
+                            </span>
+                        }
+                        key={pane.key}
+                    >
                         <Store storeName={pane.title} />
                     </TabPane>
                 ))}
@@ -61,7 +76,9 @@ const TaskPage = () => {
             <Modal title="Add Store" visible={isStoreModalVisible} onOk={addStore} onCancel={() => setStoreModalVisible(false)}>
                 <Select placeholder="Select Store" onChange={onStoreSelect} style={{ width: 200, margin: 'auto' }}>
                     {STORES.map((store) => (
-                        <Option value={store}> {store} </Option>
+                        <Option disabled={isStoreCreated(store)} value={store}>
+                            {store}
+                        </Option>
                     ))}
                 </Select>
             </Modal>
