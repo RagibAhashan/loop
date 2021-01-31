@@ -1,5 +1,5 @@
-import { DeleteTwoTone, InboxOutlined, PlusOutlined } from '@ant-design/icons';
-import { Col, Form, Input, Layout, message, Modal, Row, Select, Space, Table, Tabs, Upload } from 'antd';
+import { DeleteTwoTone, InboxOutlined, PlusOutlined, CloseOutlined } from '@ant-design/icons';
+import { Col, Button, Form, Input, Layout, message, Modal, Row, Select, Space, Table, Tabs, Upload } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 const { Header, Content } = Layout;
@@ -216,7 +216,7 @@ const ProxyPage = () => {
             title: 'ID',
             dataIndex: 'id',
             key: 'id',
-            render: (text: any) => <a>{text}</a>,
+            render: (text: any) => <Button shape="circle" type="primary" icon={<CloseOutlined />} />,
         },
         {
             title: 'IP',
