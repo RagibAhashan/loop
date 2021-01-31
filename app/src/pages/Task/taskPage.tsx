@@ -36,6 +36,10 @@ const TaskPage = () => {
         });
     };
 
+    const deleteStore = (store: string) => {
+        console.log('delete that shit yo', store);
+    };
+
     const openStoreModal = () => {
         setStoreModalVisible(true);
     };
@@ -52,17 +56,12 @@ const TaskPage = () => {
 
     return (
         <div style={{ padding: 24, backgroundColor: '#212427', height: '100vh' }}>
-            <Layout>
-                <Header>
-                    <p style={{ fontSize: 30 }}>Tasks</p>
-                </Header>
-            </Layout>
             <Tabs style={{ marginTop: 10 }} defaultActiveKey="1" tabBarExtraContent={addMenu}>
                 {panes.map((pane) => (
                     <TabPane
                         tab={
                             <span>
-                                <Button size="small" shape="circle" type="text" icon={<CloseOutlined />} />
+                                <Button size="small" shape="circle" type="text" icon={<CloseOutlined />} onClick={() => deleteStore(pane.title)} />
                                 {pane.title}
                             </span>
                         }

@@ -54,14 +54,15 @@ interface Job {
     retrydelay: number;
 }
 
-const getTasks = (): Job[] => {
-    const tasks = JSON.parse(localStorage.getItem('tasks') as string) as Job[];
-    return tasks ? tasks : [];
-};
-
 const Store = (props: any) => {
+    const getTasks = (): Job[] => {
+        const tasks = JSON.parse(localStorage.getItem(storeName) as string) as Job[];
+        return tasks ? tasks : [];
+    };
+
     const { storeName } = props;
     const [jobs, setJobs] = useState(() => getTasks());
+    const [taskModalVisible, setTaskModalVisible] = useState(false);
     const [proxies, setProxies] = useState([]);
     const [profiles, setProfiles] = useState([]);
 
@@ -92,22 +93,20 @@ const Store = (props: any) => {
 
     const getProxies = (): any => {
         const proxiesOptions: any = [{ label: 'localhost', value: 'localhost' }];
-        let prox: any = localStorage.getItem('proxies');
+        let prox: any = JSON.parse(localStorage.getItem('proxies') as string);
         if (prox) {
-            prox = JSON.parse(prox);
-            if (prox) {
-                prox.map((set: any) => {
-                    proxiesOptions.push({
-                        label: `${set[0]} (${set[1].length} proxies)`,
-                        value: `${set[0]}`,
-                    });
+            prox.forEach((set: any) => {
+                proxiesOptions.push({
+                    label: `${set[0]} (${set[1].length} proxies)`,
+                    value: `${set[0]}`,
                 });
-            }
+            });
         }
         return proxiesOptions;
     };
 
     const deleteBot = (uuid: string) => {
+        localStorage.removeItem(uuid);
         for (let i = 0; i < jobs.length; i++) {
             if (jobs[i].uuid === uuid) {
                 jobs.splice(i, 1);
@@ -123,10 +122,6 @@ const Store = (props: any) => {
     const Headers = () => {
         return (
             <Row style={botStyle}>
-                <Col span={2} style={{ margin: 'auto', marginLeft: '10px' }}>
-                    Store
-                </Col>
-
                 <Col span={3} style={colStyle}>
                     Product
                 </Col>
@@ -172,16 +167,23 @@ const Store = (props: any) => {
             });
         }
 
-        setJobs((oldJobs) => [...oldJobs, ...temp]);
-        console.log(jobs);
-        let obj = {} as any;
-        obj[storeName] = jobs;
-        localStorage.setItem('tasks', JSON.stringify(obj));
+        setJobs((oldJobs) => {
+            const newJobs = [...oldJobs, ...temp];
+            localStorage.setItem(storeName, JSON.stringify(newJobs));
+            return newJobs;
+        });
+
+        setTaskModalVisible(false);
+    };
+
+    const cancelModal = () => {
+        setTaskModalVisible(false);
     };
 
     const deleteAllTasks = () => {
+        jobs.forEach((job) => localStorage.removeItem(job.uuid));
         setJobs(() => new Array<Job>());
-        localStorage.removeItem('tasks');
+        localStorage.removeItem(storeName);
     };
 
     const ROW_GUTTER: [number, number] = [24, 0];
@@ -209,8 +211,6 @@ const Store = (props: any) => {
 
     return (
         <div>
-            <NewTaskModal store={'footlocker'} addTasks={addTasks} proxies={proxies} />
-
             <Headers />
             <Divider style={{ marginBottom: '10px' }} />
 
@@ -219,6 +219,12 @@ const Store = (props: any) => {
             </FixedSizeList>
 
             <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10 }}>
+                <Col span={3}>
+                    <Button style={buttonStyle} type="primary" onClick={() => setTaskModalVisible(true)}>
+                        Add Task
+                    </Button>
+                </Col>
+                <Col span={6}></Col>
                 <Col span={3}>
                     <Button type="default" style={{ ...buttonStyle, backgroundColor: 'green' }}>
                         Run all
@@ -229,7 +235,7 @@ const Store = (props: any) => {
                         Stop all
                     </Button>
                 </Col>
-                <Col span={12}></Col>
+                <Col span={3}></Col>
                 <Col span={3}>
                     <Button style={buttonStyle} type="primary" danger onClick={() => deleteAllTasks()}>
                         Delete all
@@ -241,6 +247,14 @@ const Store = (props: any) => {
                     </Button>
                 </Col>
             </Row>
+
+            <NewTaskModal
+                visible={taskModalVisible}
+                store={storeName}
+                addTasks={addTasks}
+                cancelTaskModal={() => setTaskModalVisible(false)}
+                proxies={proxies}
+            />
         </div>
     );
 };

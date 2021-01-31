@@ -124,10 +124,6 @@ const Bot = (props: any) => {
     return (
         <div style={style}>
             <Row style={botStyle}>
-                <Col span={2} style={{ margin: 'auto', marginLeft: '10px' }}>
-                    {'Footlocker'}
-                </Col>
-
                 <Col span={3} style={colStyle}>
                     {keyword}
                 </Col>
