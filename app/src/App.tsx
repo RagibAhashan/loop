@@ -1,13 +1,13 @@
 import { Layout } from 'antd';
 import React, { useEffect } from 'react';
+import { Route, Switch } from 'react-router-dom';
 import SideBar from './components/sidebar';
+import Home from './pages/Home';
 import ProfilePage from './pages/profiles';
 import ProxyPage from './pages/proxy';
-import TaskPage from './pages/Task/taskPage';
 import SettingsPage from './pages/settingsPage';
-import { Route, Switch } from 'react-router-dom';
+import TaskPage from './pages/Task/taskPage';
 import { Fingerprint } from './services/Fingerprint';
-import Home from './pages/Home';
 const { Content } = Layout;
 
 const generateFingerPrint = () => {
@@ -25,18 +25,15 @@ const App = () => {
         <Layout style={{ minHeight: '100vh' }}>
             <SideBar />
             <Layout>
-
                 <Content>
                     <Switch>
-                        <Route path="/home"     exact component={Home} />
-                        <Route path="/billing"  exact component={ProfilePage} />
-                        <Route path="/proxies"  exact component={ProxyPage} />
+                        <Route path="/home" exact component={Home} />
+                        <Route path="/billing" exact component={ProfilePage} />
+                        <Route path="/proxies" exact component={ProxyPage} />
                         <Route path="/settings" exact component={SettingsPage} />
+                        <Route path="/tasks" exact component={TaskPage} />
                     </Switch>
-                    <TaskPage />
                 </Content>
-
-                
             </Layout>
         </Layout>
     );

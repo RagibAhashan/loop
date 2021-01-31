@@ -1,7 +1,7 @@
 // import styles from './sidebar.module.css';
 import { DeleteOutlined, DoubleRightOutlined, EditOutlined, StopOutlined } from '@ant-design/icons';
 import { Button, Col, Row, Space } from 'antd';
-import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 const { ipcRenderer } = window.require('electron');
 
 interface Status {
@@ -59,12 +59,8 @@ const statusColor = (level: string) => {
     }
 };
 
-const Bot = forwardRef((props: any, ref) => {
-    const { uuid, store, keyword, startdate, starttime, profile, sizes, proxyset, quantity, monitordelay, retrydelay, deleteBot } = props;
-
-    const [status, setStatus] = useState('Idle');
-    const [running, setRunning] = useState(false);
-    const [statusLevel, setStatusLevel] = useState('idle');
+const Bot = (props: any) => {
+    const { uuid, store, keyword, startdate, starttime, profile, sizes, proxyset, quantity, monitordelay, retrydelay, deleteBot, style } = props;
 
     const registerTaskStatusListener = () => {
         ipcRenderer.on(uuid, (event, status: Status) => {
@@ -79,15 +75,14 @@ const Bot = forwardRef((props: any, ref) => {
     };
 
     useEffect(() => {
+        console.log('use effect runnin');
         registerTaskStatusListener();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    useImperativeHandle(ref, () => ({
-        run() {
-            startTask();
-        },
-    }));
+    const [status, setStatus] = useState('Idle');
+    const [running, setRunning] = useState(false);
+    const [statusLevel, setStatusLevel] = useState('idle');
 
     const stopTask = () => {
         // console.log('remove all listeners');
@@ -120,47 +115,49 @@ const Bot = forwardRef((props: any, ref) => {
     };
 
     return (
-        <Row style={botStyle}>
-            <Col span={2} style={{ margin: 'auto', marginLeft: '10px' }}>
-                {'Footlocker'}
-            </Col>
+        <div style={style}>
+            <Row style={botStyle}>
+                <Col span={2} style={{ margin: 'auto', marginLeft: '10px' }}>
+                    {'Footlocker'}
+                </Col>
 
-            <Col span={3} style={colStyle}>
-                {keyword}
-            </Col>
+                <Col span={3} style={colStyle}>
+                    {keyword}
+                </Col>
 
-            <Col span={2} style={colStyle}>
-                {proxyset}
-            </Col>
+                <Col span={2} style={colStyle}>
+                    {proxyset}
+                </Col>
 
-            <Col span={3} style={colStyle}>
-                {profile}
-            </Col>
+                <Col span={3} style={colStyle}>
+                    {profile}
+                </Col>
 
-            <Col span={7} style={colStyle}>
-                size
-            </Col>
+                <Col span={7} style={colStyle}>
+                    size
+                </Col>
 
-            <Col span={3} style={colStyle}>
-                <p style={{ color: statusColor(statusLevel), margin: 'auto' }}>{status}</p>
-            </Col>
+                <Col span={3} style={colStyle}>
+                    <p style={{ color: statusColor(statusLevel), margin: 'auto' }}>{status}</p>
+                </Col>
 
-            <Col span={3} style={colStyle}>
-                <Space>
-                    {runButton()}
-                    <Button style={editButton} size="small" icon={<EditOutlined />} />
-                    <Button
-                        onClick={() => {
-                            deleteBot(uuid);
-                        }}
-                        style={deleteButton}
-                        icon={<DeleteOutlined />}
-                        size="small"
-                    />
-                </Space>
-            </Col>
-        </Row>
+                <Col span={3} style={colStyle}>
+                    <Space>
+                        {runButton()}
+                        <Button style={editButton} size="small" icon={<EditOutlined />} />
+                        <Button
+                            onClick={() => {
+                                deleteBot(uuid);
+                            }}
+                            style={deleteButton}
+                            icon={<DeleteOutlined />}
+                            size="small"
+                        />
+                    </Space>
+                </Col>
+            </Row>
+        </div>
     );
-});
+};
 
 export default Bot;

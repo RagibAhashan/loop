@@ -1,14 +1,14 @@
 import { Button, Col, Divider, Row, Select } from 'antd';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { FixedSizeList } from 'react-window';
 import Bot from './bot';
 import NewTaskModal from './newTaskModal';
+
 const { ipcRenderer } = window.require('electron');
 
 const { v4: uuid } = require('uuid');
 
 const { Option } = Select;
-
-const format = 'HH:mm';
 
 const colStyle = {
     margin: 'auto',
@@ -21,7 +21,6 @@ const buttonStyle: React.CSSProperties = {
 };
 
 const botStyle = {
-    // backgroundColor: 'black',
     marginLeft: '20px',
     marginRight: '20px',
     marginTop: '10px',
@@ -32,10 +31,6 @@ const botStyle = {
     fontSize: '18px',
 };
 
-function onChange(date: any, dateString: any) {
-    console.log(date, dateString);
-}
-
 const allSizes: any[] = [];
 for (let i = 4; i < 14; i += 0.5) {
     allSizes.push(
@@ -44,17 +39,6 @@ for (let i = 4; i < 14; i += 0.5) {
         </Option>,
     );
 }
-
-const validateMessages = {
-    required: 'Required!',
-    types: {
-        email: '${name} is not a valid email!',
-        number: '${name} is not a valid number!',
-    },
-    number: {
-        range: '${name} must be 3 digits or less.',
-    },
-};
 
 interface Job {
     uuid: string;
@@ -74,12 +58,11 @@ const Store = () => {
     const [jobs, setJobs] = useState(new Array<Job>());
     const [proxies, setProxies] = useState([]);
     const [profiles, setProfiles] = useState([]);
-    const [, updateState] = useState();
-    const forceUpdate = useCallback(() => updateState({} as any), []);
 
     useEffect(() => {
         setProxies(getProxies());
         setProfiles(getProfiles());
+        getTasks();
     }, []);
 
     const getProfiles = () => {
@@ -118,23 +101,22 @@ const Store = () => {
         return proxiesOptions;
     };
 
-    const deleteBot = (uuid: string) => {
-        console.log('Delete this: ', uuid);
+    const getTasks = () => {
+        const tasks = JSON.parse(localStorage.getItem('tasks') as string) as Job[];
+        if (tasks) {
+            console.log('got all tasks', tasks);
+            setJobs(() => [...tasks]);
+        }
+    };
 
+    const deleteBot = (uuid: string) => {
         for (let i = 0; i < jobs.length; i++) {
             if (jobs[i].uuid === uuid) {
                 jobs.splice(i, 1);
                 break;
             }
         }
-        forceUpdate();
-    };
-
-    const botRef = useRef();
-
-    const runAll = () => {
-        console.log(jobs);
-        (botRef.current as any).run();
+        setJobs(() => [...jobs]);
     };
 
     const openCaptcha = () => {
@@ -175,82 +157,69 @@ const Store = () => {
     };
 
     const addTasks = (data: any) => {
-        let temp = jobs;
-
-        if (temp !== null) {
-            for (let i = 0; i < Number(data['task'].quantity); i++) {
-                temp.push({
-                    uuid: uuid(),
-                    store: 'Footlocker',
-                    keyword: data['task'].keyword,
-                    startdate: data['task'].startdate,
-                    starttime: data['task'].starttime,
-                    profile: data['task'].profile,
-                    sizes: data['task'].sizes,
-                    proxyset: data['task'].proxyset,
-                    quantity: data['task'].quantity,
-                    monitordelay: data['task'].monitordelay,
-                    retrydelay: data['task'].retrydelay,
-                });
-            }
-            setJobs(temp);
+        let temp: Job[] = [];
+        for (let i = 0; i < Number(data['task'].quantity); i++) {
+            temp.push({
+                uuid: uuid(),
+                store: 'Footlocker',
+                keyword: data['task'].keyword,
+                startdate: data['task'].startdate,
+                starttime: data['task'].starttime,
+                profile: data['task'].profile,
+                sizes: data['task'].sizes,
+                proxyset: data['task'].proxyset,
+                quantity: data['task'].quantity,
+                monitordelay: data['task'].monitordelay,
+                retrydelay: data['task'].retrydelay,
+            });
         }
-        forceUpdate();
+
+        setJobs((oldJobs) => [...oldJobs, ...temp]);
+        localStorage.setItem('tasks', JSON.stringify(temp));
     };
 
     const deleteAllTasks = () => {
-        setJobs(new Array<Job>());
-        forceUpdate();
+        setJobs(() => new Array<Job>());
+        localStorage.removeItem('tasks');
     };
 
     const ROW_GUTTER: [number, number] = [24, 0];
+
+    const renderJobs = (ele: any) => {
+        const { index, style } = ele;
+        return (
+            <Bot
+                key={jobs[index].uuid}
+                uuid={jobs[index].uuid}
+                store={jobs[index].store}
+                keyword={jobs[index].keyword}
+                startdate={jobs[index].startdate}
+                starttime={jobs[index].starttime}
+                profile={jobs[index].profile}
+                sizes={jobs[index].sizes}
+                proxyset={jobs[index].proxyset}
+                monitordelay={jobs[index].monitordelay}
+                retrydelay={jobs[index].retrydelay}
+                deleteBot={deleteBot}
+                style={style}
+            />
+        );
+    };
 
     return (
         <div>
             <NewTaskModal store={'footlocker'} addTasks={addTasks} proxies={proxies} />
 
-            <div
-                style={{
-                    border: '1px solid #4D4D4D',
-                    borderRadius: '6px',
-                    backgroundColor: '#282C31',
-                    width: '100%',
-                    marginTop: '10px',
-                    height: '75vh',
-                }}
-            >
-                <Headers />
-                <Divider style={{ marginBottom: '10px' }} />
+            <Headers />
+            <Divider style={{ marginBottom: '10px' }} />
 
-                <div
-                    style={{
-                        overflow: 'auto',
-                        height: '68vh',
-                    }}
-                >
-                    {jobs.map((botTask) => (
-                        <Bot
-                            ref={botRef}
-                            key={botTask.uuid}
-                            uuid={botTask.uuid}
-                            store={botTask.store}
-                            keyword={botTask.keyword}
-                            startdate={botTask.startdate}
-                            starttime={botTask.starttime}
-                            profile={botTask.profile}
-                            sizes={botTask.sizes}
-                            proxyset={botTask.proxyset}
-                            monitordelay={botTask.monitordelay}
-                            retrydelay={botTask.retrydelay}
-                            deleteBot={deleteBot}
-                        />
-                    ))}
-                </div>
-            </div>
+            <FixedSizeList height={500} itemCount={jobs.length} itemSize={50} width="100%">
+                {renderJobs}
+            </FixedSizeList>
 
             <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10 }}>
                 <Col span={3}>
-                    <Button onClick={() => runAll()} type="default" style={{ ...buttonStyle, backgroundColor: 'green' }}>
+                    <Button type="default" style={{ ...buttonStyle, backgroundColor: 'green' }}>
                         Run all
                     </Button>
                 </Col>
