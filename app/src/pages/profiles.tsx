@@ -1,7 +1,6 @@
 import { DeleteOutlined } from '@ant-design/icons';
 import { Button, Card, Checkbox, Col, Divider, Form, Input, InputNumber, message, Popover, Row, Select, Space } from 'antd';
 import React, { useEffect, useState } from 'react';
-import * as Constants from '../constants';
 const layout = {
     labelCol: { span: 5 },
     wrapperCol: { span: 16 },

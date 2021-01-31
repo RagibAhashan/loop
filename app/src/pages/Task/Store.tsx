@@ -1,7 +1,7 @@
 import { Button, Col, Divider, Row, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { FixedSizeList } from 'react-window';
-import Bot from './bot';
+import Bot from './Bot';
 import NewTaskModal from './newTaskModal';
 
 const { ipcRenderer } = window.require('electron');
@@ -54,8 +54,14 @@ interface Job {
     retrydelay: number;
 }
 
-const Store = () => {
-    const [jobs, setJobs] = useState(new Array<Job>());
+const getTasks = (): Job[] => {
+    const tasks = JSON.parse(localStorage.getItem('tasks') as string) as Job[];
+    return tasks ? tasks : [];
+};
+
+const Store = (props: any) => {
+    const { storeName } = props;
+    const [jobs, setJobs] = useState(() => getTasks());
     const [proxies, setProxies] = useState([]);
     const [profiles, setProfiles] = useState([]);
 
@@ -99,14 +105,6 @@ const Store = () => {
             }
         }
         return proxiesOptions;
-    };
-
-    const getTasks = () => {
-        const tasks = JSON.parse(localStorage.getItem('tasks') as string) as Job[];
-        if (tasks) {
-            console.log('got all tasks', tasks);
-            setJobs(() => [...tasks]);
-        }
     };
 
     const deleteBot = (uuid: string) => {
@@ -175,7 +173,10 @@ const Store = () => {
         }
 
         setJobs((oldJobs) => [...oldJobs, ...temp]);
-        localStorage.setItem('tasks', JSON.stringify(temp));
+        console.log(jobs);
+        let obj = {} as any;
+        obj[storeName] = jobs;
+        localStorage.setItem('tasks', JSON.stringify(obj));
     };
 
     const deleteAllTasks = () => {

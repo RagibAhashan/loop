@@ -1,4 +1,4 @@
-import { Layout } from 'antd';
+import { Layout, Typography } from 'antd';
 import React, { useEffect } from 'react';
 import { Route, Switch } from 'react-router-dom';
 import SideBar from './components/sidebar';
@@ -6,9 +6,11 @@ import Home from './pages/Home';
 import ProfilePage from './pages/profiles';
 import ProxyPage from './pages/proxy';
 import SettingsPage from './pages/settingsPage';
-import TaskPage from './pages/Task/taskPage';
+import TaskPage from './pages/Task/TaskPage';
 import { Fingerprint } from './services/Fingerprint';
-const { Content } = Layout;
+const { Content, Header } = Layout;
+
+const { Title } = Typography;
 
 const generateFingerPrint = () => {
     if (!localStorage.getItem('deviceId')) {

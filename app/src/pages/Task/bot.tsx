@@ -7,6 +7,8 @@ const { ipcRenderer } = window.require('electron');
 interface Status {
     status: string;
     level: 'error' | 'status' | 'info' | 'idle';
+    lastStatus?: string;
+    lastLevel?: string;
 }
 
 const botStyle = {
@@ -59,13 +61,23 @@ const statusColor = (level: string) => {
     }
 };
 
+const getLastStatus = (uuid: string): Status => {
+    const item = JSON.parse(localStorage.getItem(uuid) as string);
+    return item ? item : { lastStatus: 'Idle', lastLevel: 'idle' };
+};
+
 const Bot = (props: any) => {
     const { uuid, store, keyword, startdate, starttime, profile, sizes, proxyset, quantity, monitordelay, retrydelay, deleteBot, style } = props;
+
+    const [status, setStatus] = useState(() => getLastStatus(uuid).lastStatus as string);
+    const [running, setRunning] = useState(false);
+    const [statusLevel, setStatusLevel] = useState(() => getLastStatus(uuid).lastLevel as string);
 
     const registerTaskStatusListener = () => {
         ipcRenderer.on(uuid, (event, status: Status) => {
             setStatus((prevStatus) => (prevStatus = status.status));
             setStatusLevel((prevLevel) => (prevLevel = status.level));
+            localStorage.setItem(uuid, JSON.stringify({ lastStatus: status.status, lastLevel: status.level }));
         });
     };
 
@@ -75,14 +87,9 @@ const Bot = (props: any) => {
     };
 
     useEffect(() => {
-        console.log('use effect runnin');
         registerTaskStatusListener();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
-    const [status, setStatus] = useState('Idle');
-    const [running, setRunning] = useState(false);
-    const [statusLevel, setStatusLevel] = useState('idle');
 
     const stopTask = () => {
         // console.log('remove all listeners');

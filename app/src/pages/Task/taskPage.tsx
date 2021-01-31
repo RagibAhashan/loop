@@ -1,83 +1,70 @@
-import { Layout, Space, Tabs } from 'antd';
-import React from 'react';
-import Store from './task';
-// import Store from './TaskSideBar';
+import { Button, Layout, Select, Tabs } from 'antd';
+import Modal from 'antd/lib/modal/Modal';
+import React, { useState } from 'react';
+import { STORES } from '../../constants';
+import Store from './Store';
+const { TabPane } = Tabs;
+const { Header } = Layout;
+const { Option } = Select;
 
 const text = 'Are you sure to delete this store?\nAll running tasks will be terminated.';
 
+interface Pane {
+    title: string;
+    key: string;
+}
+
+const getStores = (): Pane[] => {
+    const stores = JSON.parse(localStorage.getItem('stores') as string) as Pane[];
+    return stores ? stores : [];
+};
+
 const TaskPage = () => {
-    const { TabPane } = Tabs;
+    const [panes, setPanes] = useState(() => getStores());
+    const [isStoreModalVisible, setStoreModalVisible] = useState(false);
+    const [storeName, setStoreName] = useState('');
 
-    const columns = [
-        {
-            title: 'Store',
-            dataIndex: 'name',
-            key: 'name',
-            render: (text: any) => <a>{text}</a>,
-        },
-        {
-            title: 'Product',
-            dataIndex: 'age',
-            key: 'age',
-        },
-        {
-            title: 'Size',
-            dataIndex: 'address',
-            key: 'address',
-        },
-        {
-            title: 'Profile',
-            dataIndex: 'address',
-            key: 'address',
-        },
-        {
-            title: 'Proxy Set',
-            dataIndex: 'address',
-            key: 'address',
-        },
-        {
-            title: 'Status',
-            dataIndex: 'address',
-            key: 'address',
-        },
-        {
-            title: 'Action',
-            key: 'action',
-            render: (text: any, record: any) => (
-                <Space size="middle">
-                    <a>Invite {record.name}</a>
-                    <a>Delete</a>
-                </Space>
-            ),
-        },
-    ];
+    const addStore = () => {
+        if (!storeName) return;
+        setStoreModalVisible(false);
+        const newPane: Pane = { title: storeName, key: storeName };
+        panes.push(newPane); // for some reason this is updating the state idk why wtf
+        // setPanes((old) => [...old, ...panes]); // and this is not working wtffffffffffffffffff
+        localStorage.setItem('stores', JSON.stringify(panes));
+    };
 
-    function callback(key: any) {
-        console.log(key);
-    }
+    const openStoreModal = () => {
+        setStoreModalVisible(true);
+    };
 
-    const onChange = () => {};
+    const onStoreSelect = (name: string) => {
+        setStoreName((prevName) => (prevName = name));
+    };
 
-    const { Sider, Content, Header } = Layout;
+    const addMenu = <Button onClick={() => openStoreModal()}> Add Store </Button>;
 
     return (
         <div style={{ padding: 24, backgroundColor: '#212427', height: '100vh' }}>
             <Layout>
-                <Header>Tasks</Header>
+                <Header>
+                    <p style={{ fontSize: 30 }}>Tasks</p>
+                </Header>
             </Layout>
-            <Tabs defaultActiveKey="1" onChange={callback} style={{ padding: '0 50px' }}>
-                <TabPane tab="Footlocker" key="1">
-                    <Store />
-                </TabPane>
-
-                <TabPane tab="Footlocker" key="2">
-                    <Store />
-                </TabPane>
-
-                <TabPane tab="Nike" key="3">
-                    <Store />
-                </TabPane>
+            <Tabs style={{ marginTop: 10 }} defaultActiveKey="1" tabBarExtraContent={addMenu}>
+                {panes.map((pane) => (
+                    <TabPane tab={pane.title} key={pane.key}>
+                        <Store storeName={pane.title} />
+                    </TabPane>
+                ))}
             </Tabs>
+
+            <Modal title="Add Store" visible={isStoreModalVisible} onOk={addStore} onCancel={() => setStoreModalVisible(false)}>
+                <Select placeholder="Select Store" onChange={onStoreSelect} style={{ width: 200, margin: 'auto' }}>
+                    {STORES.map((store) => (
+                        <Option value={store}> {store} </Option>
+                    ))}
+                </Select>
+            </Modal>
         </div>
     );
 };

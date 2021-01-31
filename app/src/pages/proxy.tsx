@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Row, Col, Form, Input, Table, Modal, Select, Space, Card, message, Upload, Layout, Menu, Tabs, Button } from 'antd';
 import { DeleteTwoTone, InboxOutlined, PlusOutlined } from '@ant-design/icons';
-import { green } from '@material-ui/core/colors';
+import { Col, Form, Input, Layout, message, Modal, Row, Select, Space, Table, Tabs, Upload } from 'antd';
+import React, { useEffect, useState } from 'react';
 
 const { Header, Content } = Layout;
 
@@ -10,7 +9,7 @@ const ProxyPage = () => {
 
     const [visibleAdd, setVisibleAdd] = useState(false);
     const [visibleDelete, setVisibleDelete] = useState(false);
-    const [deleteSelection, setDeleteSelection] = useState([''])
+    const [deleteSelection, setDeleteSelection] = useState(['']);
 
     const onAdd = (values: any) => {
         const name = values.name;
@@ -19,8 +18,8 @@ const ProxyPage = () => {
 
         // Check if already exists
         if (proxies.get(name)) {
-          message.error(`Proxy Set "${name}" already exists!`);
-          return null;
+            message.error(`Proxy Set "${name}" already exists!`);
+            return null;
         }
 
         // Read file
@@ -28,7 +27,7 @@ const ProxyPage = () => {
         reader.onload = (e) => {
             // called after readAsText
             proxyArray.push(e.target?.result);
-            setProxies(proxies.set(name, proxyArray[0].split("\n")));
+            setProxies(proxies.set(name, proxyArray[0].split('\n')));
             localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())));
             forceUpdate();
             setVisibleAdd(false);
@@ -36,16 +35,16 @@ const ProxyPage = () => {
         reader.readAsText(files[0].originFileObj);
     };
 
-    const onDelete = (values:any) => {
+    const onDelete = (values: any) => {
         const arraySetToDelete = values.proxies;
         console.log(proxies);
-        arraySetToDelete.forEach((name: any)=>{
+        arraySetToDelete.forEach((name: any) => {
             proxies.delete(name);
             setProxies(proxies);
             localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())));
-        })
+        });
         setVisibleDelete(false);
-    }
+    };
 
     useEffect(() => {
         let db_proxies: any = localStorage.getItem('proxies');
@@ -79,89 +78,111 @@ const ProxyPage = () => {
     const forceUpdate = useForceUpdate();
 
     const CollectionCreateFormAdd = ({ visible, onCreate, onCancel }: any) => {
-      const [form] = Form.useForm();
-      return (
-        <Modal visible={visible} title="Create a new set" okText="Create" cancelText="Cancel" onCancel={onCancel}
-          onOk={() => { form.validateFields().then((values) => { form.resetFields(); onCreate(values);})
-              .catch((info) => {
-                console.log('Validate Failed:', info);
-              });
-          }}
-        >
-            <Form form={form} layout="vertical" name="form_in_modal"
-              initialValues={{
-                  modifier: 'public',
-              }}
+        const [form] = Form.useForm();
+        return (
+            <Modal
+                visible={visible}
+                title="Create a new set"
+                okText="Create"
+                cancelText="Cancel"
+                onCancel={onCancel}
+                onOk={() => {
+                    form.validateFields()
+                        .then((values) => {
+                            form.resetFields();
+                            onCreate(values);
+                        })
+                        .catch((info) => {
+                            console.log('Validate Failed:', info);
+                        });
+                }}
             >
-              <Form.Item name="name" label="Name" rules={[{required: true,    message: 'Please input the name of the set to add!',},]}>
-                <Input placeholder="Input set same" />
-              </Form.Item>
-              <Form.Item name="proxies" label="Proxies" rules={[{required: true, message: 'Please input the list of proxiesto add!',},]}>
-                <Dragger {...prop}>
-                  <p className="ant-upload-drag-icon">
-                      <InboxOutlined />
-                  </p>
-                  <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                  <p className="ant-upload-hint">Make sure that your list of proxies is separated by new lines!</p>
-                </Dragger>
-                    {/* <Input type="textarea" placeholder="Copy Paste your list of proxies"/> */}
-              </Form.Item>
-            </Form>
-        </Modal>
-      );
+                <Form
+                    form={form}
+                    layout="vertical"
+                    name="form_in_modal"
+                    initialValues={{
+                        modifier: 'public',
+                    }}
+                >
+                    <Form.Item name="name" label="Name" rules={[{ required: true, message: 'Please input the name of the set to add!' }]}>
+                        <Input placeholder="Input set same" />
+                    </Form.Item>
+                    <Form.Item name="proxies" label="Proxies" rules={[{ required: true, message: 'Please input the list of proxiesto add!' }]}>
+                        <Dragger {...prop}>
+                            <p className="ant-upload-drag-icon">
+                                <InboxOutlined />
+                            </p>
+                            <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                            <p className="ant-upload-hint">Make sure that your list of proxies is separated by new lines!</p>
+                        </Dragger>
+                        {/* <Input type="textarea" placeholder="Copy Paste your list of proxies"/> */}
+                    </Form.Item>
+                </Form>
+            </Modal>
+        );
     };
 
     const OPTIONS = () => {
-        let setSelection: any = []
-        proxies.forEach((value, key, map)=> {
+        let setSelection: any = [];
+        proxies.forEach((value, key, map) => {
             setSelection.push(key);
-        })
-       return(
-         setSelection
-       );
-    }
-
-    const handleChange = (selectedItems: any) => {
-
+        });
+        return setSelection;
     };
+
+    const handleChange = (selectedItems: any) => {};
 
     const CollectionCreateFormDelete = ({ visible, onCreate, onCancel }: any) => {
         const [form] = Form.useForm();
         const optionsArray = OPTIONS();
-        const filteredOptions = optionsArray.filter((o:any) => !deleteSelection.includes(o));
+        const filteredOptions = optionsArray.filter((o: any) => !deleteSelection.includes(o));
         return (
-          <Modal visible={visible} title="Remove an existing set" okText="Create" cancelText="Cancel" onCancel={onCancel}
-            // footer={[<Button type="primary" key="1"> Remove </Button>]}
-            onOk={() => { form.validateFields().then((values) => { form.resetFields(); onCreate(values);})
-                .catch((info) => {
-                  console.log('Validate Failed:', info);
-                });
-            }}
-          >
-              <Form form={form} layout="vertical" name="form_in_modal"
-                initialValues={{
-                    modifier: 'public',
+            <Modal
+                visible={visible}
+                title="Remove an existing set"
+                okText="Create"
+                cancelText="Cancel"
+                onCancel={onCancel}
+                // footer={[<Button type="primary" key="1"> Remove </Button>]}
+                onOk={() => {
+                    form.validateFields()
+                        .then((values) => {
+                            form.resetFields();
+                            onCreate(values);
+                        })
+                        .catch((info) => {
+                            console.log('Validate Failed:', info);
+                        });
                 }}
-              >
-                <Form.Item name="proxies" label="Sets" rules={[{required: true, message: 'Please choose a set to delete!',},]}>
-                  <Select
-                      mode="multiple"
-                      placeholder="Choose sets to remove"
-                      value={deleteSelection}
-                      onChange={ handleChange }
-                      style={{ width: '100%' }}
-                  >
-                      {filteredOptions.map((item: any) => (
-                      <Select.Option key={item} value={item}>
-                          {item}
-                      </Select.Option>
-                      ))}
-                  </Select>
-                </Form.Item>
-              </Form>
-          </Modal>
+            >
+                <Form
+                    form={form}
+                    layout="vertical"
+                    name="form_in_modal"
+                    initialValues={{
+                        modifier: 'public',
+                    }}
+                >
+                    <Form.Item name="proxies" label="Sets" rules={[{ required: true, message: 'Please choose a set to delete!' }]}>
+                        <Select
+                            mode="multiple"
+                            placeholder="Choose sets to remove"
+                            value={deleteSelection}
+                            onChange={handleChange}
+                            style={{ width: '100%' }}
+                        >
+                            {filteredOptions.map((item: any) => (
+                                <Select.Option key={item} value={item}>
+                                    {item}
+                                </Select.Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                </Form>
+            </Modal>
         );
-      };
+    };
 
     const { Dragger } = Upload;
 
@@ -228,13 +249,11 @@ const ProxyPage = () => {
 
     const { TabPane } = Tabs;
 
-    function callback(key: any) {
-    
-    }
+    function callback(key: any) {}
 
     const Sets = () => (
-        <Tabs defaultActiveKey="1"  onChange={callback} style={{ padding: '20px 50px' }}>
-            { TabPanes() }
+        <Tabs defaultActiveKey="1" onChange={callback} style={{ padding: '20px 50px' }}>
+            {TabPanes()}
         </Tabs>
     );
 
@@ -243,20 +262,20 @@ const ProxyPage = () => {
         if (!proxies.size) return [];
         let i = 0;
         return proxyArray.map((value) => {
-            return ([
-              <TabPane tab={value.name} key={++i}>
-                <Table columns={columns} pagination={{ pageSize: 8 }} dataSource={ShowData(value.name)} onChange={onChange} />
-              </TabPane>
-            ]);
+            return [
+                <TabPane tab={value.name} key={++i}>
+                    <Table columns={columns} pagination={{ pageSize: 8 }} dataSource={ShowData(value.name)} onChange={onChange} />
+                </TabPane>,
+            ];
         });
-    }
+    };
 
-    const ShowData = (name:string) => {
-        let data: any = []
-        let tempProxies: any = []
+    const ShowData = (name: string) => {
+        let data: any = [];
+        let tempProxies: any = [];
         tempProxies = proxies.get(name);
         let id = 0;
-        tempProxies.forEach((value: any)=> {
+        tempProxies.forEach((value: any) => {
             var fields = value.split(':');
             var ip = fields[0];
             var port = fields[1];
@@ -266,13 +285,11 @@ const ProxyPage = () => {
                 port: port,
                 status: 'Testing...',
                 action: '',
-            }
+            };
             data.push(dataRow);
-        })
-       return(
-         data
-       );
-  };
+        });
+        return data;
+    };
 
     return (
         <Layout style={{ padding: 24, backgroundColor: '#212427', height: '1000vh' }}>
@@ -283,14 +300,32 @@ const ProxyPage = () => {
                     </Col>
                     <Col span={22} style={{ textAlign: 'right' }}>
                         <div>
-                            <PlusOutlined 
-                                style={{color:'green', fontSize: 30}} 
-                                onClick={() => { setVisibleAdd(true);}}/>
-                            <CollectionCreateFormAdd visible={visibleAdd} onCreate={onAdd} onCancel={() => { setVisibleAdd(false); }} />
-                            <DeleteTwoTone 
-                                style={{color:'orange', fontSize: 30, marginTop:15, marginLeft:15}} 
-                                onClick={() => { setVisibleDelete(true);}}/>
-                            <CollectionCreateFormDelete visible={visibleDelete} onCreate={onDelete} onCancel={() => { setVisibleDelete(false); }} />
+                            <PlusOutlined
+                                style={{ color: 'green', fontSize: 30 }}
+                                onClick={() => {
+                                    setVisibleAdd(true);
+                                }}
+                            />
+                            <CollectionCreateFormAdd
+                                visible={visibleAdd}
+                                onCreate={onAdd}
+                                onCancel={() => {
+                                    setVisibleAdd(false);
+                                }}
+                            />
+                            <DeleteTwoTone
+                                style={{ color: 'orange', fontSize: 30, marginTop: 15, marginLeft: 15 }}
+                                onClick={() => {
+                                    setVisibleDelete(true);
+                                }}
+                            />
+                            <CollectionCreateFormDelete
+                                visible={visibleDelete}
+                                onCreate={onDelete}
+                                onCancel={() => {
+                                    setVisibleDelete(false);
+                                }}
+                            />
                         </div>
                     </Col>
                 </Row>
