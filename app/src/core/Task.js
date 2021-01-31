@@ -37,6 +37,10 @@ class Task extends EventEmitter {
 
     async execute() {
         try {
+            this.on('stop', () => {
+                console.log('got stop task !!!!');
+                throw new Error('Task Canceled');
+            });
             await this.getSessionTokens();
             this.productCode = await this.getProductCode();
             await this.addToCart();

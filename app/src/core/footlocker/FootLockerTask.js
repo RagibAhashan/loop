@@ -39,29 +39,29 @@ class FootLockerTask extends Task {
             try {
                 this.emit('status', { status: msgs.CHECKING_SIZE_INFO_MESSAGE, level: 'info' });
 
-                const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
-                const sellableUnits = response.data['sellableUnits'];
-                const variantAttributes = response.data['variantAttributes'];
+                // const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
+                // const sellableUnits = response.data['sellableUnits'];
+                // const variantAttributes = response.data['variantAttributes'];
 
-                const { code: styleCode } = variantAttributes.find((attr) => attr.sku === this.productSKU);
+                // const { code: styleCode } = variantAttributes.find((attr) => attr.sku === this.productSKU);
 
-                const inStockUnits = sellableUnits.filter(
-                    (unit) => unit.stockLevelStatus === 'inStock' && unit.attributes.some((attr) => attr.id === styleCode && attr.type === 'style'),
-                );
+                // const inStockUnits = sellableUnits.filter(
+                //     (unit) => unit.stockLevelStatus === 'inStock' && unit.attributes.some((attr) => attr.id === styleCode && attr.type === 'style'),
+                // );
 
-                for (const size of this.sizes) {
-                    for (const unit of inStockUnits) {
-                        for (const attr of unit.attributes) {
-                            if (attr.type === 'size' && parseFloat(attr.value) === size) {
-                                retry = false; // not needed
-                                return attr.id;
-                            }
-                        }
-                    }
-                }
-
-                this.emit('status', { status: msgs.CHECKING_SIZE_RETRY_MESSAGE, level: 'error' });
-                await this.waitError();
+                // for (const size of this.sizes) {
+                //     for (const unit of inStockUnits) {
+                //         for (const attr of unit.attributes) {
+                //             if (attr.type === 'size' && parseFloat(attr.value) === size) {
+                //                 retry = false; // not needed
+                //                 return attr.id;
+                //             }
+                //         }
+                //     }
+                // }
+                // this.emit('status', { status: msgs.CHECKING_SIZE_RETRY_MESSAGE, level: 'error' });
+                // await this.waitError();
+                return '';
             } catch (error) {
                 this.emit('status', { status: msgs.CHECKING_SIZE_ERROR_MESSAGE, level: 'error' });
                 await this.waitError();

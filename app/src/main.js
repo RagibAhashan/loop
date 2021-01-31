@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { CAPTCHA_ROUTE } = require('./common/Constants');
+const taskManager = require('./core/TaskManager');
 function createWindow() {
     const win = new BrowserWindow({
         width: 1700,
@@ -90,6 +91,8 @@ ipcMain.on('start-task', (event, uuid) => {
     fl.execute();
 });
 
-ipcMain.on('stop-task', () => {
-    console.log('stopping tasks !');
+ipcMain.on('stop-task', (event, uuid) => {
+    console.log('trying to stop task', uuid, 'from', taskManager.tasks);
+
+    taskManager.getTask(uuid).emit('stop');
 });
