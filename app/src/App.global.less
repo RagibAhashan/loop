@@ -3,6 +3,14 @@
 // @import 'dynasty-dark.less';
 @import 'react-credit-cards/es/styles-compiled.css';
 
+html,
+body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    flex: auto;
+}
+
 /* https://stackoverflow.com/questions/15831657/creating-css-global-variables-stylesheet-theme-management */
 :root {
     --siderColor: #282c31;
@@ -182,15 +190,6 @@ table:first-child tr td:last-child {
     height: 60px;
     padding: 10px;
     border: 0.3px solid var(--defaultThemeColor);
-}
-
-
-html,
-body {
-    margin: 0;
-    height: 100%;
-    overflow: hidden;
-    flex: auto;
 }
 
 /* sidebar */

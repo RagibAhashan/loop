@@ -5,7 +5,7 @@ class TaskManager {
     }
 
     getTask(uuid) {
-        this.tasks.get(uuid);
+        return this.tasks.get(uuid);
     }
 
     register(uuid, task) {

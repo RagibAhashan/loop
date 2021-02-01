@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { CAPTCHA_ROUTE } = require('./common/Constants');
+const taskFactory = require('./core/TaskFactory');
 const taskManager = require('./core/TaskManager');
 function createWindow() {
     const win = new BrowserWindow({
@@ -64,35 +65,36 @@ if (process.platform === 'darwin') {
 // IPC EVENTS
 ipcMain.on('start-task', (event, uuid) => {
     console.log('starting taks !');
-    const { FOOTLOCKER_CA_HEADERS } = require('./core/constants/Constants');
     const { UserProfile, CreditCard } = require('./core/interface/UserProfile');
-    const { RequestInstance } = require('./core/RequestInstance');
-    const { FootLockerTask } = require('./core/footlocker/FootLockerTask');
     const userProfile = new UserProfile('test@gmail.com', '', '', '', '', '', '', '', '', new CreditCard('', '', '', '', ''));
-    const axios = new RequestInstance('http://localhost:3200/api', { timestamp: Date.now() }, FOOTLOCKER_CA_HEADERS);
-    const fl = new FootLockerTask(
+
+    const flTask = taskFactory.createFootlockerCA(
+        uuid,
         'https://www.footlocker.ca/en/product/nike-air-force-1-low-mens/4101086.html',
         '4101086',
         [8.5],
-        'deviceid',
-        axios,
+        'deviceId',
         userProfile,
         3500,
     );
 
-    fl.on('status', (message) => {
+    flTask.on('status', (message) => {
         event.reply(uuid, message);
     });
 
-    fl.on('captcha', (url) => {
+    flTask.on('captcha', (url) => {
         event.reply(uuid + 'captcha', url);
     });
 
-    fl.execute();
+    flTask.execute();
 });
 
-ipcMain.on('stop-task', (event, uuid) => {
-    console.log('trying to stop task', uuid, 'from', taskManager.tasks);
+ipcMain.on('stop-task', async (event, uuid) => {
+    try {
+        const currentTask = taskManager.getTask(uuid);
 
-    taskManager.getTask(uuid).emit('stop');
+        currentTask.emit('stop');
+    } catch (error) {
+        console.log('TASK GOT CANCELLED !!!');
+    }
 });

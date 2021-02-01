@@ -1,5 +1,6 @@
 const EventEmitter = require('events');
 const { CookieJar } = require('./CookieJar');
+const msgs = require('./constants/Constants');
 
 class Task extends EventEmitter {
     constructor(productLink, productSKU, sizes, deviceId, requestInstance, userProfile) {
@@ -37,10 +38,6 @@ class Task extends EventEmitter {
 
     async execute() {
         try {
-            this.on('stop', () => {
-                console.log('got stop task !!!!');
-                throw new Error('Task Canceled');
-            });
             await this.getSessionTokens();
             this.productCode = await this.getProductCode();
             await this.addToCart();
@@ -48,6 +45,12 @@ class Task extends EventEmitter {
             await this.setShipping();
             await this.setBilling();
             await this.placeOrder();
+
+            this.on('stop', async () => {
+                console.log('cancelling that shit');
+                this.emit('status', { status: msgs.CANCELED_MESSAGE, level: 'error' });
+                throw new Error('Canceled');
+            });
         } catch (err) {
             console.log('error', err);
         }

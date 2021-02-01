@@ -26,8 +26,8 @@ class FootLockerTask extends Task {
                 const csrf = response.data['data']['csrfToken'];
                 this.cookieJar.set(csrf, Cookie.CSRF);
             } catch (error) {
-                this.emit('status', { status: msgs.SESSION_ERROR_MESSAGE, level: 'error' });
-                await new Promise((r) => setTimeout(r, ERROR_MESSAGE_DELAY));
+                console.log('GOT CANCEL ERROR ?');
+                await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
                 retry = true;
             }
         } while (retry);
@@ -63,8 +63,7 @@ class FootLockerTask extends Task {
                 // await this.waitError();
                 return '';
             } catch (error) {
-                this.emit('status', { status: msgs.CHECKING_SIZE_ERROR_MESSAGE, level: 'error' });
-                await this.waitError();
+                await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
                 retry = true;
             }
         } while (retry);
@@ -125,8 +124,7 @@ class FootLockerTask extends Task {
                     // if (!receivedDatadome) throw new Error('Timeout exceeded - Captcha not solved');
                 } else {
                     // console.log('Add to cart failed', err.response.status);
-                    this.emit('status', { status: msgs.ADD_CART_ERROR_MESSAGE, level: 'error' });
-                    await this.waitError(this.retryDelay);
+                    await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error');
                 }
                 retry = true;
             }
@@ -143,8 +141,7 @@ class FootLockerTask extends Task {
 
                 await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.email}`, {}, { headers: headers });
             } catch (error) {
-                this.emit('status', { status: msgs.EMAIL_ERROR_MESSAGE, level: 'error' });
-                await this.waitError();
+                await this.emitStatus(msgs.EMAIL_ERROR_MESSAGE, 'error');
                 retry = true;
             }
         } while (retry);
@@ -162,8 +159,7 @@ class FootLockerTask extends Task {
 
                 await this.axiosSession.post('/users/carts/current/addresses/shipping', body, { headers: headers });
             } catch (error) {
-                this.emit('status', { status: msgs.SHIPPING_ERROR_MESSAGE, level: 'error' });
-                await this.waitError();
+                await this.emitStatus(msgs.SHIPPING_ERROR_MESSAGE, 'error');
                 retry = true;
             }
         } while (retry);
@@ -181,8 +177,7 @@ class FootLockerTask extends Task {
 
                 await this.axiosSession.post('/users/carts/current/set-billing', body, { headers: headers });
             } catch (error) {
-                this.emit('status', { status: msgs.BILLING_ERROR_MESSAGE, level: 'error' });
-                await this.waitError();
+                await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
                 retry = true;
             }
         } while (retry);

@@ -1,13 +1,11 @@
 import { Button, Col, Divider, Row, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { FixedSizeList } from 'react-window';
+import { TaskData } from '../../interfaces/TaskInterfaces';
 import Bot from './Bot';
 import NewTaskModal from './newTaskModal';
-
 const { ipcRenderer } = window.require('electron');
-
 const { v4: uuid } = require('uuid');
-
 const { Option } = Select;
 
 const colStyle = {
@@ -40,70 +38,19 @@ for (let i = 4; i < 14; i += 0.5) {
     );
 }
 
-interface Job {
-    uuid: string;
-    store: string;
-    keyword: string;
-    startdate: string;
-    starttime: string;
-    profile: string;
-    sizes: Array<string>;
-    proxyset: string;
-    quantity: string;
-    monitordelay: number;
-    retrydelay: number;
-}
-
 const Store = (props: any) => {
-    const getTasks = (): Job[] => {
-        const tasks = JSON.parse(localStorage.getItem(storeName) as string) as Job[];
+    const getTasks = (): TaskData[] => {
+        const tasks = JSON.parse(localStorage.getItem(storeName) as string) as TaskData[];
         return tasks ? tasks : [];
     };
 
     const { storeName } = props;
     const [jobs, setJobs] = useState(() => getTasks());
     const [taskModalVisible, setTaskModalVisible] = useState(false);
-    const [proxies, setProxies] = useState([]);
-    const [profiles, setProfiles] = useState([]);
 
     useEffect(() => {
-        setProxies(getProxies());
-        setProfiles(getProfiles());
         getTasks();
     }, []);
-
-    const getProfiles = () => {
-        const profilesTemp: any = [];
-        let profs: any = localStorage.getItem('profiles');
-
-        if (profs) {
-            profs = JSON.parse(profs);
-            if (profs) {
-                profs.map((p: any) => {
-                    profilesTemp.push({
-                        label: p['profile'],
-                        value: p,
-                    });
-                });
-            }
-        }
-
-        return profilesTemp;
-    };
-
-    const getProxies = (): any => {
-        const proxiesOptions: any = [{ label: 'localhost', value: 'localhost' }];
-        let prox: any = JSON.parse(localStorage.getItem('proxies') as string);
-        if (prox) {
-            prox.forEach((set: any) => {
-                proxiesOptions.push({
-                    label: `${set[0]} (${set[1].length} proxies)`,
-                    value: `${set[0]}`,
-                });
-            });
-        }
-        return proxiesOptions;
-    };
 
     const deleteBot = (uuid: string) => {
         localStorage.removeItem(uuid);
@@ -113,7 +60,11 @@ const Store = (props: any) => {
                 break;
             }
         }
-        setJobs(() => [...jobs]);
+        setJobs(() => {
+            const newJobs = [...jobs];
+            localStorage.setItem(storeName, JSON.stringify(newJobs));
+            return newJobs;
+        });
     };
 
     const openCaptcha = () => {
@@ -122,49 +73,26 @@ const Store = (props: any) => {
     const Headers = () => {
         return (
             <Row style={botStyle}>
-                <Col span={3} style={colStyle}>
-                    Product
-                </Col>
+                <Col span={4}>Product</Col>
 
-                <Col span={2} style={colStyle}>
-                    Proxy
-                </Col>
+                <Col span={4}>Proxy</Col>
 
-                <Col span={3} style={colStyle}>
-                    Profile
-                </Col>
+                <Col span={4}>Profile</Col>
 
-                <Col span={7} style={colStyle}>
-                    Sizes
-                </Col>
+                <Col span={4}>Sizes</Col>
 
-                <Col span={3} style={colStyle}>
-                    Status
-                </Col>
+                <Col span={4}>Status</Col>
 
-                <Col span={3} style={colStyle}>
-                    Actions
-                </Col>
+                <Col span={4}>Actions</Col>
             </Row>
         );
     };
 
     const addTasks = (data: any) => {
-        let temp: Job[] = [];
-        for (let i = 0; i < Number(data['task'].quantity); i++) {
-            temp.push({
-                uuid: uuid(),
-                store: 'Footlocker',
-                keyword: data['task'].keyword,
-                startdate: data['task'].startdate,
-                starttime: data['task'].starttime,
-                profile: data['task'].profile,
-                sizes: data['task'].sizes,
-                proxyset: data['task'].proxyset,
-                quantity: data['task'].quantity,
-                monitordelay: data['task'].monitordelay,
-                retrydelay: data['task'].retrydelay,
-            });
+        const task: TaskData = data.task;
+        let temp: TaskData[] = [];
+        for (let i = 0; i < task.quantity; i++) {
+            temp.push({ ...task, uuid: uuid(), store: storeName });
         }
 
         setJobs((oldJobs) => {
@@ -176,13 +104,9 @@ const Store = (props: any) => {
         setTaskModalVisible(false);
     };
 
-    const cancelModal = () => {
-        setTaskModalVisible(false);
-    };
-
     const deleteAllTasks = () => {
         jobs.forEach((job) => localStorage.removeItem(job.uuid));
-        setJobs(() => new Array<Job>());
+        setJobs(() => new Array<TaskData>());
         localStorage.removeItem(storeName);
     };
 
@@ -195,7 +119,7 @@ const Store = (props: any) => {
                 key={jobs[index].uuid}
                 uuid={jobs[index].uuid}
                 store={jobs[index].store}
-                keyword={jobs[index].keyword}
+                productLink={jobs[index].productLink}
                 startdate={jobs[index].startdate}
                 starttime={jobs[index].starttime}
                 profile={jobs[index].profile}
@@ -248,13 +172,7 @@ const Store = (props: any) => {
                 </Col>
             </Row>
 
-            <NewTaskModal
-                visible={taskModalVisible}
-                store={storeName}
-                addTasks={addTasks}
-                cancelTaskModal={() => setTaskModalVisible(false)}
-                proxies={proxies}
-            />
+            <NewTaskModal visible={taskModalVisible} store={storeName} addTasks={addTasks} cancelTaskModal={() => setTaskModalVisible(false)} />
         </div>
     );
 };
