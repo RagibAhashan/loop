@@ -1,4 +1,4 @@
-import { DeleteTwoTone, InboxOutlined, PlusOutlined, CloseOutlined } from '@ant-design/icons';
+import { DeleteFilled, InboxOutlined, PlusOutlined, CloseOutlined, PoweroffOutlined } from '@ant-design/icons';
 import { Col, Button, Form, Input, Layout, message, Modal, Row, Select, Space, Table, Tabs, Upload } from 'antd';
 import React, { useEffect, useState } from 'react';
 
@@ -241,9 +241,9 @@ const ProxyPage = () => {
             title: 'Action',
             key: 'action',
             render: (text: any, record: any) => (
-                <Space size="middle">
-                    <a>Test</a>
-                    <Button shape="circle" type="primary" size={'small'} icon={<CloseOutlined />} />
+                <Space size="large">
+                    <PoweroffOutlined style={{color: 'green', fontSize:16}}/>
+                    <DeleteFilled twoToneColor={'orange'} style={{color: 'orange',fontSize:18}}/>
                 </Space>
             ),
         },
@@ -256,9 +256,11 @@ const ProxyPage = () => {
     function callback(key: any) {}
 
     const Sets = () => (
-        <Tabs defaultActiveKey="1" onChange={callback} style={{ padding: '20px 50px' }}>
+        <div>
+        <Tabs defaultActiveKey="1" onChange={callback} style={{ padding: '20px 50px' }} tabBarExtraContent={AddRemoveSets}>
             {TabPanes()}
         </Tabs>
+        </div>
     );
 
     const TabPanes = () => {
@@ -269,7 +271,8 @@ const ProxyPage = () => {
             return [
                 <TabPane tab={value.name} key={++i}>
                     <Table columns={columns} pagination={{ pageSize: 8 }} dataSource={ShowData(value.name)} onChange={onChange} />
-                </TabPane>,
+                </TabPane>
+                ,
             ];
         });
     };
@@ -295,47 +298,41 @@ const ProxyPage = () => {
         return data;
     };
 
+    const AddRemoveSets = 
+        <div>
+            <PlusOutlined
+                style={{ color: 'green', fontSize: 30 }}
+                onClick={() => {
+                    setVisibleAdd(true);
+                }}
+            />
+            <CollectionCreateFormAdd
+                visible={visibleAdd}
+                onCreate={onAdd}
+                onCancel={() => {
+                    setVisibleAdd(false);
+                }}
+            />
+            <DeleteFilled
+                style={{ color: 'orange', fontSize: 30, marginTop: 15, marginLeft: 15 }}
+                onClick={() => {
+                    setVisibleDelete(true);
+                }}
+            />
+            <CollectionCreateFormDelete
+                visible={visibleDelete}
+                onCreate={onDelete}
+                onCancel={() => {
+                    setVisibleDelete(false);
+                }}
+            />
+        </div>
+    
+
     return (
         <Layout style={{ padding: 24, backgroundColor: '#212427', height: '1000vh' }}>
-            <Header>
-                <Row>
-                    <Col span={2} style={{ fontSize: 30 }}>
-                        Proxies
-                    </Col>
-                    <Col span={22} style={{ textAlign: 'right' }}>
-                        <div>
-                            <PlusOutlined
-                                style={{ color: 'green', fontSize: 30 }}
-                                onClick={() => {
-                                    setVisibleAdd(true);
-                                }}
-                            />
-                            <CollectionCreateFormAdd
-                                visible={visibleAdd}
-                                onCreate={onAdd}
-                                onCancel={() => {
-                                    setVisibleAdd(false);
-                                }}
-                            />
-                            <DeleteTwoTone
-                                style={{ color: 'orange', fontSize: 30, marginTop: 15, marginLeft: 15 }}
-                                onClick={() => {
-                                    setVisibleDelete(true);
-                                }}
-                            />
-                            <CollectionCreateFormDelete
-                                visible={visibleDelete}
-                                onCreate={onDelete}
-                                onCancel={() => {
-                                    setVisibleDelete(false);
-                                }}
-                            />
-                        </div>
-                    </Col>
-                </Row>
-            </Header>
             <Content>
-                <Sets />
+                <Sets /> 
             </Content>
         </Layout>
     );
