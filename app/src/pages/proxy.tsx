@@ -216,22 +216,26 @@ const ProxyPage = () => {
             title: 'ID',
             dataIndex: 'id',
             key: 'id',
-            render: (text: any) => <Button shape="circle" type="primary" icon={<CloseOutlined />} />,
+            width: '10%',
+            render: (text: any) => <a> { text } </a>,
         },
         {
             title: 'IP',
             dataIndex: 'ip',
             key: 'ip',
+            width: '25%',
         },
         {
             title: 'Port',
             dataIndex: 'port',
             key: 'port',
+            width: '25%',
         },
         {
             title: 'Status',
             key: 'status',
             dataIndex: 'status',
+            width: '25%',
         },
         {
             title: 'Action',
@@ -239,7 +243,7 @@ const ProxyPage = () => {
             render: (text: any, record: any) => (
                 <Space size="middle">
                     <a>Test</a>
-                    <a>Delete</a>
+                    <Button shape="circle" type="primary" size={'small'} icon={<CloseOutlined />} />
                 </Space>
             ),
         },
@@ -283,7 +287,7 @@ const ProxyPage = () => {
                 id: ++id,
                 ip: ip,
                 port: port,
-                status: 'Testing...',
+                status: 'None',
                 action: '',
             };
             data.push(dataRow);
