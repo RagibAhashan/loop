@@ -1,5 +1,5 @@
 import { DeleteFilled, InboxOutlined, PlusOutlined, PoweroffOutlined } from '@ant-design/icons';
-import { Form, Input, Layout, message, Modal, Divider, Select, Space, Table, Tabs, Upload } from 'antd';
+import { Form, Input, Layout, message, Modal, Divider, Select, Space, Table, Tabs, Upload, Button, Row, Col } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 const { Header, Content } = Layout;
@@ -8,11 +8,12 @@ const COPYPASTE = 2;
 
 const ProxyPage = () => {
     const [proxies, setProxies] = useState(new Map<string, []>()); // name -> proxies
+    let [currentTabName, setCurrentTabName] = useState('');
 
     const [visibleAdd, setVisibleAdd] = useState(false);
     const [visibleDelete, setVisibleDelete] = useState(false);
     const [deleteSelection, setDeleteSelection] = useState(['']);
-    let [tab, setTabKey] = useState(1);
+    let [tab, setTabKey] = useState(1); // for add popup to select between upload and copy pasta
 
     const onAdd = (values: any) => {
         const name = values.name;
@@ -120,11 +121,11 @@ const ProxyPage = () => {
                         modifier: 'public',
                     }}
                 >
-                    <Divider orientation={'left'} > Name </Divider>
+                    {/* <Divider orientation={'left'} > Name </Divider> */}
                     <Form.Item name="name" rules={[{ required: true, message: 'Please input the name of the set to add!' }]}>
                         <Input placeholder="Input set same" />
                     </Form.Item>
-                    <Divider orientation={'left'} > Proxies </Divider>
+                    {/* <Divider orientation={'left'} > Proxies </Divider> */}
                     <Form
                         form={form}
                         layout="vertical"
@@ -133,10 +134,10 @@ const ProxyPage = () => {
                             modifier: 'public',
                         }}
                      >   
-                            <Tabs defaultActiveKey="1" onChange={callback} style={{ backgroundColor: "#282c31", height:'275px'}}>
+                            <Tabs defaultActiveKey="1" onChange={callback} style={{ backgroundColor: "#282c31", height:'350px'}}>
                                 <TabPane tab={'Upload'} key={1}>
                                     <Form.Item name="uploadedProxies" rules={[{ required: false, message: 'Please input the list of proxies to add!' }]}>
-                                        <Dragger {...prop}>
+                                        <Dragger style={{padding: 40}} {...prop}>
                                             <p className="ant-upload-drag-icon">
                                                 <InboxOutlined />
                                             </p>
@@ -150,7 +151,7 @@ const ProxyPage = () => {
                                     <Form.Item name="copiedProxies" rules={[{ required: false, message: 'Please input the list of proxies to add!' }]}>
                                         <Input.TextArea
                                             rows={5}
-                                            autoSize={{maxRows:6, minRows:6}}
+                                            autoSize={{maxRows:10, minRows:10}}
                                             style={{height:'150px', backgroundColor:'rgba(40,44,41,0.5)'}} 
                                             placeholder={'Copy paste your proxies here \nMake sure that your proxies are separated by new lines!'}
                                         />                                    
@@ -288,12 +289,20 @@ const ProxyPage = () => {
             key: 'action',
             render: (text: any, record: any) => (
                 <Space size="large">
-                    <PoweroffOutlined style={{color: 'green', fontSize:16}}/>
-                    <DeleteFilled twoToneColor={'orange'} style={{color: 'orange',fontSize:18}}/>
+                    <PoweroffOutlined style={{color: 'green', fontSize:16}} onClick={testIndividual}/>
+                    <DeleteFilled twoToneColor={'orange'} style={{color: 'orange',fontSize:18}} onClick={deleteIndividual}/>
                 </Space>
             ),
         },
     ];
+
+    const testIndividual = () => {
+
+    }
+
+    const deleteIndividual = () => {
+
+    }
 
     const onChange = () => {};
 
@@ -301,9 +310,14 @@ const ProxyPage = () => {
 
     function callback(key: any) { tab = key;}
 
+    function tabClick(key: string, event: React.KeyboardEvent<Element> | React.MouseEvent<Element, MouseEvent>) { 
+        let tabName = (event.target as HTMLTextAreaElement).childNodes[0].textContent as string;
+        currentTabName = tabName;
+    }
+
     const Sets = () => (
         <div>
-        <Tabs defaultActiveKey="1" onChange={callback} style={{ padding: '20px 50px' }} tabBarExtraContent={AddRemoveSets}>
+        <Tabs defaultActiveKey="1" onChange={callback} style={{ padding: '10px 15px' }} onTabClick={tabClick} tabBarExtraContent={AddRemoveSets}>
             {TabPanes()}
         </Tabs>
         </div>
@@ -379,7 +393,33 @@ const ProxyPage = () => {
     return (
         <Layout style={{ padding: 24, backgroundColor: '#212427', height: '1000vh' }}>
             <Content>
-                <Sets /> 
+                <div> <Sets />  </div>
+                <div style={{padding:'10px 15px'}}>
+                    <div>
+                        <Button 
+                            icon={<PlusOutlined style={{color:'green'}}/>}
+                            style={{textAlign: 'center', float: 'left', paddingLeft: '35px', paddingRight: '35px'}} 
+                            type={'primary'}> 
+                            Add Proxies 
+                        </Button>  
+                    </div>
+                    <div>
+                        <Button 
+                            icon={<PoweroffOutlined style={{color:'green'}}/>}
+                            style={{textAlign: 'center', float: 'left', marginLeft:'40px', paddingLeft: '35px', paddingRight: '35px'}} 
+                            type={'primary'}> 
+                            Test All 
+                        </Button>  
+                    </div>
+                    <div>
+                        <Button 
+                            icon={<DeleteFilled style={{color:'orange'}}/>}
+                            style={{textAlign: 'center', float: 'right', paddingLeft: '35px', paddingRight: '35px'}} 
+                            type={'primary'}> 
+                            Delete All 
+                        </Button>  
+                    </div>
+                </div>
             </Content>
         </Layout>
     );
