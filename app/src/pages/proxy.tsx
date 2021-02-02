@@ -316,7 +316,7 @@ const ProxyPage = () => {
         return proxyArray.map((value) => {
             return [
                 <TabPane tab={value.name} key={++i}>
-                    <Table scroll={{ y: 570 }} columns={columns} pagination={ false } dataSource={ShowData(value.name)} onChange={onChange} />
+                    <Table scroll={{ y: 560 }} columns={columns} pagination={ false } dataSource={ShowData(value.name)} onChange={onChange} />
                 </TabPane>
                 ,
             ];
