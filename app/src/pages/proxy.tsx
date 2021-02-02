@@ -8,23 +8,34 @@ const COPYPASTE = 2;
 
 const ProxyPage = () => {
     const [proxies, setProxies] = useState(new Map<string, []>()); // name -> proxies
-    let [currentTabName, setCurrentTabName] = useState('');
+    let [currentTab, setCurrentTab] = useState({name: '', key: '1'});
 
-    const [visibleAdd, setVisibleAdd] = useState(false);
+    // Popups Visibility
+    const [visibleCreate, setVisibleCreate] = useState(false);
     const [visibleDelete, setVisibleDelete] = useState(false);
     const [deleteSelection, setDeleteSelection] = useState(['']);
+    const [visibleAdd, setVisibleAdd] = useState(false);
+
     let [tab, setTabKey] = useState(1); // for add popup to select between upload and copy pasta
 
-    const onAdd = (values: any) => {
+    const onCreate = (values:any) => {
         const name = values.name;
-        const proxyArray: any = [];
-        
         // Check if already exists
         if (proxies.get(name)) {
             message.error(`Proxy Set "${name}" already exists!`);
             return null;
+        } else {
+            setProxies(proxies.set(name, []));
+            localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())));
+            forceUpdate();
+            setVisibleCreate(false);
         }
-       
+    }
+
+    const onAdd = (values: any) => {
+        const name = currentTab.name;
+        const proxyArray: any = [];
+        
         if(tab == UPLOAD) {
             const files = values.uploadedProxies.fileList;
             // Read file
@@ -121,11 +132,6 @@ const ProxyPage = () => {
                         modifier: 'public',
                     }}
                 >
-                    {/* <Divider orientation={'left'} > Name </Divider> */}
-                    <Form.Item name="name" rules={[{ required: true, message: 'Please input the name of the set to add!' }]}>
-                        <Input placeholder="Input set same" />
-                    </Form.Item>
-                    {/* <Divider orientation={'left'} > Proxies </Divider> */}
                     <Form
                         form={form}
                         layout="vertical"
@@ -165,7 +171,43 @@ const ProxyPage = () => {
             </Modal>
         );
     };
-
+    const CollectionCreateFormCreate = ({ visible, onCreate, onCancel }: any) => {
+        const [form] = Form.useForm();
+        return (
+            <Modal
+                // footer={null}
+                visible={visible}
+                bodyStyle={{height: '50px', paddingTop: 5}}
+                title="Create a new set"
+                okText="Create"
+                cancelText="Cancel"
+                onCancel={onCancel}
+                onOk={() => {
+                    form.validateFields()
+                        .then((values) => {
+                            form.resetFields();
+                            onCreate(values);
+                        })
+                        .catch((info) => {
+                            console.log('Validate Failed:', info);
+                        });
+                }}
+            >
+                <Form
+                    form={form}
+                    layout="vertical"
+                    name="form_in_modal"
+                    initialValues={{
+                        modifier: 'public',
+                    }}
+                >
+                    <Form.Item name="name" rules={[{ required: true, message: 'Please input the name of the set to add!' }]}>
+                        <Input placeholder="Input set same" />
+                    </Form.Item>
+                </Form>
+            </Modal>
+        );
+    };
     const onCancel = () => {
         tab = 1; console.log('key: ' + tab);
     }
@@ -310,14 +352,17 @@ const ProxyPage = () => {
 
     function callback(key: any) { tab = key;}
 
-    function tabClick(key: string, event: React.KeyboardEvent<Element> | React.MouseEvent<Element, MouseEvent>) { 
+    function tabClick(key: string, event: React.KeyboardEvent<Element> | React.MouseEvent<Element, MouseEvent>) {
+        console.log((event.target as HTMLTextAreaElement).childNodes[0].textContent as string);
         let tabName = (event.target as HTMLTextAreaElement).childNodes[0].textContent as string;
-        currentTabName = tabName;
+        currentTab.name = tabName;
+        currentTab.key = key;
+        forceUpdate();
     }
 
     const Sets = () => (
         <div>
-        <Tabs defaultActiveKey="1" onChange={callback} style={{ padding: '10px 15px' }} onTabClick={tabClick} tabBarExtraContent={AddRemoveSets}>
+        <Tabs  activeKey={currentTab.key} defaultActiveKey="1" onChange={callback} style={{ padding: '10px 15px' }} onTabClick={tabClick} tabBarExtraContent={AddRemoveSets}>
             {TabPanes()}
         </Tabs>
         </div>
@@ -363,14 +408,14 @@ const ProxyPage = () => {
             <PlusOutlined
                 style={{ color: 'green', fontSize: 30 }}
                 onClick={() => {
-                    setVisibleAdd(true);
+                    setVisibleCreate(true);
                 }}
             />
-            <CollectionCreateFormAdd
-                visible={visibleAdd}
-                onCreate={onAdd}
+            <CollectionCreateFormCreate
+                visible={visibleCreate}
+                onCreate={onCreate}
                 onCancel={() => {
-                    setVisibleAdd(false);
+                    setVisibleCreate(false);
                     onCancel();
                 }}
             />
@@ -399,9 +444,18 @@ const ProxyPage = () => {
                         <Button 
                             icon={<PlusOutlined style={{color:'green'}}/>}
                             style={{textAlign: 'center', float: 'left', paddingLeft: '35px', paddingRight: '35px'}} 
-                            type={'primary'}> 
-                            Add Proxies 
-                        </Button>  
+                            type={'primary'}
+                            onClick={() => { setVisibleAdd(true)}}
+                            > 
+                            Add Proxies
+                        </Button> 
+                        <CollectionCreateFormAdd
+                            visible={visibleAdd}
+                            onCreate={onAdd}
+                            onCancel={() => {
+                                setVisibleAdd(false);
+                            }}
+                        />
                     </div>
                     <div>
                         <Button 
