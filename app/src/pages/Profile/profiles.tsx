@@ -156,9 +156,9 @@ const ProfilePage = () => {
                 <div style={{float: 'right'}}>
                     <CreateNewProfileModal onFinish={onFinish}/>
                 </div>
+                <Divider> My Profiles </Divider>
             <div style={{ padding: 24, backgroundColor: '#212427', display: 'flex', flexWrap: 'wrap'}}>
 
-                <Divider> My Profiles </Divider>
 
                 {isEditModalVisible ? 
                 
