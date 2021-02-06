@@ -1,6 +1,10 @@
-import { DeleteFilled, InboxOutlined, PlusOutlined, PoweroffOutlined } from '@ant-design/icons';
-import { Form, Input, Layout, message, Modal, Divider, Select, Space, Table, Tabs, Upload, Button, Row, Col } from 'antd';
+import { DeleteFilled, PlusOutlined, PoweroffOutlined } from '@ant-design/icons';
+import { Layout, message, Space, Table, Tabs, Upload, Button} from 'antd';
 import React, { useEffect, useState } from 'react';
+import { useVT } from 'virtualizedtableforantd4';
+import CollectionFormAdd from './Collections/Add'
+import CollectionFormCreate from './Collections/Create'
+import CollectionFormDelete from './Collections/Delete'
 
 const { Header, Content } = Layout;
 const UPLOAD = 1;
@@ -101,141 +105,12 @@ const ProxyPage = () => {
     }
     const forceUpdate = useForceUpdate();
 
-    const CollectionCreateFormAdd = ({ visible, onCreate, onCancel }: any) => {
-        const [form] = Form.useForm();
-        return (
-            <Modal
-                // footer={null}
-                visible={visible}
-                bodyStyle={{ height: '415px', paddingTop: 5 }}
-                title="Create a new set"
-                okText="Create"
-                cancelText="Cancel"
-                onCancel={onCancel}
-                onOk={() => {
-                    form.validateFields()
-                        .then((values) => {
-                            form.resetFields();
-                            onCreate(values);
-                        })
-                        .catch((info) => {
-                            console.log('Validate Failed:', info);
-                        });
-                }}
-            >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    name="form_in_modal"
-                    initialValues={{
-                        modifier: 'public',
-                    }}
-                >
-                    <Form
-                        form={form}
-                        layout="vertical"
-                        name="form_in_form"
-                        initialValues={{
-                            modifier: 'public',
-                        }}
-                    >
-                        <Tabs defaultActiveKey="1" onChange={callback} style={{ backgroundColor: '#282c31', height: '350px' }}>
-                            <TabPane tab={'Upload'} key={1}>
-                                <Form.Item name="uploadedProxies" rules={[{ required: false, message: 'Please input the list of proxies to add!' }]}>
-                                    <Dragger style={{ padding: 40 }} {...prop}>
-                                        <p className="ant-upload-drag-icon">
-                                            <InboxOutlined />
-                                        </p>
-                                        <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                                        <p className="ant-upload-hint">Make sure that your proxies are separated by new lines!</p>
-                                    </Dragger>
-                                </Form.Item>
-                            </TabPane>
-
-                            <TabPane tab={'Copy Paste'} key={2}>
-                                <Form.Item name="copiedProxies" rules={[{ required: false, message: 'Please input the list of proxies to add!' }]}>
-                                    <Input.TextArea
-                                        rows={5}
-                                        autoSize={{ maxRows: 10, minRows: 10 }}
-                                        style={{ height: '150px', backgroundColor: 'rgba(40,44,41,0.5)' }}
-                                        placeholder={'Copy paste your proxies here \nMake sure that your proxies are separated by new lines!'}
-                                    />
-                                </Form.Item>
-                            </TabPane>
-                        </Tabs>
-                    </Form>
-                </Form>
-            </Modal>
-        );
-    };
-    const CollectionCreateFormCreate = ({ visible, onCreate, onCancel }: any) => {
-        const [form] = Form.useForm();
-        return (
-            <Modal
-                // footer={null}
-                visible={visible}
-                bodyStyle={{ height: '50px', paddingTop: 5 }}
-                title="Create a new set"
-                okText="Create"
-                cancelText="Cancel"
-                onCancel={onCancel}
-                onOk={() => {
-                    form.validateFields()
-                        .then((values) => {
-                            form.resetFields();
-                            onCreate(values);
-                        })
-                        .catch((info) => {
-                            console.log('Validate Failed:', info);
-                        });
-                }}
-            >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    name="form_in_modal"
-                    initialValues={{
-                        modifier: 'public',
-                    }}
-                >
-                    <Form.Item name="name" rules={[{ required: true, message: 'Please input the name of the set to add!' }]}>
-                        <Input placeholder="Input set same" />
-                    </Form.Item>
-                </Form>
-            </Modal>
-        );
-    };
     const onCancel = () => {
         tab = 1;
         console.log('key: ' + tab);
     };
 
-    const dummyRequest = ({ onSuccess }: any) => {
-        setTimeout(() => {
-            onSuccess('ok');
-        }, 0);
-    };
-
-    const prop = {
-        accept: '.txt',
-        name: 'file',
-        multiple: false,
-        maxCount: 1,
-        customRequest: dummyRequest,
-        onChange(info: any) {
-            const { status } = info.file;
-            if (status !== 'uploading') {
-                console.log(info.file, info.fileList);
-            }
-            if (status === 'done') {
-                message.success(`${info.file.name} file uploaded successfully.`);
-            } else if (status === 'error') {
-                message.error(`${info.file.name} file upload failed.`);
-            }
-        },
-    };
-
-    const OPTIONS = () => {
+    const options = () => {
         let setSelection: any = [];
         proxies.forEach((value, key, map) => {
             setSelection.push(key);
@@ -244,59 +119,6 @@ const ProxyPage = () => {
     };
 
     const handleChange = (selectedItems: any) => {};
-
-    const CollectionCreateFormDelete = ({ visible, onCreate, onCancel }: any) => {
-        const [form] = Form.useForm();
-        const optionsArray = OPTIONS();
-        const filteredOptions = optionsArray.filter((o: any) => !deleteSelection.includes(o));
-        return (
-            <Modal
-                visible={visible}
-                title="Remove an existing set"
-                okText="Remove"
-                cancelText="Cancel"
-                onCancel={onCancel}
-                // footer={[<Button type="primary" key="1"> Remove </Button>]}
-                onOk={() => {
-                    form.validateFields()
-                        .then((values) => {
-                            form.resetFields();
-                            onCreate(values);
-                        })
-                        .catch((info) => {
-                            console.log('Validate Failed:', info);
-                        });
-                }}
-            >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    name="form_in_modal"
-                    initialValues={{
-                        modifier: 'public',
-                    }}
-                >
-                    <Form.Item name="proxies" label="Sets" rules={[{ required: true, message: 'Please choose a set to delete!' }]}>
-                        <Select
-                            mode="multiple"
-                            placeholder="Choose sets to remove"
-                            value={deleteSelection}
-                            onChange={handleChange}
-                            style={{ width: '100%' }}
-                        >
-                            {filteredOptions.map((item: any) => (
-                                <Select.Option key={item} value={item}>
-                                    {item}
-                                </Select.Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
-                </Form>
-            </Modal>
-        );
-    };
-
-    const { Dragger } = Upload;
 
     const columns = [
         {
@@ -413,7 +235,7 @@ const ProxyPage = () => {
                     setVisibleCreate(true);
                 }}
             />
-            <CollectionCreateFormCreate
+            <CollectionFormCreate
                 visible={visibleCreate}
                 onCreate={onCreate}
                 onCancel={() => {
@@ -427,12 +249,15 @@ const ProxyPage = () => {
                     setVisibleDelete(true);
                 }}
             />
-            <CollectionCreateFormDelete
+            <CollectionFormDelete
                 visible={visibleDelete}
                 onCreate={onDelete}
                 onCancel={() => {
                     setVisibleDelete(false);
                 }}
+                options={options}
+                deleteSelection={deleteSelection}
+                handleChange={handleChange}
             />
         </div>
     );
@@ -456,12 +281,13 @@ const ProxyPage = () => {
                         >
                             Add Proxies
                         </Button>
-                        <CollectionCreateFormAdd
+                        <CollectionFormAdd
                             visible={visibleAdd}
                             onCreate={onAdd}
                             onCancel={() => {
                                 setVisibleAdd(false);
                             }}
+                            callback={callback}
                         />
                     </div>
                     <div>
