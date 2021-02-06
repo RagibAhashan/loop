@@ -123,25 +123,36 @@ const Bot = (props: any) => {
     };
 
     return (
-        <Row gutter={[14, 0]} style={style}>
-            <Col span={4} style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <Row
+            align="middle"
+            style={{
+                ...style,
+                backgroundColor: '#282c31',
+                borderRadius: 60,
+                height: style.height - 5,
+            }}
+        >
+            <Col span={4} style={{ paddingLeft: 10, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 <div>{productLink}</div>
             </Col>
 
             <Col span={4}>
-                <p>{proxyset}</p>
+                <div>{proxyset}</div>
             </Col>
 
             <Col span={4}>{profile}</Col>
 
             <Col span={4} style={{ padding: 10 }}>
-                {sizes.map((size: string) => (
-                    <Tag>{size}</Tag>
-                ))}
+                {sizes.join(', ')}
             </Col>
 
             <Col span={4}>
-                <p style={{ color: statusColor(statusLevel), margin: 'auto' }}>{status}</p>
+                <div style={{ display: 'flex', alignItems: 'baseline' }}>
+                    <svg height="6" width="6">
+                        <circle cx="3" cy="3" r="3" fill={statusColor(statusLevel)} />
+                    </svg>
+                    <span style={{ color: statusColor(statusLevel), fontWeight: 500, marginLeft: 10 }}>{status}</span>
+                </div>
             </Col>
 
             <Col span={4}>

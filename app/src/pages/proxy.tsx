@@ -217,7 +217,7 @@ const ProxyPage = () => {
             dataIndex: 'id',
             key: 'id',
             width: '10%',
-            render: (text: any) => <a> { text } </a>,
+            render: (text: any) => <a> {text} </a>,
         },
         {
             title: 'IP',
@@ -242,8 +242,8 @@ const ProxyPage = () => {
             key: 'action',
             render: (text: any, record: any) => (
                 <Space size="large">
-                    <PoweroffOutlined style={{color: 'green', fontSize:16}}/>
-                    <DeleteFilled twoToneColor={'orange'} style={{color: 'orange',fontSize:18}}/>
+                    <PoweroffOutlined style={{ color: 'green', fontSize: 16 }} />
+                    <DeleteFilled twoToneColor={'orange'} style={{ color: 'orange', fontSize: 18 }} />
                 </Space>
             ),
         },
@@ -257,9 +257,9 @@ const ProxyPage = () => {
 
     const Sets = () => (
         <div>
-        <Tabs defaultActiveKey="1" onChange={callback} style={{ padding: '20px 50px' }} tabBarExtraContent={AddRemoveSets}>
-            {TabPanes()}
-        </Tabs>
+            <Tabs defaultActiveKey="1" onChange={callback} style={{ padding: '20px 50px' }} tabBarExtraContent={AddRemoveSets}>
+                {TabPanes()}
+            </Tabs>
         </div>
     );
 
@@ -271,8 +271,7 @@ const ProxyPage = () => {
             return [
                 <TabPane tab={value.name} key={++i}>
                     <Table columns={columns} pagination={{ pageSize: 8 }} dataSource={ShowData(value.name)} onChange={onChange} />
-                </TabPane>
-                ,
+                </TabPane>,
             ];
         });
     };
@@ -298,7 +297,7 @@ const ProxyPage = () => {
         return data;
     };
 
-    const AddRemoveSets = 
+    const AddRemoveSets = (
         <div>
             <PlusOutlined
                 style={{ color: 'green', fontSize: 30 }}
@@ -327,12 +326,12 @@ const ProxyPage = () => {
                 }}
             />
         </div>
-    
+    );
 
     return (
-        <Layout style={{ padding: 24, backgroundColor: '#212427', height: '1000vh' }}>
+        <Layout style={{ padding: 24, backgroundColor: '#212427', height: '100vh' }}>
             <Content>
-                <Sets /> 
+                <Sets />
             </Content>
         </Layout>
     );

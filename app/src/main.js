@@ -6,6 +6,8 @@ function createWindow() {
     const win = new BrowserWindow({
         width: 1700,
         height: 830,
+        minWidth: 500,
+        minHeight: 600,
         webPreferences: {
             nodeIntegration: true,
         },
@@ -91,10 +93,11 @@ ipcMain.on('start-task', (event, uuid) => {
 
 ipcMain.on('stop-task', async (event, uuid) => {
     try {
+        console.log('yooo stoping that ', uuid);
         const currentTask = taskManager.getTask(uuid);
 
         currentTask.emit('stop');
     } catch (error) {
-        console.log('TASK GOT CANCELLED !!!');
+        console.log('err', error);
     }
 });

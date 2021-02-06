@@ -201,15 +201,14 @@ const ProfilePage = () => {
     };
 
     return (
-        <div style={{ padding: 24, backgroundColor: '#212427', height: '1000vh' }}>
-                <div style={{float: 'right'}}>
-                    <CreateNewProfileModal onFinish={onFinish}/>
-                </div>
+        <div style={{ padding: 24, backgroundColor: '#212427', height: '100vh' }}>
+            <div style={{ float: 'right' }}>
+                <CreateNewProfileModal onFinish={onFinish} />
+            </div>
 
-                <Divider> My Profiles </Divider>
+            <Divider> My Profiles </Divider>
 
-                {ShowProfiles(profiles)}
-
+            {ShowProfiles(profiles)}
         </div>
     );
 };

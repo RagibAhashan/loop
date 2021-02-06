@@ -22,10 +22,10 @@ const App = () => {
     }, []);
 
     return (
-        <Layout style={{ minHeight: '100vh' }}>
+        <Layout>
             <SideBar />
             <Layout>
-                <Content>
+                <Content style={{ height: '100vh', backgroundColor: '#212427' }}>
                     <Switch>
                         <Route path="/home" exact component={Home} />
                         <Route path="/billing" exact component={ProfilePage} />
