@@ -7,10 +7,8 @@ import './Profile/profiles.css'
 const Home = () => {
 
 
-    const Profile = (props: any) => {
+    const ProfileCard = (props: any) => {
         const { profile, cc_number, name } = props;
-        const colors = ['#D71A1A', '#FF2674', '#FF8E26'];
-        const random = Math.floor(Math.random() * colors.length);
 
         return (
             <div className='profileCard' >
@@ -29,37 +27,25 @@ const Home = () => {
     
     <div style={{ display: 'flex', flexWrap: 'wrap'}}>
 
-        <Profile
+        <ProfileCard
             profile={'Footlocker Profile'}
             cc_number={'1233 1231 1233 1231'}
             name={'Pritam Patel'}
         />
 
-        <Profile
+        <ProfileCard
             profile={'Footlocker Profile'}
             cc_number={'1233 1231 1233 1231'}
             name={'Pritam Patel'}
         />
 
-        <Profile
+        <ProfileCard
             profile={'Footlocker Profile'}
             cc_number={'1233 1231 1233 1231'}
             name={'Pritam Patel'}
         />
 
-        <Profile
-            profile={'Footlocker Profile'}
-            cc_number={'1233 1231 1233 1231'}
-            name={'Pritam Patel'}
-        />
-
-        <Profile
-            profile={'Footlocker Profile'}
-            cc_number={'1233 1231 1233 1231'}
-            name={'Pritam Patel'}
-        />
-
-        <Profile
+        <ProfileCard
             profile={'Footlocker Profile'}
             cc_number={'1233 1231 1233 1231'}
             name={'Pritam Patel'}
