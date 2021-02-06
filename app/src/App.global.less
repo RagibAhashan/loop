@@ -2,13 +2,25 @@
 @import 'dynasty-light.less';
 // @import 'dynasty-dark.less';
 @import 'react-credit-cards/es/styles-compiled.css';
-
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
 html,
 body {
     margin: 0;
+    padding: 0;
+    height: 100vh;
+    // overflow: hidden;
+    // flex: auto;
+    font-family: Roboto;
+    box-sizing: border-box;
+}
+
+// Full heiht for tabs
+.ant-tabs {
     height: 100%;
-    overflow: hidden;
-    flex: auto;
+}
+
+.ant-tabs-content-holder {
+    display: flex;
 }
 
 /* https://stackoverflow.com/questions/15831657/creating-css-global-variables-stylesheet-theme-management */
