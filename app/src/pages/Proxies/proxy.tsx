@@ -1,14 +1,16 @@
 import { DeleteFilled, PlusOutlined, PoweroffOutlined } from '@ant-design/icons';
-import { Layout, message, Space, Table, Tabs, Upload, Button} from 'antd';
+import { Layout, message, Space, Table, Tabs, Button} from 'antd';
 import React, { useEffect, useState } from 'react';
-import { useVT } from 'virtualizedtableforantd4';
 import CollectionFormAdd from './Collections/Add'
 import CollectionFormCreate from './Collections/Create'
 import CollectionFormDelete from './Collections/Delete'
+import { useVT } from 'virtualizedtableforantd4';
+// import SmartTable from './SmartTable'
 
 const { Header, Content } = Layout;
 const UPLOAD = 1;
 const COPYPASTE = 2;
+
 
 const ProxyPage = () => {
     const [proxies, setProxies] = useState(new Map<string, []>()); // name -> proxies
@@ -21,6 +23,7 @@ const ProxyPage = () => {
     const [visibleAdd, setVisibleAdd] = useState(false);
 
     let [tab, setTabKey] = useState(1); // for add popup to select between upload and copy pasta
+    const [ vt, set_components ] = useVT(() => ({ scroll: { y: 560 } }), []);
 
     const onCreate = (values: any) => {
         const name = values.name;
@@ -162,8 +165,6 @@ const ProxyPage = () => {
 
     const deleteIndividual = () => {};
 
-    const onChange = () => {};
-
     const { TabPane } = Tabs;
 
     function callback(key: any) {
@@ -200,7 +201,7 @@ const ProxyPage = () => {
         return proxyArray.map((value) => {
             return [
                 <TabPane tab={value.name} key={++i}>
-                    <Table scroll={{ y: 560 }} columns={columns} pagination={false} dataSource={ShowData(value.name)} onChange={onChange} />
+                    <Table scroll={{ y: 560 }} components={vt} columns={columns} pagination={false} dataSource={ShowData(value.name)}/>
                 </TabPane>,
             ];
         });
