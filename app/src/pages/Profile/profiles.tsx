@@ -1,38 +1,7 @@
-import { DeleteOutlined } from '@ant-design/icons';
-import { Button, Card, Checkbox, Col, Divider, Form, Input, InputNumber, message, Popover, Row, Select, Space } from 'antd';
+import { Col, Divider, message, Row, Space } from 'antd';
 import React, { useEffect, useState } from 'react';
-import * as Constants from '../../constants';
 import CreateNewProfileModal from './createNewProfile';
-
-const layout = {
-    labelCol: { span: 5 },
-    wrapperCol: { span: 16 },
-};
-const validateMessages = {
-    required: '${label} is required!',
-    types: {
-        email: '${label} is not a valid email!',
-        number: '${label} is not a valid number!',
-    },
-    number: {
-        range: '${label} must be 3 digits or less.',
-    },
-};
-
-const monthOptions = [
-    { value: 1, label: 1 },
-    { value: 2, label: 2 },
-    { value: 3, label: 3 },
-    { value: 4, label: 4 },
-    { value: 5, label: 5 },
-    { value: 6, label: 6 },
-    { value: 7, label: 7 },
-    { value: 8, label: 8 },
-    { value: 9, label: 9 },
-    { value: 10, label: 9 },
-    { value: 11, label: 11 },
-    { value: 12, label: 12 },
-];
+import EditProfileModal from './editProfileModal';
 
 const getYears = (): any => {
     const year = new Date().getFullYear();
@@ -79,52 +48,12 @@ const UserFormData = {
     },
 };
 
-const content = (UserFormData: any) => (
-    <div>
-        <Row>
-            <Space>
-                <Col>
-                    <Divider> Shipping Address </Divider>
-                    <p> {UserFormData.shipping.firstname} </p>
-                    <p> {UserFormData.shipping.lastname} </p>
-                    <p> {UserFormData.shipping.phone} </p>
-                    <p> {UserFormData.shipping.email} </p>
-                    <p> {UserFormData.shipping.address} </p>
-                    <p> {UserFormData.shipping.city} </p>
-                    <p> {UserFormData.shipping.postalcode} </p>
-                    <p> {UserFormData.shipping.province} </p>
-                </Col>
-                <Col>
-                    <Divider> Billing Address </Divider>
-                    <p> {UserFormData.billing.firstname} </p>
-                    <p> {UserFormData.billing.lastname} </p>
-                    <p> {UserFormData.billing.phone} </p>
-                    <p> {UserFormData.billing.email} </p>
-                    <p> {UserFormData.billing.address} </p>
-                    <p> {UserFormData.billing.city} </p>
-                    <p> {UserFormData.billing.postalcode} </p>
-                    <p> {UserFormData.billing.province} </p>
-                </Col>
-            </Space>
-        </Row>
-        <br />
-
-        <Divider> Payment Info </Divider>
-        <p> Credit Card: {UserFormData.payment.credit} </p>
-        <p> CVC: {UserFormData.payment.cvc} </p>
-        <p> Month: {UserFormData.payment.month} </p>
-        <p> Year: {UserFormData.payment.year} </p>
-    </div>
-);
-
 const ProfilePage = () => {
-    const [yearOptions, setYearOptions] = useState([]);
-    const [same, setSame] = useState(false);
     const [profiles, setUserProfiles] = useState([UserFormData, UserFormData, UserFormData, UserFormData, UserFormData, UserFormData]);
+    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const [currentSelectedCard, setCurrentSelectedCard] = useState({});
 
     useEffect(() => {
-        setYearOptions(getYears());
-
         let db_profiles: any = localStorage.getItem('profiles');
         if (!db_profiles) {
             db_profiles = [];
@@ -180,35 +109,64 @@ const ProfilePage = () => {
         }
     };
 
+    const ProfileCard = (props: any) => {
+        const { data } = props;
+        const profile = data.profile;
+
+        const full_num = data.payment.credit;
+        const len = full_num.length;
+        const cc_num = `${full_num.substring(0, 4)} ${full_num.substring(4, 8)} ${full_num.substring(8, 12)} ${full_num.substring(12, len)}`;
+
+        const cc_number = cc_num;
+        const name = `${data.shipping.firstname} ${data.shipping.lastname}`.toUpperCase();
+
+        return (
+            <div
+                className="profileCard"
+                onClick={() => {
+                    setIsEditModalVisible(true);
+                    setCurrentSelectedCard((prev) => (prev = data));
+                }}
+            >
+                <h2 style={{ fontSize: '16px' }}> {profile} </h2>
+                <h2 style={{ fontSize: '16px', marginTop: '35px' }}> {cc_number} </h2>
+                <h4 style={{ fontSize: '12px', marginTop: '-10px' }}> {name} </h4>
+            </div>
+        );
+    };
+
     const ShowProfiles = (all_profils: any[]) => {
         if (!all_profils.length) return <h1> No Profile Found. </h1>;
 
         return all_profils.map((value) => {
-            return (
-                <Popover content={content(value)} placement="right">
-                    <Card
-                        size="small"
-                        title={value.profile}
-                        extra={<Button type="link" danger icon={<DeleteOutlined />} onClick={() => onDeleteProfile(value.profile)} />}
-                        style={{ width: 200, height: 140, margin: 3 }}
-                    >
-                        <p> {`${value.shipping.firstname} ${value.shipping.lastname}`} </p>
-                        <p> {`${value.shipping.address}`} </p>
-                    </Card>
-                </Popover>
-            );
+            return <ProfileCard data={value} />;
         });
     };
 
     return (
-        <div style={{ padding: 24, backgroundColor: '#212427', height: '100vh' }}>
+        <div style={{ backgroundColor: '#212427', height: '100vh', padding: '20px', overflow: 'auto' }}>
+            {/* <div style={{ backgroundColor: '#212427', height: '100vh', padding: '20px' }}></div> */}
             <div style={{ float: 'right' }}>
                 <CreateNewProfileModal onFinish={onFinish} />
             </div>
-
             <Divider> My Profiles </Divider>
+            <div style={{ padding: 24, backgroundColor: '#212427', display: 'flex', flexWrap: 'wrap' }}>
+                {isEditModalVisible ? (
+                    // Dont change this. It will literally break everything.
+                    // There is a deficit in the Modal design in antd.
+                    <EditProfileModal
+                        isEditModalVisible={isEditModalVisible}
+                        setIsEditModalVisible={setIsEditModalVisible}
+                        data={currentSelectedCard}
+                    />
+                ) : (
+                    <div />
+                )}
 
-            {ShowProfiles(profiles)}
+                {ShowProfiles(profiles)}
+
+                {ShowProfiles(profiles)}
+            </div>
         </div>
     );
 };

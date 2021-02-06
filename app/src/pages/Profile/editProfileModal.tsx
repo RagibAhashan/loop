@@ -1,0 +1,392 @@
+import React, { useState, useEffect } from 'react';
+import { Modal, Button, Tabs, message, Input, Row, Col, Form, Divider, Select, Checkbox } from 'antd';
+import Cards from 'react-credit-cards';
+
+const { TabPane } = Tabs;
+
+
+const validateMessages = {
+    required: 'required!',
+    types: {
+        email: '${label} is not a valid email!',
+        number: '${label} is not a valid number!',
+    },
+    number: {
+        range: '${label} must be 3 digits or less.',
+    },
+};
+
+const layout = {
+    labelCol: { span: 5 },
+    wrapperCol: { span: 16 },
+};
+
+const getYears = (): any => {
+    const year = new Date().getFullYear();
+    let years = [];
+    for (let i = year; i < year + 15; i++) {
+        years.push({
+            value: i,
+            label: i,
+        });
+    }
+    return years;
+};
+
+const getMonths = (): any => {
+    let months = [];
+    for (let i = 1; i <= 12; i++) {
+        months.push({
+            value: i,
+            label: i,
+        });
+    }
+    return months;
+};
+
+const EditProfileModal = (props: any) => {
+    const {isEditModalVisible, setIsEditModalVisible, data} = props;
+    const [same, setSame] = useState(false);
+    const [front, setFront] = useState(true);
+
+    const [shipFirstName, setshipFirstName] = useState('');
+    const [shipLastname, setshipLastName] = useState('');
+
+    const [billFirstName, setFirstName] = useState('');
+    const [billLastname, setLastName] = useState('');
+
+    const [creditCard, setCreditCard] = useState('');
+    const [cvc, setCvc] = useState('');
+    const [month, setMonth] = useState('');
+    const [year, setYear] = useState('');
+
+    useEffect(() => {
+        console.log(data);
+    }, [data]);
+
+    useEffect(() => {
+        setFirstName(data.billing.firstname);
+        setLastName(data.billing.lastname)
+        setCreditCard(data.payment.credit)
+        setCvc(data.payment.cvc)
+        setMonth(data.payment.month.length === 1 ? `0${data.payment.month}12` : data.payment.month)
+        setYear(data.payment.year)
+    }, [])
+
+
+
+    const callback = (key: any) => {
+        console.log(key);
+      }    
+
+
+    
+      const handleOk = () => {
+        setIsEditModalVisible(false);
+      };
+    
+      const handleCancel = () => {
+        setIsEditModalVisible(false);
+      };
+    
+
+
+    return (
+        <div>
+            <Modal title="Edit Profile"
+                visible={isEditModalVisible}
+                onOk={handleOk}
+                onCancel={handleCancel}
+                width={1000}
+                okText="Save"
+                // footer={false}
+            >
+            <Form name="nest-messages" /*onFinish={onFinish}*/ validateMessages={validateMessages}>
+                <Tabs defaultActiveKey="1" onChange={callback} >
+                    
+                    <TabPane tab="Profile and Shipping" key="1" >
+                        <Row>
+                            <Form.Item name="profile" rules={[{ required: true }]}>
+                                <Input 
+                                    placeholder={'Profile name'}
+                                    style={{ width: '400px', margin: '1%', height: '40px' }}
+                                    defaultValue={data.profile}
+                                    
+                                />
+                            </Form.Item>
+                        </Row>
+                        <br />
+                        <Row>
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={['shipping', 'firstname']} rules={[{ required: true }]}>
+                                    <Input placeholder={'First name'} style={{ height: '40px'}}
+                                        defaultValue={data.shipping.firstname}
+                                        onChange={(e) => {
+                                            setshipFirstName((prev) => (prev = e.target.value));
+                                            if (!front) {
+                                                setFront((prev) => (prev = true));
+                                            }
+                                        }}
+                                    />
+                                </Form.Item>
+                            </Col>
+
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={['shipping', 'lastname']} rules={[{ required: true }]}>
+                                    <Input placeholder={'Last name'} style={{ height: '40px'}}
+                                        defaultValue={data.shipping.lastname}
+                                        onChange={(e) => {
+                                            setshipLastName((prev) => (prev = e.target.value));
+                                            if (!front) {
+                                                setFront((prev) => (prev = true));
+                                            }
+                                        }}
+                                    />
+                                </Form.Item>
+                            </Col>
+
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={['shipping', 'phone']} rules={[{ required: true }]}>
+                                    <Input placeholder={'Phone'} style={{ height: '40px'}}
+                                        defaultValue={data.shipping.phone}
+                                        type='number'
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+
+                        <Row>
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={['shipping', 'email']} rules={[{ required: true }]}>
+                                    <Input placeholder={'Email'} style={{ height: '40px'}}
+                                        defaultValue={data.shipping.email}
+                                    />
+                                </Form.Item>
+                            </Col>
+
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={['shipping', 'address']} rules={[{ required: true }]}>
+                                    <Input placeholder={'Address'} style={{ height: '40px'}}
+                                        defaultValue={data.shipping.address}
+                                    />
+                                </Form.Item>
+                            </Col>
+
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={['shipping', 'city']} rules={[{ required: true }]}>
+                                    <Input placeholder={'City'} style={{ height: '40px'}}
+                                        defaultValue={data.shipping.city}
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+
+                        <Row>
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={['shipping', 'postalcode']} rules={[{ required: true }]}>
+                                    <Input placeholder={'Postal Code'} style={{ height: '40px'}}
+                                        defaultValue={data.shipping.postalcode}
+                                    />
+                                </Form.Item>
+                            </Col>
+
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={['shipping', 'province']} rules={[{ required: true }]}>
+                                    <Input placeholder={'Province'} style={{ height: '40px'}}
+                                        defaultValue={data.shipping.province}
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+
+
+
+                    </TabPane>
+
+
+
+                    <TabPane tab="Payment Information" key="2">
+                        <Row>
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                            <Form.Item name={[same ? 'shipping' : 'billing', 'firstname']} rules={[{ required: true }]}>
+                                <Input placeholder={'First name'} style={{ height: '40px'}}
+                                    defaultValue={data.billing.firstname}
+                                    onChange={(e) => {
+                                        setFirstName((prev) => (prev = e.target.value));
+                                        if (!front) {
+                                            setFront((prev) => (prev = true));
+                                        }
+                                    }}
+                                />
+                            </Form.Item>
+                            </Col>
+
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={[same ? 'shipping' : 'billing', 'lastname']} rules={[{ required: true }]}>
+                                    <Input placeholder={'Last name'} style={{ height: '40px'}}
+                                        defaultValue={data.billing.lastname}
+                                        onChange={(e) => {
+                                            setLastName((prev) => (prev = e.target.value));
+                                            if (!front) {
+                                                setFront((prev) => (prev = true));
+                                            }
+                                        }}
+                                    />
+                                </Form.Item>
+                            </Col>
+
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={[same ? 'shipping' : 'billing', 'phone']} rules={[{ required: true }]}>
+                                    <Input placeholder={'Phone'} style={{ height: '40px'}}
+                                        defaultValue={data.billing.phone}
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+
+                        <Row>
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={[same ? 'shipping' : 'billing', 'email']} rules={[{ required: true, type: 'email' }]}>
+                                    <Input placeholder={'email'} style={{ height: '40px'}}
+                                        defaultValue={data.billing.email}
+                                    />
+                                </Form.Item>
+                            </Col>
+
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={[same ? 'shipping' : 'billing', 'address']} rules={[{ required: true }]}>
+                                    <Input placeholder={'Address'} style={{ height: '40px'}}
+                                        defaultValue={data.billing.address}
+                                    />
+                                </Form.Item>
+                            </Col>
+
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={[same ? 'shipping' : 'billing', 'city']} rules={[{ required: true }]}>
+                                    <Input placeholder={'City'} style={{ height: '40px'}}
+                                        defaultValue={data.billing.city}
+                                    />
+                                </Form.Item>
+                            </Col>
+                        </Row>
+
+                        <Row>
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={[same ? 'shipping' : 'billing', 'postalcode']} rules={[{ required: true }]}>
+                                    <Input placeholder={'Postal Code'} style={{ height: '40px'}}
+                                        defaultValue={data.billing.postalcode}
+                                    />
+                                </Form.Item>
+                            </Col>
+
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item name={[same ? 'shipping' : 'billing', 'province']} rules={[{ required: true }]}>
+                                    <Input placeholder={'Province'} style={{ height: '40px'}}
+                                        defaultValue={data.billing.province}
+                                    />
+                                </Form.Item>
+                            </Col>
+
+                            <Col style={{ width: '30%', margin: '1%'}}>
+                                <Form.Item wrapperCol={{ ...layout.wrapperCol}} name="same" valuePropName="checked">
+                                    <Checkbox
+                                        checked={same}
+                                        onChange={(e) => {
+                                            setSame(e.target.checked);
+                                        }}
+                                        >
+                                        Same as shipping
+                                    </Checkbox>
+                                </Form.Item>
+                            </Col>
+
+                            
+                        </Row>
+                        <br />
+                        <Divider> Enter your card </Divider>
+                        <Row>
+
+                        
+
+                        <Col span={12}>
+                            <Cards
+                                cvc={cvc}
+                                expiry={`${month}${year}`}
+                                focused={front ? 'number' : 'cvc'}
+                                name={same ? shipFirstName + ' ' + shipLastname : billFirstName + ' ' + billLastname}
+                                number={creditCard}
+                            />
+                        </Col>
+
+                        <Col span={12}>
+                            <br />
+                            <Row>
+                                <Col span={14}>
+                                <Form.Item name={['payment', 'credit']} rules={[{ required: true }]}>
+                                    <Input style={{ width: '100%', height: '40px'}}
+                                        placeholder={'Credit Card'}
+                                        defaultValue={data.payment.credit}
+                                        type='number'
+                                        onChange={(e) => {
+                                            setCreditCard((prev) => (prev = e.target.value));
+                                            if (!front) {
+                                                setFront((prev) => (prev = true));
+                                            }
+                                        }}
+                                    />
+                                </Form.Item>
+                                </Col>
+                                <Col span={6} style={{ marginLeft: '1%'}}>
+                                    <Form.Item name={['payment', 'cvc']} rules={[{ required: true, min: 0, max: 999 }]}>
+                                        <Input style={{ width: '100%', height: '40px'}}
+                                            placeholder={'CVC'}
+                                            defaultValue={data.payment.cvc}
+                                            type='number'
+                                            onChange={(e) => {
+                                                setCvc((prev) => (prev = e.target.value));
+                                                if (front) {
+                                                    setFront((prev) => (prev = false));
+                                                }
+                                            }}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                            <br />
+                            <Row>
+                                <Col span={10}>
+                                    <Form.Item name={['payment', 'month']} rules={[{ required: true }]}>
+                                        <Select
+                                            style={{ width: '100%'}}
+                                            placeholder="Expiration Year" allowClear options={getMonths()}
+                                            defaultValue={data.payment.month}
+                                        />
+                                    </Form.Item>
+                                </Col>
+                                <Col span={10} style={{ marginLeft: '1%'}}>
+                                    <Form.Item name={['payment', 'year']} rules={[{ required: true }]}>
+                                        <Select
+                                            style={{ width: '100%'}}
+                                            placeholder="Expiration Year" allowClear options={getYears()}
+                                            defaultValue={data.payment.year}
+                                            
+                                        />
+                                    </Form.Item>
+                                </Col>
+                            </Row>
+                        </Col>
+
+                        </Row>
+
+                    </TabPane>
+
+                    
+                </Tabs>
+            </Form>
+
+            </Modal>
+        </div>
+    )
+}
+
+export default EditProfileModal;

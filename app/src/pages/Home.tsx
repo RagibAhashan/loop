@@ -1,12 +1,9 @@
 import React from 'react';
-import { Space } from 'antd';
 import './Profile/profiles.css';
 
 const Home = () => {
-    const Profile = (props: any) => {
+    const ProfileCard = (props: any) => {
         const { profile, cc_number, name } = props;
-        const colors = ['#D71A1A', '#FF2674', '#FF8E26'];
-        const random = Math.floor(Math.random() * colors.length);
 
         return (
             <div className="profileCard">
@@ -18,19 +15,15 @@ const Home = () => {
     };
 
     return (
-        <div style={{ backgroundColor: '#212427', height: '100vh', overflow: 'auto', padding: '20px' }}>
+        <div style={{ height: '100%', padding: '20px', overflow: 'auto' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                <Profile profile={'Footlocker Profile'} cc_number={'1233 1231 1233 1231'} name={'Pritam Patel'} />
+                <ProfileCard profile={'Footlocker Profile'} cc_number={'1233 1231 1233 1231'} name={'Pritam Patel'} />
 
-                <Profile profile={'Footlocker Profile'} cc_number={'1233 1231 1233 1231'} name={'Pritam Patel'} />
+                <ProfileCard profile={'Footlocker Profile'} cc_number={'1233 1231 1233 1231'} name={'Pritam Patel'} />
 
-                <Profile profile={'Footlocker Profile'} cc_number={'1233 1231 1233 1231'} name={'Pritam Patel'} />
+                <ProfileCard profile={'Footlocker Profile'} cc_number={'1233 1231 1233 1231'} name={'Pritam Patel'} />
 
-                <Profile profile={'Footlocker Profile'} cc_number={'1233 1231 1233 1231'} name={'Pritam Patel'} />
-
-                <Profile profile={'Footlocker Profile'} cc_number={'1233 1231 1233 1231'} name={'Pritam Patel'} />
-
-                <Profile profile={'Footlocker Profile'} cc_number={'1233 1231 1233 1231'} name={'Pritam Patel'} />
+                <ProfileCard profile={'Footlocker Profile'} cc_number={'1233 1231 1233 1231'} name={'Pritam Patel'} />
             </div>
         </div>
     );
