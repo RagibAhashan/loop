@@ -3,9 +3,10 @@ const { CookieJar } = require('./CookieJar');
 const msgs = require('./constants/Constants');
 
 class Task extends EventEmitter {
-    constructor(productLink, sizes, deviceId, requestInstance, userProfile) {
+    constructor(productLink, productSKU, sizes, deviceId, requestInstance, userProfile) {
         super();
         this.productLink = productLink;
+        this.productSKU = productSKU;
         this.sizes = sizes;
         this.deviceId = deviceId;
         this.axiosSession = requestInstance.axios;

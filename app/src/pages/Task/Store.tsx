@@ -82,13 +82,11 @@ const Store = (props: any) => {
         );
     };
 
-    const addTasks = (data: any) => {
-        const task: TaskData = data.task;
+    const addTasks = (data: TaskData) => {
         let temp: TaskData[] = [];
-        for (let i = 0; i < task.quantity; i++) {
+        for (let i = 0; i < data.quantity; i++) {
             const id = uuid();
-            ipcRenderer.send('create-task', id, storeName);
-            temp.push({ ...task, uuid: id, store: storeName });
+            temp.push({ ...data, uuid: id, store: storeName });
         }
 
         setJobs((oldJobs) => {
@@ -126,13 +124,14 @@ const Store = (props: any) => {
                 uuid={jobs[index].uuid}
                 store={jobs[index].store}
                 productLink={jobs[index].productLink}
-                startdate={jobs[index].startdate}
-                starttime={jobs[index].starttime}
+                productSKU={jobs[index].productSKU}
+                startdate={jobs[index].startDate}
+                starttime={jobs[index].startTime}
                 profile={jobs[index].profile}
                 sizes={jobs[index].sizes}
-                proxyset={jobs[index].proxyset}
-                monitordelay={jobs[index].monitordelay}
-                retrydelay={jobs[index].retrydelay}
+                proxySet={jobs[index].proxySet}
+                monitordelay={jobs[index].monitorDelay}
+                retryDelay={jobs[index].retryDelay}
                 deleteBot={deleteBot}
                 storeName={storeName}
                 style={style}

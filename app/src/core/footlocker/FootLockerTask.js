@@ -7,10 +7,9 @@ const CAPTCHA_TIMEOUT_SEC = 60;
 const ERROR_MESSAGE_DELAY = 300;
 
 class FootLockerTask extends Task {
-    constructor(productLink, sizes, deviceId, requestInstance, userProfile, retryDelay) {
-        super(productLink, sizes, deviceId, requestInstance, userProfile);
+    constructor(productLink, productSKU, sizes, deviceId, requestInstance, userProfile, retryDelay) {
+        super(productLink, productSKU, sizes, deviceId, requestInstance, userProfile);
         this.retryDelay = retryDelay;
-        this.productSKU = this.extractSKU(productLink);
     }
     async getSessionTokens() {
         let retry = false;
@@ -56,6 +55,7 @@ class FootLockerTask extends Task {
                     (unit) => unit.stockLevelStatus === 'inStock' && unit.attributes.some((attr) => attr.id === styleCode && attr.type === 'style'),
                 );
 
+                console.log('trying ', this.sizes);
                 for (const size of this.sizes) {
                     for (const unit of inStockUnits) {
                         for (const attr of unit.attributes) {
@@ -266,10 +266,6 @@ class FootLockerTask extends Task {
     async waitError(customDelay = undefined) {
         let delay = customDelay ? customDelay : ERROR_MESSAGE_DELAY;
         return new Promise((r) => setTimeout(r, delay));
-    }
-
-    extractSKU(link) {
-        return /\/([0-9]*).html/.exec(link)[1];
     }
 }
 

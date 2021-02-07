@@ -1,5 +1,5 @@
-import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, TimePicker } from 'antd';
-import React, { Fragment, useState } from 'react';
+import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, TimePicker, Badge, Descriptions } from 'antd';
+import React, { Fragment, useEffect, useRef, useState } from 'react';
 const { Option } = Select;
 
 /* eslint-disable no-template-curly-in-string */
@@ -49,7 +49,7 @@ const getProfiles = () => {
 };
 
 const getProxies = (): any => {
-    const proxiesOptions: any = [{ label: 'No Proxies', value: 'No Proxies' }];
+    const proxiesOptions: any = [{ label: 'No Proxies', value: null }];
     let prox: any = JSON.parse(localStorage.getItem('proxies') as string);
     if (prox) {
         prox.forEach((set: any) => {
@@ -66,9 +66,12 @@ const NewTaskModal = (props: any) => {
     const { store, addTasks, visible, cancelTaskModal } = props;
 
     const [manualTime, setManualTime] = useState(true);
+    const [productLink, setProductLink] = useState('');
+
+    const [form] = Form.useForm();
 
     const onFinishForm = (data: any) => {
-        console.log(data);
+        console.log('DATAAAA', data);
         addTasks(data);
     };
 
@@ -77,23 +80,39 @@ const NewTaskModal = (props: any) => {
     };
 
     const renderTime = () => {
-        console.log('yppp', manualTime);
         return manualTime ? (
             <Col span={8}></Col>
         ) : (
             <Fragment>
                 <Col span={4}>
-                    <Form.Item name={['task', 'startdate']} rules={[{ required: true }]}>
+                    <Form.Item name="startDate" rules={[{ required: true }]}>
                         <DatePicker />
                     </Form.Item>
                 </Col>
                 <Col span={4}>
-                    <Form.Item name={['task', 'starttime']} rules={[{ required: true }]}>
+                    <Form.Item name="startTime" rules={[{ required: true }]}>
                         <TimePicker format={format} />
                     </Form.Item>
                 </Col>
             </Fragment>
         );
+    };
+
+    const extractSKU = (link: string) => {
+        const res = /\/([0-9]*).html/.exec(link);
+        if (!res) {
+            form.setFields([
+                {
+                    name: 'productSKU',
+                    errors: ['Couldt not parse SKU'],
+                },
+            ]);
+            return undefined;
+        }
+
+        console.log('extracted', res[1]);
+        form.setFieldsValue({ productSKU: res[1] });
+        return res[1];
     };
 
     return (
@@ -108,22 +127,28 @@ const NewTaskModal = (props: any) => {
                 footer={false}
                 width={800}
             >
-                <Form onFinish={onFinishForm} validateMessages={validateMessages}>
+                <Form form={form} onFinish={onFinishForm} validateMessages={validateMessages}>
                     <Row gutter={GUTTER}>
-                        <Col span={24}>
-                            <Form.Item name={['task', 'productLink']} rules={[{ required: true }]}>
-                                <Input placeholder="Product Link" type="text" />
+                        <Col span={12}>
+                            <Form.Item name="productLink" rules={[{ required: true }]}>
+                                <Input placeholder="Product Link" type="text" onChange={(e) => extractSKU(e.target.value)} />
+                            </Form.Item>
+                        </Col>
+
+                        <Col span={12}>
+                            <Form.Item name="productSKU">
+                                <Input disabled placeholder="Product SKU"></Input>
                             </Form.Item>
                         </Col>
                     </Row>
                     <Row gutter={GUTTER}>
                         <Col span={12}>
-                            <Form.Item name={['task', 'profile']} rules={[{ required: true }]}>
+                            <Form.Item name="profile" rules={[{ required: true }]}>
                                 <Select placeholder="Profile" allowClear options={getProfiles()} />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
-                            <Form.Item name={['task', 'proxyset']} rules={[{ required: false }]} initialValue={'No Proxies'}>
+                            <Form.Item name="proxySet" rules={[{ required: false }]} initialValue={'No Proxies'}>
                                 <Select style={{ width: '100%' }} placeholder="Proxy Set" allowClear options={getProxies()} />
                             </Form.Item>
                         </Col>
@@ -131,7 +156,7 @@ const NewTaskModal = (props: any) => {
 
                     <Row gutter={GUTTER}>
                         <Col span={12}>
-                            <Form.Item name={['task', 'sizes']} rules={[{ required: true }]}>
+                            <Form.Item name="sizes" rules={[{ required: true }]}>
                                 <Select placeholder="Size" mode="multiple" allowClear>
                                     {allSizes}
                                 </Select>
@@ -139,7 +164,7 @@ const NewTaskModal = (props: any) => {
                         </Col>
 
                         <Col span={12}>
-                            <Form.Item name={['task', 'retrydelay']} rules={[{ required: true }]}>
+                            <Form.Item name="retryDelay" rules={[{ required: true }]}>
                                 <InputNumber style={{ width: '100%' }} placeholder="Retry delay" />
                             </Form.Item>
                         </Col>
@@ -147,7 +172,7 @@ const NewTaskModal = (props: any) => {
 
                     <Row gutter={GUTTER}>
                         <Col span={4}>
-                            <Form.Item name={['task', 'manualtime']}>
+                            <Form.Item name="manualTime">
                                 <Checkbox onChange={onManualTimeChange} defaultChecked={manualTime}>
                                     Manual Start
                                 </Checkbox>
@@ -155,7 +180,7 @@ const NewTaskModal = (props: any) => {
                         </Col>
                         {renderTime()}
                         <Col span={12}>
-                            <Form.Item name={['task', 'quantity']} rules={[{ required: true }]}>
+                            <Form.Item name="quantity" rules={[{ required: true }]}>
                                 <InputNumber style={{ width: '100%' }} placeholder="Quantity" />
                             </Form.Item>
                         </Col>

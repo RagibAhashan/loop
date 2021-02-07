@@ -1,15 +1,12 @@
-import { Button, Layout, Select, Tabs, Modal } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { Button, Select, Tabs, Modal } from 'antd';
+import React, { useState } from 'react';
 import { NOTIFY_STOP_TASK, STORES } from '../../common/Constants';
 import { TaskData } from '../../interfaces/TaskInterfaces';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import Store from './Store';
 const { TabPane } = Tabs;
-const { Header } = Layout;
 const { Option } = Select;
 const { ipcRenderer } = window.require('electron');
-
-const text = 'Are you sure to delete this store?\nAll running tasks will be terminated.';
 
 const ALL_STORES: any = STORES;
 interface Pane {
@@ -97,15 +94,7 @@ const TaskPage = () => {
         <div style={{ padding: 24, height: '100%' }}>
             <Tabs hideAdd style={{ height: '100%' }} defaultActiveKey="1" tabBarExtraContent={addMenu} type="editable-card" onEdit={onEdit}>
                 {panes.map((pane) => (
-                    <TabPane
-                        tab={
-                            <span>
-                                {/* <Button size="small" shape="circle" type="text" icon={<CloseOutlined />} onClick={() => deleteStore(pane.title)} /> */}
-                                {pane.title}
-                            </span>
-                        }
-                        key={pane.key}
-                    >
+                    <TabPane tab={<span>{pane.title}</span>} key={pane.key}>
                         <Store key={pane.key} storeName={pane.key} />
                     </TabPane>
                 ))}
@@ -120,17 +109,6 @@ const TaskPage = () => {
                     ))}
                 </Select>
             </Modal>
-
-            {/* <Modal
-                title="Modal"
-                visible={isStoreModalVisible}
-                onOk={deleteStore}
-                onCancel={() => setStoreModalVisible(false)}
-                okText="Confirm"
-                cancelText="Cancel"
-            >
-                <p>{text}</p>
-            </Modal> */}
         </div>
     );
 };

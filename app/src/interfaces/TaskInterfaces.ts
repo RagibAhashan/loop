@@ -28,13 +28,14 @@ export interface TaskData {
     uuid: string;
     store?: string;
     productLink: string;
-    proxyset: string;
+    productSKU: string;
+    proxySet: string | undefined;
     profile: string;
     quantity: number;
-    retrydelay: number;
-    startdate?: moment.Moment;
-    starttime?: moment.Moment;
+    retryDelay: number;
+    startDate?: moment.Moment;
+    startTime?: moment.Moment;
     sizes: string[];
-    manualtime: boolean;
-    monitordelay?: number;
+    manualTime: boolean;
+    monitorDelay?: number;
 }
