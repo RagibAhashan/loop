@@ -7,14 +7,14 @@ import CollectionFormDelete from './Collections/Delete'
 import { useVT } from 'virtualizedtableforantd4';
 // import SmartTable from './SmartTable'
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 const UPLOAD = 1;
 const COPYPASTE = 2;
 
 
 const ProxyPage = () => {
     const [proxies, setProxies] = useState(new Map<string, []>()); // name -> proxies
-    let [currentTab, setCurrentTab] = useState({ name: '', key: '1' });
+    let [currentTab, setCurrentTab] = useState({ name: Object.keys(proxies)[0], key: '1' });
 
     // Popups Visibility
     const [visibleCreate, setVisibleCreate] = useState(false);
@@ -24,6 +24,23 @@ const ProxyPage = () => {
 
     let [tab, setTabKey] = useState(1); // for add popup to select between upload and copy pasta
     const [ vt, set_components ] = useVT(() => ({ scroll: { y: 560 } }), []);
+
+    useEffect(() => {
+        // const obj = Object.fromEntries(map1);
+        // localStorage.clear();
+        let db_proxies: any = localStorage.getItem('proxies');
+        if (!db_proxies) {
+            db_proxies = new Map();
+            localStorage.setItem('proxies', JSON.stringify(Array.from(db_proxies.entries())));
+        } else {
+            let tempProxyMap = new Map();
+            for (let i = 0; i < JSON.parse(db_proxies).length; i++) {
+                tempProxyMap.set(JSON.parse(db_proxies)[i][0], JSON.parse(db_proxies)[i][1]);
+            }
+            setProxies(tempProxyMap);
+        }
+        console.log(localStorage);
+    }, []);
 
     const onCreate = (values: any) => {
         const name = values.name;
@@ -36,10 +53,15 @@ const ProxyPage = () => {
             localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())));
             forceUpdate();
             setVisibleCreate(false);
+            if(proxies.size == 1) {
+               setCurrentTab({name: name, key: '1'}) 
+            }
+            
         }
     };
 
     const onAdd = (values: any) => {
+        console.log(currentTab.name);
         const name = currentTab.name;
         const proxyArray: any = [];
 
@@ -76,20 +98,6 @@ const ProxyPage = () => {
         });
         setVisibleDelete(false);
     };
-
-    useEffect(() => {
-        let db_proxies: any = localStorage.getItem('proxies');
-        if (!db_proxies) {
-            db_proxies = new Map();
-            localStorage.setItem('proxies', JSON.stringify(Array.from(db_proxies.entries())));
-        } else {
-            let tempProxyMap = new Map();
-            for (let i = 0; i < JSON.parse(db_proxies).length; i++) {
-                tempProxyMap.set(JSON.parse(db_proxies)[i][0], JSON.parse(db_proxies)[i][1]);
-            }
-            setProxies(tempProxyMap);
-        }
-    }, []);
 
     const downloadProxies = (values: [], name: string) => {
         const proxyFileName = name + 'Proxies.txt';
