@@ -441,8 +441,7 @@ const ProxyPage = () => {
         <Layout style={{ padding: 24, backgroundColor: '#212427', height: '100vh', overflow: 'auto' }}>
             <Content>
                 <div>
-                    {' '}
-                    <Sets />{' '}
+                    <Sets />
                 </div>
                 <div style={{ padding: '10px 15px' }}>
                     <div>

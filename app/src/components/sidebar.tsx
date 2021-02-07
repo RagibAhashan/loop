@@ -1,6 +1,6 @@
 import { DesktopOutlined, FileOutlined, HomeOutlined, PieChartOutlined, SettingOutlined } from '@ant-design/icons';
 import { Layout, Menu, Row } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { withRouter } from 'react-router-dom';
 import logo from '../assets/crown.png';
 import styles from './sidebar.module.css';
@@ -10,6 +10,9 @@ const { Sider } = Layout;
 const SideBar = withRouter(({ history }) => {
     const [collapsed, setCollapsed] = useState(false);
 
+    useEffect(() => {
+        history.push('/profiles');
+    }, []);
     return (
         <Sider
             collapsible
@@ -38,7 +41,7 @@ const SideBar = withRouter(({ history }) => {
                     className={styles.menuItem}
                     icon={<PieChartOutlined />}
                     onClick={() => {
-                        history.push('/billing');
+                        history.push('/profiles');
                     }}
                 >
                     Profiles

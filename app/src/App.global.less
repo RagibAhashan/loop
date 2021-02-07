@@ -8,19 +8,8 @@ body {
     margin: 0;
     padding: 0;
     height: 100vh;
-    // overflow: hidden;
-    // flex: auto;
     font-family: Roboto;
     box-sizing: border-box;
-}
-
-// Full heiht for tabs
-.ant-tabs {
-    height: 100%;
-}
-
-.ant-tabs-content-holder {
-    display: flex;
 }
 
 /* https://stackoverflow.com/questions/15831657/creating-css-global-variables-stylesheet-theme-management */
@@ -40,12 +29,12 @@ body {
 .ant-btn-primary {
     color: #fff;
     border-width: 1.5px;
-    border-top-color : transparent;
-    border-left-color : transparent;
-    border-right-color : transparent;
+    border-top-color: transparent;
+    border-left-color: transparent;
+    border-right-color: transparent;
     text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.12);
     box-shadow: 0 2px 0 rgba(0, 0, 0, 0.045);
-    background: var(--siderColor)
+    background: var(--siderColor);
 }
 
 /* Sider */
@@ -198,6 +187,7 @@ table:first-child tr td:last-child {
 /* Tabs */
 .ant-tabs {
     background-color: var(--workspaceColor);
+    height: 100%;
 }
 .ant-tabs-tab .anticon {
     margin-right: 0;
@@ -206,9 +196,20 @@ table:first-child tr td:last-child {
     border-bottom: none;
 }
 
-::selection {
+.ant-tabs-content-holder {
+    display: flex;
+}
+
+// I am not sure, but it works ayy
+.ant-tabs-card.ant-tabs-top > .ant-tabs-nav .ant-tabs-tab:not(:last-of-type) {
     color: #fff;
-    background: var(--defaultThemeColor);
+    border: none;
+    background-color: transparent;
+}
+
+.ant-tabs-tab-active {
+    border-bottom: 2px solid orange !important;
+    transition: 0s !important;
 }
 
 /* .ant-upload-list-item-info */
@@ -223,7 +224,7 @@ table:first-child tr td:last-child {
 /* sidebar */
 ::-webkit-scrollbar {
     width: 6px;
-    height: 6px;
+    height: 8px;
 }
 
 /* Track */
@@ -237,6 +238,7 @@ table:first-child tr td:last-child {
 /* Handle */
 ::-webkit-scrollbar-thumb {
     background: #ffbc49;
+    border-radius: 60px;
 }
 
 /* Handle on hover */

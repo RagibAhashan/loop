@@ -28,7 +28,7 @@ const App = () => {
                 <Content style={{ height: '100vh', backgroundColor: '#212427' }}>
                     <Switch>
                         <Route path="/home" exact component={Home} />
-                        <Route path="/billing" exact component={ProfilePage} />
+                        <Route path="/profiles" exact component={ProfilePage} />
                         <Route path="/proxies" exact component={ProxyPage} />
                         <Route path="/settings" exact component={SettingsPage} />
                         <Route path="/tasks" exact component={TaskPage} />

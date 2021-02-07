@@ -7,18 +7,22 @@ const CAPTCHA_TIMEOUT_SEC = 60;
 const ERROR_MESSAGE_DELAY = 300;
 
 class FootLockerTask extends Task {
-    constructor(productLink, productSKU, sizes, deviceId, requestInstance, userProfile, retryDelay) {
-        super(productLink, productSKU, sizes, deviceId, requestInstance, userProfile);
+    constructor(productLink, sizes, deviceId, requestInstance, userProfile, retryDelay) {
+        super(productLink, sizes, deviceId, requestInstance, userProfile);
         this.retryDelay = retryDelay;
+        this.productSKU = this.extractSKU(productLink);
     }
     async getSessionTokens() {
         let retry = false;
         do {
             try {
+                if (this.cancel) return;
+                console.log('try to get session');
                 retry = false;
                 this.emit('status', { status: msgs.SESSION_INFO_MESSAGE, level: 'info' });
 
                 const response = await this.axiosSession.get('/v4/session');
+                if (this.cancel) return;
 
                 const cookies = response.headers['set-cookie'].join();
                 this.cookieJar.setFromRaw(cookies, Cookie.JSESSIONID);
@@ -26,9 +30,10 @@ class FootLockerTask extends Task {
                 const csrf = response.data['data']['csrfToken'];
                 this.cookieJar.set(csrf, Cookie.CSRF);
             } catch (error) {
-                console.log('GOT CANCEL ERROR ?');
+                if (this.cancel) return;
                 await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
                 retry = true;
+                console.log('try to get session failed :(');
             }
         } while (retry);
     }
@@ -37,32 +42,34 @@ class FootLockerTask extends Task {
         let retry = true;
         do {
             try {
+                if (this.cancel) return;
                 this.emit('status', { status: msgs.CHECKING_SIZE_INFO_MESSAGE, level: 'info' });
 
-                // const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
-                // const sellableUnits = response.data['sellableUnits'];
-                // const variantAttributes = response.data['variantAttributes'];
+                const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
+                if (this.cancel) return;
+                const sellableUnits = response.data['sellableUnits'];
+                const variantAttributes = response.data['variantAttributes'];
 
-                // const { code: styleCode } = variantAttributes.find((attr) => attr.sku === this.productSKU);
+                const { code: styleCode } = variantAttributes.find((attr) => attr.sku === this.productSKU);
 
-                // const inStockUnits = sellableUnits.filter(
-                //     (unit) => unit.stockLevelStatus === 'inStock' && unit.attributes.some((attr) => attr.id === styleCode && attr.type === 'style'),
-                // );
+                const inStockUnits = sellableUnits.filter(
+                    (unit) => unit.stockLevelStatus === 'inStock' && unit.attributes.some((attr) => attr.id === styleCode && attr.type === 'style'),
+                );
 
-                // for (const size of this.sizes) {
-                //     for (const unit of inStockUnits) {
-                //         for (const attr of unit.attributes) {
-                //             if (attr.type === 'size' && parseFloat(attr.value) === size) {
-                //                 retry = false; // not needed
-                //                 return attr.id;
-                //             }
-                //         }
-                //     }
-                // }
-                // this.emit('status', { status: msgs.CHECKING_SIZE_RETRY_MESSAGE, level: 'error' });
-                // await this.waitError();
-                return '';
+                for (const size of this.sizes) {
+                    for (const unit of inStockUnits) {
+                        for (const attr of unit.attributes) {
+                            if (attr.type === 'size' && parseFloat(attr.value) === parseFloat(size)) {
+                                retry = false; // not needed
+                                return attr.id;
+                            }
+                        }
+                    }
+                }
+                this.emit('status', { status: msgs.CHECKING_SIZE_RETRY_MESSAGE, level: 'error' });
+                await this.waitError();
             } catch (error) {
+                if (this.cancel) return;
                 await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
                 retry = true;
             }
@@ -72,6 +79,7 @@ class FootLockerTask extends Task {
         let retry = false;
         do {
             try {
+                if (this.cancel) return;
                 this.emit('status', { status: msgs.ADD_CART_INFO_MESSAGE, level: 'info' });
                 const headers = {
                     referer: this.productLink,
@@ -88,14 +96,15 @@ class FootLockerTask extends Task {
                 const body = { productQuantity: '1', productId: this.productCode };
 
                 const response = await this.axiosSession.post('/users/carts/current/entries', body, { headers: headers });
+                if (this.cancel) return;
 
                 const cookies = response.headers['set-cookie'].join();
                 this.cookieJar.setFromRaw(cookies, Cookie.CART_GUID);
             } catch (err) {
+                if (this.cancel) return;
                 // TODO WIP Captcha
                 if (err.response.data['errors'] && err.response.data['errors']['type'] === 'ProductLowStockException') {
-                    this.emit('status', { status: msgs.CHECKING_SIZE_RETRY_MESSAGE, level: 'error' });
-                    this.waitError();
+                    await this.emitStatus(msgs.CHECKING_SIZE_RETRY_MESSAGE, 'error', this.retryDelay);
                     this.productCode = await this.getProductCode();
                 } else if (err.response.data['url']) {
                     this.emit('status', { status: msgs.WAIT_CAPTCHA_MESSAGE, level: 'info' });
@@ -124,7 +133,8 @@ class FootLockerTask extends Task {
                     // if (!receivedDatadome) throw new Error('Timeout exceeded - Captcha not solved');
                 } else {
                     // console.log('Add to cart failed', err.response.status);
-                    await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error');
+                    console.log('retry delay', this.retryDelay);
+                    await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error', this.retryDelay);
                 }
                 retry = true;
             }
@@ -134,13 +144,16 @@ class FootLockerTask extends Task {
         let retry = false;
         do {
             try {
+                if (this.cancel) return;
                 retry = false;
                 this.emit('status', { status: msgs.EMAIL_INFO_MESSAGE, level: 'info' });
 
                 const headers = this.setHeaders();
 
                 await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.email}`, {}, { headers: headers });
+                if (this.cancel) return;
             } catch (error) {
+                if (this.cancel) return;
                 await this.emitStatus(msgs.EMAIL_ERROR_MESSAGE, 'error');
                 retry = true;
             }
@@ -150,6 +163,7 @@ class FootLockerTask extends Task {
         let retry = false;
         do {
             try {
+                if (this.cancel) return;
                 retry = false;
                 this.emit('status', { status: msgs.SHIPPING_INFO_MESSAGE, level: 'info' });
 
@@ -158,7 +172,9 @@ class FootLockerTask extends Task {
                 const body = { shippingAddress: this.getInfoForm() };
 
                 await this.axiosSession.post('/users/carts/current/addresses/shipping', body, { headers: headers });
+                if (this.cancel) return;
             } catch (error) {
+                if (this.cancel) return;
                 await this.emitStatus(msgs.SHIPPING_ERROR_MESSAGE, 'error');
                 retry = true;
             }
@@ -168,6 +184,7 @@ class FootLockerTask extends Task {
         let retry = false;
         do {
             try {
+                if (this.cancel) return;
                 retry = false;
                 this.emit('status', { status: msgs.BILLING_INFO_MESSAGE, level: 'info' });
 
@@ -176,7 +193,9 @@ class FootLockerTask extends Task {
                 const body = this.getInfoForm();
 
                 await this.axiosSession.post('/users/carts/current/set-billing', body, { headers: headers });
+                if (this.cancel) return;
             } catch (error) {
+                if (this.cancel) return;
                 await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
                 retry = true;
             }
@@ -186,6 +205,7 @@ class FootLockerTask extends Task {
         let retry = false;
         do {
             try {
+                if (this.cancel) return;
                 retry = false;
                 this.emit('status', { status: msgs.PLACING_ORDER_INFO_MESSAGE, level: 'info' });
 
@@ -196,9 +216,10 @@ class FootLockerTask extends Task {
                 await this.axiosSession.post('/v2/users/orders', body, {
                     headers: headers,
                 });
-
+                if (this.cancel) return;
                 this.emit('status', { status: msgs.CHECKOUT_SUCCESS_MESSAGE, level: 'success' });
             } catch (error) {
+                if (this.cancel) return;
                 await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error', this.retryDelay);
                 retry = true;
             }
@@ -245,6 +266,10 @@ class FootLockerTask extends Task {
     async waitError(customDelay = undefined) {
         let delay = customDelay ? customDelay : ERROR_MESSAGE_DELAY;
         return new Promise((r) => setTimeout(r, delay));
+    }
+
+    extractSKU(link) {
+        return /\/([0-9]*).html/.exec(link)[1];
     }
 }
 

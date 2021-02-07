@@ -1,15 +1,22 @@
-import { CreditCard } from './CreditCard';
-export interface Billing {
-    address: string;
-    city: string;
-    email: string;
-    firstname: string;
-    lastname: string;
-    phone: string;
-    postalcode: string;
-    province: string;
+export interface CreditCard {
+    number: string;
+    expiryMonth: string;
+    expiryYear: string;
+    cvc: string;
 }
-export interface Profile {
+
+export interface Billing {
+    lastName: string;
+    email: string;
+    phone: string;
+    country: string;
+    firstName: string;
+    address: string;
+    postalCode: string;
+    region: string;
+    town: string;
+}
+export interface UserProfile {
     payment: CreditCard;
     billing: Billing;
     shipping: Billing;

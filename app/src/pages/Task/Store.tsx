@@ -1,16 +1,13 @@
-import { Button, Col, Divider, Row, Select } from 'antd';
+import { Button, Col, Row, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { FixedSizeList } from 'react-window';
+import { NOTIFY_STOP_TASK } from '../../common/Constants';
 import { TaskData } from '../../interfaces/TaskInterfaces';
 import Bot from './Bot';
 import NewTaskModal from './newTaskModal';
 const { ipcRenderer } = window.require('electron');
 const { v4: uuid } = require('uuid');
 const { Option } = Select;
-
-const colStyle = {
-    margin: 'auto',
-};
 
 const buttonStyle: React.CSSProperties = {
     width: '100%',
@@ -19,15 +16,10 @@ const buttonStyle: React.CSSProperties = {
 };
 
 const botStyle = {
-    marginLeft: '20px',
-    marginRight: '20px',
-    marginTop: '10px',
-    marginBottom: '0px',
-    height: '15px',
-    borderRadius: '6px',
-    color: 'orange',
     fontSize: '18px',
-};
+    textAlign: 'center',
+    marginBottom: 20,
+} as React.CSSProperties;
 
 const allSizes: any[] = [];
 for (let i = 4; i < 14; i += 0.5) {
@@ -65,6 +57,8 @@ const Store = (props: any) => {
             localStorage.setItem(storeName, JSON.stringify(newJobs));
             return newJobs;
         });
+
+        ipcRenderer.send(NOTIFY_STOP_TASK, uuid);
     };
 
     const openCaptcha = () => {
@@ -92,7 +86,9 @@ const Store = (props: any) => {
         const task: TaskData = data.task;
         let temp: TaskData[] = [];
         for (let i = 0; i < task.quantity; i++) {
-            temp.push({ ...task, uuid: uuid(), store: storeName });
+            const id = uuid();
+            ipcRenderer.send('create-task', id, storeName);
+            temp.push({ ...task, uuid: id, store: storeName });
         }
 
         setJobs((oldJobs) => {
@@ -105,15 +101,25 @@ const Store = (props: any) => {
     };
 
     const deleteAllTasks = () => {
-        jobs.forEach((job) => localStorage.removeItem(job.uuid));
+        jobs.forEach((job) => {
+            ipcRenderer.send(NOTIFY_STOP_TASK, job.uuid);
+            localStorage.removeItem(job.uuid);
+        });
         setJobs(() => new Array<TaskData>());
         localStorage.removeItem(storeName);
+    };
+
+    const stopAllTasks = () => {
+        jobs.forEach((job) => {
+            ipcRenderer.send('stop-task', job.uuid);
+        });
     };
 
     const ROW_GUTTER: [number, number] = [24, 0];
 
     const renderJobs = (ele: any) => {
         const { index, style } = ele;
+
         return (
             <Bot
                 key={jobs[index].uuid}
@@ -128,21 +134,20 @@ const Store = (props: any) => {
                 monitordelay={jobs[index].monitordelay}
                 retrydelay={jobs[index].retrydelay}
                 deleteBot={deleteBot}
+                storeName={storeName}
                 style={style}
             />
         );
     };
 
     return (
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'auto' }}>
             <Headers />
-            <Divider style={{ marginBottom: '10px' }} />
 
-            <FixedSizeList height={500} itemCount={jobs.length} itemSize={50} width="100%">
+            <FixedSizeList height={700} itemCount={jobs.length} itemSize={45} width="100%" style={{ flex: 1 }}>
                 {renderJobs}
             </FixedSizeList>
-
-            <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10 }}>
+            <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10, width: '100%' }}>
                 <Col span={3}>
                     <Button style={buttonStyle} type="primary" onClick={() => setTaskModalVisible(true)}>
                         Add Task
@@ -150,28 +155,27 @@ const Store = (props: any) => {
                 </Col>
                 <Col span={6}></Col>
                 <Col span={3}>
-                    <Button type="default" style={{ ...buttonStyle, backgroundColor: 'green' }}>
+                    <Button type="default" style={{ ...buttonStyle, backgroundColor: 'green' }} disabled={jobs.length === 0}>
                         Run all
                     </Button>
                 </Col>
                 <Col span={3}>
-                    <Button style={buttonStyle} type="primary" danger>
+                    <Button style={buttonStyle} type="primary" onClick={() => stopAllTasks()} danger disabled={jobs.length === 0}>
                         Stop all
                     </Button>
                 </Col>
                 <Col span={3}></Col>
                 <Col span={3}>
-                    <Button style={buttonStyle} type="primary" danger onClick={() => deleteAllTasks()}>
+                    <Button style={buttonStyle} type="primary" danger onClick={() => deleteAllTasks()} disabled={jobs.length === 0}>
                         Delete all
                     </Button>
                 </Col>
                 <Col span={3}>
-                    <Button style={buttonStyle} type="primary" onClick={() => openCaptcha()}>
+                    <Button style={buttonStyle} type="primary" onClick={() => openCaptcha()} disabled={jobs.length === 0}>
                         Open cap
                     </Button>
                 </Col>
             </Row>
-
             <NewTaskModal visible={taskModalVisible} store={storeName} addTasks={addTasks} cancelTaskModal={() => setTaskModalVisible(false)} />
         </div>
     );
