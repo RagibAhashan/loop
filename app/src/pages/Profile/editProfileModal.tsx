@@ -102,7 +102,7 @@ const EditProfileModal = (props: any) => {
     
     return (
         <div>
-            <Modal title="Edit Profile"
+            <Modal title="View Profile"
                 visible={isEditModalVisible}
                 onOk={handleOk}
                 onCancel={handleCancel}
@@ -153,7 +153,7 @@ const EditProfileModal = (props: any) => {
                     <TabPane tab="Profile and Shipping" key="1" >
                         <Row>
                             <Form.Item name="profile" rules={[{ required: true }]}>
-                                <Input 
+                                <Input disabled={true} 
                                     placeholder={'Profile name'}
                                     style={{ width: '400px', margin: '1%', height: '40px' }}
                                     defaultValue={data.profile}
@@ -165,7 +165,7 @@ const EditProfileModal = (props: any) => {
                         <Row>
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={['shipping', 'firstname']} rules={[{ required: true }]}>
-                                    <Input placeholder={'First name'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'First name'} style={{ height: '40px'}}
                                         defaultValue={data.shipping.firstname}
                                         onChange={(e) => {
                                             setshipFirstName((prev) => (prev = e.target.value));
@@ -179,7 +179,7 @@ const EditProfileModal = (props: any) => {
 
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={['shipping', 'lastname']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Last name'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'Last name'} style={{ height: '40px'}}
                                         defaultValue={data.shipping.lastname}
                                         onChange={(e) => {
                                             setshipLastName((prev) => (prev = e.target.value));
@@ -193,7 +193,7 @@ const EditProfileModal = (props: any) => {
 
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={['shipping', 'phone']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Phone'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'Phone'} style={{ height: '40px'}}
                                         defaultValue={data.shipping.phone}
                                         type='number'
                                     />
@@ -204,7 +204,7 @@ const EditProfileModal = (props: any) => {
                         <Row>
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={['shipping', 'email']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Email'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'Email'} style={{ height: '40px'}}
                                         defaultValue={data.shipping.email}
                                     />
                                 </Form.Item>
@@ -212,7 +212,7 @@ const EditProfileModal = (props: any) => {
 
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={['shipping', 'address']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Address'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'Address'} style={{ height: '40px'}}
                                         defaultValue={data.shipping.address}
                                     />
                                 </Form.Item>
@@ -220,7 +220,7 @@ const EditProfileModal = (props: any) => {
 
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={['shipping', 'city']} rules={[{ required: true }]}>
-                                    <Input placeholder={'City'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'City'} style={{ height: '40px'}}
                                         defaultValue={data.shipping.city}
                                     />
                                 </Form.Item>
@@ -230,7 +230,7 @@ const EditProfileModal = (props: any) => {
                         <Row>
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={['shipping', 'postalcode']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Postal Code'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'Postal Code'} style={{ height: '40px'}}
                                         defaultValue={data.shipping.postalcode}
                                     />
                                 </Form.Item>
@@ -238,7 +238,7 @@ const EditProfileModal = (props: any) => {
 
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={['shipping', 'province']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Province'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'Province'} style={{ height: '40px'}}
                                         defaultValue={data.shipping.province}
                                     />
                                 </Form.Item>
@@ -255,7 +255,7 @@ const EditProfileModal = (props: any) => {
                         <Row>
                             <Col style={{ width: '30%', margin: '1%'}}>
                             <Form.Item name={[same ? 'shipping' : 'billing', 'firstname']} rules={[{ required: true }]}>
-                                <Input placeholder={'First name'} style={{ height: '40px'}}
+                                <Input disabled={true} placeholder={'First name'} style={{ height: '40px'}}
                                     defaultValue={data.billing.firstname}
                                     onChange={(e) => {
                                         setFirstName((prev) => (prev = e.target.value));
@@ -269,7 +269,7 @@ const EditProfileModal = (props: any) => {
 
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={[same ? 'shipping' : 'billing', 'lastname']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Last name'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'Last name'} style={{ height: '40px'}}
                                         defaultValue={data.billing.lastname}
                                         onChange={(e) => {
                                             setLastName((prev) => (prev = e.target.value));
@@ -283,7 +283,7 @@ const EditProfileModal = (props: any) => {
 
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={[same ? 'shipping' : 'billing', 'phone']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Phone'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'Phone'} style={{ height: '40px'}}
                                         defaultValue={data.billing.phone}
                                     />
                                 </Form.Item>
@@ -293,7 +293,7 @@ const EditProfileModal = (props: any) => {
                         <Row>
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={[same ? 'shipping' : 'billing', 'email']} rules={[{ required: true, type: 'email' }]}>
-                                    <Input placeholder={'email'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'email'} style={{ height: '40px'}}
                                         defaultValue={data.billing.email}
                                     />
                                 </Form.Item>
@@ -301,7 +301,7 @@ const EditProfileModal = (props: any) => {
 
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={[same ? 'shipping' : 'billing', 'address']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Address'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'Address'} style={{ height: '40px'}}
                                         defaultValue={data.billing.address}
                                     />
                                 </Form.Item>
@@ -309,7 +309,7 @@ const EditProfileModal = (props: any) => {
 
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={[same ? 'shipping' : 'billing', 'city']} rules={[{ required: true }]}>
-                                    <Input placeholder={'City'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'City'} style={{ height: '40px'}}
                                         defaultValue={data.billing.city}
                                         value={data.billing.city}
                                     />
@@ -320,7 +320,7 @@ const EditProfileModal = (props: any) => {
                         <Row>
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={[same ? 'shipping' : 'billing', 'postalcode']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Postal Code/Zip Code'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'Postal Code/Zip Code'} style={{ height: '40px'}}
                                         defaultValue={data.billing.postalcode}
                                     />
                                 </Form.Item>
@@ -328,7 +328,7 @@ const EditProfileModal = (props: any) => {
 
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={[same ? 'shipping' : 'billing', 'province']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Province/State'} style={{ height: '40px'}}
+                                    <Input disabled={true} placeholder={'Province/State'} style={{ height: '40px'}}
                                         defaultValue={data.billing.province}
                                     />
                                 </Form.Item>
@@ -337,6 +337,7 @@ const EditProfileModal = (props: any) => {
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item wrapperCol={{ ...layout.wrapperCol}} name="same" valuePropName="checked">
                                     <Checkbox
+                                        disabled={true}
                                         checked={same}
                                         onChange={(e) => {
                                             setSame(e.target.checked);
@@ -370,7 +371,7 @@ const EditProfileModal = (props: any) => {
                             <Row>
                                 <Col span={14}>
                                 <Form.Item name={['payment', 'credit']} rules={[{ required: true }]}>
-                                    <Input style={{ width: '100%', height: '40px'}}
+                                    <Input disabled={true} style={{ width: '100%', height: '40px'}}
                                         placeholder={'Credit Card'}
                                         defaultValue={data.payment.credit}
                                         type='number'
@@ -385,7 +386,7 @@ const EditProfileModal = (props: any) => {
                                 </Col>
                                 <Col span={6} style={{ marginLeft: '1%'}}>
                                     <Form.Item name={['payment', 'cvc']} rules={[{ required: true, min: 0, max: 999 }]}>
-                                        <Input style={{ width: '100%', height: '40px'}}
+                                        <Input disabled={true} style={{ width: '100%', height: '40px'}}
                                             placeholder={'CVC'}
                                             defaultValue={data.payment.cvc}
                                             type='number'
@@ -408,6 +409,7 @@ const EditProfileModal = (props: any) => {
                                             placeholder="Expiration Year" allowClear options={getMonths()}
                                             defaultValue={data.payment.month}
                                             onChange={changeMonth}
+                                            disabled={true}
                                         />
                                     </Form.Item>
                                 </Col>
@@ -418,6 +420,7 @@ const EditProfileModal = (props: any) => {
                                             placeholder="Expiration Year" allowClear options={getYears()}
                                             defaultValue={data.payment.year}
                                             onChange={changeYear}
+                                            disabled={true}
                                         />
                                     </Form.Item>
                                 </Col>
