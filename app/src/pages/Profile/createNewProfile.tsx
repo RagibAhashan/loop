@@ -34,14 +34,20 @@ const getYears = (): any => {
 };
 
 const getMonths = (): any => {
-    let months = [];
-    for (let i = 1; i <= 12; i++) {
-        months.push({
-            value: i,
-            label: i,
-        });
-    }
-    return months;
+    return [
+        { value: '01', label: '01' },
+        { value: '02', label: '02' },
+        { value: '03', label: '03' },
+        { value: '04', label: '04' },
+        { value: '05', label: '05' },
+        { value: '06', label: '06' },
+        { value: '07', label: '07' },
+        { value: '08', label: '08' },
+        { value: '09', label: '09' },
+        { value: '10', label: '10' },
+        { value: '11', label: '11' },
+        { value: '12', label: '12' }
+    ];
 };
 
 const CreateNewProfileModal = (props: any) => {
@@ -78,7 +84,13 @@ const CreateNewProfileModal = (props: any) => {
         setIsEditModalVisible(false);
       };
     
-      const data: any = {};
+      const changeMonth = (value: any) => {
+        setMonth(prev => prev = value)
+      }
+
+      const changeYear = (value: any) => {
+        setYear(prev => prev = value)
+      }
 
     return (
         <div>
@@ -300,8 +312,8 @@ const CreateNewProfileModal = (props: any) => {
                                 <Col span={14}>
                                 <Form.Item name={['payment', 'credit']} rules={[{ required: true }]}>
                                     <Input style={{ width: '100%', height: '40px'}}
+                                        type="number"
                                         placeholder={'Credit Card'}
-                                        type='number'
                                         onChange={(e) => {
                                             setCreditCard((prev) => (prev = e.target.value));
                                             if (!front) {
@@ -332,7 +344,8 @@ const CreateNewProfileModal = (props: any) => {
                                     <Form.Item name={['payment', 'month']} rules={[{ required: true }]}>
                                         <Select
                                             style={{ width: '100%'}}
-                                            placeholder="Expiration Year" allowClear options={getMonths()}
+                                            placeholder="Expiration Month" allowClear options={getMonths()}
+                                            onChange={changeMonth}
                                         />
                                     </Form.Item>
                                 </Col>
@@ -341,6 +354,7 @@ const CreateNewProfileModal = (props: any) => {
                                         <Select
                                             style={{ width: '100%'}}
                                             placeholder="Expiration Year" allowClear options={getYears()}
+                                            onChange={changeYear}
                                         />
                                     </Form.Item>
 
