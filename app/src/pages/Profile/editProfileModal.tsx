@@ -369,7 +369,6 @@ const EditProfileModal = (props: any) => {
                                             style={{ width: '100%'}}
                                             placeholder="Expiration Year" allowClear options={getYears()}
                                             defaultValue={data.payment.year}
-                                            
                                         />
                                     </Form.Item>
                                 </Col>
