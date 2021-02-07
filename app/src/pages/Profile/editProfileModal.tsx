@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Button, Tabs, message, Input, Row, Col, Form, Divider, Select, Checkbox } from 'antd';
+import { Modal, Tabs, Input, Row, Col, Form, Divider, Select, Checkbox, Button } from 'antd';
 import Cards from 'react-credit-cards';
 
 const { TabPane } = Tabs;
@@ -34,14 +34,20 @@ const getYears = (): any => {
 };
 
 const getMonths = (): any => {
-    let months = [];
-    for (let i = 1; i <= 12; i++) {
-        months.push({
-            value: i,
-            label: i,
-        });
-    }
-    return months;
+    return [
+        { value: '01', label: '01' },
+        { value: '02', label: '02' },
+        { value: '03', label: '03' },
+        { value: '04', label: '04' },
+        { value: '05', label: '05' },
+        { value: '06', label: '06' },
+        { value: '07', label: '07' },
+        { value: '08', label: '08' },
+        { value: '09', label: '09' },
+        { value: '10', label: '10' },
+        { value: '11', label: '11' },
+        { value: '12', label: '12' }
+    ];
 };
 
 const EditProfileModal = (props: any) => {
@@ -72,26 +78,28 @@ const EditProfileModal = (props: any) => {
         setMonth(data.payment.month.length === 1 ? `0${data.payment.month}12` : data.payment.month)
         setYear(data.payment.year)
     }, [])
-
-
-
-    const callback = (key: any) => {
-        console.log(key);
-      }    
-
-
     
       const handleOk = () => {
         setIsEditModalVisible(false);
       };
     
       const handleCancel = () => {
-        onDeleteProfile(data.profile)
+        // onDeleteProfile(data.profile)
         setIsEditModalVisible(false);
       };
+
+
+    const changeMonth = (value: any) => {
+        setMonth(prev => prev = value);
+        setFront(true);
+    }
+
+    const changeYear = (value: any) => {
+        setYear(prev => prev = value)
+        setFront(true);
+    }
+
     
-
-
     return (
         <div>
             <Modal title="Edit Profile"
@@ -101,10 +109,20 @@ const EditProfileModal = (props: any) => {
                 width={1000}
                 okText="Save"
                 cancelText="Delete profile"
-                // footer={false}
+                footer={false}
             >
             <Form name="nest-messages" /*onFinish={onFinish}*/ validateMessages={validateMessages}>
-                <Tabs defaultActiveKey="1" onChange={callback} >
+                <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
+                <Tabs defaultActiveKey="1" tabBarExtraContent={<Button
+                        type="primary" danger
+                        onClick={() => {
+                            onDeleteProfile(data.profile);
+                            setIsEditModalVisible(false);
+                        }}
+                    >
+                        Delete Profile
+                    </Button>}
+                >
                     
                     <TabPane tab="Profile and Shipping" key="1" >
                         <Row>
@@ -362,6 +380,7 @@ const EditProfileModal = (props: any) => {
                                             style={{ width: '100%'}}
                                             placeholder="Expiration Year" allowClear options={getMonths()}
                                             defaultValue={data.payment.month}
+                                            onChange={changeMonth}
                                         />
                                     </Form.Item>
                                 </Col>
@@ -371,6 +390,7 @@ const EditProfileModal = (props: any) => {
                                             style={{ width: '100%'}}
                                             placeholder="Expiration Year" allowClear options={getYears()}
                                             defaultValue={data.payment.year}
+                                            onChange={changeYear}
                                         />
                                     </Form.Item>
                                 </Col>
@@ -383,6 +403,7 @@ const EditProfileModal = (props: any) => {
 
                     
                 </Tabs>
+                </div>
             </Form>
 
             </Modal>

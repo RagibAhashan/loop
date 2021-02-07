@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Modal, Button, Tabs, message, Input, Row, Col, Form, Divider, Select, Checkbox } from 'antd';
+import React, { useState } from 'react';
+import { Modal, Button, Tabs, Input, Row, Col, Form, Divider, Select, Checkbox } from 'antd';
 import Cards from 'react-credit-cards';
 
 const { TabPane } = Tabs;
@@ -85,11 +85,13 @@ const CreateNewProfileModal = (props: any) => {
       };
     
       const changeMonth = (value: any) => {
-        setMonth(prev => prev = value)
+        setMonth(prev => prev = value);
+        setFront(true);
       }
 
       const changeYear = (value: any) => {
         setYear(prev => prev = value)
+        setFront(true);
       }
 
     return (
