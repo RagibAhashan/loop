@@ -109,6 +109,7 @@ const CreateNewProfileModal = (props: any) => {
                 footer={false}
             >
             <Form name="nest-messages" onFinish={addProfile} validateMessages={validateMessages}>
+            <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
                 <Tabs defaultActiveKey="1" onChange={callback} >
                     
                     <TabPane tab="Profile and Shipping" key="1" >
@@ -375,7 +376,7 @@ const CreateNewProfileModal = (props: any) => {
 
                     
                 </Tabs>
-
+                </div>
                 
             </Form>
 
