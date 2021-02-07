@@ -4,18 +4,6 @@ import { UserProfile } from '../../interfaces/TaskInterfaces';
 import CreateNewProfileModal from './createNewProfile';
 import EditProfileModal from './editProfileModal';
 
-const getYears = (): any => {
-    const year = new Date().getFullYear();
-    let years = [];
-    for (let i = year; i < year + 15; i++) {
-        years.push({
-            value: i,
-            label: i,
-        });
-    }
-    return years;
-};
-
 const ProfilePage = () => {
     const [profiles, setUserProfiles] = useState([] as UserProfile[]);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -39,7 +27,7 @@ const ProfilePage = () => {
         setUserProfiles(db_profiles);
     }, []);
 
-    const onFinish = (values: any) => {
+    const addProfile = (values: any) => {
         for (let i = 0; i < profiles.length; i++) {
             if (profiles[i].profile === values.profile) {
                 message.error(`Profile "${profiles[i].profile}" already exists!`);
@@ -126,7 +114,7 @@ const ProfilePage = () => {
         <div style={{ backgroundColor: '#212427', height: '100vh', padding: '20px', overflow: 'auto' }}>
             {/* <div style={{ backgroundColor: '#212427', height: '100vh', padding: '20px' }}></div> */}
             <div style={{ float: 'right' }}>
-                <CreateNewProfileModal onFinish={onFinish} />
+                <CreateNewProfileModal addProfile={addProfile} />
             </div>
             <Divider> My Profiles </Divider>
             <div style={{ padding: 24, backgroundColor: '#212427', display: 'flex', flexWrap: 'wrap' }}>
@@ -138,6 +126,7 @@ const ProfilePage = () => {
                         setIsEditModalVisible={setIsEditModalVisible}
                         data={currentSelectedCard}
                         onDeleteProfile={onDeleteProfile}
+                        addProfile={addProfile}
                     />
                 ) : (
                     <div />

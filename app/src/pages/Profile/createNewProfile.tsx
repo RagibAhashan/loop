@@ -4,6 +4,7 @@ import Cards from 'react-credit-cards';
 
 const { TabPane } = Tabs;
 
+/* eslint-disable no-template-curly-in-string */
 const validateMessages = {
     required: 'required!',
     types: {
@@ -25,7 +26,7 @@ const getYears = (): any => {
     let years = [];
     for (let i = year; i < year + 15; i++) {
         years.push({
-            value: i,
+            value: i.toString(),
             label: i,
         });
     }
@@ -108,7 +109,7 @@ const CreateNewProfileModal = (props: any) => {
                                 <br />
                                 <Row>
                                     <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={['shipping', 'firstname']} rules={[{ required: true }]}>
+                                        <Form.Item name={['shipping', 'firstName']} rules={[{ required: true }]}>
                                             <Input
                                                 placeholder={'First name'}
                                                 style={{ height: '40px' }}
@@ -123,7 +124,7 @@ const CreateNewProfileModal = (props: any) => {
                                     </Col>
 
                                     <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={['shipping', 'lastname']} rules={[{ required: true }]}>
+                                        <Form.Item name={['shipping', 'lastName']} rules={[{ required: true }]}>
                                             <Input
                                                 placeholder={'Last name'}
                                                 style={{ height: '40px' }}
@@ -158,7 +159,7 @@ const CreateNewProfileModal = (props: any) => {
                                     </Col>
 
                                     <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={['shipping', 'city']} rules={[{ required: true }]}>
+                                        <Form.Item name={['shipping', 'town']} rules={[{ required: true }]}>
                                             <Input placeholder={'City'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
@@ -166,13 +167,13 @@ const CreateNewProfileModal = (props: any) => {
 
                                 <Row>
                                     <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={['shipping', 'postalcode']} rules={[{ required: true }]}>
+                                        <Form.Item name={['shipping', 'postalCode']} rules={[{ required: true }]}>
                                             <Input placeholder={'Postal Code/Zip Code'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
 
                                     <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={['shipping', 'province']} rules={[{ required: true }]}>
+                                        <Form.Item name={['shipping', 'region']} rules={[{ required: true }]}>
                                             <Input placeholder={'Province/State'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
@@ -182,7 +183,7 @@ const CreateNewProfileModal = (props: any) => {
                             <TabPane tab="Payment Information" key="2">
                                 <Row>
                                     <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'firstname']} rules={[{ required: true }]}>
+                                        <Form.Item name={[same ? 'shipping' : 'billing', 'firstName']} rules={[{ required: true }]}>
                                             <Input
                                                 placeholder={'First name'}
                                                 style={{ height: '40px' }}
@@ -197,7 +198,7 @@ const CreateNewProfileModal = (props: any) => {
                                     </Col>
 
                                     <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'lastname']} rules={[{ required: true }]}>
+                                        <Form.Item name={[same ? 'shipping' : 'billing', 'lastName']} rules={[{ required: true }]}>
                                             <Input
                                                 placeholder={'Last name'}
                                                 style={{ height: '40px' }}
@@ -232,7 +233,7 @@ const CreateNewProfileModal = (props: any) => {
                                     </Col>
 
                                     <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'city']} rules={[{ required: true }]}>
+                                        <Form.Item name={[same ? 'shipping' : 'billing', 'town']} rules={[{ required: true }]}>
                                             <Input placeholder={'City'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
@@ -240,13 +241,13 @@ const CreateNewProfileModal = (props: any) => {
 
                                 <Row>
                                     <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'postalcode']} rules={[{ required: true }]}>
+                                        <Form.Item name={[same ? 'shipping' : 'billing', 'postalCode']} rules={[{ required: true }]}>
                                             <Input placeholder={'Postal Code/Zip Code'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
 
                                     <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'province']} rules={[{ required: true }]}>
+                                        <Form.Item name={[same ? 'shipping' : 'billing', 'region']} rules={[{ required: true }]}>
                                             <Input placeholder={'Province/State'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
@@ -281,7 +282,7 @@ const CreateNewProfileModal = (props: any) => {
                                         <br />
                                         <Row>
                                             <Col span={14}>
-                                                <Form.Item name={['payment', 'credit']} rules={[{ required: true }]}>
+                                                <Form.Item name={['payment', 'number']} rules={[{ required: true }]}>
                                                     <Input
                                                         style={{ width: '100%', height: '40px' }}
                                                         type="number"
@@ -314,7 +315,7 @@ const CreateNewProfileModal = (props: any) => {
                                         <br />
                                         <Row style={{ marginTop: '-30px' }}>
                                             <Col span={10}>
-                                                <Form.Item name={['payment', 'month']} rules={[{ required: true }]}>
+                                                <Form.Item name={['payment', 'expiryMonth']} rules={[{ required: true }]}>
                                                     <Select
                                                         style={{ width: '100%' }}
                                                         placeholder="Expiration Month"
@@ -325,7 +326,7 @@ const CreateNewProfileModal = (props: any) => {
                                                 </Form.Item>
                                             </Col>
                                             <Col span={10} style={{ marginLeft: '1%' }}>
-                                                <Form.Item name={['payment', 'year']} rules={[{ required: true }]}>
+                                                <Form.Item name={['payment', 'expiryYear']} rules={[{ required: true }]}>
                                                     <Select
                                                         style={{ width: '100%' }}
                                                         placeholder="Expiration Year"

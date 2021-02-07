@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Tabs, Input, Row, Col, Form, Divider, Select, Checkbox, Button } from 'antd';
 import Cards from 'react-credit-cards';
+import { UserProfile } from '../../interfaces/TaskInterfaces';
 
 const { TabPane } = Tabs;
 
@@ -50,7 +51,13 @@ const getMonths = (): any => {
 };
 
 const EditProfileModal = (props: any) => {
-    const { isEditModalVisible, setIsEditModalVisible, data, onDeleteProfile, addProfile } = props;
+    const {
+        isEditModalVisible,
+        setIsEditModalVisible,
+        data,
+        onDeleteProfile,
+        addProfile,
+    }: { isEditModalVisible: any; setIsEditModalVisible: any; data: UserProfile; onDeleteProfile: any; addProfile: any } = props;
     const [same, setSame] = useState(false);
     const [front, setFront] = useState(true);
 
@@ -70,12 +77,12 @@ const EditProfileModal = (props: any) => {
     }, [data]);
 
     useEffect(() => {
-        setFirstName(data.billing.firstname);
-        setLastName(data.billing.lastname);
-        setCreditCard(data.payment.credit);
+        setFirstName(data.billing.firstName);
+        setLastName(data.billing.lastName);
+        setCreditCard(data.payment.number);
         setCvc(data.payment.cvc);
-        setMonth(data.payment.month.length === 1 ? `0${data.payment.month}12` : data.payment.month);
-        setYear(data.payment.year);
+        setMonth(data.payment.expiryMonth.length === 1 ? `0${data.payment.expiryMonth}12` : data.payment.expiryMonth);
+        setYear(data.payment.expiryYear);
     }, []);
 
     const handleOk = () => {
@@ -166,7 +173,7 @@ const EditProfileModal = (props: any) => {
                                                 disabled={true}
                                                 placeholder={'First name'}
                                                 style={{ height: '40px' }}
-                                                defaultValue={data.shipping.firstname}
+                                                defaultValue={data.shipping.firstName}
                                                 onChange={(e) => {
                                                     setshipFirstName((prev) => (prev = e.target.value));
                                                     if (!front) {
@@ -183,7 +190,7 @@ const EditProfileModal = (props: any) => {
                                                 disabled={true}
                                                 placeholder={'Last name'}
                                                 style={{ height: '40px' }}
-                                                defaultValue={data.shipping.lastname}
+                                                defaultValue={data.shipping.lastName}
                                                 onChange={(e) => {
                                                     setshipLastName((prev) => (prev = e.target.value));
                                                     if (!front) {
@@ -236,7 +243,7 @@ const EditProfileModal = (props: any) => {
                                                 disabled={true}
                                                 placeholder={'City'}
                                                 style={{ height: '40px' }}
-                                                defaultValue={data.shipping.city}
+                                                defaultValue={data.shipping.town}
                                             />
                                         </Form.Item>
                                     </Col>
@@ -249,7 +256,7 @@ const EditProfileModal = (props: any) => {
                                                 disabled={true}
                                                 placeholder={'Postal Code'}
                                                 style={{ height: '40px' }}
-                                                defaultValue={data.shipping.postalcode}
+                                                defaultValue={data.shipping.postalCode}
                                             />
                                         </Form.Item>
                                     </Col>
@@ -260,7 +267,7 @@ const EditProfileModal = (props: any) => {
                                                 disabled={true}
                                                 placeholder={'Province'}
                                                 style={{ height: '40px' }}
-                                                defaultValue={data.shipping.province}
+                                                defaultValue={data.shipping.region}
                                             />
                                         </Form.Item>
                                     </Col>
@@ -275,7 +282,7 @@ const EditProfileModal = (props: any) => {
                                                 disabled={true}
                                                 placeholder={'First name'}
                                                 style={{ height: '40px' }}
-                                                defaultValue={data.billing.firstname}
+                                                defaultValue={data.billing.firstName}
                                                 onChange={(e) => {
                                                     setFirstName((prev) => (prev = e.target.value));
                                                     if (!front) {
@@ -292,7 +299,7 @@ const EditProfileModal = (props: any) => {
                                                 disabled={true}
                                                 placeholder={'Last name'}
                                                 style={{ height: '40px' }}
-                                                defaultValue={data.billing.lastname}
+                                                defaultValue={data.billing.lastName}
                                                 onChange={(e) => {
                                                     setLastName((prev) => (prev = e.target.value));
                                                     if (!front) {
@@ -344,8 +351,8 @@ const EditProfileModal = (props: any) => {
                                                 disabled={true}
                                                 placeholder={'City'}
                                                 style={{ height: '40px' }}
-                                                defaultValue={data.billing.city}
-                                                value={data.billing.city}
+                                                defaultValue={data.billing.region}
+                                                value={data.billing.region}
                                             />
                                         </Form.Item>
                                     </Col>
@@ -358,7 +365,7 @@ const EditProfileModal = (props: any) => {
                                                 disabled={true}
                                                 placeholder={'Postal Code/Zip Code'}
                                                 style={{ height: '40px' }}
-                                                defaultValue={data.billing.postalcode}
+                                                defaultValue={data.billing.postalCode}
                                             />
                                         </Form.Item>
                                     </Col>
@@ -369,7 +376,7 @@ const EditProfileModal = (props: any) => {
                                                 disabled={true}
                                                 placeholder={'Province/State'}
                                                 style={{ height: '40px' }}
-                                                defaultValue={data.billing.province}
+                                                defaultValue={data.billing.region}
                                             />
                                         </Form.Item>
                                     </Col>
@@ -410,7 +417,7 @@ const EditProfileModal = (props: any) => {
                                                         disabled={true}
                                                         style={{ width: '100%', height: '40px' }}
                                                         placeholder={'Credit Card'}
-                                                        defaultValue={data.payment.credit}
+                                                        defaultValue={data.payment.number}
                                                         type="number"
                                                         onChange={(e) => {
                                                             setCreditCard((prev) => (prev = e.target.value));
@@ -448,7 +455,7 @@ const EditProfileModal = (props: any) => {
                                                         placeholder="Expiration Year"
                                                         allowClear
                                                         options={getMonths()}
-                                                        defaultValue={data.payment.month}
+                                                        defaultValue={data.payment.expiryMonth}
                                                         onChange={changeMonth}
                                                         disabled={true}
                                                     />
@@ -461,7 +468,7 @@ const EditProfileModal = (props: any) => {
                                                         placeholder="Expiration Year"
                                                         allowClear
                                                         options={getYears()}
-                                                        defaultValue={data.payment.year}
+                                                        defaultValue={data.payment.expiryYear}
                                                         onChange={changeYear}
                                                         disabled={true}
                                                     />
