@@ -237,10 +237,14 @@ const ProxyPage = () => {
             var fields = value.split(':');
             var ip = fields[0];
             var port = fields[1];
+            var username = fields[2];
+            var password = fields[3];
             let dataRow = {
                 id: ++id,
                 ip: ip,
                 port: port,
+                username: username,
+                password: password,
                 status: 'None',
                 action: '',
             };
