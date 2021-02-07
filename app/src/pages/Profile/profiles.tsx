@@ -1,5 +1,6 @@
-import { Col, Divider, message, Row, Space } from 'antd';
+import { Divider, message } from 'antd';
 import React, { useEffect, useState } from 'react';
+import { UserProfile } from '../../interfaces/TaskInterfaces';
 import CreateNewProfileModal from './createNewProfile';
 import EditProfileModal from './editProfileModal';
 
@@ -15,49 +16,16 @@ const getYears = (): any => {
     return years;
 };
 
-const UserFormData = {
-    profile: '',
-    same: false,
-    shipping: {
-        address: '88 address',
-        city: '88 city',
-        email: '88 email',
-        firstname: '88 email',
-        lastname: '88 email',
-        phone: '88 email',
-        postalcode: '88 email',
-        province: '88 email',
-    },
-
-    billing: {
-        address: '88 billing',
-        city: '88 billing',
-        email: '88 billing',
-        firstname: '88 billing',
-        lastname: '88 billing',
-        phone: '88 billing',
-        postalcode: '88 billing',
-        province: '88 billing',
-    },
-
-    payment: {
-        credit: 'dasd',
-        cvc: 'dasd',
-        month: 'asd',
-        year: 'asdasd',
-    },
-};
-
 const ProfilePage = () => {
-    const [profiles, setUserProfiles] = useState([UserFormData, UserFormData, UserFormData, UserFormData, UserFormData, UserFormData]);
+    const [profiles, setUserProfiles] = useState([] as UserProfile[]);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [currentSelectedCard, setCurrentSelectedCard] = useState({});
 
-    function useForceUpdate(){
+    function useForceUpdate() {
         const [value, setValue] = useState(0); // integer state
-        return () => setValue(value => value + 1); // update the state to force render
-      }
-      const forceUpdate = useForceUpdate();
+        return () => setValue((value) => value + 1); // update the state to force render
+    }
+    const forceUpdate = useForceUpdate();
 
     useEffect(() => {
         let db_profiles: any = localStorage.getItem('profiles');
@@ -120,15 +88,16 @@ const ProfilePage = () => {
     };
 
     const ProfileCard = (props: any) => {
-        const { data } = props;
+        const { data }: { data: UserProfile } = props;
         const profile = data.profile;
 
-        const full_num = data.payment.credit;
+        const full_num = data.payment.number;
+        console.log(data.payment);
         const len = full_num.length;
         const cc_num = `${full_num.substring(0, 4)} ${full_num.substring(4, 8)} ${full_num.substring(8, 12)} ${full_num.substring(12, len)}`;
 
         const cc_number = cc_num;
-        const name = `${data.shipping.firstname} ${data.shipping.lastname}`.toUpperCase();
+        const name = `${data.shipping.firstName} ${data.shipping.lastName}`.toUpperCase();
 
         return (
             <div
