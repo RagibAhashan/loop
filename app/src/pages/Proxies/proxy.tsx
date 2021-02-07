@@ -26,20 +26,20 @@ const ProxyPage = () => {
     const [ vt, set_components ] = useVT(() => ({ scroll: { y: 560 } }), []);
 
     useEffect(() => {
-        // const obj = Object.fromEntries(map1);
-        // localStorage.clear();
+        // localStorage.clear()
         let db_proxies: any = localStorage.getItem('proxies');
         if (!db_proxies) {
-            db_proxies = new Map();
-            localStorage.setItem('proxies', JSON.stringify(Array.from(db_proxies.entries())));
+            const obj = Object.fromEntries(proxies);
+            localStorage.setItem('proxies', JSON.stringify(obj));
         } else {
-            let tempProxyMap = new Map();
-            for (let i = 0; i < JSON.parse(db_proxies).length; i++) {
-                tempProxyMap.set(JSON.parse(db_proxies)[i][0], JSON.parse(db_proxies)[i][1]);
+            let tempProxyMap = new Map<string, []>();
+            const obj = JSON.parse(db_proxies)
+            const array = Object.keys(obj).map((key) => [key, obj[key]]);
+            for(let i=0; i< array.length; i++) {
+                tempProxyMap.set(array[i][0], array[i][1])
             }
             setProxies(tempProxyMap);
         }
-        console.log(localStorage);
     }, []);
 
     const onCreate = (values: any) => {
@@ -50,7 +50,7 @@ const ProxyPage = () => {
             return null;
         } else {
             setProxies(proxies.set(name, []));
-            localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())));
+            localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
             forceUpdate();
             setVisibleCreate(false);
             if(proxies.size == 1) {
@@ -73,7 +73,7 @@ const ProxyPage = () => {
                 // called after readAsText
                 proxyArray.push(e.target?.result);
                 setProxies(proxies.set(name, proxyArray[0].split('\n')));
-                localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())));
+                localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
                 forceUpdate();
                 setVisibleAdd(false);
                 tab = 1;
@@ -82,7 +82,7 @@ const ProxyPage = () => {
         } else if (tab == COPYPASTE) {
             proxyArray.push(values.copiedProxies);
             setProxies(proxies.set(name, proxyArray[0].split('\n')));
-            localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())));
+            localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
             forceUpdate();
             setVisibleAdd(false);
             tab = 1;
@@ -94,7 +94,7 @@ const ProxyPage = () => {
         arraySetToDelete.forEach((name: any) => {
             proxies.delete(name);
             setProxies(proxies);
-            localStorage.setItem('proxies', JSON.stringify(Array.from(proxies.entries())));
+            localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
         });
         setVisibleDelete(false);
     };
@@ -136,30 +136,43 @@ const ProxyPage = () => {
             title: 'ID',
             dataIndex: 'id',
             key: 'id',
-            width: '10%',
+            width: '5%',
             render: (text: any) => <a> {text} </a>,
         },
         {
             title: 'IP',
             dataIndex: 'ip',
             key: 'ip',
-            width: '25%',
+            width: '15%',
         },
         {
             title: 'Port',
             dataIndex: 'port',
             key: 'port',
-            width: '25%',
+            width: '10%',
+        },
+        {
+            title: 'Username',
+            dataIndex: 'username',
+            key: 'username',
+            width: '20%',
+        },
+        {
+            title: 'Password',
+            dataIndex: 'password',
+            key: 'password',
+            width: '20%',
         },
         {
             title: 'Status',
             key: 'status',
             dataIndex: 'status',
-            width: '25%',
+            width: '20%',
         },
         {
             title: 'Action',
             key: 'action',
+            width: '10%',
             render: (text: any, record: any) => (
                 <Space size="large">
                     <PoweroffOutlined style={{ color: 'green', fontSize: 16 }} onClick={testIndividual} />
@@ -307,6 +320,31 @@ const ProxyPage = () => {
                         >
                             Test All
                         </Button>
+                        <Button
+                            icon={<PoweroffOutlined style={{ color: 'green' }} />}
+                            style={{ textAlign: 'center', float: 'left', marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
+                            type={'primary'}
+                            onClick={()=> {
+                                let tempProxyMap = new Map();
+                                // to set in localStorage
+                                const obj = Object.fromEntries(proxies);
+                                const jsonObj = JSON.stringify(obj)
+
+                                // to get from localStorage
+                                const obj2 = JSON.parse(jsonObj)
+                                const array = Object.keys(obj2).map((key) => [key, obj2[key]]);
+                                for(let i=0; i< array.length; i++) {
+                                    tempProxyMap.set(array[i][0], array[i][1])
+                                }
+                                // const mapObj = new Map(arrayObj)
+                                console.log(tempProxyMap);
+                                // const map = Object.entries(jsonObj).forEach(([key, value]) => (tempProxyMap.set(key,value)));
+                                // console.log(tempProxyMap)
+                                console.log(proxies)
+                            }}
+                        >
+                            temp
+                        </Button>
                     </div>
                     <div>
                         <Button
@@ -322,5 +360,4 @@ const ProxyPage = () => {
         </Layout>
     );
 };
-
 export default ProxyPage;
