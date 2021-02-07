@@ -53,6 +53,12 @@ const ProfilePage = () => {
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [currentSelectedCard, setCurrentSelectedCard] = useState({});
 
+    function useForceUpdate(){
+        const [value, setValue] = useState(0); // integer state
+        return () => setValue(value => value + 1); // update the state to force render
+      }
+      const forceUpdate = useForceUpdate();
+
     useEffect(() => {
         let db_profiles: any = localStorage.getItem('profiles');
         if (!db_profiles) {
@@ -84,6 +90,8 @@ const ProfilePage = () => {
 
         setUserProfiles(prev_profiles);
         localStorage.setItem('profiles', JSON.stringify(prev_profiles));
+        setIsEditModalVisible(false);
+        forceUpdate();
     };
 
     const onDeleteProfile = (profileID: String): void => {
@@ -107,6 +115,8 @@ const ProfilePage = () => {
                 return;
             }
         }
+
+        forceUpdate();
     };
 
     const ProfileCard = (props: any) => {
@@ -158,12 +168,11 @@ const ProfilePage = () => {
                         isEditModalVisible={isEditModalVisible}
                         setIsEditModalVisible={setIsEditModalVisible}
                         data={currentSelectedCard}
+                        onDeleteProfile={onDeleteProfile}
                     />
                 ) : (
                     <div />
                 )}
-
-                {ShowProfiles(profiles)}
 
                 {ShowProfiles(profiles)}
             </div>

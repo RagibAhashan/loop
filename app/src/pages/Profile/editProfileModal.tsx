@@ -45,7 +45,7 @@ const getMonths = (): any => {
 };
 
 const EditProfileModal = (props: any) => {
-    const {isEditModalVisible, setIsEditModalVisible, data} = props;
+    const {isEditModalVisible, setIsEditModalVisible, data, onDeleteProfile} = props;
     const [same, setSame] = useState(false);
     const [front, setFront] = useState(true);
 
@@ -86,6 +86,7 @@ const EditProfileModal = (props: any) => {
       };
     
       const handleCancel = () => {
+        onDeleteProfile(data.profile)
         setIsEditModalVisible(false);
       };
     
@@ -99,6 +100,7 @@ const EditProfileModal = (props: any) => {
                 onCancel={handleCancel}
                 width={1000}
                 okText="Save"
+                cancelText="Delete profile"
                 // footer={false}
             >
             <Form name="nest-messages" /*onFinish={onFinish}*/ validateMessages={validateMessages}>
