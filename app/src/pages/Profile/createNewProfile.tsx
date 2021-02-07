@@ -51,7 +51,7 @@ const getMonths = (): any => {
 };
 
 const CreateNewProfileModal = (props: any) => {
-    const { onFinish } = props;
+    const { addProfile } = props;
     const [same, setSame] = useState(false);
     const [front, setFront] = useState(true);
 
@@ -108,7 +108,7 @@ const CreateNewProfileModal = (props: any) => {
                 width={1000}
                 footer={false}
             >
-            <Form name="nest-messages" onFinish={onFinish} validateMessages={validateMessages}>
+            <Form name="nest-messages" onFinish={addProfile} validateMessages={validateMessages}>
                 <Tabs defaultActiveKey="1" onChange={callback} >
                     
                     <TabPane tab="Profile and Shipping" key="1" >
@@ -184,14 +184,14 @@ const CreateNewProfileModal = (props: any) => {
                         <Row>
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={['shipping', 'postalcode']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Postal Code'} style={{ height: '40px'}}
+                                    <Input placeholder={'Postal Code/Zip Code'} style={{ height: '40px'}}
                                     />
                                 </Form.Item>
                             </Col>
 
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={['shipping', 'province']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Province'} style={{ height: '40px'}}
+                                    <Input placeholder={'Province/State'} style={{ height: '40px'}}
                                     />
                                 </Form.Item>
                             </Col>
@@ -265,14 +265,14 @@ const CreateNewProfileModal = (props: any) => {
                         <Row>
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={[same ? 'shipping' : 'billing', 'postalcode']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Postal Code'} style={{ height: '40px'}}
+                                    <Input placeholder={'Postal Code/Zip Code'} style={{ height: '40px'}}
                                     />
                                 </Form.Item>
                             </Col>
 
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={[same ? 'shipping' : 'billing', 'province']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Province'} style={{ height: '40px'}}
+                                    <Input placeholder={'Province/State'} style={{ height: '40px'}}
                                     />
                                 </Form.Item>
                             </Col>

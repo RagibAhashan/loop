@@ -51,7 +51,7 @@ const getMonths = (): any => {
 };
 
 const EditProfileModal = (props: any) => {
-    const {isEditModalVisible, setIsEditModalVisible, data, onDeleteProfile} = props;
+    const {isEditModalVisible, setIsEditModalVisible, data, onDeleteProfile, addProfile} = props;
     const [same, setSame] = useState(false);
     const [front, setFront] = useState(true);
 
@@ -111,17 +111,43 @@ const EditProfileModal = (props: any) => {
                 cancelText="Delete profile"
                 footer={false}
             >
-            <Form name="nest-messages" /*onFinish={onFinish}*/ validateMessages={validateMessages}>
+            <Form name="nest-messages" onFinish={addProfile} validateMessages={validateMessages}>
                 <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
-                <Tabs defaultActiveKey="1" tabBarExtraContent={<Button
+                <Tabs defaultActiveKey="1" tabBarExtraContent={
+                    
+                    <div>
+
+                    <Button
                         type="primary" danger
+                        style={{marginLeft: '-10px'}}
                         onClick={() => {
                             onDeleteProfile(data.profile);
                             setIsEditModalVisible(false);
                         }}
-                    >
+                        >
                         Delete Profile
-                    </Button>}
+                    </Button>
+
+                    {/* <Button
+                        type="primary"
+                        style={{marginLeft: '5px'}}
+                        onClick={() => {
+                            onDeleteProfile(data.profile);
+                            addProfile();
+                            setIsEditModalVisible(false);
+                        }}
+                        >
+                        Save
+                    </Button> */}
+
+                        {/* <Form.Item style={{float: 'right'}}>
+                            <Button type="primary" htmlType="submit" style={{ width: '400px', height: '40px'}}>
+                            Save
+                            </Button>
+                        </Form.Item> */}
+                    </div>
+
+                }
                 >
                     
                     <TabPane tab="Profile and Shipping" key="1" >
@@ -285,6 +311,7 @@ const EditProfileModal = (props: any) => {
                                 <Form.Item name={[same ? 'shipping' : 'billing', 'city']} rules={[{ required: true }]}>
                                     <Input placeholder={'City'} style={{ height: '40px'}}
                                         defaultValue={data.billing.city}
+                                        value={data.billing.city}
                                     />
                                 </Form.Item>
                             </Col>
@@ -293,7 +320,7 @@ const EditProfileModal = (props: any) => {
                         <Row>
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={[same ? 'shipping' : 'billing', 'postalcode']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Postal Code'} style={{ height: '40px'}}
+                                    <Input placeholder={'Postal Code/Zip Code'} style={{ height: '40px'}}
                                         defaultValue={data.billing.postalcode}
                                     />
                                 </Form.Item>
@@ -301,7 +328,7 @@ const EditProfileModal = (props: any) => {
 
                             <Col style={{ width: '30%', margin: '1%'}}>
                                 <Form.Item name={[same ? 'shipping' : 'billing', 'province']} rules={[{ required: true }]}>
-                                    <Input placeholder={'Province'} style={{ height: '40px'}}
+                                    <Input placeholder={'Province/State'} style={{ height: '40px'}}
                                         defaultValue={data.billing.province}
                                     />
                                 </Form.Item>
