@@ -142,6 +142,9 @@ body {
     padding: 10px;
     overflow-wrap: break-word;
 }
+ant-table [vt] > table > .ant-table-tbody > tr > td {
+    padding: 8px;
+}
 
 /* Starting from here is for rounded row borders*/
 table:first-child tr td:first-child {
@@ -194,6 +197,14 @@ table:first-child tr td:last-child {
 }
 .ant-tabs-top > .ant-tabs-nav::before {
     border-bottom: none;
+}
+// Full heiht for tabs
+.ant-tabs {
+    height: 100%;
+}
+
+.ant-tabs-content-holder {
+    display: flex;
 }
 
 .ant-tabs-content-holder {

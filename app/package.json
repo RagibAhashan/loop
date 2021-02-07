@@ -32,7 +32,8 @@
         "react-scripts": "4.0.1",
         "react-window": "^1.8.6",
         "typescript": "^4.0.3",
-        "uuid": "^8.3.2"
+        "uuid": "^8.3.2",
+        "virtualizedtableforantd4": "^1.1.2"
     },
     "scripts": {
         "start:react": "cross-env BROWSER=none craco start",
