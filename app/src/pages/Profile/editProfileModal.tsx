@@ -107,6 +107,7 @@ const EditProfileModal = (props: any) => {
     return (
         <div>
             <Modal
+                centered
                 title="View Profile"
                 visible={isEditModalVisible}
                 onOk={handleOk}

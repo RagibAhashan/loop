@@ -96,7 +96,15 @@ const CreateNewProfileModal = (props: any) => {
             <Button type="primary" onClick={() => setIsEditModalVisible(true)}>
                 Create Profile
             </Button>
-            <Modal title="Create a new profile" visible={isEditModalVisible} onOk={handleOk} onCancel={handleCancel} width={1000} footer={false}>
+            <Modal
+                centered
+                title="Create a new profile"
+                visible={isEditModalVisible}
+                onOk={handleOk}
+                onCancel={handleCancel}
+                width={1000}
+                footer={false}
+            >
                 <Form name="nest-messages" onFinish={addProfile} validateMessages={validateMessages}>
                     <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
                         <Tabs defaultActiveKey="1" onChange={callback}>
@@ -255,8 +263,9 @@ const CreateNewProfileModal = (props: any) => {
                                     </Col>
                                 </Row>
                                 <Divider> Enter your card </Divider>
-                                <Row gutter={ROW_GUTTER}>
-                                    <Col span={12}>
+
+                                <div style={{ display: 'flex', justifyContent: 'space-around', overflow: 'auto', padding: 5 }}>
+                                    <div style={{ marginRight: 10 }}>
                                         <Cards
                                             cvc={cvc}
                                             expiry={`${month}${year}`}
@@ -264,9 +273,9 @@ const CreateNewProfileModal = (props: any) => {
                                             name={same ? shipFirstName + ' ' + shipLastname : billFirstName + ' ' + billLastname}
                                             number={creditCard}
                                         />
-                                    </Col>
+                                    </div>
 
-                                    <Col span={12}>
+                                    <div>
                                         <Row gutter={ROW_GUTTER_CC}>
                                             <Col span={14}>
                                                 <Form.Item name={['payment', 'number']} rules={[{ required: true }]}>
@@ -332,8 +341,8 @@ const CreateNewProfileModal = (props: any) => {
                                                 </Form.Item>
                                             </Col>
                                         </Row>
-                                    </Col>
-                                </Row>
+                                    </div>
+                                </div>
                             </TabPane>
                         </Tabs>
                     </div>
