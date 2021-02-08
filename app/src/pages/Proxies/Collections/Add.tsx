@@ -12,7 +12,7 @@ const CollectionFormAdd = (props:any) => {
         <Modal
             // footer={null}
             visible={props.visible}
-            bodyStyle={{ height: '415px', paddingTop: 5 }}
+            bodyStyle={{ height: '370px', paddingTop: 5 }}
             title="Create a new set"
             okText="Create"
             cancelText="Cancel"
@@ -52,7 +52,7 @@ const CollectionFormAdd = (props:any) => {
                                         <InboxOutlined />
                                     </p>
                                     <p className="ant-upload-text">Click or drag file to this area to upload</p>
-                                    <p className="ant-upload-hint">Make sure that your proxies are separated by new lines!</p>
+                                    <p className="ant-upload-hint">Format should be: ip:port:username:password </p>
                                 </Dragger>
                             </Form.Item>
                         </TabPane>
@@ -63,7 +63,7 @@ const CollectionFormAdd = (props:any) => {
                                     rows={5}
                                     autoSize={{ maxRows: 10, minRows: 10 }}
                                     style={{ height: '150px', backgroundColor: 'rgba(40,44,41,0.5)' }}
-                                    placeholder={'Copy paste your proxies here \nMake sure that your proxies are separated by new lines!'}
+                                    placeholder={'Copy paste your proxies here \nFormat should be: ip:port:username:password'}
                                 />
                             </Form.Item>
                         </TabPane>

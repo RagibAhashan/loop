@@ -1,5 +1,5 @@
-import { DeleteFilled, PlusOutlined, PoweroffOutlined } from '@ant-design/icons';
-import { Layout, message, Space, Table, Tabs, Button} from 'antd';
+import { DeleteFilled, PlusOutlined, PoweroffOutlined, ArrowUpOutlined } from '@ant-design/icons';
+import { Layout, message, Space, Table, Tabs, Button, Tooltip} from 'antd';
 import React, { useEffect, useState } from 'react';
 import CollectionFormAdd from './Collections/Add'
 import CollectionFormCreate from './Collections/Create'
@@ -13,8 +13,8 @@ const COPYPASTE = 2;
 
 
 const ProxyPage = () => {
-    const [proxies, setProxies] = useState(new Map<string, []>()); // name -> proxies
-    let [currentTab, setCurrentTab] = useState({ name: Object.keys(proxies)[0], key: '1' });
+    const [proxies, setProxies] = useState(new Map<string, string[]>()); // name -> proxies
+    let [currentTab, setCurrentTab] = useState({ name: "", key: '1' });
 
     // Popups Visibility
     const [visibleCreate, setVisibleCreate] = useState(false);
@@ -39,6 +39,9 @@ const ProxyPage = () => {
                 tempProxyMap.set(array[i][0], array[i][1])
             }
             setProxies(tempProxyMap);
+            if(array[0] != undefined && array[0][0]) {
+                setCurrentTab({name: array[0][0], key: '1'});
+            }
         }
     }, []);
 
@@ -61,7 +64,6 @@ const ProxyPage = () => {
     };
 
     const onAdd = (values: any) => {
-        console.log(currentTab.name);
         const name = currentTab.name;
         const proxyArray: any = [];
 
@@ -118,7 +120,6 @@ const ProxyPage = () => {
 
     const onCancel = () => {
         tab = 1;
-        console.log('key: ' + tab);
     };
 
     const options = () => {
@@ -143,13 +144,13 @@ const ProxyPage = () => {
             title: 'IP',
             dataIndex: 'ip',
             key: 'ip',
-            width: '15%',
+            width: '20%',
         },
         {
             title: 'Port',
             dataIndex: 'port',
             key: 'port',
-            width: '10%',
+            width: '15%',
         },
         {
             title: 'Username',
@@ -167,7 +168,7 @@ const ProxyPage = () => {
             title: 'Status',
             key: 'status',
             dataIndex: 'status',
-            width: '20%',
+            width: '10%',
         },
         {
             title: 'Action',
@@ -175,8 +176,12 @@ const ProxyPage = () => {
             width: '10%',
             render: (text: any, record: any) => (
                 <Space size="large">
-                    <PoweroffOutlined style={{ color: 'green', fontSize: 16 }} onClick={testIndividual} />
-                    <DeleteFilled twoToneColor={'orange'} style={{ color: 'orange', fontSize: 18 }} onClick={deleteIndividual} />
+                    <Tooltip placement="top" title={"test"}>
+                        <PoweroffOutlined style={{ color: 'green', fontSize: 16 }} onClick={testIndividual} />
+                    </Tooltip>
+                    <Tooltip placement="top" title={"remove"}>
+                        <DeleteFilled twoToneColor={'orange'} style={{ color: 'orange', fontSize: 18 }} onClick={() => {deleteIndividual(record)}} />
+                    </Tooltip>
                 </Space>
             ),
         },
@@ -184,7 +189,24 @@ const ProxyPage = () => {
 
     const testIndividual = () => {};
 
-    const deleteIndividual = () => {};
+    const deleteIndividual = (record: any) => {
+        let proxiesArray: Array<string> = proxies.get(currentTab.name) || [];
+        let proxyToDelete: string = record.ip + ":" + record.port + ":" + record.username + ":" + record.password;
+        const index = proxiesArray.indexOf(proxyToDelete)
+        if (index > -1) { proxiesArray.splice(index, 1) }
+        proxies.set(currentTab.name, proxiesArray)
+        setProxies(proxies);
+        localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
+        forceUpdate();
+    };
+
+    const deleteAll= () => {
+        let proxiesArray: Array<string> = [];
+        proxies.set(currentTab.name, proxiesArray)
+        setProxies(proxies);
+        localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
+        forceUpdate();
+    };
 
     const { TabPane } = Tabs;
 
@@ -255,12 +277,14 @@ const ProxyPage = () => {
 
     const AddRemoveSets = (
         <div>
-            <PlusOutlined
-                style={{ color: 'green', fontSize: 30 }}
-                onClick={() => {
-                    setVisibleCreate(true);
-                }}
-            />
+            <Tooltip placement="top" title={"Add sets"}>
+                <PlusOutlined
+                    style={{ color: 'green', fontSize: 30 }}
+                    onClick={() => {
+                        setVisibleCreate(true);
+                    }}
+                />
+                </Tooltip>
             <CollectionFormCreate
                 visible={visibleCreate}
                 onCreate={onCreate}
@@ -269,12 +293,14 @@ const ProxyPage = () => {
                     onCancel();
                 }}
             />
-            <DeleteFilled
-                style={{ color: 'orange', fontSize: 30, marginTop: 15, marginLeft: 15 }}
-                onClick={() => {
-                    setVisibleDelete(true);
-                }}
-            />
+            <Tooltip placement="top" title={"Remove sets"}>
+                <DeleteFilled
+                    style={{ color: 'orange', fontSize: 30, marginTop: 15, marginLeft: 15 }}
+                    onClick={() => {
+                        setVisibleDelete(true);
+                    }}
+                />
+            </Tooltip>
             <CollectionFormDelete
                 visible={visibleDelete}
                 onCreate={onDelete}
@@ -295,71 +321,57 @@ const ProxyPage = () => {
                     {' '}
                     <Sets />{' '}
                 </div>
-                <div style={{ padding: '10px 15px' }}>
-                    <div>
-                        <Button
-                            icon={<PlusOutlined style={{ color: 'green' }} />}
-                            style={{ textAlign: 'center', float: 'left', paddingLeft: '35px', paddingRight: '35px' }}
-                            type={'primary'}
-                            onClick={() => {
-                                setVisibleAdd(true);
-                            }}
-                        >
-                            Add Proxies
-                        </Button>
-                        <CollectionFormAdd
-                            visible={visibleAdd}
-                            onCreate={onAdd}
-                            onCancel={() => {
-                                setVisibleAdd(false);
-                            }}
-                            callback={callback}
-                        />
+                { proxies.size?
+                    <div style={{ padding: '10px 15px' }}>
+                        <div>
+                            <Button
+                                icon={<PlusOutlined style={{ color: 'green' }} />}
+                                style={{ textAlign: 'center', float: 'left', paddingLeft: '35px', paddingRight: '35px' }}
+                                type={'primary'}
+                                onClick={() => {
+                                    setVisibleAdd(true);
+                                }}
+                            >
+                                Add Proxies
+                            </Button>
+                            <CollectionFormAdd
+                                visible={visibleAdd}
+                                onCreate={onAdd}
+                                onCancel={() => {
+                                    setVisibleAdd(false);
+                                }}
+                                callback={callback}
+                            />
+                        </div>
+                        <div>
+                            <Button
+                                icon={<PoweroffOutlined style={{ color: 'green' }} />}
+                                style={{ textAlign: 'center', float: 'left', marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
+                                type={'primary'}
+                            >
+                                Test All
+                            </Button>
+                        </div>
+                        <div>
+                            <Button
+                                icon={<DeleteFilled style={{ color: 'orange' }} />}
+                                style={{ textAlign: 'center', float: 'right', paddingLeft: '35px', paddingRight: '35px' }}
+                                type={'primary'}
+                                onClick={()=>{deleteAll()}}
+                            >
+                                Delete All
+                            </Button>
+                        </div>
                     </div>
-                    <div>
-                        <Button
-                            icon={<PoweroffOutlined style={{ color: 'green' }} />}
-                            style={{ textAlign: 'center', float: 'left', marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
-                            type={'primary'}
-                        >
-                            Test All
-                        </Button>
-                        <Button
-                            icon={<PoweroffOutlined style={{ color: 'green' }} />}
-                            style={{ textAlign: 'center', float: 'left', marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
-                            type={'primary'}
-                            onClick={()=> {
-                                let tempProxyMap = new Map();
-                                // to set in localStorage
-                                const obj = Object.fromEntries(proxies);
-                                const jsonObj = JSON.stringify(obj)
-
-                                // to get from localStorage
-                                const obj2 = JSON.parse(jsonObj)
-                                const array = Object.keys(obj2).map((key) => [key, obj2[key]]);
-                                for(let i=0; i< array.length; i++) {
-                                    tempProxyMap.set(array[i][0], array[i][1])
-                                }
-                                // const mapObj = new Map(arrayObj)
-                                console.log(tempProxyMap);
-                                // const map = Object.entries(jsonObj).forEach(([key, value]) => (tempProxyMap.set(key,value)));
-                                // console.log(tempProxyMap)
-                                console.log(proxies)
-                            }}
-                        >
-                            temp
-                        </Button>
+                    : <div>
+                        <div style={{float: 'right', fontSize:20, marginRight: 65}}> 
+                            Add Proxy Set <ArrowUpOutlined /> 
+                        </div> 
+                        <div style={{float: 'left', fontSize:20, marginRight: 65}}>
+                            No Sets Found.
+                        </div>
                     </div>
-                    <div>
-                        <Button
-                            icon={<DeleteFilled style={{ color: 'orange' }} />}
-                            style={{ textAlign: 'center', float: 'right', paddingLeft: '35px', paddingRight: '35px' }}
-                            type={'primary'}
-                        >
-                            Delete All
-                        </Button>
-                    </div>
-                </div>
+                    }
             </Content>
         </Layout>
     );
