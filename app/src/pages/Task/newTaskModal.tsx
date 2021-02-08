@@ -52,10 +52,10 @@ const getProxies = (): any => {
     const proxiesOptions: any = [{ label: 'No Proxies', value: null }];
     let prox: any = JSON.parse(localStorage.getItem('proxies') as string);
     if (prox) {
-        prox.forEach((set: any) => {
+        Object.entries(prox).forEach(([proxyName, proxies]: [string, unknown]) => {
             proxiesOptions.push({
-                label: `${set[0]} (${set[1].length} proxies)`,
-                value: `${set[0]}`,
+                label: `${proxyName} (${(proxies as string[]).length} proxies)`,
+                value: `${proxyName}`,
             });
         });
     }
@@ -71,7 +71,6 @@ const NewTaskModal = (props: any) => {
     const [form] = Form.useForm();
 
     const onFinishForm = (data: any) => {
-        console.log('DATAAAA', data);
         addTasks(data);
     };
 

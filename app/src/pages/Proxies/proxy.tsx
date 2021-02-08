@@ -1,9 +1,9 @@
 import { DeleteFilled, PlusOutlined, PoweroffOutlined, ArrowUpOutlined } from '@ant-design/icons';
-import { Layout, message, Space, Table, Tabs, Button, Tooltip} from 'antd';
+import { Layout, message, Space, Table, Tabs, Button, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
-import CollectionFormAdd from './Collections/Add'
-import CollectionFormCreate from './Collections/Create'
-import CollectionFormDelete from './Collections/Delete'
+import CollectionFormAdd from './Collections/Add';
+import CollectionFormCreate from './Collections/Create';
+import CollectionFormDelete from './Collections/Delete';
 import { useVT } from 'virtualizedtableforantd4';
 // import SmartTable from './SmartTable'
 
@@ -11,10 +11,9 @@ const { Content } = Layout;
 const UPLOAD = 1;
 const COPYPASTE = 2;
 
-
 const ProxyPage = () => {
     const [proxies, setProxies] = useState(new Map<string, string[]>()); // name -> proxies
-    let [currentTab, setCurrentTab] = useState({ name: "", key: '1' });
+    let [currentTab, setCurrentTab] = useState({ name: '', key: '1' });
 
     // Popups Visibility
     const [visibleCreate, setVisibleCreate] = useState(false);
@@ -23,7 +22,7 @@ const ProxyPage = () => {
     const [visibleAdd, setVisibleAdd] = useState(false);
 
     let [tab, setTabKey] = useState(1); // for add popup to select between upload and copy pasta
-    const [ vt, set_components ] = useVT(() => ({ scroll: { y: 560 } }), []);
+    const [vt, set_components] = useVT(() => ({ scroll: { y: 560 } }), []);
 
     useEffect(() => {
         // localStorage.clear()
@@ -33,14 +32,14 @@ const ProxyPage = () => {
             localStorage.setItem('proxies', JSON.stringify(obj));
         } else {
             let tempProxyMap = new Map<string, []>();
-            const obj = JSON.parse(db_proxies)
+            const obj = JSON.parse(db_proxies);
             const array = Object.keys(obj).map((key) => [key, obj[key]]);
-            for(let i=0; i< array.length; i++) {
-                tempProxyMap.set(array[i][0], array[i][1])
+            for (let i = 0; i < array.length; i++) {
+                tempProxyMap.set(array[i][0], array[i][1]);
             }
             setProxies(tempProxyMap);
-            if(array[0] != undefined && array[0][0]) {
-                setCurrentTab({name: array[0][0], key: '1'});
+            if (array[0] != undefined && array[0][0]) {
+                setCurrentTab({ name: array[0][0], key: '1' });
             }
         }
     }, []);
@@ -56,10 +55,9 @@ const ProxyPage = () => {
             localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
             forceUpdate();
             setVisibleCreate(false);
-            if(proxies.size == 1) {
-               setCurrentTab({name: name, key: '1'}) 
+            if (proxies.size == 1) {
+                setCurrentTab({ name: name, key: '1' });
             }
-            
         }
     };
 
@@ -176,11 +174,17 @@ const ProxyPage = () => {
             width: '10%',
             render: (text: any, record: any) => (
                 <Space size="large">
-                    <Tooltip placement="top" title={"test"}>
+                    <Tooltip placement="top" title={'test'}>
                         <PoweroffOutlined style={{ color: 'green', fontSize: 16 }} onClick={testIndividual} />
                     </Tooltip>
-                    <Tooltip placement="top" title={"remove"}>
-                        <DeleteFilled twoToneColor={'orange'} style={{ color: 'orange', fontSize: 18 }} onClick={() => {deleteIndividual(record)}} />
+                    <Tooltip placement="top" title={'remove'}>
+                        <DeleteFilled
+                            twoToneColor={'orange'}
+                            style={{ color: 'orange', fontSize: 18 }}
+                            onClick={() => {
+                                deleteIndividual(record);
+                            }}
+                        />
                     </Tooltip>
                 </Space>
             ),
@@ -191,18 +195,20 @@ const ProxyPage = () => {
 
     const deleteIndividual = (record: any) => {
         let proxiesArray: Array<string> = proxies.get(currentTab.name) || [];
-        let proxyToDelete: string = record.ip + ":" + record.port + ":" + record.username + ":" + record.password;
-        const index = proxiesArray.indexOf(proxyToDelete)
-        if (index > -1) { proxiesArray.splice(index, 1) }
-        proxies.set(currentTab.name, proxiesArray)
+        let proxyToDelete: string = record.ip + ':' + record.port + ':' + record.username + ':' + record.password;
+        const index = proxiesArray.indexOf(proxyToDelete);
+        if (index > -1) {
+            proxiesArray.splice(index, 1);
+        }
+        proxies.set(currentTab.name, proxiesArray);
         setProxies(proxies);
         localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
         forceUpdate();
     };
 
-    const deleteAll= () => {
+    const deleteAll = () => {
         let proxiesArray: Array<string> = [];
-        proxies.set(currentTab.name, proxiesArray)
+        proxies.set(currentTab.name, proxiesArray);
         setProxies(proxies);
         localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
         forceUpdate();
@@ -223,18 +229,16 @@ const ProxyPage = () => {
     }
 
     const Sets = () => (
-        <div>
-            <Tabs
-                activeKey={currentTab.key}
-                defaultActiveKey="1"
-                onChange={callback}
-                style={{ padding: '10px 15px' }}
-                onTabClick={tabClick}
-                tabBarExtraContent={AddRemoveSets}
-            >
-                {TabPanes()}
-            </Tabs>
-        </div>
+        <Tabs
+            activeKey={currentTab.key}
+            defaultActiveKey="1"
+            onChange={callback}
+            style={{ padding: '10px 15px', height: '100%' }}
+            onTabClick={tabClick}
+            tabBarExtraContent={AddRemoveSets}
+        >
+            {TabPanes()}
+        </Tabs>
     );
 
     const TabPanes = () => {
@@ -243,8 +247,14 @@ const ProxyPage = () => {
         let i = 0;
         return proxyArray.map((value) => {
             return [
-                <TabPane tab={value.name} key={++i}>
-                    <Table scroll={{ y: 560 }} components={vt} columns={columns} pagination={false} dataSource={ShowData(value.name)}/>
+                <TabPane style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'auto' }} tab={value.name} key={++i}>
+                    <Table
+                        // scroll={{ y: '60vh' }}
+                        // components={vt}
+                        columns={columns}
+                        pagination={false}
+                        dataSource={ShowData(value.name)}
+                    />
                 </TabPane>,
             ];
         });
@@ -256,6 +266,7 @@ const ProxyPage = () => {
         tempProxies = proxies.get(name);
         let id = 0;
         tempProxies.forEach((value: any) => {
+            console.log(value);
             var fields = value.split(':');
             var ip = fields[0];
             var port = fields[1];
@@ -277,14 +288,14 @@ const ProxyPage = () => {
 
     const AddRemoveSets = (
         <div>
-            <Tooltip placement="top" title={"Add sets"}>
+            <Tooltip placement="top" title={'Add sets'}>
                 <PlusOutlined
                     style={{ color: 'green', fontSize: 30 }}
                     onClick={() => {
                         setVisibleCreate(true);
                     }}
                 />
-                </Tooltip>
+            </Tooltip>
             <CollectionFormCreate
                 visible={visibleCreate}
                 onCreate={onCreate}
@@ -293,7 +304,7 @@ const ProxyPage = () => {
                     onCancel();
                 }}
             />
-            <Tooltip placement="top" title={"Remove sets"}>
+            <Tooltip placement="top" title={'Remove sets'}>
                 <DeleteFilled
                     style={{ color: 'orange', fontSize: 30, marginTop: 15, marginLeft: 15 }}
                     onClick={() => {
@@ -316,12 +327,11 @@ const ProxyPage = () => {
 
     return (
         <Layout style={{ padding: 24, backgroundColor: '#212427', height: '100vh', overflow: 'auto' }}>
-            <Content>
-                <div>
-                    {' '}
-                    <Sets />{' '}
+            <Content style={{ display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+                <div style={{ flex: 1, overflow: 'auto' }}>
+                    <Sets />
                 </div>
-                { proxies.size?
+                {proxies.size ? (
                     <div style={{ padding: '10px 15px' }}>
                         <div>
                             <Button
@@ -357,21 +367,22 @@ const ProxyPage = () => {
                                 icon={<DeleteFilled style={{ color: 'orange' }} />}
                                 style={{ textAlign: 'center', float: 'right', paddingLeft: '35px', paddingRight: '35px' }}
                                 type={'primary'}
-                                onClick={()=>{deleteAll()}}
+                                onClick={() => {
+                                    deleteAll();
+                                }}
                             >
                                 Delete All
                             </Button>
                         </div>
                     </div>
-                    : <div>
-                        <div style={{float: 'right', fontSize:20, marginRight: 65}}> 
-                            Add Proxy Set <ArrowUpOutlined /> 
-                        </div> 
-                        <div style={{float: 'left', fontSize:20, marginRight: 65}}>
-                            No Sets Found.
+                ) : (
+                    <div style={{ top: 0, flex: 1 }}>
+                        <div style={{ float: 'right', fontSize: 20, marginRight: 65 }}>
+                            Add Proxy Set <ArrowUpOutlined />
                         </div>
+                        <div style={{ float: 'left', fontSize: 20, marginRight: 65 }}>No Sets Found.</div>
                     </div>
-                    }
+                )}
             </Content>
         </Layout>
     );
