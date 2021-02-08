@@ -16,6 +16,9 @@ const validateMessages = {
     },
 };
 
+const ROW_GUTTER: [number, number] = [8, 0];
+const ROW_GUTTER_CC: [number, number] = [8, 8];
+type focus = 'number' | 'cvc' | 'expiry' | 'name' | undefined;
 const layout = {
     labelCol: { span: 5 },
     wrapperCol: { span: 16 },
@@ -52,8 +55,8 @@ const getMonths = (): any => {
 
 const CreateNewProfileModal = (props: any) => {
     const { addProfile } = props;
-    const [same, setSame] = useState(false);
-    const [front, setFront] = useState(true);
+    const [same, setSame] = useState(true);
+    const [focused, setFocused] = useState<focus>(undefined);
 
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
 
@@ -82,97 +85,89 @@ const CreateNewProfileModal = (props: any) => {
 
     const changeMonth = (value: any) => {
         setMonth((prev) => (prev = value));
-        setFront(true);
     };
 
     const changeYear = (value: any) => {
         setYear((prev) => (prev = value));
-        setFront(true);
     };
 
     return (
         <div>
             <Button type="primary" onClick={() => setIsEditModalVisible(true)}>
-                {' '}
-                Create Profile{' '}
+                Create Profile
             </Button>
             <Modal title="Create a new profile" visible={isEditModalVisible} onOk={handleOk} onCancel={handleCancel} width={1000} footer={false}>
                 <Form name="nest-messages" onFinish={addProfile} validateMessages={validateMessages}>
                     <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
                         <Tabs defaultActiveKey="1" onChange={callback}>
                             <TabPane tab="Profile and Shipping" key="1">
-                                <Row>
-                                    <Form.Item name="profile" rules={[{ required: true }]}>
-                                        <Input placeholder={'Profile name'} style={{ width: '400px', margin: '1%', height: '40px' }} />
-                                    </Form.Item>
+                                <Row gutter={ROW_GUTTER}>
+                                    <Col span={8}>
+                                        <Form.Item name="profile" rules={[{ required: true }]}>
+                                            <Input placeholder={'Profile name'} style={{ height: '40px' }} />
+                                        </Form.Item>
+                                    </Col>
                                 </Row>
-                                <br />
-                                <Row>
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                <Row gutter={ROW_GUTTER}>
+                                    <Col span={8}>
                                         <Form.Item name={['shipping', 'firstName']} rules={[{ required: true }]}>
                                             <Input
                                                 placeholder={'First name'}
                                                 style={{ height: '40px' }}
                                                 onChange={(e) => {
                                                     setshipFirstName((prev) => (prev = e.target.value));
-                                                    if (!front) {
-                                                        setFront((prev) => (prev = true));
-                                                    }
                                                 }}
                                             />
                                         </Form.Item>
                                     </Col>
 
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                    <Col span={8}>
                                         <Form.Item name={['shipping', 'lastName']} rules={[{ required: true }]}>
                                             <Input
                                                 placeholder={'Last name'}
                                                 style={{ height: '40px' }}
                                                 onChange={(e) => {
                                                     setshipLastName((prev) => (prev = e.target.value));
-                                                    if (!front) {
-                                                        setFront((prev) => (prev = true));
-                                                    }
                                                 }}
                                             />
                                         </Form.Item>
                                     </Col>
 
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                    <Col span={8}>
                                         <Form.Item name={['shipping', 'phone']} rules={[{ required: true }]}>
                                             <Input placeholder={'Phone'} style={{ height: '40px' }} type="number" />
                                         </Form.Item>
                                     </Col>
                                 </Row>
 
-                                <Row>
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                <Row gutter={ROW_GUTTER}>
+                                    <Col span={8}>
                                         <Form.Item name={['shipping', 'email']} rules={[{ required: true }]}>
                                             <Input placeholder={'Email'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
 
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                    <Col span={8}>
                                         <Form.Item name={['shipping', 'address']} rules={[{ required: true }]}>
                                             <Input placeholder={'Address'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
 
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                    <Col span={8}>
                                         <Form.Item name={['shipping', 'town']} rules={[{ required: true }]}>
                                             <Input placeholder={'City'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
                                 </Row>
 
-                                <Row>
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                <Row gutter={ROW_GUTTER}>
+                                    <Col span={8}>
                                         <Form.Item name={['shipping', 'postalCode']} rules={[{ required: true }]}>
                                             <Input placeholder={'Postal Code/Zip Code'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
 
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                    <Col span={8}>
                                         <Form.Item name={['shipping', 'region']} rules={[{ required: true }]}>
                                             <Input placeholder={'Province/State'} style={{ height: '40px' }} />
                                         </Form.Item>
@@ -181,78 +176,72 @@ const CreateNewProfileModal = (props: any) => {
                             </TabPane>
 
                             <TabPane tab="Payment Information" key="2">
-                                <Row>
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                <Row gutter={ROW_GUTTER}>
+                                    <Col span={8}>
                                         <Form.Item name={[same ? 'shipping' : 'billing', 'firstName']} rules={[{ required: true }]}>
                                             <Input
                                                 placeholder={'First name'}
                                                 style={{ height: '40px' }}
                                                 onChange={(e) => {
                                                     setFirstName((prev) => (prev = e.target.value));
-                                                    if (!front) {
-                                                        setFront((prev) => (prev = true));
-                                                    }
                                                 }}
                                             />
                                         </Form.Item>
                                     </Col>
 
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                    <Col span={8}>
                                         <Form.Item name={[same ? 'shipping' : 'billing', 'lastName']} rules={[{ required: true }]}>
                                             <Input
                                                 placeholder={'Last name'}
                                                 style={{ height: '40px' }}
                                                 onChange={(e) => {
                                                     setLastName((prev) => (prev = e.target.value));
-                                                    if (!front) {
-                                                        setFront((prev) => (prev = true));
-                                                    }
                                                 }}
                                             />
                                         </Form.Item>
                                     </Col>
 
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                    <Col span={8}>
                                         <Form.Item name={[same ? 'shipping' : 'billing', 'phone']} rules={[{ required: true }]}>
                                             <Input placeholder={'Phone'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
                                 </Row>
 
-                                <Row>
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                <Row gutter={ROW_GUTTER}>
+                                    <Col span={8}>
                                         <Form.Item name={[same ? 'shipping' : 'billing', 'email']} rules={[{ required: true, type: 'email' }]}>
                                             <Input placeholder={'email'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
 
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                    <Col span={8}>
                                         <Form.Item name={[same ? 'shipping' : 'billing', 'address']} rules={[{ required: true }]}>
                                             <Input placeholder={'Address'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
 
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                    <Col span={8}>
                                         <Form.Item name={[same ? 'shipping' : 'billing', 'town']} rules={[{ required: true }]}>
                                             <Input placeholder={'City'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
                                 </Row>
 
-                                <Row>
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                <Row gutter={ROW_GUTTER}>
+                                    <Col span={8}>
                                         <Form.Item name={[same ? 'shipping' : 'billing', 'postalCode']} rules={[{ required: true }]}>
                                             <Input placeholder={'Postal Code/Zip Code'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
 
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                    <Col span={8}>
                                         <Form.Item name={[same ? 'shipping' : 'billing', 'region']} rules={[{ required: true }]}>
                                             <Input placeholder={'Province/State'} style={{ height: '40px' }} />
                                         </Form.Item>
                                     </Col>
 
-                                    <Col style={{ width: '30%', margin: '1%' }}>
+                                    <Col span={8}>
                                         <Form.Item wrapperCol={{ ...layout.wrapperCol }} name="same" valuePropName="checked">
                                             <Checkbox
                                                 checked={same}
@@ -265,79 +254,79 @@ const CreateNewProfileModal = (props: any) => {
                                         </Form.Item>
                                     </Col>
                                 </Row>
-                                <br />
                                 <Divider> Enter your card </Divider>
-                                <Row>
+                                <Row gutter={ROW_GUTTER}>
                                     <Col span={12}>
                                         <Cards
                                             cvc={cvc}
                                             expiry={`${month}${year}`}
-                                            focused={front ? 'number' : 'cvc'}
+                                            focused={focused}
                                             name={same ? shipFirstName + ' ' + shipLastname : billFirstName + ' ' + billLastname}
                                             number={creditCard}
                                         />
                                     </Col>
 
                                     <Col span={12}>
-                                        <br />
-                                        <Row>
+                                        <Row gutter={ROW_GUTTER_CC}>
                                             <Col span={14}>
                                                 <Form.Item name={['payment', 'number']} rules={[{ required: true }]}>
                                                     <Input
                                                         style={{ width: '100%', height: '40px' }}
                                                         type="number"
+                                                        name="number"
+                                                        onFocus={() => setFocused('number')}
                                                         placeholder={'Credit Card'}
                                                         onChange={(e) => {
                                                             setCreditCard((prev) => (prev = e.target.value));
-                                                            if (!front) {
-                                                                setFront((prev) => (prev = true));
-                                                            }
                                                         }}
                                                     />
                                                 </Form.Item>
                                             </Col>
-                                            <Col span={6} style={{ marginLeft: '1%' }}>
+                                            <Col span={10}>
                                                 <Form.Item name={['payment', 'cvc']} rules={[{ required: true, min: 0, max: 999 }]}>
                                                     <Input
                                                         style={{ width: '100%', height: '40px' }}
                                                         placeholder={'CVC'}
                                                         type="number"
+                                                        name="cvc"
+                                                        onFocus={() => setFocused('cvc')}
                                                         onChange={(e) => {
                                                             setCvc((prev) => (prev = e.target.value));
-                                                            if (front) {
-                                                                setFront((prev) => (prev = false));
-                                                            }
                                                         }}
                                                     />
                                                 </Form.Item>
                                             </Col>
                                         </Row>
-                                        <br />
-                                        <Row style={{ marginTop: '-30px' }}>
-                                            <Col span={10}>
+                                        <Row gutter={ROW_GUTTER_CC}>
+                                            <Col span={12}>
                                                 <Form.Item name={['payment', 'expiryMonth']} rules={[{ required: true }]}>
                                                     <Select
                                                         style={{ width: '100%' }}
                                                         placeholder="Expiration Month"
                                                         allowClear
+                                                        onFocus={() => setFocused('expiry')}
                                                         options={getMonths()}
                                                         onChange={changeMonth}
                                                     />
                                                 </Form.Item>
                                             </Col>
-                                            <Col span={10} style={{ marginLeft: '1%' }}>
+                                            <Col span={12}>
                                                 <Form.Item name={['payment', 'expiryYear']} rules={[{ required: true }]}>
                                                     <Select
                                                         style={{ width: '100%' }}
                                                         placeholder="Expiration Year"
                                                         allowClear
+                                                        onFocus={() => setFocused('expiry')}
                                                         options={getYears()}
                                                         onChange={changeYear}
                                                     />
                                                 </Form.Item>
-
-                                                <Form.Item style={{ float: 'right' }}>
-                                                    <Button type="primary" htmlType="submit" style={{ width: '400px', height: '40px' }}>
+                                            </Col>
+                                        </Row>
+                                        <Row gutter={ROW_GUTTER_CC}>
+                                            <Col span={24}>
+                                                <Form.Item>
+                                                    <Button type="primary" htmlType="submit" style={{ width: '100%', height: '40px' }}>
                                                         Create Profile
                                                     </Button>
                                                 </Form.Item>
