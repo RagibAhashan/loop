@@ -12,7 +12,7 @@ const UPLOAD = 1;
 const COPYPASTE = 2;
 
 const ProxyPage = () => {
-    const [proxies, setProxies] = useState(new Map<string, string[]>()); // name -> proxies
+    const [proxies, setProxies] = useState(new Map<string, Object[]>()); // setName -> [{proxy: 199.99.99, testStatus: None}, {...}]
     let [currentTab, setCurrentTab] = useState({ name: '', key: '1' });
 
     // Popups Visibility
@@ -25,7 +25,7 @@ const ProxyPage = () => {
     let [tab, setTabKey] = useState(1); // for add popup to select between upload and copy pasta
 
     useEffect(() => {
-        // localStorage.clear()
+        console.log(localStorage);
         let db_proxies: any = localStorage.getItem('proxies');
         if (!db_proxies) {
             const obj = Object.fromEntries(proxies);
@@ -73,22 +73,31 @@ const ProxyPage = () => {
             reader.onload = (e) => {
                 // called after readAsText
                 proxyArray.push(e.target?.result);
-                setProxies(proxies.set(name, proxyArray[0].split('\n')));
-                localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
-                forceUpdate();
-                setVisibleAdd(false);
-                tab = 1;
+                const arrayProxy: Array<string> = proxyArray[0].split('\n');
+                objectifySets(name, arrayProxy);
+                
             };
             reader.readAsText(files[0].originFileObj);
         } else if (tab === COPYPASTE) {
             proxyArray.push(values.copiedProxies);
-            setProxies(proxies.set(name, proxyArray[0].split('\n')));
-            localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
-            forceUpdate();
-            setVisibleAdd(false);
-            tab = 1;
+            const arrayProxy: Array<string> = proxyArray[0].split('\n');
+            objectifySets(name, arrayProxy);
         }
     };
+
+    const objectifySets = (name: string, arrayProxy: Array<string>) => {
+        let arrayProxyTest: Array<Object> = [];
+        let proxyObject: Object = {};
+        for(let i = 0; i < arrayProxy.length; i++) {
+            proxyObject = {proxy: arrayProxy[i], testStatus: "doge"};
+            arrayProxyTest.push(proxyObject);
+        }
+        setProxies(proxies.set(name, arrayProxyTest));
+        localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
+        forceUpdate();
+        setVisibleAdd(false);
+        tab = 1;
+    }
 
     const onDelete = (values: any) => {
         const arraySetToDelete = values.proxies;
@@ -162,13 +171,13 @@ const ProxyPage = () => {
             title: 'Password',
             dataIndex: 'password',
             key: 'password',
-            width: '20%',
+            width: '15%',
         },
         {
             title: 'Status',
             key: 'status',
             dataIndex: 'status',
-            width: '10%',
+            width: '15%',
         },
         {
             title: 'Action',
@@ -196,11 +205,13 @@ const ProxyPage = () => {
     const testIndividual = () => {};
 
     const deleteIndividual = (record: any) => {
-        let proxiesArray: Array<string> = proxies.get(currentTab.name) || [];
+        let proxiesArray: Array<any> = proxies.get(currentTab.name) || [];
         let proxyToDelete: string = record.ip + ':' + record.port + ':' + record.username + ':' + record.password;
-        const index = proxiesArray.indexOf(proxyToDelete);
-        if (index > -1) {
-            proxiesArray.splice(index, 1);
+        for(let i = 0; i < proxiesArray.length; i++) {
+            if(proxiesArray[i].proxy === proxyToDelete) {
+                proxiesArray.splice(i, 1);
+                break;
+            }   
         }
         proxies.set(currentTab.name, proxiesArray);
         setProxies(proxies);
@@ -223,7 +234,6 @@ const ProxyPage = () => {
     }
 
     function tabClick(key: string, event: React.KeyboardEvent<Element> | React.MouseEvent<Element, MouseEvent>) {
-        console.log((event.target as HTMLTextAreaElement).childNodes[0].textContent as string);
         let tabName = (event.target as HTMLTextAreaElement).childNodes[0].textContent as string;
         currentTab.name = tabName;
         currentTab.key = key;
@@ -258,11 +268,9 @@ const ProxyPage = () => {
 
     const ShowData = (name: string) => {
         let data: any = [];
-        let tempProxies: any = [];
-        tempProxies = proxies.get(name);
         let id = 0;
-        tempProxies.forEach((value: any) => {
-            var fields = value.split(':');
+        proxies.get(name)?.forEach((value: any) => {
+            var fields = value.proxy.split(':');
             var ip = fields[0];
             var port = fields[1];
             var username = fields[2];
@@ -273,7 +281,7 @@ const ProxyPage = () => {
                 port: port,
                 username: username,
                 password: password,
-                status: 'None',
+                status: value.testStatus,
                 action: '',
             };
             data.push(dataRow);
