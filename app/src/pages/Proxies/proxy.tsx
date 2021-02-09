@@ -20,7 +20,7 @@ const ProxyPage = () => {
     const [visibleDelete, setVisibleDelete] = useState(false);
     const [deleteSelection, setDeleteSelection] = useState(['']);
     const [visibleAdd, setVisibleAdd] = useState(false);
-    const [ vt, set_components ] = useVT(() => ({ scroll: { y: 560 } }), []);
+    const [vt, set_components] = useVT(() => ({ scroll: { y: 560 } }), []);
 
     let [tab, setTabKey] = useState(1); // for add popup to select between upload and copy pasta
 
@@ -248,14 +248,8 @@ const ProxyPage = () => {
         let i = 0;
         return proxyArray.map((value) => {
             return [
-                <TabPane style={{ height: '100%', flexDirection: 'column', overflow: 'auto' }} tab={value.name} key={++i}>
-                    <Table
-                        scroll={{ y: '70vh' }}
-                        components={vt}
-                        columns={columns}
-                        pagination={false}
-                        dataSource={ShowData(value.name)}
-                    />
+                <TabPane style={{ height: '100%' }} tab={value.name} key={++i}>
+                    <Table scroll={{ y: '78vh' }} components={vt} columns={columns} pagination={false} dataSource={ShowData(value.name)} />
                 </TabPane>,
             ];
         });
@@ -289,19 +283,18 @@ const ProxyPage = () => {
     const AddRemoveSets = (
         <div>
             {!proxies.size ? (
-                    <Button
-                        icon={<PlusOutlined style={{ color: 'green' }} />}
-                        style={{ textAlign: 'center', float: 'left', marginTop:12, marginLeft: '40px', 
-                                 paddingLeft: '35px', paddingRight: '35px' }}
-                        type={'primary'}
-                        onClick={() => {
-                            setVisibleCreate(true);
-                        }}
-                    >
-                        Add set
-                    </Button>
-                ) : (
-                    <div>
+                <Button
+                    icon={<PlusOutlined style={{ color: 'green' }} />}
+                    style={{ textAlign: 'center', float: 'left', marginTop: 12, marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
+                    type={'primary'}
+                    onClick={() => {
+                        setVisibleCreate(true);
+                    }}
+                >
+                    Add set
+                </Button>
+            ) : (
+                <div>
                     <Tooltip placement="top" title={'Add sets'}>
                         <PlusOutlined
                             style={{ color: 'green', fontSize: 30 }}
@@ -311,24 +304,25 @@ const ProxyPage = () => {
                         />
                     </Tooltip>
                     <Tooltip placement="top" title={'Remove sets'}>
-                    <DeleteFilled
-                        style={{ color: 'orange', fontSize: 30, marginTop: 15, marginLeft: 15 }}
-                        onClick={() => {
-                            setVisibleDelete(true);
+                        <DeleteFilled
+                            style={{ color: 'orange', fontSize: 30, marginTop: 15, marginLeft: 15 }}
+                            onClick={() => {
+                                setVisibleDelete(true);
+                            }}
+                        />
+                    </Tooltip>
+                    <CollectionFormDelete
+                        visible={visibleDelete}
+                        onCreate={onDelete}
+                        onCancel={() => {
+                            setVisibleDelete(false);
                         }}
+                        options={options}
+                        deleteSelection={deleteSelection}
+                        handleChange={handleChange}
                     />
-                </Tooltip>
-                <CollectionFormDelete
-                    visible={visibleDelete}
-                    onCreate={onDelete}
-                    onCancel={() => {
-                        setVisibleDelete(false);
-                    }}
-                    options={options}
-                    deleteSelection={deleteSelection}
-                    handleChange={handleChange}
-                /></div>
-                )}
+                </div>
+            )}
             <CollectionFormCreate
                 visible={visibleCreate}
                 onCreate={onCreate}
@@ -373,7 +367,7 @@ const ProxyPage = () => {
                                 icon={<PoweroffOutlined style={{ color: 'green' }} />}
                                 style={{ textAlign: 'center', float: 'left', marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
                                 type={'primary'}
-                                disabled={ proxies.get(currentTab.name)?.length === 0? true : false}
+                                disabled={proxies.get(currentTab.name)?.length === 0 ? true : false}
                             >
                                 Test All
                             </Button>
@@ -386,15 +380,13 @@ const ProxyPage = () => {
                                 onClick={() => {
                                     deleteAll();
                                 }}
-                                disabled={ proxies.get(currentTab.name)?.length === 0? true : false}
+                                disabled={proxies.get(currentTab.name)?.length === 0 ? true : false}
                             >
                                 Delete All
                             </Button>
                         </div>
                     </div>
-                ) : (
-                    null
-                )}
+                ) : null}
             </Content>
         </Layout>
     );
