@@ -288,14 +288,47 @@ const ProxyPage = () => {
 
     const AddRemoveSets = (
         <div>
-            <Tooltip placement="top" title={'Add sets'}>
-                <PlusOutlined
-                    style={{ color: 'green', fontSize: 30 }}
-                    onClick={() => {
-                        setVisibleCreate(true);
+            {!proxies.size ? (
+                    <Button
+                        icon={<PlusOutlined style={{ color: 'green' }} />}
+                        style={{ textAlign: 'center', float: 'left', marginTop:12, marginLeft: '40px', 
+                                 paddingLeft: '35px', paddingRight: '35px' }}
+                        type={'primary'}
+                        onClick={() => {
+                            setVisibleCreate(true);
+                        }}
+                    >
+                        Add set
+                    </Button>
+                ) : (
+                    <div>
+                    <Tooltip placement="top" title={'Add sets'}>
+                        <PlusOutlined
+                            style={{ color: 'green', fontSize: 30 }}
+                            onClick={() => {
+                                setVisibleCreate(true);
+                            }}
+                        />
+                    </Tooltip>
+                    <Tooltip placement="top" title={'Remove sets'}>
+                    <DeleteFilled
+                        style={{ color: 'orange', fontSize: 30, marginTop: 15, marginLeft: 15 }}
+                        onClick={() => {
+                            setVisibleDelete(true);
+                        }}
+                    />
+                </Tooltip>
+                <CollectionFormDelete
+                    visible={visibleDelete}
+                    onCreate={onDelete}
+                    onCancel={() => {
+                        setVisibleDelete(false);
                     }}
-                />
-            </Tooltip>
+                    options={options}
+                    deleteSelection={deleteSelection}
+                    handleChange={handleChange}
+                /></div>
+                )}
             <CollectionFormCreate
                 visible={visibleCreate}
                 onCreate={onCreate}
@@ -303,24 +336,6 @@ const ProxyPage = () => {
                     setVisibleCreate(false);
                     onCancel();
                 }}
-            />
-            <Tooltip placement="top" title={'Remove sets'}>
-                <DeleteFilled
-                    style={{ color: 'orange', fontSize: 30, marginTop: 15, marginLeft: 15 }}
-                    onClick={() => {
-                        setVisibleDelete(true);
-                    }}
-                />
-            </Tooltip>
-            <CollectionFormDelete
-                visible={visibleDelete}
-                onCreate={onDelete}
-                onCancel={() => {
-                    setVisibleDelete(false);
-                }}
-                options={options}
-                deleteSelection={deleteSelection}
-                handleChange={handleChange}
             />
         </div>
     );
@@ -358,6 +373,7 @@ const ProxyPage = () => {
                                 icon={<PoweroffOutlined style={{ color: 'green' }} />}
                                 style={{ textAlign: 'center', float: 'left', marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
                                 type={'primary'}
+                                disabled={ proxies.get(currentTab.name)?.length == 0? true : false}
                             >
                                 Test All
                             </Button>
@@ -370,18 +386,14 @@ const ProxyPage = () => {
                                 onClick={() => {
                                     deleteAll();
                                 }}
+                                disabled={ proxies.get(currentTab.name)?.length == 0? true : false}
                             >
                                 Delete All
                             </Button>
                         </div>
                     </div>
                 ) : (
-                    <div style={{ top: 0, flex: 1 }}>
-                        <div style={{ float: 'right', fontSize: 20, marginRight: 65 }}>
-                            Add Proxy Set <ArrowUpOutlined />
-                        </div>
-                        <div style={{ float: 'left', fontSize: 20, marginRight: 65 }}>No Sets Found.</div>
-                    </div>
+                    null
                 )}
             </Content>
         </Layout>
