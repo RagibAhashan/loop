@@ -6,7 +6,6 @@ import CollectionFormAdd from './Collections/Add';
 import CollectionFormCreate from './Collections/Create';
 import CollectionFormDelete from './Collections/Delete';
 import { useVT } from 'virtualizedtableforantd4';
-// import SmartTable from './SmartTable'
 
 const { Content } = Layout;
 const UPLOAD = 1;
@@ -21,6 +20,7 @@ const ProxyPage = () => {
     const [visibleDelete, setVisibleDelete] = useState(false);
     const [deleteSelection, setDeleteSelection] = useState(['']);
     const [visibleAdd, setVisibleAdd] = useState(false);
+    const [ vt, set_components ] = useVT(() => ({ scroll: { y: 560 } }), []);
 
     let [tab, setTabKey] = useState(1); // for add popup to select between upload and copy pasta
 
@@ -249,10 +249,10 @@ const ProxyPage = () => {
         let i = 0;
         return proxyArray.map((value) => {
             return [
-                <TabPane style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'auto' }} tab={value.name} key={++i}>
+                <TabPane style={{ height: '100%', flexDirection: 'column', overflow: 'auto' }} tab={value.name} key={++i}>
                     <Table
-                        // scroll={{ y: '60vh' }}
-                        // components={vt}
+                        scroll={{ y: '70vh' }}
+                        components={vt}
                         columns={columns}
                         pagination={false}
                         dataSource={ShowData(value.name)}
@@ -268,7 +268,6 @@ const ProxyPage = () => {
         tempProxies = proxies.get(name);
         let id = 0;
         tempProxies.forEach((value: any) => {
-            console.log(value);
             var fields = value.split(':');
             var ip = fields[0];
             var port = fields[1];
@@ -375,7 +374,7 @@ const ProxyPage = () => {
                                 icon={<PoweroffOutlined style={{ color: 'green' }} />}
                                 style={{ textAlign: 'center', float: 'left', marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
                                 type={'primary'}
-                                disabled={ proxies.get(currentTab.name)?.length == 0? true : false}
+                                disabled={ proxies.get(currentTab.name)?.length === 0? true : false}
                             >
                                 Test All
                             </Button>
@@ -388,7 +387,7 @@ const ProxyPage = () => {
                                 onClick={() => {
                                     deleteAll();
                                 }}
-                                disabled={ proxies.get(currentTab.name)?.length == 0? true : false}
+                                disabled={ proxies.get(currentTab.name)?.length === 0? true : false}
                             >
                                 Delete All
                             </Button>
