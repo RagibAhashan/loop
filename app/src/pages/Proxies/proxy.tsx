@@ -223,7 +223,6 @@ const ProxyPage = () => {
     }
 
     function tabClick(key: string, event: React.KeyboardEvent<Element> | React.MouseEvent<Element, MouseEvent>) {
-        console.log((event.target as HTMLTextAreaElement).childNodes[0].textContent as string);
         let tabName = (event.target as HTMLTextAreaElement).childNodes[0].textContent as string;
         currentTab.name = tabName;
         currentTab.key = key;
