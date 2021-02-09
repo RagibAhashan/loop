@@ -1,6 +1,6 @@
 // import styles from './sidebar.module.css';
 import { DeleteFilled, PlayCircleFilled, EditFilled, StopFilled } from '@ant-design/icons';
-import { Button, Col, Row } from 'antd';
+import { Button, Col, Row, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { TASK_STOPPED, NOTIFY_STOP_TASK, NOTIFY_START_TASK } from '../../common/Constants';
 import { UserProfile } from '../../interfaces/TaskInterfaces';
@@ -156,6 +156,7 @@ const Bot = (props: any) => {
                 borderRadius: 60,
                 height: style.height - 5,
                 textAlign: 'center',
+                whiteSpace: 'nowrap',
             }}
         >
             <Col span={4} style={{ paddingLeft: 10, overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -171,7 +172,9 @@ const Bot = (props: any) => {
             </Col>
 
             <Col span={4} style={{ padding: 10 }}>
-                {sizes.join(', ')}
+                <Tooltip title={sizes.join(', ')}>
+                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{sizes.join(', ')}</div>
+                </Tooltip>
             </Col>
 
             <Col span={4}>

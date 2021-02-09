@@ -1,5 +1,5 @@
-import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, TimePicker, Badge, Descriptions } from 'antd';
-import React, { Fragment, useEffect, useRef, useState } from 'react';
+import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, TimePicker } from 'antd';
+import React, { Fragment, useState } from 'react';
 const { Option } = Select;
 
 /* eslint-disable no-template-curly-in-string */
@@ -66,7 +66,6 @@ const NewTaskModal = (props: any) => {
     const { store, addTasks, visible, cancelTaskModal } = props;
 
     const [manualTime, setManualTime] = useState(true);
-    const [productLink, setProductLink] = useState('');
 
     const [form] = Form.useForm();
 

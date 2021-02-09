@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Form, Input, Button, Divider, Popover, Space, Card, message } from 'antd';
+import { Row, Col, Form, Input, Button, Divider, Popover, Card, message } from 'antd';
 import { MinusCircleTwoTone, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
 
 const ProxyPage = (props: any) => {
@@ -118,6 +118,7 @@ const ProxyPage = (props: any) => {
     };
 
     function useForceUpdate() {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [value, setValue] = useState(0); // integer state
         return () => setValue((value) => value + 1); // update the state to force render
     }

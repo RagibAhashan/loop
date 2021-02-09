@@ -1,4 +1,5 @@
-import { Button, Col, Row, Select } from 'antd';
+import { Button, Col, Row, Select, Empty } from 'antd';
+import { sign } from 'crypto';
 import React, { useEffect, useState } from 'react';
 import { FixedSizeList } from 'react-window';
 import { NOTIFY_STOP_TASK } from '../../common/Constants';
@@ -100,8 +101,8 @@ const Store = (props: any) => {
 
     const deleteAllTasks = () => {
         jobs.forEach((job) => {
-            ipcRenderer.send(NOTIFY_STOP_TASK, job.uuid);
             localStorage.removeItem(job.uuid);
+            ipcRenderer.send(NOTIFY_STOP_TASK, job.uuid);
         });
         setJobs(() => new Array<TaskData>());
         localStorage.removeItem(storeName);
@@ -139,13 +140,27 @@ const Store = (props: any) => {
         );
     };
 
+    const showTasks = () => {
+        console.log('jooobs', jobs.length);
+        return jobs.length === 0 ? (
+            <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Empty
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    description={<span style={{ fontSize: '20px', fontWeight: 500 }}>Add some tasks ! 🐱‍💻 </span>}
+                />
+            </div>
+        ) : (
+            <FixedSizeList height={700} itemCount={jobs.length} itemSize={45} width="100%" style={{ flex: 1 }}>
+                {renderJobs}
+            </FixedSizeList>
+        );
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'auto' }}>
             <Headers />
 
-            <FixedSizeList height={700} itemCount={jobs.length} itemSize={45} width="100%" style={{ flex: 1 }}>
-                {renderJobs}
-            </FixedSizeList>
+            {showTasks()}
             <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10, width: '100%' }}>
                 <Col span={3}>
                     <Button style={buttonStyle} type="primary" onClick={() => setTaskModalVisible(true)}>

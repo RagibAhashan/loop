@@ -12,6 +12,7 @@ const SideBar = withRouter(({ history }) => {
 
     useEffect(() => {
         history.push('/profiles');
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     return (
         <Sider
