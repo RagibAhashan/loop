@@ -5,6 +5,7 @@ import { UserProfile } from '../../interfaces/TaskInterfaces';
 
 const { TabPane } = Tabs;
 
+/* eslint-disable no-template-curly-in-string */
 const validateMessages = {
     required: 'required!',
     types: {
@@ -83,6 +84,7 @@ const EditProfileModal = (props: any) => {
         setCvc(data.payment.cvc);
         setMonth(data.payment.expiryMonth.length === 1 ? `0${data.payment.expiryMonth}12` : data.payment.expiryMonth);
         setYear(data.payment.expiryYear);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleOk = () => {

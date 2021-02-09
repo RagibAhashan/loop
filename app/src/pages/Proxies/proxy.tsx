@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { DeleteFilled, PlusOutlined, PoweroffOutlined, ArrowUpOutlined } from '@ant-design/icons';
 import { Layout, message, Space, Table, Tabs, Button, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
@@ -22,7 +23,6 @@ const ProxyPage = () => {
     const [visibleAdd, setVisibleAdd] = useState(false);
 
     let [tab, setTabKey] = useState(1); // for add popup to select between upload and copy pasta
-    const [vt, set_components] = useVT(() => ({ scroll: { y: 560 } }), []);
 
     useEffect(() => {
         // localStorage.clear()
@@ -38,10 +38,11 @@ const ProxyPage = () => {
                 tempProxyMap.set(array[i][0], array[i][1]);
             }
             setProxies(tempProxyMap);
-            if (array[0] != undefined && array[0][0]) {
+            if (array[0] !== undefined && array[0][0]) {
                 setCurrentTab({ name: array[0][0], key: '1' });
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const onCreate = (values: any) => {
@@ -55,7 +56,7 @@ const ProxyPage = () => {
             localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
             forceUpdate();
             setVisibleCreate(false);
-            if (proxies.size == 1) {
+            if (proxies.size === 1) {
                 setCurrentTab({ name: name, key: '1' });
             }
         }
@@ -65,7 +66,7 @@ const ProxyPage = () => {
         const name = currentTab.name;
         const proxyArray: any = [];
 
-        if (tab == UPLOAD) {
+        if (tab === UPLOAD) {
             const files = values.uploadedProxies.fileList;
             // Read file
             let reader = new FileReader();
@@ -79,7 +80,7 @@ const ProxyPage = () => {
                 tab = 1;
             };
             reader.readAsText(files[0].originFileObj);
-        } else if (tab == COPYPASTE) {
+        } else if (tab === COPYPASTE) {
             proxyArray.push(values.copiedProxies);
             setProxies(proxies.set(name, proxyArray[0].split('\n')));
             localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
@@ -136,6 +137,7 @@ const ProxyPage = () => {
             dataIndex: 'id',
             key: 'id',
             width: '5%',
+            // eslint-disable-next-line jsx-a11y/anchor-is-valid
             render: (text: any) => <a> {text} </a>,
         },
         {
