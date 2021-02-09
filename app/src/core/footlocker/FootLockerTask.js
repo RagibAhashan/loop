@@ -3,20 +3,17 @@ const { Cookie } = require('../constants/Cookies');
 const { FLCInfoForm, FLCOrderForm } = require('../interface/FootLockerCA');
 const { Task } = require('../Task');
 
-const CAPTCHA_TIMEOUT_SEC = 60;
-const ERROR_MESSAGE_DELAY = 300;
-
 class FootLockerTask extends Task {
-    constructor(productLink, productSKU, sizes, deviceId, requestInstance, userProfile, retryDelay) {
-        super(productLink, productSKU, sizes, deviceId, requestInstance, userProfile);
+    constructor(uuid, productSKU, sizes, deviceId, requestInstance, userProfile, retryDelay) {
+        super(uuid, productSKU, sizes, deviceId, requestInstance, userProfile);
         this.retryDelay = retryDelay;
+        this.captchaSolved = false;
     }
     async getSessionTokens() {
         let retry = false;
         do {
             try {
                 if (this.cancel) return;
-                console.log('try to get session');
                 retry = false;
                 this.emit('status', { status: msgs.SESSION_INFO_MESSAGE, level: 'info' });
 
@@ -27,12 +24,11 @@ class FootLockerTask extends Task {
                 this.cookieJar.setFromRaw(cookies, Cookie.JSESSIONID);
 
                 const csrf = response.data['data']['csrfToken'];
-                this.cookieJar.set(csrf, Cookie.CSRF);
+                this.cookieJar.set(Cookie.CSRF, csrf);
             } catch (error) {
                 if (this.cancel) return;
                 await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
                 retry = true;
-                console.log('try to get session failed :(');
             }
         } while (retry);
     }
@@ -55,7 +51,6 @@ class FootLockerTask extends Task {
                     (unit) => unit.stockLevelStatus === 'inStock' && unit.attributes.some((attr) => attr.id === styleCode && attr.type === 'style'),
                 );
 
-                console.log('trying ', this.sizes);
                 for (const size of this.sizes) {
                     for (const unit of inStockUnits) {
                         for (const attr of unit.attributes) {
@@ -82,7 +77,6 @@ class FootLockerTask extends Task {
                 if (this.cancel) return;
                 this.emit('status', { status: msgs.ADD_CART_INFO_MESSAGE, level: 'info' });
                 const headers = {
-                    referer: this.productLink,
                     cookie: this.cookieJar.getCookie(Cookie.JSESSIONID),
                     'x-fl-productid': this.productCode,
                     'x-csrf-token': this.cookieJar.getValue(Cookie.CSRF),
@@ -94,6 +88,7 @@ class FootLockerTask extends Task {
                 }
 
                 const body = { productQuantity: '1', productId: this.productCode };
+                this.emit('captcha', { uuid: this.uuid, url: 'testurl' });
 
                 const response = await this.axiosSession.post('/users/carts/current/entries', body, { headers: headers });
                 if (this.cancel) return;
@@ -102,20 +97,19 @@ class FootLockerTask extends Task {
                 this.cookieJar.setFromRaw(cookies, Cookie.CART_GUID);
             } catch (err) {
                 if (this.cancel) return;
+
                 // TODO WIP Captcha
                 if (err.response.data['errors'] && err.response.data['errors']['type'] === 'ProductLowStockException') {
-                    await this.emitStatus(msgs.CHECKING_SIZE_RETRY_MESSAGE, 'error', this.retryDelay);
+                    await this.emitStatus(msgs.CHECKING_SIZE_RETRY_MESSAGE, 'error');
                     this.productCode = await this.getProductCode();
                 } else if (err.response.data['url']) {
                     this.emit('status', { status: msgs.WAIT_CAPTCHA_MESSAGE, level: 'info' });
 
                     const cookies = err.response.headers['set-cookie'].join();
                     const capDatadome = this.cookieJar.extract(cookies, Cookie.DATADOME);
-                    // const capDatadome = this.cookieJar.extract(cookies, Cookie.DATADOME);
-                    const captcha_url = `${err.response.data['url']}&cid=${capDatadome}&referer=${this.productLink}`;
-                    console.log(captcha_url);
+                    const captcha_url = `${err.response.data['url']}&cid=${capDatadome}`;
 
-                    this.emit('captcha', captcha_url);
+                    this.emit('captcha', { uuid: this.uuid, url: captcha_url });
                     // parentPort?.postMessage(captcha_url);
                     // let receivedDatadome = false;
                     // let startTime = performance.now();
@@ -127,14 +121,20 @@ class FootLockerTask extends Task {
                     // });
                     // busy wait
                     await this.waitError(10000);
+
+                    this.once('captcha-solved', () => {
+                        console.log('captcha should be solved here');
+                    });
+
+                    // await this.waitForCaptcha();
                     // while (!receivedDatadome || timeout > CAPTCHA_TIMEOUT_SEC) {
                     //     timeout = Math.round((performance.now() - startTime) / 1000);
                     // }
                     // if (!receivedDatadome) throw new Error('Timeout exceeded - Captcha not solved');
                 } else {
                     // console.log('Add to cart failed', err.response.status);
-                    console.log('retry delay', this.retryDelay);
-                    await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error', this.retryDelay);
+                    console.log('retry delay', err);
+                    await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error');
                 }
                 retry = true;
             }
@@ -150,7 +150,7 @@ class FootLockerTask extends Task {
 
                 const headers = this.setHeaders();
 
-                await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.email}`, {}, { headers: headers });
+                await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.shipping.email}`, {}, { headers: headers });
                 if (this.cancel) return;
             } catch (error) {
                 if (this.cancel) return;
@@ -169,12 +169,13 @@ class FootLockerTask extends Task {
 
                 const headers = this.setHeaders();
 
-                const body = { shippingAddress: this.getInfoForm() };
+                const body = { shippingAddress: this.getInfoForm(true) };
 
                 await this.axiosSession.post('/users/carts/current/addresses/shipping', body, { headers: headers });
                 if (this.cancel) return;
             } catch (error) {
                 if (this.cancel) return;
+
                 await this.emitStatus(msgs.SHIPPING_ERROR_MESSAGE, 'error');
                 retry = true;
             }
@@ -190,7 +191,7 @@ class FootLockerTask extends Task {
 
                 const headers = this.setHeaders();
 
-                const body = this.getInfoForm();
+                const body = this.getInfoForm(false);
 
                 await this.axiosSession.post('/users/carts/current/set-billing', body, { headers: headers });
                 if (this.cancel) return;
@@ -220,29 +221,29 @@ class FootLockerTask extends Task {
                 this.emit('status', { status: msgs.CHECKOUT_SUCCESS_MESSAGE, level: 'success' });
             } catch (error) {
                 if (this.cancel) return;
-                await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error', this.retryDelay);
+                await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
                 retry = true;
             }
         } while (retry);
     }
 
-    getInfoForm() {
+    getInfoForm(shipping) {
+        const user = shipping ? this.userProfile.shipping : this.userProfile.billing;
         return new FLCInfoForm(
-            this.userProfile.lastName,
-            this.userProfile.email,
-            this.userProfile.phone,
-            this.userProfile.country,
-            this.userProfile.firstName,
-            this.userProfile.address,
-            this.userProfile.postalCode,
-            this.userProfile.region,
-            this.userProfile.town,
+            user.lastName,
+            user.email,
+            user.phone,
+            user.country,
+            user.firstName,
+            user.address,
+            user.postalCode,
+            user.region,
+            user.town,
         );
     }
 
     setHeaders() {
         const headers = {
-            referer: 'https://www.footlocker.ca/en/checkout',
             cookie: this.cookieJar.getCookie(Cookie.JSESSIONID, Cookie.CART_GUID),
             'x-csrf-token': this.cookieJar.getValue(Cookie.CSRF),
         };
@@ -258,15 +259,21 @@ class FootLockerTask extends Task {
         return new FLCOrderForm(encCC.number, encCC.expiryMonth, encCC.expiryYear, encCC.cvc, this.deviceId);
     }
 
-    async emitStatus(message, level, delay = undefined) {
+    async emitStatus(message, level) {
         this.emit('status', { status: message, level: level });
-        await this.waitError(delay);
+        await this.waitError(this.retryDelay);
     }
 
     async waitError(customDelay = undefined) {
-        let delay = customDelay ? customDelay : ERROR_MESSAGE_DELAY;
+        let delay = customDelay ? customDelay : 300;
         return new Promise((r) => setTimeout(r, delay));
+    }
+
+    async waitForCaptcha() {
+        while (!this.captchaSolved) {}
+
+        return Promise.resolve('Solved');
     }
 }
 
-module.exports = { FootLockerTask, CAPTCHA_TIMEOUT_SEC };
+module.exports = { FootLockerTask };

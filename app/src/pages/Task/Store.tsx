@@ -1,5 +1,4 @@
 import { Button, Col, Row, Select, Empty } from 'antd';
-import { sign } from 'crypto';
 import React, { useEffect, useState } from 'react';
 import { FixedSizeList } from 'react-window';
 import { NOTIFY_STOP_TASK } from '../../common/Constants';
@@ -43,6 +42,7 @@ const Store = (props: any) => {
 
     useEffect(() => {
         getTasks();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const deleteBot = (uuid: string) => {
@@ -62,8 +62,8 @@ const Store = (props: any) => {
         ipcRenderer.send(NOTIFY_STOP_TASK, uuid);
     };
 
-    const openCaptcha = () => {
-        ipcRenderer.send('new-window');
+    const openCaptcha = async () => {
+        ipcRenderer.send('new-window', storeName);
     };
     const Headers = () => {
         return (
@@ -123,15 +123,12 @@ const Store = (props: any) => {
             <Bot
                 key={jobs[index].uuid}
                 uuid={jobs[index].uuid}
-                store={jobs[index].store}
-                productLink={jobs[index].productLink}
                 productSKU={jobs[index].productSKU}
                 startdate={jobs[index].startDate}
                 starttime={jobs[index].startTime}
                 profile={jobs[index].profile}
                 sizes={jobs[index].sizes}
                 proxySet={jobs[index].proxySet}
-                monitordelay={jobs[index].monitorDelay}
                 retryDelay={jobs[index].retryDelay}
                 deleteBot={deleteBot}
                 storeName={storeName}
@@ -141,7 +138,6 @@ const Store = (props: any) => {
     };
 
     const showTasks = () => {
-        console.log('jooobs', jobs.length);
         return jobs.length === 0 ? (
             <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Empty
@@ -186,7 +182,7 @@ const Store = (props: any) => {
                 </Col>
                 <Col span={3}>
                     <Button style={buttonStyle} type="primary" onClick={() => openCaptcha()} disabled={jobs.length === 0}>
-                        Open cap
+                        Captcha
                     </Button>
                 </Col>
             </Row>

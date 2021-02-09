@@ -96,23 +96,6 @@ const NewTaskModal = (props: any) => {
         );
     };
 
-    const extractSKU = (link: string) => {
-        const res = /\/([0-9]*).html/.exec(link);
-        if (!res) {
-            form.setFields([
-                {
-                    name: 'productSKU',
-                    errors: ['Couldt not parse SKU'],
-                },
-            ]);
-            return undefined;
-        }
-
-        console.log('extracted', res[1]);
-        form.setFieldsValue({ productSKU: res[1] });
-        return res[1];
-    };
-
     return (
         <>
             <Modal
@@ -123,79 +106,77 @@ const NewTaskModal = (props: any) => {
                 onCancel={() => cancelTaskModal()}
                 okText="Create tasks"
                 footer={false}
-                width={800}
+                width={600}
             >
-                <Form form={form} onFinish={onFinishForm} validateMessages={validateMessages}>
-                    <Row gutter={GUTTER}>
-                        <Col span={12}>
-                            <Form.Item name="productLink" rules={[{ required: true }]}>
-                                <Input placeholder="Product Link" type="text" onChange={(e) => extractSKU(e.target.value)} />
-                            </Form.Item>
-                        </Col>
+                <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
+                    <Form form={form} onFinish={onFinishForm} validateMessages={validateMessages}>
+                        <Row gutter={GUTTER}>
+                            <Col span={24}>
+                                <Form.Item name="productSKU" rules={[{ required: true }]}>
+                                    <Input placeholder="Product SKU"></Input>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                        <Row gutter={GUTTER}>
+                            <Col span={12}>
+                                <Form.Item name="profile" rules={[{ required: true }]}>
+                                    <Select placeholder="Profile" allowClear options={getProfiles()} />
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="proxySet" rules={[{ required: false }]} initialValue={'No Proxies'}>
+                                    <Select style={{ width: '100%' }} placeholder="Proxy Set" allowClear options={getProxies()} />
+                                </Form.Item>
+                            </Col>
+                        </Row>
 
-                        <Col span={12}>
-                            <Form.Item name="productSKU">
-                                <Input disabled placeholder="Product SKU"></Input>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                    <Row gutter={GUTTER}>
-                        <Col span={12}>
-                            <Form.Item name="profile" rules={[{ required: true }]}>
-                                <Select placeholder="Profile" allowClear options={getProfiles()} />
-                            </Form.Item>
-                        </Col>
-                        <Col span={12}>
-                            <Form.Item name="proxySet" rules={[{ required: false }]} initialValue={'No Proxies'}>
-                                <Select style={{ width: '100%' }} placeholder="Proxy Set" allowClear options={getProxies()} />
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                        <Row gutter={GUTTER}>
+                            <Col span={12}>
+                                <Form.Item name="sizes" rules={[{ required: true }]}>
+                                    <Select placeholder="Size" mode="multiple" allowClear>
+                                        {allSizes}
+                                    </Select>
+                                </Form.Item>
+                            </Col>
 
-                    <Row gutter={GUTTER}>
-                        <Col span={12}>
-                            <Form.Item name="sizes" rules={[{ required: true }]}>
-                                <Select placeholder="Size" mode="multiple" allowClear>
-                                    {allSizes}
-                                </Select>
-                            </Form.Item>
-                        </Col>
+                            <Col span={12}>
+                                <Form.Item name="retryDelay" rules={[{ required: true }]}>
+                                    <InputNumber style={{ width: '100%' }} placeholder="Retry delay" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
 
-                        <Col span={12}>
-                            <Form.Item name="retryDelay" rules={[{ required: true }]}>
-                                <InputNumber style={{ width: '100%' }} placeholder="Retry delay" />
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                        <Row gutter={GUTTER}>
+                            <Col span={4}>
+                                <Form.Item name="manualTime">
+                                    <Checkbox onChange={onManualTimeChange} defaultChecked={manualTime}>
+                                        <span>Manual Start</span>
+                                    </Checkbox>
+                                </Form.Item>
+                            </Col>
+                            {renderTime()}
+                            <Col span={12}>
+                                <Form.Item name="quantity" rules={[{ required: true }]}>
+                                    <InputNumber style={{ width: '100%' }} placeholder="Quantity" />
+                                </Form.Item>
+                            </Col>
+                        </Row>
 
-                    <Row gutter={GUTTER}>
-                        <Col span={4}>
-                            <Form.Item name="manualTime">
-                                <Checkbox onChange={onManualTimeChange} defaultChecked={manualTime}>
-                                    Manual Start
-                                </Checkbox>
-                            </Form.Item>
-                        </Col>
-                        {renderTime()}
-                        <Col span={12}>
-                            <Form.Item name="quantity" rules={[{ required: true }]}>
-                                <InputNumber style={{ width: '100%' }} placeholder="Quantity" />
-                            </Form.Item>
-                        </Col>
-                    </Row>
+                        <Row gutter={GUTTER}>
+                            <Col span={18}>
+                                <span></span>
+                            </Col>
 
-                    <Row>
-                        <Col span={21}></Col>
-
-                        <Col span={3}>
-                            <Form.Item>
-                                <Button type="primary" htmlType="submit" style={buttonStyle}>
-                                    Create
-                                </Button>
-                            </Form.Item>
-                        </Col>
-                    </Row>
-                </Form>
+                            <Col span={6}>
+                                <Form.Item>
+                                    <Button type="primary" htmlType="submit" style={buttonStyle}>
+                                        Create Task
+                                    </Button>
+                                </Form.Item>
+                            </Col>
+                        </Row>
+                    </Form>
+                </div>
             </Modal>
         </>
     );

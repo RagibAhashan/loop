@@ -3,9 +3,8 @@ const { CookieJar } = require('./CookieJar');
 const msgs = require('./constants/Constants');
 
 class Task extends EventEmitter {
-    constructor(productLink, productSKU, sizes, deviceId, requestInstance, userProfile) {
+    constructor(uuid, productSKU, sizes, deviceId, requestInstance, userProfile) {
         super();
-        this.productLink = productLink;
         this.productSKU = productSKU;
         this.sizes = sizes;
         this.deviceId = deviceId;
@@ -14,6 +13,7 @@ class Task extends EventEmitter {
         this.userProfile = userProfile;
         this.productCode = '';
         this.cancel = false;
+        this.uuid = uuid;
     }
     getSessionTokens() {
         throw new Error('Method must be implemented');

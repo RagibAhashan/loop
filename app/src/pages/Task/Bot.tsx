@@ -80,6 +80,7 @@ const Bot = (props: any) => {
         retryDelay: number;
         deleteBot: any;
         storeName: string;
+        captchaWinId: number;
         style: any;
     } = props;
 
@@ -94,7 +95,7 @@ const Bot = (props: any) => {
             localStorage.setItem(uuid, JSON.stringify({ lastStatus: status.status, lastLevel: status.level }));
         });
 
-        ipcRenderer.on(uuid + TASK_STOPPED, (event) => {
+        ipcRenderer.on(uuid + TASK_STOPPED, () => {
             setRunning(false);
         });
     };
@@ -103,7 +104,7 @@ const Bot = (props: any) => {
         setRunning(true);
         const profiles = JSON.parse(localStorage.getItem('profiles') as string) as UserProfile[];
         console.log('profile', profiles);
-        const profileData = profiles.filter((prof) => prof.profile === profile);
+        const profileData = profiles.find((prof) => prof.profile === profile);
         console.log(profileData);
         const proxyData = ''; //localStorage.getItem(proxyset as string);
         const deviceId = localStorage.getItem('deviceId');

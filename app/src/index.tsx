@@ -9,7 +9,7 @@ import CaptchaFrame from './components/Captcha/CaptchaFrame';
 render(
     <HashRouter>
         <Switch>
-            <Route exact path={`/${CAPTCHA_ROUTE}`} component={CaptchaFrame} />
+            <Route exact path={`/${CAPTCHA_ROUTE}/:store`} component={CaptchaFrame} />
             <Route path="/" component={App} />
         </Switch>
     </HashRouter>,

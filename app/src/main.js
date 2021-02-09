@@ -1,7 +1,9 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
-const { CAPTCHA_ROUTE, NOTIFY_STOP_TASK, NOTIFY_START_TASK, TASK_STOPPED } = require('./common/Constants');
+const { CAPTCHA_ROUTE, NOTIFY_STOP_TASK, NOTIFY_START_TASK, TASK_STOPPED, NOTIFY_CAPTCHA } = require('./common/Constants');
+const captchaWindowManager = require('./core/captcha-window/CaptchaWindowManager');
 const taskFactory = require('./core/TaskFactory');
 const taskManager = require('./core/TaskManager');
+
 function createWindow() {
     const win = new BrowserWindow({
         width: 1700,
@@ -23,7 +25,7 @@ function createWindow() {
     win.setMenuBarVisibility(false);
     win.setAutoHideMenuBar(true);
 
-    ipcMain.on('new-window', (event, url) => {
+    ipcMain.on('new-window', (event, store) => {
         const newWin = new BrowserWindow({
             parent: win,
             width: 400,
@@ -34,11 +36,17 @@ function createWindow() {
             },
         });
 
+        captchaWindowManager.register(store, newWin);
+
         newWin.loadURL(
             process.env.NODE_ENV === 'development'
-                ? 'http://localhost:3000/#/' + CAPTCHA_ROUTE
-                : `file://${__dirname}/../build/index.html#${CAPTCHA_ROUTE}`,
+                ? `http://localhost:3000/#/${CAPTCHA_ROUTE}/${store}`
+                : `file://${__dirname}/../build/index.html#${CAPTCHA_ROUTE}/${store}`,
         );
+        newWin.on('close', () => {
+            console.log('win got closed');
+            newWin.destroy();
+        });
     });
 }
 
@@ -70,7 +78,6 @@ ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
         const newTask = taskFactory.createFootlockerTask(
             storeName,
             uuid,
-            taskData.productLink,
             taskData.productSKU,
             taskData.sizes,
             taskData.deviceId,
@@ -82,8 +89,10 @@ ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
             event.reply(uuid, message);
         });
 
-        newTask.on('captcha', (url) => {
-            event.reply(uuid + 'captcha', url);
+        newTask.on(NOTIFY_CAPTCHA, (captcha) => {
+            console.log('got cap from task', uuid);
+            const capWin = captchaWindowManager.getWindow(storeName);
+            if (capWin) capWin.webContents.send(storeName + NOTIFY_CAPTCHA, captcha);
         });
 
         newTask.execute();
