@@ -90,8 +90,8 @@ ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
         });
 
         newTask.on(NOTIFY_CAPTCHA, (captcha) => {
-            console.log('got cap from task', uuid);
             const capWin = captchaWindowManager.getWindow(storeName);
+            console.log('got cap from task', uuid);
             if (capWin) capWin.webContents.send(storeName + NOTIFY_CAPTCHA, captcha);
         });
 

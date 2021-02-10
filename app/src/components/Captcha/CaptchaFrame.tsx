@@ -21,7 +21,7 @@ const CaptchaFrame = () => {
     useEffect(() => {
         console.log('got cap from', store + NOTIFY_CAPTCHA);
 
-        ipcRenderer.on(NOTIFY_CAPTCHA, (e, captcha: ICaptcha) => {
+        ipcRenderer.on(store + NOTIFY_CAPTCHA, (e, captcha: ICaptcha) => {
             setCaptchaQ((prevQ) => [...prevQ, captcha]);
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps

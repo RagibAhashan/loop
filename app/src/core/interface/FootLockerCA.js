@@ -1,3 +1,5 @@
+const { COUNTRY, REGIONS } = require('../../common/Regions');
+
 class FLCInfoForm {
     constructor(
         lastName,
@@ -28,11 +30,16 @@ class FLCInfoForm {
         this.lastName = lastName;
         this.email = email;
         this.phone = phone;
-        this.country = country;
+        this.country = { isocode: COUNTRY[country], name: country };
         this.firstName = firstName;
         this.line1 = line1;
         this.postalCode = postalCode;
-        this.region = region;
+        this.region = {
+            name: region,
+            countryIso: COUNTRY[country],
+            isocode: REGIONS[country][region].isocode,
+            isocodeShort: REGIONS[country][region].isocodeShort,
+        };
         this.setAsBilling = setAsBilling;
         this.shippingAddress = shippingAddress;
         this.town = town;

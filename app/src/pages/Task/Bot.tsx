@@ -161,15 +161,15 @@ const Bot = (props: any) => {
             }}
         >
             <Col span={4} style={{ paddingLeft: 10, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                <div>{productSKU}</div>
+                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{productSKU}</div>
             </Col>
 
             <Col span={4}>
-                <div>{proxySet ? proxySet : 'No Proxies'}</div>
+                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{proxySet ? proxySet : 'No Proxies'}</div>
             </Col>
 
             <Col span={4}>
-                <div>{profile}</div>
+                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile}</div>
             </Col>
 
             <Col span={4} style={{ padding: 10 }}>
@@ -179,11 +179,13 @@ const Bot = (props: any) => {
             </Col>
 
             <Col span={4}>
-                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <svg height="6" width="6">
                         <circle cx="3" cy="3" r="3" fill={statusColor(statusLevel)} />
                     </svg>
-                    <span style={{ color: statusColor(statusLevel), fontWeight: 500, marginLeft: 10 }}>{status}</span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', color: statusColor(statusLevel), fontWeight: 500, marginLeft: 5 }}>
+                        {status}
+                    </span>
                 </div>
             </Col>
 

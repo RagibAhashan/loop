@@ -88,7 +88,6 @@ class FootLockerTask extends Task {
                 }
 
                 const body = { productQuantity: '1', productId: this.productCode };
-                this.emit('captcha', { uuid: this.uuid, url: 'testurl' });
 
                 const response = await this.axiosSession.post('/users/carts/current/entries', body, { headers: headers });
                 if (this.cancel) return;
@@ -97,7 +96,6 @@ class FootLockerTask extends Task {
                 this.cookieJar.setFromRaw(cookies, Cookie.CART_GUID);
             } catch (err) {
                 if (this.cancel) return;
-
                 // TODO WIP Captcha
                 if (err.response.data['errors'] && err.response.data['errors']['type'] === 'ProductLowStockException') {
                     await this.emitStatus(msgs.CHECKING_SIZE_RETRY_MESSAGE, 'error');
