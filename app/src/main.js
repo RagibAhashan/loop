@@ -83,6 +83,7 @@ ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
             taskData.deviceId,
             taskData.profileData,
             taskData.retryDelay,
+            taskData.proxyData,
         );
 
         newTask.on('status', (message) => {
@@ -91,7 +92,6 @@ ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
 
         newTask.on(NOTIFY_CAPTCHA, (captcha) => {
             const capWin = captchaWindowManager.getWindow(storeName);
-            console.log('got cap from task', uuid);
             if (capWin) capWin.webContents.send(storeName + NOTIFY_CAPTCHA, captcha);
         });
 

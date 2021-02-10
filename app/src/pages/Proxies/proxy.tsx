@@ -75,7 +75,6 @@ const ProxyPage = () => {
                 proxyArray.push(e.target?.result);
                 const arrayProxy: Array<string> = proxyArray[0].split('\n');
                 objectifySets(name, arrayProxy);
-                
             };
             reader.readAsText(files[0].originFileObj);
         } else if (tab === COPYPASTE) {
@@ -88,8 +87,8 @@ const ProxyPage = () => {
     const objectifySets = (name: string, arrayProxy: Array<string>) => {
         let arrayProxyTest: Array<Object> = [];
         let proxyObject: Object = {};
-        for(let i = 0; i < arrayProxy.length; i++) {
-            proxyObject = {proxy: arrayProxy[i], testStatus: "doge"};
+        for (let i = 0; i < arrayProxy.length; i++) {
+            proxyObject = { proxy: arrayProxy[i], testStatus: 'doge', usedBy: [] };
             arrayProxyTest.push(proxyObject);
         }
         setProxies(proxies.set(name, arrayProxyTest));
@@ -97,7 +96,7 @@ const ProxyPage = () => {
         forceUpdate();
         setVisibleAdd(false);
         tab = 1;
-    }
+    };
 
     const onDelete = (values: any) => {
         const arraySetToDelete = values.proxies;
@@ -207,11 +206,11 @@ const ProxyPage = () => {
     const deleteIndividual = (record: any) => {
         let proxiesArray: Array<any> = proxies.get(currentTab.name) || [];
         let proxyToDelete: string = record.ip + ':' + record.port + ':' + record.username + ':' + record.password;
-        for(let i = 0; i < proxiesArray.length; i++) {
-            if(proxiesArray[i].proxy === proxyToDelete) {
+        for (let i = 0; i < proxiesArray.length; i++) {
+            if (proxiesArray[i].proxy === proxyToDelete) {
                 proxiesArray.splice(i, 1);
                 break;
-            }   
+            }
         }
         proxies.set(currentTab.name, proxiesArray);
         setProxies(proxies);
