@@ -55,7 +55,7 @@ const CreateNewProfileModal = (props: any) => {
     const { addProfile } = props;
     const [form] = Form.useForm();
 
-    const [same, setSame] = useState(true);
+    const [same, setSame] = useState(false);
     const [focused, setFocused] = useState<focus>(undefined);
 
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
