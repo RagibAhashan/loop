@@ -1,402 +1,124 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { DeleteFilled, PlusOutlined, PoweroffOutlined, ArrowUpOutlined } from '@ant-design/icons';
-import { Layout, message, Space, Table, Tabs, Button, Tooltip } from 'antd';
-import React, { useEffect, useState } from 'react';
-import CollectionFormAdd from './Collections/Add';
-import CollectionFormCreate from './Collections/Create';
-import CollectionFormDelete from './Collections/Delete';
-import { useVT } from 'virtualizedtableforantd4';
+// import styles from './sidebar.module.css';
+import { DeleteFilled, PlayCircleFilled, StopFilled } from '@ant-design/icons';
+import { Button, Col, Row } from 'antd';
+import React from 'react';
 
-const { Content } = Layout;
-const UPLOAD = 1;
-const COPYPASTE = 2;
+const startButton = {
+    border: 'none',
+    borderRadius: '100%',
+    color: 'green',
+};
 
-const ProxyPage = () => {
-    const [proxies, setProxies] = useState(new Map<string, Object[]>()); // setName -> [{proxy: 199.99.99, testStatus: None}, {...}]
-    let [currentTab, setCurrentTab] = useState({ name: '', key: '1' });
+const stopButton = {
+    border: 'none',
+    borderRadius: '100%',
+    color: '#fc3d03',
+};
 
-    // Popups Visibility
-    const [visibleCreate, setVisibleCreate] = useState(false);
-    const [visibleDelete, setVisibleDelete] = useState(false);
-    const [deleteSelection, setDeleteSelection] = useState(['']);
-    const [visibleAdd, setVisibleAdd] = useState(false);
-    const [vt, set_components] = useVT(() => ({ scroll: { y: 560 } }), []);
+const deleteButton = {
+    border: 'none',
+    borderRadius: '100%',
+    color: 'red',
+};
 
-    let [tab, setTabKey] = useState(1); // for add popup to select between upload and copy pasta
-
-    useEffect(() => {
-        console.log(localStorage);
-        let db_proxies: any = localStorage.getItem('proxies');
-        if (!db_proxies) {
-            const obj = Object.fromEntries(proxies);
-            localStorage.setItem('proxies', JSON.stringify(obj));
-        } else {
-            let tempProxyMap = new Map<string, []>();
-            const obj = JSON.parse(db_proxies);
-            const array = Object.keys(obj).map((key) => [key, obj[key]]);
-            for (let i = 0; i < array.length; i++) {
-                tempProxyMap.set(array[i][0], array[i][1]);
-            }
-            setProxies(tempProxyMap);
-            if (array[0] !== undefined && array[0][0]) {
-                setCurrentTab({ name: array[0][0], key: '1' });
-            }
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const onCreate = (values: any) => {
-        const name = values.name;
-        // Check if already exists
-        if (proxies.get(name)) {
-            message.error(`Proxy Set "${name}" already exists!`);
-            return null;
-        } else {
-            setProxies(proxies.set(name, []));
-            localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
-            forceUpdate();
-            setVisibleCreate(false);
-            if (proxies.size === 1) {
-                setCurrentTab({ name: name, key: '1' });
-            }
-        }
-    };
-
-    const onAdd = (values: any) => {
-        const name = currentTab.name;
-        const proxyArray: any = [];
-
-        if (tab === UPLOAD) {
-            const files = values.uploadedProxies.fileList;
-            // Read file
-            let reader = new FileReader();
-            reader.onload = (e) => {
-                // called after readAsText
-                proxyArray.push(e.target?.result);
-                const arrayProxy: Array<string> = proxyArray[0].split('\n');
-                objectifySets(name, arrayProxy);
-            };
-            reader.readAsText(files[0].originFileObj);
-        } else if (tab === COPYPASTE) {
-            proxyArray.push(values.copiedProxies);
-            const arrayProxy: Array<string> = proxyArray[0].split('\n');
-            objectifySets(name, arrayProxy);
-        }
-    };
-
-    const objectifySets = (name: string, arrayProxy: Array<string>) => {
-        let arrayProxyTest: Array<Object> = [];
-        let proxyObject: Object = {};
-        for (let i = 0; i < arrayProxy.length; i++) {
-            proxyObject = { proxy: arrayProxy[i], testStatus: 'doge', usedBy: [] };
-            arrayProxyTest.push(proxyObject);
-        }
-        setProxies(proxies.set(name, arrayProxyTest));
-        localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
-        forceUpdate();
-        setVisibleAdd(false);
-        tab = 1;
-    };
-
-    const onDelete = (values: any) => {
-        const arraySetToDelete = values.proxies;
-        arraySetToDelete.forEach((name: any) => {
-            proxies.delete(name);
-            setProxies(proxies);
-            localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
-        });
-        setVisibleDelete(false);
-    };
-
-    const downloadProxies = (values: [], name: string) => {
-        const proxyFileName = name + 'Proxies.txt';
-        const valuesNewLine = [values.join('\r\n')];
-        const element = document.createElement('a');
-        const file = new Blob(valuesNewLine, { type: 'text/plain' });
-        element.href = URL.createObjectURL(file);
-        element.download = proxyFileName;
-        document.body.appendChild(element); // Required for this to work in FireFox
-        element.click();
-    };
-
-    function useForceUpdate() {
-        const [value, setValue] = useState(0); // integer state
-        return () => setValue((value) => value + 1); // update the state to force render
+const statusColor = (level: string) => {
+    switch (level) {
+        case 'idle':
+            return 'yellow';
+        case 'info':
+            return 'white';
+        case 'success':
+            return 'green';
+        case 'error':
+            return 'red';
+        case 'cancel':
+            return '#f7331e';
     }
-    const forceUpdate = useForceUpdate();
+};
 
-    const onCancel = () => {
-        tab = 1;
-    };
+const Proxy = (props: any) => {
+    const {
+        proxies,
+        style,
+    } = props;
 
-    const options = () => {
-        let setSelection: any = [];
-        proxies.forEach((value, key, map) => {
-            setSelection.push(key);
-        });
-        return setSelection;
-    };
 
-    const handleChange = (selectedItems: any) => {};
-
-    const columns = [
-        {
-            title: 'ID',
-            dataIndex: 'id',
-            key: 'id',
-            width: '5%',
-            // eslint-disable-next-line jsx-a11y/anchor-is-valid
-            render: (text: any) => <a> {text} </a>,
-        },
-        {
-            title: 'IP',
-            dataIndex: 'ip',
-            key: 'ip',
-            width: '20%',
-        },
-        {
-            title: 'Port',
-            dataIndex: 'port',
-            key: 'port',
-            width: '15%',
-        },
-        {
-            title: 'Username',
-            dataIndex: 'username',
-            key: 'username',
-            width: '20%',
-        },
-        {
-            title: 'Password',
-            dataIndex: 'password',
-            key: 'password',
-            width: '15%',
-        },
-        {
-            title: 'Status',
-            key: 'status',
-            dataIndex: 'status',
-            width: '15%',
-        },
-        {
-            title: 'Action',
-            key: 'action',
-            width: '10%',
-            render: (text: any, record: any) => (
-                <Space size="large">
-                    <Tooltip placement="top" title={'test'}>
-                        <PoweroffOutlined style={{ color: 'green', fontSize: 16 }} onClick={testIndividual} />
-                    </Tooltip>
-                    <Tooltip placement="top" title={'remove'}>
-                        <DeleteFilled
-                            twoToneColor={'orange'}
-                            style={{ color: 'orange', fontSize: 18 }}
-                            onClick={() => {
-                                deleteIndividual(record);
-                            }}
-                        />
-                    </Tooltip>
-                </Space>
-            ),
-        },
-    ];
-
-    const testIndividual = () => {};
-
-    const deleteIndividual = (record: any) => {
-        let proxiesArray: Array<any> = proxies.get(currentTab.name) || [];
-        let proxyToDelete: string = record.ip + ':' + record.port + ':' + record.username + ':' + record.password;
-        for (let i = 0; i < proxiesArray.length; i++) {
-            if (proxiesArray[i].proxy === proxyToDelete) {
-                proxiesArray.splice(i, 1);
-                break;
-            }
-        }
-        proxies.set(currentTab.name, proxiesArray);
-        setProxies(proxies);
-        localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
-        forceUpdate();
-    };
-
-    const deleteAll = () => {
-        let proxiesArray: Array<string> = [];
-        proxies.set(currentTab.name, proxiesArray);
-        setProxies(proxies);
-        localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
-        forceUpdate();
-    };
-
-    const { TabPane } = Tabs;
-
-    function callback(key: any) {
-        tab = key;
-    }
-
-    function tabClick(key: string, event: React.KeyboardEvent<Element> | React.MouseEvent<Element, MouseEvent>) {
-        let tabName = (event.target as HTMLTextAreaElement).childNodes[0].textContent as string;
-        currentTab.name = tabName;
-        currentTab.key = key;
-        forceUpdate();
-    }
-
-    const Sets = () => (
-        <Tabs
-            activeKey={currentTab.key}
-            defaultActiveKey="1"
-            onChange={callback}
-            style={{ padding: '10px 15px', height: '100%' }}
-            onTabClick={tabClick}
-            tabBarExtraContent={AddRemoveSets}
-        >
-            {TabPanes()}
-        </Tabs>
-    );
-
-    const TabPanes = () => {
-        let proxyArray = Array.from(proxies, ([name, proxies]) => ({ name, proxies }));
-        if (!proxies.size) return [];
-        let i = 0;
-        return proxyArray.map((value) => {
-            return [
-                <TabPane style={{ height: '100%' }} tab={value.name} key={++i}>
-                    <Table scroll={{ y: '78vh' }} components={vt} columns={columns} pagination={false} dataSource={ShowData(value.name)} />
-                </TabPane>,
-            ];
-        });
-    };
-
-    const ShowData = (name: string) => {
-        let data: any = [];
-        let id = 0;
-        proxies.get(name)?.forEach((value: any) => {
-            var fields = value.proxy.split(':');
-            var ip = fields[0];
-            var port = fields[1];
-            var username = fields[2];
-            var password = fields[3];
-            let dataRow = {
-                id: ++id,
-                ip: ip,
-                port: port,
-                username: username,
-                password: password,
-                status: value.testStatus,
-                action: '',
-            };
-            data.push(dataRow);
-        });
-        return data;
-    };
-
-    const AddRemoveSets = (
-        <div>
-            {!proxies.size ? (
-                <Button
-                    icon={<PlusOutlined style={{ color: 'green' }} />}
-                    style={{ textAlign: 'center', float: 'left', marginTop: 12, marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
-                    type={'primary'}
-                    onClick={() => {
-                        setVisibleCreate(true);
-                    }}
-                >
-                    Add set
-                </Button>
-            ) : (
-                <div>
-                    <Tooltip placement="top" title={'Add sets'}>
-                        <PlusOutlined
-                            style={{ color: 'green', fontSize: 30 }}
-                            onClick={() => {
-                                setVisibleCreate(true);
-                            }}
-                        />
-                    </Tooltip>
-                    <Tooltip placement="top" title={'Remove sets'}>
-                        <DeleteFilled
-                            style={{ color: 'orange', fontSize: 30, marginTop: 15, marginLeft: 15 }}
-                            onClick={() => {
-                                setVisibleDelete(true);
-                            }}
-                        />
-                    </Tooltip>
-                    <CollectionFormDelete
-                        visible={visibleDelete}
-                        onCreate={onDelete}
-                        onCancel={() => {
-                            setVisibleDelete(false);
-                        }}
-                        options={options}
-                        deleteSelection={deleteSelection}
-                        handleChange={handleChange}
-                    />
-                </div>
-            )}
-            <CollectionFormCreate
-                visible={visibleCreate}
-                onCreate={onCreate}
-                onCancel={() => {
-                    setVisibleCreate(false);
-                    onCancel();
+    const runButton = () => {
+        return false ? (
+            <Button
+                onClick={() => {
+                    // stopTask();
                 }}
+                style={stopButton}
+                icon={<StopFilled />}
+                size="small"
             />
-        </div>
-    );
+        ) : (
+            <Button
+                onClick={() => {
+                    // startTask();
+                }}
+                style={startButton}
+                icon={<PlayCircleFilled />}
+                size="small"
+            />
+        );
+    };
 
     return (
-        <Layout style={{ padding: 24, backgroundColor: '#212427', height: '100vh', overflow: 'auto' }}>
-            <Content style={{ display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
-                <div style={{ flex: 1, overflow: 'auto' }}>
-                    <Sets />
+        <Row
+            align="middle"
+            style={{
+                ...style,
+                backgroundColor: '#282c31',
+                borderRadius: 5,
+                height: style.height - 5,
+                textAlign: 'center',
+                whiteSpace: 'nowrap',
+            }}
+        >
+            <Col span={4} style={{ paddingLeft: 10, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div>{proxies.ip}</div>
+            </Col>
+
+            <Col span={4}>
+                <div>{ proxies.port}</div>
+            </Col>
+
+            <Col span={4}>
+                <div>{proxies.username}</div>
+            </Col>
+
+            <Col span={4} style={{ padding: 10 }}>
+                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{proxies.password}</div>
+            </Col>
+
+            <Col span={4}>
+                <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
+                    <svg height="6" width="6">
+                        <circle cx="3" cy="3" r="3" fill={statusColor('success')} />
+                    </svg>
+                    <span style={{ color: statusColor('success'), fontWeight: 500, marginLeft: 10 }}>{proxies.status}</span>
                 </div>
-                {proxies.size ? (
-                    <div style={{ padding: '10px 15px' }}>
-                        <div>
-                            <Button
-                                icon={<PlusOutlined style={{ color: 'green' }} />}
-                                style={{ textAlign: 'center', float: 'left', paddingLeft: '35px', paddingRight: '35px' }}
-                                type={'primary'}
-                                onClick={() => {
-                                    setVisibleAdd(true);
-                                }}
-                            >
-                                Add Proxies
-                            </Button>
-                            <CollectionFormAdd
-                                visible={visibleAdd}
-                                onCreate={onAdd}
-                                onCancel={() => {
-                                    setVisibleAdd(false);
-                                }}
-                                callback={callback}
-                            />
-                        </div>
-                        <div>
-                            <Button
-                                icon={<PoweroffOutlined style={{ color: 'green' }} />}
-                                style={{ textAlign: 'center', float: 'left', marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
-                                type={'primary'}
-                                disabled={proxies.get(currentTab.name)?.length === 0 ? true : false}
-                            >
-                                Test All
-                            </Button>
-                        </div>
-                        <div>
-                            <Button
-                                icon={<DeleteFilled style={{ color: 'orange' }} />}
-                                style={{ textAlign: 'center', float: 'right', paddingLeft: '35px', paddingRight: '35px' }}
-                                type={'primary'}
-                                onClick={() => {
-                                    deleteAll();
-                                }}
-                                disabled={proxies.get(currentTab.name)?.length === 0 ? true : false}
-                            >
-                                Delete All
-                            </Button>
-                        </div>
+            </Col>
+
+            <Col span={4}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginLeft: '5px' }}>
+                    <div>{runButton()}</div>
+                    <div>
+                        <Button
+                            onClick={() => {
+                                props.deleteIndividual(proxies);
+                            }}
+                            style={deleteButton}
+                            icon={<DeleteFilled />}
+                            size="small"
+                        />
                     </div>
-                ) : null}
-            </Content>
-        </Layout>
+                </div>
+            </Col>
+        </Row>
     );
 };
-export default ProxyPage;
+
+export default Proxy;
