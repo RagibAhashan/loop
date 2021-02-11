@@ -18,8 +18,15 @@ const botStyle = {
     marginBottom: 20,
 } as React.CSSProperties;
 
+interface NetworkProxy {
+    proxy: string;
+    credential: string;
+    testStatus: string;
+    usedBy: [];
+}
+
 const ProxyPage = () => {
-    const [proxies, setProxies] = useState(new Map<string, Object[]>()); // setName -> [{proxy: 199.99.99, testStatus: None}, {...}]
+    const [proxies, setProxies] = useState(new Map<string, NetworkProxy[]>());
     let [currentTab, setCurrentTab] = useState({ name: '', key: '1' });
 
     // Popups Visibility
@@ -92,14 +99,19 @@ const ProxyPage = () => {
     };
 
     const objectifySets = (name: string, arrayProxy: Array<string>) => {
-        console.log(name); console.log(arrayProxy)
-        let arrayProxyTest: Array<Object> = [];
-        let proxyObject: Object = {};
+        let array: Array<NetworkProxy> = [];
+        let proxyObject: NetworkProxy = {proxy: "", testStatus: "", credential:"", usedBy: []};
+        let fields = [];
+        let ipPort = "";
+        let userPass = "";
         for(let i = 0; i < arrayProxy.length; i++) {
-            proxyObject = {proxy: arrayProxy[i], testStatus: "none", usedBy: []};
-            arrayProxyTest.push(proxyObject);
+            fields = arrayProxy[i].split(':');
+            ipPort = fields[0] + ":" + fields[1];
+            userPass = fields[2]+ ":" + fields[3];
+            proxyObject = {proxy: ipPort, testStatus: "none", credential:userPass, usedBy: []};
+            array.push(proxyObject);
         }
-        setProxies(proxies.set(name, arrayProxyTest));
+        setProxies(proxies.set(name, array));
         localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
         forceUpdate();
         setVisibleAdd(false);
@@ -140,8 +152,9 @@ const ProxyPage = () => {
         var fields = proxy[index].proxy.split(':');
         var ip = fields[0];
         var port = fields[1];
-        var username = fields[2];
-        var password = fields[3];
+        var fields = proxy[index].credential.split(':');
+        var username = fields[0];
+        var password = fields[1];
         let data = {
             ip: ip,
             port: port,
@@ -199,7 +212,7 @@ const ProxyPage = () => {
 
     const deleteIndividual = (record: any) => {
         let proxiesArray: Array<any> = proxies.get(currentTab.name) || [];
-        let proxyToDelete: string = record.ip + ':' + record.port + ':' + record.username + ':' + record.password;
+        let proxyToDelete: string = record.ip + ':' + record.port;
         for(let i = 0; i < proxiesArray.length; i++) {
             if(proxiesArray[i].proxy === proxyToDelete) {
                 proxiesArray.splice(i, 1);
@@ -214,7 +227,7 @@ const ProxyPage = () => {
     };
 
     const deleteAll = () => {
-        let proxiesArray: Array<string> = [];
+        let proxiesArray: Array<NetworkProxy> = [];
         proxies.set(currentTab.name, proxiesArray);
         setProxies(proxies);
         localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
