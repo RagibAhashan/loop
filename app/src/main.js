@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
-const { CAPTCHA_ROUTE, NOTIFY_STOP_TASK, NOTIFY_START_TASK, TASK_STOPPED, NOTIFY_CAPTCHA } = require('./common/Constants');
+const { CAPTCHA_ROUTE, NOTIFY_STOP_TASK, NOTIFY_START_TASK, TASK_STOPPED, NOTIFY_CAPTCHA, 
+        NOTIFY_START_PROXY, NOTIFY_STOP_PROXY } = require('./common/Constants');
 const captchaWindowManager = require('./core/captcha-window/CaptchaWindowManager');
 const taskFactory = require('./core/TaskFactory');
 const taskManager = require('./core/TaskManager');
@@ -104,6 +105,20 @@ ipcMain.on(NOTIFY_STOP_TASK, async (event, uuid) => {
         const currentTask = taskManager.getTask(uuid);
         if (currentTask) currentTask.emit('stop');
         event.reply(uuid + TASK_STOPPED, uuid);
+    } catch (error) {
+        console.log('err', error);
+    }
+});
+
+ipcMain.on(NOTIFY_START_PROXY, (event, setName, proxy, credential, testStatus) => {
+    console.log('got notified to start!')
+    // start test here
+});
+
+ipcMain.on(NOTIFY_STOP_PROXY, async (event, setName, proxy, credential, testStatus) => {
+    try {
+        console.log('got notified to stop!')
+        // stop test here
     } catch (error) {
         console.log('err', error);
     }

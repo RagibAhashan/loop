@@ -44,7 +44,7 @@ const ProxyRow = (props: any) => {
 
 
     const runButton = () => {
-        return false ? (
+        return proxy.status === 'Testing' ? (
             <Button
                 onClick={() => {
                     // stopTask();
@@ -56,7 +56,7 @@ const ProxyRow = (props: any) => {
         ) : (
             <Button
                 onClick={() => {
-                    props.testIndividual()
+                    props.testIndividual(proxy)
                 }}
                 style={startButton}
                 icon={<PlayCircleFilled />}
