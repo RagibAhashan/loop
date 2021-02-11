@@ -5,15 +5,17 @@ import * as EmailService from '../services/email'
 import * as Errors from '../services/errors'
 import { v4 as uuidv4 } from "uuid";
 
-// import bcrypt from 'bcrypt';
-// const saltRounds = 10;
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 
 export const requestRegistrationEmail = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Not yet coded lol' });
 }
 
-export const CreateNewUser = async (req: Request, res: Response) => {
+const A_KEY = 'a7791cf4-33dd-42c5-a0f1-204aefb494c0';
+
+export const RegisterUser = async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -26,16 +28,29 @@ export const CreateNewUser = async (req: Request, res: Response) => {
         const { credit_card, cvc, discord_id, email, first_name, last_name, CC_Month, CC_Year } = req.body;
         const db = new Firestore();
         const USER_ID = uuidv4();
+        const LICENSE_KEY = uuidv4();
+        const HASHED_LKEY = await bcrypt.hash(LICENSE_KEY, saltRounds);
         const USER_DATA = {
-            "credit_card": credit_card,
-            "cvc": cvc,
+            "billing": {
+                "credit_card": credit_card,
+                "cvc": cvc,
+                "CC_Month": CC_Month,
+                "CC_Year": CC_Year,
+            },
+            "system_information": {
+                "CPU": "",
+                "GPU": "",
+                "MAC_ADDRESS": "",
+                "OS": ""
+            },
             "discord_id": discord_id,
             "email": email,
             "first_name": first_name,
             "last_name": last_name,
-            "CC_Month": CC_Month,
-            "CC_Year": CC_Year,
             "user_id": USER_ID,
+            "LICENSE_KEY": HASHED_LKEY,
+            "KEY_ACTIVATED": false,
+            "joined": { "Date": new Date().toString(), "unix" : Date.now() }
         }
         const BannedUsersRef        = db.collection("Users").doc("BannedUsers");
         const SubscribedUsersRef    = db.collection("Users").doc("SubscribedUsers");
@@ -73,6 +88,7 @@ export const CreateNewUser = async (req: Request, res: Response) => {
         res.status(200).send({
             message: 'User created!',
             user_id: USER_ID,
+            LICENSE_KEY: LICENSE_KEY,
         });
             
         } catch(error) {
@@ -107,8 +123,27 @@ export const CreateNewUser = async (req: Request, res: Response) => {
     }
 }
 
+export const ActivateUserLicense = async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        console.error(errors)
+        res.status(422).json({ errors: errors.array() });
+        return;
+    }
+
+    const { L_KEY, CPU, GPU, MAC_ADDRESS, OS } = req.body;
+
+    try {
+
+    } catch (error) {
+
+    }
+
+    res.status(200).send(req.body);
+}
 
 
 export const testing = async (req: Request, res: Response) => {
-    res.status(200).send("Welcome to our server. (Test)")
+    res.status(200).send(req.body);
 }
