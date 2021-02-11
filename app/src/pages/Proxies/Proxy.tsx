@@ -36,9 +36,9 @@ const statusColor = (level: string) => {
     }
 };
 
-const Proxy = (props: any) => {
+const ProxyRow = (props: any) => {
     const {
-        proxies,
+        proxy,
         style,
     } = props;
 
@@ -56,7 +56,7 @@ const Proxy = (props: any) => {
         ) : (
             <Button
                 onClick={() => {
-                    // startTask();
+                    props.testIndividual()
                 }}
                 style={startButton}
                 icon={<PlayCircleFilled />}
@@ -78,19 +78,19 @@ const Proxy = (props: any) => {
             }}
         >
             <Col span={4} style={{ paddingLeft: 10, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                <div>{proxies.ip}</div>
+                <div>{proxy.ip}</div>
             </Col>
 
             <Col span={4}>
-                <div>{ proxies.port}</div>
+                <div>{ proxy.port}</div>
             </Col>
 
             <Col span={4}>
-                <div>{proxies.username}</div>
+                <div>{proxy.username}</div>
             </Col>
 
             <Col span={4} style={{ padding: 10 }}>
-                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{proxies.password}</div>
+                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{proxy.password}</div>
             </Col>
 
             <Col span={4}>
@@ -98,7 +98,7 @@ const Proxy = (props: any) => {
                     <svg height="6" width="6">
                         <circle cx="3" cy="3" r="3" fill={statusColor('success')} />
                     </svg>
-                    <span style={{ color: statusColor('success'), fontWeight: 500, marginLeft: 10 }}>{proxies.status}</span>
+                    <span style={{ color: statusColor('success'), fontWeight: 500, marginLeft: 10 }}>{proxy.status}</span>
                 </div>
             </Col>
 
@@ -108,7 +108,7 @@ const Proxy = (props: any) => {
                     <div>
                         <Button
                             onClick={() => {
-                                props.deleteIndividual(proxies);
+                                props.deleteIndividual(proxy);
                             }}
                             style={deleteButton}
                             icon={<DeleteFilled />}
@@ -121,4 +121,4 @@ const Proxy = (props: any) => {
     );
 };
 
-export default Proxy;
+export default ProxyRow;

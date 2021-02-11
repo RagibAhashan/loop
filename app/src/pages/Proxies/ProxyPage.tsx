@@ -5,8 +5,11 @@ import React, { useEffect, useState } from 'react';
 import CollectionFormAdd from './Collections/Add';
 import CollectionFormCreate from './Collections/Create';
 import CollectionFormDelete from './Collections/Delete';
-import Proxy from './Proxy'
+import ProxyRow from './Proxy'
 import { FixedSizeList } from 'react-window';
+import { Proxy } from '../../interfaces/OtherInterfaces'
+const { ipcRenderer } = window.require('electron');
+
 
 const { Content } = Layout;
 const UPLOAD = '1';
@@ -18,15 +21,9 @@ const botStyle = {
     marginBottom: 20,
 } as React.CSSProperties;
 
-interface NetworkProxy {
-    proxy: string;
-    credential: string;
-    testStatus: string;
-    usedBy: [];
-}
 
 const ProxyPage = () => {
-    const [proxies, setProxies] = useState(new Map<string, NetworkProxy[]>());
+    const [proxies, setProxies] = useState(new Map<string, Proxy[]>());
     let [currentTab, setCurrentTab] = useState({ name: '', key: '1' });
 
     // Popups Visibility
@@ -99,8 +96,8 @@ const ProxyPage = () => {
     };
 
     const objectifySets = (name: string, arrayProxy: Array<string>) => {
-        let array: Array<NetworkProxy> = [];
-        let proxyObject: NetworkProxy = {proxy: "", testStatus: "", credential:"", usedBy: []};
+        let array: Array<Proxy> = [];
+        let proxyObject: Proxy = {proxy: "", testStatus: "", credential:"", usedBy: []};
         let fields = [];
         let ipPort = "";
         let userPass = "";
@@ -152,7 +149,7 @@ const ProxyPage = () => {
         var fields = proxy[index].proxy.split(':');
         var ip = fields[0];
         var port = fields[1];
-        var fields = proxy[index].credential.split(':');
+        fields = proxy[index].credential.split(':');
         var username = fields[0];
         var password = fields[1];
         let data = {
@@ -164,9 +161,11 @@ const ProxyPage = () => {
             action: '',
         };
         return (
-            <Proxy
+            <ProxyRow
                 deleteIndividual={deleteIndividual}
-                proxies={data}
+                testIndividual={testIndividual}
+                currentTab={currentTab}
+                proxy={data}
                 style={style}
             />
         );
@@ -208,7 +207,9 @@ const ProxyPage = () => {
 
     const handleChange = (selectedItems: any) => {};
 
-    const testIndividual = () => {};
+    const testIndividual = (record: any) => {};
+
+    const testAll = () => {};
 
     const deleteIndividual = (record: any) => {
         let proxiesArray: Array<any> = proxies.get(currentTab.name) || [];
@@ -227,7 +228,7 @@ const ProxyPage = () => {
     };
 
     const deleteAll = () => {
-        let proxiesArray: Array<NetworkProxy> = [];
+        let proxiesArray: Array<Proxy> = [];
         proxies.set(currentTab.name, proxiesArray);
         setProxies(proxies);
         localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
@@ -363,6 +364,7 @@ const ProxyPage = () => {
                                 style={{ textAlign: 'center', float: 'left', marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
                                 type={'primary'}
                                 disabled={proxies.get(currentTab.name)?.length === 0 ? true : false}
+                                onClick={testAll}
                             >
                                 Test All
                             </Button>
