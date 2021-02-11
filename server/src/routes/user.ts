@@ -13,8 +13,6 @@ export const requestRegistrationEmail = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Not yet coded lol' });
 }
 
-const A_KEY = 'a7791cf4-33dd-42c5-a0f1-204aefb494c0';
-
 export const RegisterUser = async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
@@ -49,22 +47,35 @@ export const RegisterUser = async (req: Request, res: Response) => {
             "last_name": last_name,
             "user_id": USER_ID,
             "LICENSE_KEY": HASHED_LKEY,
-            "KEY_ACTIVATED": false,
             "joined": { "Date": new Date().toString(), "unix" : Date.now() }
         }
-        const BannedUsersRef        = db.collection("Users").doc("BannedUsers");
-        const SubscribedUsersRef    = db.collection("Users").doc("SubscribedUsers");
+        const BannedUsersRef    = db.collection("Users").doc("BannedUsers");
+        const SubscribersRef    = db.collection("Users").doc("Subscribers");
 
         await db.runTransaction(async (transaction) => {
             
-            return transaction.get(SubscribedUsersRef).then( async (doc) => {
+            return transaction.get(SubscribersRef).then( async (doc) => {
                 if (!doc.exists) {
-                    throw new Error("Document 'SubscribedUsersRef' does not exist!");
+                    throw new Error("Document 'Subscribers' does not exist!");
                 }
                 
-                let querySnapshot = await doc.ref.collection('Subscribers')
+                let querySnapshot = await doc.ref.collection('UnactivatedSubscribers')
                 .where("email", "==", email)
                 .get();
+
+                if (querySnapshot.size >= 1) {
+                    throw new Errors.EmailAlreadySent('You have already received an email!');
+                }
+
+                querySnapshot = await doc.ref.collection('ActivatedSubscribers')
+                .where("email", "==", email)
+                .get();
+
+                if (querySnapshot.size > 1) {
+                    throw new Errors.UserAlreadyExistManyTimes(`This user exists ${querySnapshot.size} times`);
+                } else if (querySnapshot.size === 1) {
+                    throw new Errors.UserAlreadyExistError('This user already exist!');
+                }
 
                 if (querySnapshot.size > 1) {
                     throw new Errors.UserAlreadyExistManyTimes(`This user exists ${querySnapshot.size} times`);
@@ -79,15 +90,27 @@ export const RegisterUser = async (req: Request, res: Response) => {
                     throw new Errors.BannedUserError('This user is banned!');
                 }
 
-                // Put user data.
-                SubscribedUsersRef.collection('Subscribers').doc(USER_ID).set(USER_DATA);
+                const subData: FirebaseFirestore.DocumentData | undefined = await (await SubscribersRef.get()).data();
+                const snapshot: any = await SubscribersRef.collection('ActivatedSubscribers').get();
+                const count: number = snapshot.size + 1;
+
+                if(subData) {
+                    if (subData.USER_CAP >= count) {
+                        await SubscribersRef.collection('UnactivatedSubscribers').doc(USER_ID).set(USER_DATA);
+                        SubscribersRef.update({
+                            CURRENT_USERS: count
+                        })
+                    } else {
+                        throw new Errors.UserCapReachedError('User cap reached!');
+                    }
+                }
+                
             });
             
         });
 
         res.status(200).send({
             message: 'User created!',
-            user_id: USER_ID,
             LICENSE_KEY: LICENSE_KEY,
         });
             
@@ -113,6 +136,13 @@ export const RegisterUser = async (req: Request, res: Response) => {
                 error: 'UserAlreadyExistManyTimes'
             });
         }
+        else if (error instanceof Errors.UserCapReachedError) {
+            console.error(error);
+            return res.status(409).send({
+                message: error.message,
+                error: 'UserCapReachedError'
+            });
+        }
         else {
             console.log(error)
             return res.status(500).send({
@@ -133,14 +163,68 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
     }
 
     const { L_KEY, CPU, GPU, MAC_ADDRESS, OS } = req.body;
-
+    console.log(L_KEY, CPU, GPU, MAC_ADDRESS, OS)
     try {
+        const db = new Firestore();
+        const SubscribersRef    = db.collection("Users").doc("Subscribers");
 
-    } catch (error) {
+        await db.runTransaction(async (transaction) => {
+            
+            return transaction.get(SubscribersRef).then( async (doc) => {
+                if (!doc.exists) {
+                    throw new Error("Document 'SubscribersRef' does not exist!");
+                }
+                
+                const listDocs = await doc.ref.collection('UnactivatedSubscribers').listDocuments();
+                
+                listDocs.map(async (doc) => {
+                    const document = await doc.get();
+                    const data = document.data();
+                    if (data) {
+                        const match = await bcrypt.compare(L_KEY, data.LICENSE_KEY)
+                        console.log(data.LICENSE_KEY, L_KEY, ' == ', match)
+                        data.system_information = {
+                            "CPU": CPU,
+                            "GPU": GPU,
+                            "MAC_ADDRESS": MAC_ADDRESS,
+                            "OS": OS
+                        }
+                        if (match) {
+                            console.log('Found it!');
+                            
+                            await document.ref.delete();
+                            await SubscribersRef.collection('ActivatedSubscribers').doc(data.user_id).set(data);
+                            
+                        }
+                    }
+                });
+                
+                throw new Errors.LicenseKeyNotFound('License key not found!');
+                
+            });
+            
+        });
 
-    }
-
-    res.status(200).send(req.body);
+        
+            
+        } catch(error) {
+            if (error instanceof Errors.LicenseKeyNotFound) {
+                return res.status(404).send({
+                    message: error.message,
+                    error: 'internalError'
+                });
+            }
+            else if (error instanceof Errors.LicenseKeyNotFound) {
+                return res.status(404).send({
+                    message: error.message,
+                    error: 'internalError'
+                });
+            }
+            return res.status(500).send({
+                message: error.message,
+                error: 'internalError'
+            });
+        }
 }
 
 
