@@ -9,10 +9,13 @@ const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
 
-export const requestRegistrationEmail = async (req: Request, res: Response) => {
-    res.status(500).json({ message: 'Not yet coded lol' });
-}
 
+/**
+ * Receives user data and holds the data in a collection temporary until the license key is 
+ * activated for the very first time.
+ * @param req body: user data
+ * @param res body: license key
+ */
 export const RegisterUser = async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
@@ -153,6 +156,13 @@ export const RegisterUser = async (req: Request, res: Response) => {
     }
 }
 
+/**
+ * Activates the license key and puts the user in the activated collection.
+ * Once this happens, the system data is binded and the user can only use the system he used
+ * to activate the license.
+ * @param req 
+ * @param res 
+ */
 export const ActivateUserLicense = async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
@@ -163,20 +173,17 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
     }
 
     const { L_KEY, CPU, GPU, MAC_ADDRESS, OS } = req.body;
-    console.log(L_KEY, CPU, GPU, MAC_ADDRESS, OS)
     try {
         const db = new Firestore();
-        const SubscribersRef    = db.collection("Users").doc("Subscribers");
+        const SubscribersRef = db.collection("Users").doc("Subscribers");
 
         await db.runTransaction(async (transaction) => {
-            
             return transaction.get(SubscribersRef).then( async (doc) => {
                 if (!doc.exists) {
                     throw new Error("Document 'SubscribersRef' does not exist!");
                 }
-                
+
                 const listDocs = await doc.ref.collection('UnactivatedSubscribers').listDocuments();
-                
                 listDocs.map(async (doc) => {
                     const document = await doc.get();
                     const data = document.data();
@@ -190,15 +197,12 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
                             "OS": OS
                         }
                         if (match) {
-                            console.log('Found it!');
-                            
+                            // TODO: Fail check (Try-Catch)
                             await document.ref.delete();
                             await SubscribersRef.collection('ActivatedSubscribers').doc(data.user_id).set(data);
-                            
                         }
                     }
                 });
-                
                 throw new Errors.LicenseKeyNotFound('License key not found!');
                 
             });
@@ -227,7 +231,11 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
         }
 }
 
-
-export const testing = async (req: Request, res: Response) => {
-    res.status(200).send(req.body);
+/**
+ * Used to validate the system in which the license was activated. This also checks the license.
+ * @param req system data and license
+ * @param res 
+ */
+export const ValidateSystemLicense = async (req: Request, res: Response) => {
+    res.status(500).send('Not yet implemented');
 }
