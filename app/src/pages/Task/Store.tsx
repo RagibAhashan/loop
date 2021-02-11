@@ -17,9 +17,15 @@ const buttonStyle: React.CSSProperties = {
 
 const botStyle = {
     fontSize: '18px',
-    textAlign: 'center',
+    // textAlign: 'center',
+    // paddingLeft: 20,
     marginBottom: 20,
 } as React.CSSProperties;
+
+const headerColStyle = {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+};
 
 const allSizes: any[] = [];
 for (let i = 4; i < 14; i += 0.5) {
@@ -67,19 +73,33 @@ const Store = (props: any) => {
     };
     const Headers = () => {
         return (
-            <Row style={botStyle}>
-                <Col span={4}>Product</Col>
+            <div>
+                <Row style={botStyle}>
+                    <Col style={{ ...headerColStyle, paddingLeft: 15 }} span={4}>
+                        Product
+                    </Col>
 
-                <Col span={4}>Proxy</Col>
+                    <Col style={headerColStyle} span={4}>
+                        Proxy
+                    </Col>
 
-                <Col span={4}>Profile</Col>
+                    <Col style={headerColStyle} span={4}>
+                        Profile
+                    </Col>
 
-                <Col span={4}>Sizes</Col>
+                    <Col style={headerColStyle} span={4}>
+                        Sizes
+                    </Col>
 
-                <Col span={4}>Status</Col>
+                    <Col style={headerColStyle} span={6}>
+                        Status
+                    </Col>
 
-                <Col span={4}>Actions</Col>
-            </Row>
+                    <Col style={headerColStyle} span={2}>
+                        Actions
+                    </Col>
+                </Row>
+            </div>
         );
     };
 
@@ -110,8 +130,12 @@ const Store = (props: any) => {
 
     const stopAllTasks = () => {
         jobs.forEach((job) => {
-            ipcRenderer.send('stop-task', job.uuid);
+            ipcRenderer.send(NOTIFY_STOP_TASK, job.uuid);
         });
+    };
+
+    const editBot = (uuid: string) => {
+        console.log('editing bot');
     };
 
     const ROW_GUTTER: [number, number] = [24, 0];
@@ -119,22 +143,7 @@ const Store = (props: any) => {
     const renderJobs = (ele: any) => {
         const { index, style } = ele;
 
-        return (
-            <Bot
-                key={jobs[index].uuid}
-                uuid={jobs[index].uuid}
-                productSKU={jobs[index].productSKU}
-                startdate={jobs[index].startDate}
-                starttime={jobs[index].startTime}
-                profile={jobs[index].profile}
-                sizes={jobs[index].sizes}
-                proxySet={jobs[index].proxySet}
-                retryDelay={jobs[index].retryDelay}
-                deleteBot={deleteBot}
-                storeName={storeName}
-                style={style}
-            />
-        );
+        return <Bot key={jobs[index].uuid} taskData={jobs[index]} deleteBot={deleteBot} editBot={editBot} storeName={storeName} style={style} />;
     };
 
     const showTasks = () => {

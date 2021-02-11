@@ -301,11 +301,11 @@ const CreateNewProfileModal = (props: any) => {
                                         display: 'flex',
                                         justifyContent: 'space-around',
                                         overflow: 'auto',
-                                        // padding: 5,
+                                        padding: 15,
                                         alignItems: 'center',
                                     }}
                                 >
-                                    <div style={{ marginRight: 10 }}>
+                                    <div>
                                         <Cards
                                             cvc={cvc}
                                             expiry={`${month}${year}`}

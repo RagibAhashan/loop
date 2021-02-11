@@ -3,7 +3,8 @@ import { DeleteFilled, PlayCircleFilled, EditFilled, StopFilled } from '@ant-des
 import { Button, Col, Row, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { TASK_STOPPED, NOTIFY_STOP_TASK, NOTIFY_START_TASK } from '../../common/Constants';
-import { UserProfile } from '../../interfaces/TaskInterfaces';
+import { Proxies } from '../../interfaces/OtherInterfaces';
+import { TaskData, UserProfile } from '../../interfaces/TaskInterfaces';
 const { ipcRenderer } = window.require('electron');
 
 interface Status {
@@ -60,29 +61,27 @@ const getLastStatus = (uuid: string): Status => {
 
 const Bot = (props: any) => {
     const {
+        taskData,
+        deleteBot,
+        editBot,
+        storeName,
+        style,
+    }: {
+        taskData: TaskData;
+        deleteBot: any;
+        editBot: any;
+        storeName: string;
+        style: any;
+    } = props;
+
+    const {
         uuid,
-        productLink,
         productSKU,
         profile,
         sizes,
         proxySet,
         retryDelay,
-        deleteBot,
-        storeName,
-        style,
-    }: {
-        uuid: string;
-        productLink: string;
-        productSKU: string;
-        profile: string;
-        sizes: string[];
-        proxySet: string;
-        retryDelay: number;
-        deleteBot: any;
-        storeName: string;
-        captchaWinId: number;
-        style: any;
-    } = props;
+    }: { uuid: string; productSKU: string; profile: string; sizes: string[]; proxySet: string | undefined; retryDelay: number } = taskData;
 
     const [status, setStatus] = useState(() => getLastStatus(uuid).lastStatus as string);
     const [running, setRunning] = useState(() => getLastStatus(uuid).running as boolean);
@@ -100,15 +99,45 @@ const Bot = (props: any) => {
         });
     };
 
+    const assignProxy = () => {
+        const proxies = JSON.parse(localStorage.getItem('proxies') as string) as Proxies;
+        if (!proxies) return undefined;
+        const set = proxies[proxySet as string];
+
+        // no proxies in the set
+        if (set.length === 0) return undefined;
+
+        //look for unused proxy and assign it to task
+        for (const proxy of set) {
+            const alreadyUsed = proxy.usedBy.find((id) => id === uuid);
+
+            if (alreadyUsed) return proxy.proxy;
+
+            // todo also check for test status (not banned)
+            if (proxy.usedBy.length === 0) {
+                proxy.usedBy.push(uuid);
+                localStorage.setItem('proxies', JSON.stringify(proxies));
+                return proxy.proxy;
+            }
+        }
+
+        set[0].usedBy.push(uuid);
+        localStorage.setItem('proxies', JSON.stringify(proxies));
+
+        // if all proxies are being used just take the first one
+        return set[0].proxy;
+    };
+
     const startTask = () => {
         setRunning(true);
         const profiles = JSON.parse(localStorage.getItem('profiles') as string) as UserProfile[];
-        console.log('profile', profiles);
         const profileData = profiles.find((prof) => prof.profile === profile);
-        console.log(profileData);
-        const proxyData = ''; //localStorage.getItem(proxyset as string);
+        let proxyData = undefined;
+        if (proxySet) proxyData = assignProxy();
+
+        console.log('p to use', proxyData);
         const deviceId = localStorage.getItem('deviceId');
-        ipcRenderer.send(NOTIFY_START_TASK, uuid, storeName, { productLink, productSKU, profileData, proxyData, sizes, retryDelay, deviceId });
+        ipcRenderer.send(NOTIFY_START_TASK, uuid, storeName, { productSKU, profileData, proxyData, sizes, retryDelay, deviceId });
     };
 
     useEffect(() => {
@@ -124,6 +153,33 @@ const Bot = (props: any) => {
     const stopTask = () => {
         setRunning(false);
         ipcRenderer.send(NOTIFY_STOP_TASK, uuid);
+    };
+
+    const deleteMe = () => {
+        unassignProxy();
+        deleteBot(uuid);
+    };
+
+    const unassignProxy = () => {
+        if (!proxySet) return;
+
+        const proxies = JSON.parse(localStorage.getItem('proxies') as string) as Proxies;
+        if (!proxies) return;
+        console.log('deleting ! proxies', proxies);
+
+        const set = proxies[proxySet];
+        //look for unused proxy and assign it to task
+        for (const proxy of set) {
+            const isUsed = proxy.usedBy.findIndex((id) => id === uuid);
+
+            if (isUsed) {
+                proxy.usedBy.splice(isUsed, 1);
+                localStorage.setItem('proxies', JSON.stringify(proxies));
+            }
+        }
+    };
+    const edit = () => {
+        editBot(uuid);
     };
 
     const runButton = () => {
@@ -154,13 +210,12 @@ const Bot = (props: any) => {
             style={{
                 ...style,
                 backgroundColor: '#282c31',
-                borderRadius: 60,
+                borderRadius: 5,
                 height: style.height - 5,
-                textAlign: 'center',
                 whiteSpace: 'nowrap',
             }}
         >
-            <Col span={4} style={{ paddingLeft: 10, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <Col span={4} style={{ paddingLeft: 15, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{productSKU}</div>
             </Col>
 
@@ -172,14 +227,14 @@ const Bot = (props: any) => {
                 <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile}</div>
             </Col>
 
-            <Col span={4} style={{ padding: 10 }}>
+            <Col span={4} style={{ paddingRight: 15 }}>
                 <Tooltip title={sizes.join(', ')}>
                     <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{sizes.join(', ')}</div>
                 </Tooltip>
             </Col>
 
-            <Col span={4}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Col span={6}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
                     <svg height="6" width="6">
                         <circle cx="3" cy="3" r="3" fill={statusColor(statusLevel)} />
                     </svg>
@@ -189,16 +244,23 @@ const Bot = (props: any) => {
                 </div>
             </Col>
 
-            <Col span={4}>
-                <div style={{ display: 'flex', justifyContent: 'center', marginLeft: '5px' }}>
+            <Col span={2}>
+                <div style={{ display: 'flex' }}>
                     <div>{runButton()}</div>
                     <div>
-                        <Button style={editButton} size="small" icon={<EditFilled />} />
+                        <Button
+                            onClick={() => {
+                                edit();
+                            }}
+                            style={editButton}
+                            size="small"
+                            icon={<EditFilled />}
+                        />
                     </div>
                     <div>
                         <Button
                             onClick={() => {
-                                deleteBot(uuid);
+                                deleteMe();
                             }}
                             style={deleteButton}
                             icon={<DeleteFilled />}
