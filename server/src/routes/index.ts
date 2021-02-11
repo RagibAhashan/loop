@@ -12,5 +12,6 @@ router.get('/', User.testing);
 
 // USER REQUESTS.
 router.post('/user/', jsonParser, User.requestRegistrationEmail);
+router.post('/user/register/', jsonParser, User.CreateNewUser);
 
 export default router;
