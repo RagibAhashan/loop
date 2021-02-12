@@ -3,6 +3,8 @@ const { HttpsProxyAgent } = require('https-proxy-agent');
 class Proxy {
     constructor(proxyString, credentials = undefined) {
         this.proxy = proxyString;
+        console.log('proxy', proxyString);
+        console.log('cred', credentials);
         this.httpsAgent = new HttpsProxyAgent({ hostname: this.hostname, port: this.port, auth: credentials });
     }
 
