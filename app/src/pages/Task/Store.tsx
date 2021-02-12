@@ -141,9 +141,7 @@ const Store = (props: any) => {
     };
 
     const editBot = (newValues: TaskData, uuid: string) => {
-        console.log('editing bot', uuid, 'with new values', newValues);
         const newJobs = [...jobs];
-        // const editedTask = { ...newValues, uuid };
         const idx = jobs.findIndex((job) => job.uuid === uuid);
         newJobs[idx] = { ...newJobs[idx], ...newValues };
         localStorage.setItem(storeName, JSON.stringify(newJobs));

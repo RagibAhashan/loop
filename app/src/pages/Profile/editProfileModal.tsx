@@ -74,10 +74,6 @@ const EditProfileModal = (props: any) => {
     const [year, setYear] = useState('');
 
     useEffect(() => {
-        console.log(data);
-    }, [data]);
-
-    useEffect(() => {
         setFirstName(data.billing.firstName);
         setLastName(data.billing.lastName);
         setCreditCard(data.payment.number);

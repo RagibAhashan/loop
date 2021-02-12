@@ -81,7 +81,6 @@ const ProfilePage = () => {
         const profile = data.profile;
 
         const full_num = data.payment.number;
-        console.log(data.payment);
         const len = full_num.length;
         const cc_num = `${full_num.substring(0, 4)} ${full_num.substring(4, 8)} ${full_num.substring(8, 12)} ${full_num.substring(12, len)}`;
 

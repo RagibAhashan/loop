@@ -173,7 +173,6 @@ const Bot = (props: any) => {
 
         const proxies = JSON.parse(localStorage.getItem('proxies') as string) as Proxies;
         if (!proxies) return;
-        console.log('deleting ! proxies', proxies);
 
         const set = proxies[proxySet];
         //look for unused proxy and assign it to task

@@ -73,10 +73,6 @@ const CreateNewProfileModal = (props: any) => {
 
     const [country, setCountry] = useState('default');
 
-    const callback = (key: any) => {
-        console.log(key);
-    };
-
     const handleOk = () => {
         setIsEditModalVisible(false);
     };
@@ -99,7 +95,6 @@ const CreateNewProfileModal = (props: any) => {
     };
 
     const onFinish = (values: any) => {
-        console.log(values);
         addProfile(values);
     };
     return (
@@ -118,7 +113,7 @@ const CreateNewProfileModal = (props: any) => {
             >
                 <Form form={form} name="nest-messages" onFinish={onFinish} validateMessages={validateMessages}>
                     <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
-                        <Tabs defaultActiveKey="1" onChange={callback}>
+                        <Tabs defaultActiveKey="1">
                             <TabPane tab="Profile and Shipping" key="1">
                                 <Row gutter={ROW_GUTTER}>
                                     <Col span={8}>
