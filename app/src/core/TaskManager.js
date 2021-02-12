@@ -11,6 +11,10 @@ class TaskManager {
     register(uuid, task) {
         this.tasks.set(uuid, task);
     }
+
+    remove(uuid) {
+        this.tasks.delete(uuid);
+    }
 }
 
 module.exports = new TaskManager();

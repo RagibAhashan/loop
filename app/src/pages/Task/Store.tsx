@@ -1,10 +1,12 @@
 import { Button, Col, Row, Select, Empty } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { FixedSizeList } from 'react-window';
-import { NOTIFY_STOP_TASK } from '../../common/Constants';
+import { NOTIFY_STOP_TASK, NOTIFY_EDIT_TASK } from '../../common/Constants';
 import { TaskData } from '../../interfaces/TaskInterfaces';
 import Bot from './Bot';
 import NewTaskModal from './newTaskModal';
+import EditTaskModal from './EditTaskModal';
+import { TaskService } from '../../services/TaskService';
 const { ipcRenderer } = window.require('electron');
 const { v4: uuid } = require('uuid');
 const { Option } = Select;
@@ -44,7 +46,9 @@ const Store = (props: any) => {
 
     const { storeName } = props;
     const [jobs, setJobs] = useState(() => getTasks());
+    const [jobsRunning, setJobsRunning] = useState(() => false);
     const [taskModalVisible, setTaskModalVisible] = useState(false);
+    const [editModalVisible, setEditModalVisible] = useState(false);
 
     useEffect(() => {
         getTasks();
@@ -107,6 +111,7 @@ const Store = (props: any) => {
         let temp: TaskData[] = [];
         for (let i = 0; i < data.quantity; i++) {
             const id = uuid();
+            // eslint-disable-next-line react-hooks/rules-of-hooks
             temp.push({ ...data, uuid: id, store: storeName });
         }
 
@@ -129,13 +134,37 @@ const Store = (props: any) => {
     };
 
     const stopAllTasks = () => {
+        setJobsRunning(false);
         jobs.forEach((job) => {
             ipcRenderer.send(NOTIFY_STOP_TASK, job.uuid);
         });
     };
 
-    const editBot = (uuid: string) => {
-        console.log('editing bot');
+    const editBot = (newValues: TaskData, uuid: string) => {
+        const newJobs = [...jobs];
+        const idx = jobs.findIndex((job) => job.uuid === uuid);
+        newJobs[idx] = { ...newJobs[idx], ...newValues };
+        localStorage.setItem(storeName, JSON.stringify(newJobs));
+        setJobs(newJobs);
+        ipcRenderer.send(NOTIFY_EDIT_TASK, uuid);
+    };
+
+    const openEditAllTaskModal = () => {
+        setEditModalVisible(true);
+    };
+
+    const editAllTasks = (newValues: TaskData) => {
+        const newJobs = [...jobs];
+
+        jobs.forEach((job, idx) => {
+            newJobs[idx] = { ...newJobs[idx], ...newValues };
+            ipcRenderer.send(NOTIFY_EDIT_TASK, job.uuid);
+        });
+
+        localStorage.setItem(storeName, JSON.stringify(newJobs));
+        setJobs(newJobs);
+
+        setEditModalVisible(false);
     };
 
     const ROW_GUTTER: [number, number] = [24, 0];
@@ -155,10 +184,15 @@ const Store = (props: any) => {
                 />
             </div>
         ) : (
-            <FixedSizeList height={700} itemCount={jobs.length} itemSize={45} width="100%" style={{ flex: 1 }}>
+            <FixedSizeList height={700} itemCount={jobs.length} itemSize={45} width="100%" style={{ flex: 1, padding: 10 }}>
                 {renderJobs}
             </FixedSizeList>
         );
+    };
+
+    const startAllTasks = () => {
+        setJobsRunning(true);
+        TaskService.notify();
     };
 
     return (
@@ -172,9 +206,20 @@ const Store = (props: any) => {
                         Add Task
                     </Button>
                 </Col>
-                <Col span={6}></Col>
+
                 <Col span={3}>
-                    <Button type="default" style={{ ...buttonStyle, backgroundColor: 'green' }} disabled={jobs.length === 0}>
+                    <Button style={buttonStyle} type="primary" onClick={() => openEditAllTaskModal()}>
+                        Edit All
+                    </Button>
+                </Col>
+                <Col span={3}></Col>
+                <Col span={3}>
+                    <Button
+                        type="default"
+                        style={{ ...buttonStyle, backgroundColor: 'green' }}
+                        onClick={() => startAllTasks()}
+                        disabled={jobs.length === 0 || jobsRunning}
+                    >
                         Run all
                     </Button>
                 </Col>
@@ -196,6 +241,8 @@ const Store = (props: any) => {
                 </Col>
             </Row>
             <NewTaskModal visible={taskModalVisible} store={storeName} addTasks={addTasks} cancelTaskModal={() => setTaskModalVisible(false)} />
+
+            <EditTaskModal taskData={{}} visible={editModalVisible} confirmEdit={editAllTasks} cancelEditModal={() => setEditModalVisible(false)} />
         </div>
     );
 };

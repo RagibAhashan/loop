@@ -5,15 +5,14 @@ import React, { useEffect, useState } from 'react';
 import CollectionFormAdd from './Collections/Add';
 import CollectionFormCreate from './Collections/Create';
 import CollectionFormDelete from './Collections/Delete';
-import ProxyRow from './Proxy'
+import ProxyRow from './Proxy';
 import { FixedSizeList } from 'react-window';
-import { Proxy } from '../../interfaces/OtherInterfaces'
-import { NOTIFY_STOP_PROXY, NOTIFY_START_PROXY, STORES } from '../../common/Constants';
+import { Proxy } from '../../interfaces/OtherInterfaces';
+import { NOTIFY_STOP_PROXY_TEST, NOTIFY_START_PROXY_TEST, PROXY_TEST_STOPPED, STORES } from '../../common/Constants';
 const { ipcRenderer } = window.require('electron');
 
-
-
-const { Content } = Layout; const { Option } = Select;
+const { Content } = Layout;
+const { Option } = Select;
 const UPLOAD = '1';
 const COPYPASTE = '2';
 
@@ -23,12 +22,10 @@ const botStyle = {
     marginBottom: 20,
 } as React.CSSProperties;
 
-
 const ProxyPage = () => {
     const [proxies, setProxies] = useState(new Map<string, Proxy[]>());
     const [store, setStore] = useState(undefined);
     let [currentTab, setCurrentTab] = useState({ name: '', key: '1' });
-
 
     // Popups Visibility
     const [visibleCreate, setVisibleCreate] = useState(false);
@@ -39,7 +36,7 @@ const ProxyPage = () => {
     let [tab, setTabKey] = useState('1'); // for add popup to select between upload and copy pasta
 
     useEffect(() => {
-        console.log(localStorage)
+        // console.log(localStorage)
         let db_proxies: any = localStorage.getItem('proxies');
         if (!db_proxies) {
             const obj = Object.fromEntries(proxies);
@@ -56,8 +53,17 @@ const ProxyPage = () => {
                 setCurrentTab({ name: array[0][0], key: '1' });
             }
         }
+        registerTestsListener();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const registerTestsListener = () => {
+        ipcRenderer.on('', (event, status: any) => {});
+
+        ipcRenderer.on(PROXY_TEST_STOPPED, () => {
+            console.log('stopped proxy');
+        });
+    };
 
     const onCreate = (values: any) => {
         const name = values.name;
@@ -89,7 +95,6 @@ const ProxyPage = () => {
                 proxyArray.push(e.target?.result);
                 const arrayProxy: Array<string> = proxyArray[0].split('\n');
                 objectifySets(name, arrayProxy);
-                
             };
             reader.readAsText(files[0].originFileObj);
         } else if (tab === COPYPASTE) {
@@ -101,15 +106,18 @@ const ProxyPage = () => {
 
     const objectifySets = (name: string, arrayProxy: Array<string>) => {
         let array: Array<Proxy> = [];
-        let proxyObject: Proxy = {proxy: "", testStatus: "", credential:"", usedBy: []};
+        let proxyObject: Proxy = { proxy: '', testStatus: { FootlockerCA: '', FootlockerUS: '' }, credential: '', usedBy: [] };
         let fields = [];
-        let ipPort = "";
-        let userPass: any = "";
-        for(let i = 0; i < arrayProxy.length; i++) {
+        let ipPort = '';
+        let userPass: any = '';
+        for (let i = 0; i < arrayProxy.length; i++) {
             fields = arrayProxy[i].split(':');
-            ipPort = fields[0] + ":" + fields[1];
-            userPass = fields[2]+ ":" + fields[3]; if(fields[2] === undefined && fields[3] === undefined) {userPass = null}
-            proxyObject = {proxy: ipPort, testStatus: "none", credential:userPass, usedBy: []};
+            ipPort = fields[0] + ':' + fields[1];
+            userPass = fields[2] + ':' + fields[3];
+            if (fields[2] === undefined && fields[3] === undefined) {
+                userPass = null;
+            }
+            proxyObject = { proxy: ipPort, testStatus: { FootlockerCA: 'idle', FootlockerUS: 'idle' }, credential: userPass, usedBy: [] };
             array.push(proxyObject);
         }
         setProxies(proxies.set(name, array));
@@ -117,7 +125,7 @@ const ProxyPage = () => {
         forceUpdate();
         setVisibleAdd(false);
         tab = '1';
-    }
+    };
 
     const onDelete = (values: any) => {
         const arraySetToDelete = values.proxies;
@@ -152,12 +160,12 @@ const ProxyPage = () => {
         const proxy: any = proxies.get(currentTab.name) || [];
         var fields = proxy[index].proxy.split(':');
         var ip = fields[0];
-        var port = fields[1]; 
+        var port = fields[1];
         var username;
         var password;
-        if(proxy[index].credential === null) {
-            username = "None";
-            password = "None";
+        if (proxy[index].credential === null) {
+            username = 'None';
+            password = 'None';
         } else {
             fields = proxy[index].credential.split(':');
             username = fields[0];
@@ -178,6 +186,7 @@ const ProxyPage = () => {
                 currentTab={currentTab}
                 proxy={data}
                 style={style}
+                store={store}
             />
         );
     };
@@ -221,7 +230,7 @@ const ProxyPage = () => {
         const proxy = record.ip + ':' + record.port;
         const credential = record.username + ':' + record.password;
         const testStatus = record.status;
-        ipcRenderer.send(NOTIFY_START_PROXY, setName, proxy, credential, testStatus, store);
+        ipcRenderer.send(NOTIFY_START_PROXY_TEST, setName, proxy, credential, store);
     };
 
     const testAll = () => {};
@@ -229,18 +238,18 @@ const ProxyPage = () => {
     const deleteIndividual = (record: any) => {
         let proxiesArray: Array<any> = proxies.get(currentTab.name) || [];
         let proxyToDelete: string = record.ip + ':' + record.port;
-        for(let i = 0; i < proxiesArray.length; i++) {
-            if(proxiesArray[i].proxy === proxyToDelete) {
+        for (let i = 0; i < proxiesArray.length; i++) {
+            if (proxiesArray[i].proxy === proxyToDelete) {
                 proxiesArray.splice(i, 1);
                 break;
-            }   
+            }
         }
         setProxies(() => {
             proxies.set(currentTab.name, proxiesArray);
             localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
             return proxies;
         });
-        ipcRenderer.send(NOTIFY_STOP_PROXY, currentTab.name, proxyToDelete, record.credential, record.status, store);
+        ipcRenderer.send(NOTIFY_STOP_PROXY_TEST, currentTab.name, proxyToDelete, record.credential, store);
         forceUpdate();
     };
 
@@ -286,18 +295,18 @@ const ProxyPage = () => {
             return [
                 <TabPane tab={value.name} key={++i}>
                     <Headers />
-                     {showProxies()}
+                    {showProxies()}
                 </TabPane>,
             ];
         });
     };
 
-    const onStoreSelect = (item:any) => {
+    const onStoreSelect = (item: any) => {
         setStore(item);
-    }
-    
+    };
+
     const AddRemoveSets = (
-        <div style = {{margin:'auto'}}>
+        <div style={{ margin: 'auto' }}>
             {!proxies.size ? (
                 <Button
                     icon={<PlusOutlined style={{ color: 'green' }} />}
@@ -311,7 +320,7 @@ const ProxyPage = () => {
                 </Button>
             ) : (
                 <div>
-                    <Select value={store} placeholder="Select Store" onChange={onStoreSelect} style={{ width: 200, marginRight:15}}>
+                    <Select value={store} placeholder="Select Store" onChange={onStoreSelect} style={{ width: 200, marginRight: 15 }}>
                         {Object.entries(STORES).map(([storeKey, store]) => (
                             <Option key={store.key} value={storeKey}>
                                 {store.name}
@@ -320,7 +329,7 @@ const ProxyPage = () => {
                     </Select>
                     <Tooltip placement="top" title={'Add sets'}>
                         <PlusOutlined
-                            style={{ color: 'green', fontSize: 30, paddingTop:10, transform: 'translateY(7px)' }}
+                            style={{ color: 'green', fontSize: 30, paddingTop: 10, transform: 'translateY(7px)' }}
                             onClick={() => {
                                 setVisibleCreate(true);
                             }}
@@ -328,7 +337,7 @@ const ProxyPage = () => {
                     </Tooltip>
                     <Tooltip placement="top" title={'Remove sets'}>
                         <DeleteFilled
-                            style={{ color: 'red', fontSize: 30,  marginLeft: 15, transform: 'translateY(7px)'  }}
+                            style={{ color: 'red', fontSize: 30, marginLeft: 15, transform: 'translateY(7px)' }}
                             onClick={() => {
                                 setVisibleDelete(true);
                             }}
@@ -389,7 +398,7 @@ const ProxyPage = () => {
                                 icon={<PlayCircleFilled style={{ color: 'green' }} />}
                                 style={{ textAlign: 'center', float: 'left', marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
                                 type={'primary'}
-                                disabled={proxies.get(currentTab.name)?.length === 0 ? true : false}
+                                disabled={proxies.get(currentTab.name)?.length === 0 || store === undefined ? true : false}
                                 onClick={testAll}
                             >
                                 Test All

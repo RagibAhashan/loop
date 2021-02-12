@@ -7,7 +7,12 @@ class TaskFactory {
 
         const { RequestInstance } = require('./RequestInstance');
         const { FootLockerTask } = require('./footlocker/FootLockerTask');
-        const axios = new RequestInstance(store.url, { timestamp: Date.now() }, store.header, proxy ? new Proxy(proxy) : proxy);
+        const axios = new RequestInstance(
+            store.url,
+            { timestamp: Date.now() },
+            store.header,
+            proxy ? new Proxy(proxy.proxy, proxy.credential) : undefined,
+        );
         const flTask = new FootLockerTask(uuid, productSKU, sizes, deviceId, axios, userProfile, retryDelay);
 
         taskManager.register(uuid, flTask);

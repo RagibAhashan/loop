@@ -49,7 +49,6 @@ const TaskPage = () => {
     const deleteStore = (key: string) => {
         const tasks = JSON.parse(localStorage.getItem(key) as string) as TaskData[];
         const stores = JSON.parse(localStorage.getItem('stores') as string) as Pane[];
-        console.log('test', key, tasks, stores);
 
         if (tasks) {
             // cancel and delete all running tasks from store
@@ -60,8 +59,6 @@ const TaskPage = () => {
         }
 
         if (stores) {
-            console.log('delete that shit yo', key);
-
             localStorage.removeItem(key);
 
             setPanes((oldStores: Pane[]) => {
