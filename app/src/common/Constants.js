@@ -23,6 +23,10 @@ const NOTIFY_START_TASK = 'start-task';
 const NOTIFY_EDIT_TASK = 'edit-task';
 const NOTIFY_CAPTCHA = 'captcha';
 const TASK_STOPPED = 'task-stopped';
+const TASK_STOP = 'task-stop';
+const TASK_STATUS = 'status';
+
+const CAPTHA_WINDOW_CLOSED = 'captcha-closed';
 
 const NOTIFY_STOP_PROXY_TEST = 'stop-proxy';
 const NOTIFY_START_PROXY_TEST = 'start-proxy';
@@ -39,4 +43,7 @@ module.exports = {
     NOTIFY_STOP_PROXY_TEST,
     NOTIFY_START_PROXY_TEST,
     PROXY_TEST_STOPPED,
+    CAPTHA_WINDOW_CLOSED,
+    TASK_STOP,
+    TASK_STATUS,
 };

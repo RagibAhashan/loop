@@ -1,7 +1,7 @@
 import { Button, Col, Row, Select, Empty } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { FixedSizeList } from 'react-window';
-import { NOTIFY_STOP_TASK, NOTIFY_EDIT_TASK } from '../../common/Constants';
+import { NOTIFY_STOP_TASK, NOTIFY_EDIT_TASK, CAPTHA_WINDOW_CLOSED } from '../../common/Constants';
 import { TaskData } from '../../interfaces/TaskInterfaces';
 import Bot from './Bot';
 import NewTaskModal from './newTaskModal';
@@ -49,10 +49,18 @@ const Store = (props: any) => {
     const [jobsRunning, setJobsRunning] = useState(() => false);
     const [taskModalVisible, setTaskModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
+    const [captchaWinOpened, setCaptchaWinOpened] = useState(false);
 
     useEffect(() => {
+        ipcRenderer.on(CAPTHA_WINDOW_CLOSED, () => {
+            setCaptchaWinOpened(false);
+        });
         getTasks();
         // eslint-disable-next-line react-hooks/exhaustive-deps
+
+        return () => {
+            ipcRenderer.removeAllListeners(CAPTHA_WINDOW_CLOSED);
+        };
     }, []);
 
     const deleteBot = (uuid: string) => {
@@ -73,6 +81,7 @@ const Store = (props: any) => {
     };
 
     const openCaptcha = async () => {
+        setCaptchaWinOpened(true);
         ipcRenderer.send('new-window', storeName);
     };
     const Headers = () => {
@@ -235,7 +244,7 @@ const Store = (props: any) => {
                     </Button>
                 </Col>
                 <Col span={3}>
-                    <Button style={buttonStyle} type="primary" onClick={() => openCaptcha()} disabled={jobs.length === 0}>
+                    <Button style={buttonStyle} type="primary" onClick={() => openCaptcha()} disabled={jobs.length === 0 || captchaWinOpened}>
                         Captcha
                     </Button>
                 </Col>

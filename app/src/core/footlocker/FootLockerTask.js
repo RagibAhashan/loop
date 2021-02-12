@@ -1,7 +1,8 @@
+const { TASK_STATUS } = require('../../common/Constants');
 const msgs = require('../constants/Constants');
 const { Cookie } = require('../constants/Cookies');
 const { FLCInfoForm, FLCOrderForm } = require('../interface/FootLockerCA');
-const { Task } = require('../Task');
+const { Task, CANCEL_ERROR } = require('../Task');
 
 class FootLockerTask extends Task {
     constructor(uuid, productSKU, sizes, deviceId, requestInstance, userProfile, retryDelay) {
@@ -13,12 +14,12 @@ class FootLockerTask extends Task {
         let retry = false;
         do {
             try {
-                if (this.cancel) return;
+                this.cancelTask();
                 retry = false;
                 this.emit('status', { status: msgs.SESSION_INFO_MESSAGE, level: 'info' });
 
                 const response = await this.axiosSession.get('/v4/session');
-                if (this.cancel) return;
+                this.cancelTask();
 
                 const cookies = response.headers['set-cookie'].join();
                 this.cookieJar.setFromRaw(cookies, Cookie.JSESSIONID);
@@ -26,7 +27,7 @@ class FootLockerTask extends Task {
                 const csrf = response.data['data']['csrfToken'];
                 this.cookieJar.set(Cookie.CSRF, csrf);
             } catch (error) {
-                if (this.cancel) return;
+                this.cancelTask();
                 await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
                 retry = true;
             }
@@ -37,14 +38,13 @@ class FootLockerTask extends Task {
         let retry = true;
         do {
             try {
-                if (this.cancel) return;
+                this.cancelTask();
                 this.emit('status', { status: msgs.CHECKING_SIZE_INFO_MESSAGE, level: 'info' });
 
                 const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
-                if (this.cancel) return;
+                this.cancelTask();
                 const sellableUnits = response.data['sellableUnits'];
                 const variantAttributes = response.data['variantAttributes'];
-
                 const { code: styleCode } = variantAttributes.find((attr) => attr.sku === this.productSKU);
 
                 const inStockUnits = sellableUnits.filter(
@@ -64,7 +64,7 @@ class FootLockerTask extends Task {
                 this.emit('status', { status: msgs.CHECKING_SIZE_RETRY_MESSAGE, level: 'error' });
                 await this.waitError();
             } catch (error) {
-                if (this.cancel) return;
+                this.cancelTask();
                 await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
                 retry = true;
             }
@@ -74,7 +74,7 @@ class FootLockerTask extends Task {
         let retry = false;
         do {
             try {
-                if (this.cancel) return;
+                this.cancelTask();
                 this.emit('status', { status: msgs.ADD_CART_INFO_MESSAGE, level: 'info' });
                 const headers = {
                     cookie: this.cookieJar.getCookie(Cookie.JSESSIONID),
@@ -90,12 +90,12 @@ class FootLockerTask extends Task {
                 const body = { productQuantity: '1', productId: this.productCode };
 
                 const response = await this.axiosSession.post('/users/carts/current/entries', body, { headers: headers });
-                if (this.cancel) return;
+                this.cancelTask();
 
                 const cookies = response.headers['set-cookie'].join();
                 this.cookieJar.setFromRaw(cookies, Cookie.CART_GUID);
             } catch (err) {
-                if (this.cancel) return;
+                this.cancelTask();
                 // TODO WIP Captcha
                 if (err.response.data['errors'] && err.response.data['errors']['type'] === 'ProductLowStockException') {
                     await this.emitStatus(msgs.CHECKING_SIZE_RETRY_MESSAGE, 'error');
@@ -142,16 +142,16 @@ class FootLockerTask extends Task {
         let retry = false;
         do {
             try {
-                if (this.cancel) return;
+                this.cancelTask();
                 retry = false;
                 this.emit('status', { status: msgs.EMAIL_INFO_MESSAGE, level: 'info' });
 
                 const headers = this.setHeaders();
 
                 await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.shipping.email}`, {}, { headers: headers });
-                if (this.cancel) return;
+                this.cancelTask();
             } catch (error) {
-                if (this.cancel) return;
+                this.cancelTask();
                 await this.emitStatus(msgs.EMAIL_ERROR_MESSAGE, 'error');
                 retry = true;
             }
@@ -161,7 +161,8 @@ class FootLockerTask extends Task {
         let retry = false;
         do {
             try {
-                if (this.cancel) return;
+                this.cancelTask();
+
                 retry = false;
                 this.emit('status', { status: msgs.SHIPPING_INFO_MESSAGE, level: 'info' });
 
@@ -170,9 +171,9 @@ class FootLockerTask extends Task {
                 const body = { shippingAddress: this.getInfoForm(true) };
 
                 await this.axiosSession.post('/users/carts/current/addresses/shipping', body, { headers: headers });
-                if (this.cancel) return;
+                this.cancelTask();
             } catch (error) {
-                if (this.cancel) return;
+                this.cancelTask();
 
                 await this.emitStatus(msgs.SHIPPING_ERROR_MESSAGE, 'error');
                 retry = true;
@@ -183,7 +184,7 @@ class FootLockerTask extends Task {
         let retry = false;
         do {
             try {
-                if (this.cancel) return;
+                this.cancelTask();
                 retry = false;
                 this.emit('status', { status: msgs.BILLING_INFO_MESSAGE, level: 'info' });
 
@@ -192,9 +193,9 @@ class FootLockerTask extends Task {
                 const body = this.getInfoForm(false);
 
                 await this.axiosSession.post('/users/carts/current/set-billing', body, { headers: headers });
-                if (this.cancel) return;
+                this.cancelTask();
             } catch (error) {
-                if (this.cancel) return;
+                this.cancelTask();
                 await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
                 retry = true;
             }
@@ -204,7 +205,7 @@ class FootLockerTask extends Task {
         let retry = false;
         do {
             try {
-                if (this.cancel) return;
+                this.cancelTask();
                 retry = false;
                 this.emit('status', { status: msgs.PLACING_ORDER_INFO_MESSAGE, level: 'info' });
 
@@ -215,10 +216,10 @@ class FootLockerTask extends Task {
                 await this.axiosSession.post('/v2/users/orders', body, {
                     headers: headers,
                 });
-                if (this.cancel) return;
+                this.cancelTask();
                 this.emit('status', { status: msgs.CHECKOUT_SUCCESS_MESSAGE, level: 'success' });
             } catch (error) {
-                if (this.cancel) return;
+                this.cancelTask();
                 await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
                 retry = true;
             }
@@ -257,8 +258,12 @@ class FootLockerTask extends Task {
         return new FLCOrderForm(encCC.number, encCC.expiryMonth, encCC.expiryYear, encCC.cvc, this.deviceId);
     }
 
+    cancelTask() {
+        if (this.cancel) throw new Error(CANCEL_ERROR);
+    }
+
     async emitStatus(message, level) {
-        this.emit('status', { status: message, level: level });
+        this.emit(TASK_STATUS, { status: message, level: level });
         await this.waitError(this.retryDelay);
     }
 

@@ -8,6 +8,7 @@ const {
     NOTIFY_START_PROXY,
     NOTIFY_STOP_PROXY,
     NOTIFY_EDIT_TASK,
+    CAPTHA_WINDOW_CLOSED,
 } = require('./common/Constants');
 const captchaWindowManager = require('./core/captcha-window/CaptchaWindowManager');
 const taskFactory = require('./core/TaskFactory');
@@ -54,6 +55,7 @@ function createWindow() {
         );
         newWin.on('close', () => {
             console.log('win got closed');
+            event.reply(CAPTHA_WINDOW_CLOSED);
             newWin.destroy();
         });
     });
@@ -99,6 +101,10 @@ ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
             event.reply(uuid, message);
         });
 
+        newTask.on(TASK_STOPPED, () => {
+            event.reply(uuid + TASK_STOPPED, uuid);
+        });
+
         newTask.on(NOTIFY_CAPTCHA, (captcha) => {
             const capWin = captchaWindowManager.getWindow(storeName);
             if (capWin) capWin.webContents.send(storeName + NOTIFY_CAPTCHA, captcha);
@@ -111,8 +117,9 @@ ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
 ipcMain.on(NOTIFY_STOP_TASK, async (event, uuid) => {
     try {
         const currentTask = taskManager.getTask(uuid);
-        if (currentTask) currentTask.emit('stop');
-        event.reply(uuid + TASK_STOPPED, uuid);
+        if (currentTask) {
+            currentTask.emit('stop');
+        }
     } catch (error) {
         console.log('err', error);
     }
