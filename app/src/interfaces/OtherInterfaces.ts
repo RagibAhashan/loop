@@ -8,9 +8,14 @@ export interface Proxies {
     [proxyName: string]: tempProxy[];
 }
 
+export interface Store {
+    FootlockerCA: string;
+    FootlockerUS: string
+}
+
 export interface Proxy {
     proxy: string;
     credential: string;
-    testStatus: string;
+    testStatus: Store;
     usedBy: [];
 }

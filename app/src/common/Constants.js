@@ -23,7 +23,10 @@ const NOTIFY_START_TASK = 'start-task';
 const NOTIFY_CAPTCHA = 'captcha';
 const TASK_STOPPED = 'task-stopped';
 
-const NOTIFY_STOP_PROXY = 'stop-proxy';
-const NOTIFY_START_PROXY = 'start-proxy';
+const NOTIFY_STOP_PROXY_TEST = 'stop-proxy';
+const NOTIFY_START_PROXY_TEST = 'start-proxy';
+const PROXY_TEST_STOPPED = 'proxy-stopped';
 
-module.exports = { CAPTCHA_ROUTE, NOTIFY_STOP_TASK, TASK_STOPPED, NOTIFY_START_TASK, NOTIFY_CAPTCHA, STORES, NOTIFY_STOP_PROXY, NOTIFY_START_PROXY };
+module.exports = {  CAPTCHA_ROUTE, NOTIFY_STOP_TASK, TASK_STOPPED, NOTIFY_START_TASK, 
+                    NOTIFY_CAPTCHA, STORES, NOTIFY_STOP_PROXY_TEST, NOTIFY_START_PROXY_TEST,
+                    PROXY_TEST_STOPPED };

@@ -8,7 +8,7 @@ import CollectionFormDelete from './Collections/Delete';
 import ProxyRow from './Proxy'
 import { FixedSizeList } from 'react-window';
 import { Proxy } from '../../interfaces/OtherInterfaces'
-import { NOTIFY_STOP_PROXY, NOTIFY_START_PROXY, STORES } from '../../common/Constants';
+import { NOTIFY_STOP_PROXY_TEST, NOTIFY_START_PROXY_TEST, PROXY_TEST_STOPPED, STORES } from '../../common/Constants';
 const { ipcRenderer } = window.require('electron');
 
 
@@ -39,7 +39,7 @@ const ProxyPage = () => {
     let [tab, setTabKey] = useState('1'); // for add popup to select between upload and copy pasta
 
     useEffect(() => {
-        console.log(localStorage)
+        // console.log(localStorage)
         let db_proxies: any = localStorage.getItem('proxies');
         if (!db_proxies) {
             const obj = Object.fromEntries(proxies);
@@ -56,8 +56,19 @@ const ProxyPage = () => {
                 setCurrentTab({ name: array[0][0], key: '1' });
             }
         }
+        registerTestsListener();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const registerTestsListener = () => {
+        ipcRenderer.on('', (event, status: any) => {
+            
+        });
+
+        ipcRenderer.on(PROXY_TEST_STOPPED, () => {
+            console.log('stopped proxy')
+        });
+    };
 
     const onCreate = (values: any) => {
         const name = values.name;
@@ -101,7 +112,7 @@ const ProxyPage = () => {
 
     const objectifySets = (name: string, arrayProxy: Array<string>) => {
         let array: Array<Proxy> = [];
-        let proxyObject: Proxy = {proxy: "", testStatus: "", credential:"", usedBy: []};
+        let proxyObject: Proxy = {proxy: "", testStatus: {FootlockerCA: "", FootlockerUS:""}, credential:"", usedBy: []};
         let fields = [];
         let ipPort = "";
         let userPass: any = "";
@@ -109,7 +120,7 @@ const ProxyPage = () => {
             fields = arrayProxy[i].split(':');
             ipPort = fields[0] + ":" + fields[1];
             userPass = fields[2]+ ":" + fields[3]; if(fields[2] === undefined && fields[3] === undefined) {userPass = null}
-            proxyObject = {proxy: ipPort, testStatus: "none", credential:userPass, usedBy: []};
+            proxyObject = {proxy: ipPort, testStatus: {FootlockerCA: "idle", FootlockerUS:"idle"}, credential:userPass, usedBy: []};
             array.push(proxyObject);
         }
         setProxies(proxies.set(name, array));
@@ -178,6 +189,7 @@ const ProxyPage = () => {
                 currentTab={currentTab}
                 proxy={data}
                 style={style}
+                store={store}
             />
         );
     };
@@ -221,7 +233,7 @@ const ProxyPage = () => {
         const proxy = record.ip + ':' + record.port;
         const credential = record.username + ':' + record.password;
         const testStatus = record.status;
-        ipcRenderer.send(NOTIFY_START_PROXY, setName, proxy, credential, testStatus, store);
+        ipcRenderer.send(NOTIFY_START_PROXY_TEST, setName, proxy, credential, store);
     };
 
     const testAll = () => {};
@@ -240,7 +252,7 @@ const ProxyPage = () => {
             localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
             return proxies;
         });
-        ipcRenderer.send(NOTIFY_STOP_PROXY, currentTab.name, proxyToDelete, record.credential, record.status, store);
+        ipcRenderer.send(NOTIFY_STOP_PROXY_TEST, currentTab.name, proxyToDelete, record.credential, store);
         forceUpdate();
     };
 
@@ -389,7 +401,7 @@ const ProxyPage = () => {
                                 icon={<PlayCircleFilled style={{ color: 'green' }} />}
                                 style={{ textAlign: 'center', float: 'left', marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
                                 type={'primary'}
-                                disabled={proxies.get(currentTab.name)?.length === 0 ? true : false}
+                                disabled={(proxies.get(currentTab.name)?.length === 0 || store === undefined)? true : false}
                                 onClick={testAll}
                             >
                                 Test All

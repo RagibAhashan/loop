@@ -1,12 +1,19 @@
 // import styles from './sidebar.module.css';
 import { DeleteFilled, PlayCircleFilled, StopFilled } from '@ant-design/icons';
 import { Button, Col, Row } from 'antd';
-import React from 'react';
+import React, { useState } from 'react';
 
 const startButton = {
     border: 'none',
     borderRadius: '100%',
     color: 'green',
+};
+
+const disabledStartButton = {
+    border: 'none',
+    borderRadius: '100%',
+    color: 'grey',
+    backgroundColor:'transparent'
 };
 
 const stopButton = {
@@ -21,27 +28,29 @@ const deleteButton = {
     color: 'red',
 };
 
-const statusColor = (level: string) => {
-    switch (level) {
-        case 'idle':
-            return 'yellow';
-        case 'info':
-            return 'white';
-        case 'success':
-            return 'green';
-        case 'error':
-            return 'red';
-        case 'cancel':
-            return '#f7331e';
-    }
-};
-
 const ProxyRow = (props: any) => {
     const {
         proxy,
         style,
+        store
     } = props;
 
+    const [level, setLevel] = useState('idle')
+
+    const statusColor = (level: string) => {
+        switch (level) {
+            case 'idle':
+                return 'yellow';
+            case 'info':
+                return 'white';
+            case 'success':
+                return 'green'; // maybe change it to default to just show speed
+            case 'error':
+                return 'red';
+            case 'cancel':
+                return '#f7331e';
+        }
+    };
 
     const runButton = () => {
         return proxy.status === 'Testing' ? (
@@ -58,12 +67,25 @@ const ProxyRow = (props: any) => {
                 onClick={() => {
                     props.testIndividual(proxy)
                 }}
-                style={startButton}
+                disabled={store === undefined}
+                style={store === undefined ? disabledStartButton:startButton}
                 icon={<PlayCircleFilled />}
                 size="small"
             />
         );
     };
+
+    const getStatus = (store: any) => {
+        if(store === undefined) {return 'idle'}
+        switch (store) {
+            case "FootlockerCA":
+                return proxy.status.FootlockerUS
+            case "FootlockerUS":
+                return proxy.status.FootlockerUS
+            default:
+                return 'lol'
+        }
+    }
 
     return (
         <Row
@@ -96,9 +118,9 @@ const ProxyRow = (props: any) => {
             <Col span={4}>
                 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'center' }}>
                     <svg height="6" width="6">
-                        <circle cx="3" cy="3" r="3" fill={statusColor('success')} />
+                        <circle cx="3" cy="3" r="3" fill={statusColor(getStatus(store))} />
                     </svg>
-                    <span style={{ color: statusColor('success'), fontWeight: 500, marginLeft: 10 }}>{proxy.status}</span>
+                    <span style={{ color: statusColor(getStatus(store)), fontWeight: 500, marginLeft: 10 }}>{ getStatus(store) }</span>
                 </div>
             </Col>
 

@@ -110,12 +110,12 @@ ipcMain.on(NOTIFY_STOP_TASK, async (event, uuid) => {
     }
 });
 
-ipcMain.on(NOTIFY_START_PROXY, (event, setName, proxy, credential, testStatus) => {
+ipcMain.on(NOTIFY_START_PROXY, (event, setName, proxy, credential, store) => {
     console.log('got notified to start!')
     // start test here
 });
 
-ipcMain.on(NOTIFY_STOP_PROXY, async (event, setName, proxy, credential, testStatus) => {
+ipcMain.on(NOTIFY_STOP_PROXY, async (event, setName, proxy, credential, store) => {
     try {
         console.log('got notified to stop!')
         // stop test here
