@@ -1,3 +1,4 @@
+import { Observable, Subject } from 'rxjs';
 import { Select } from 'antd';
 const { Option } = Select;
 
@@ -41,3 +42,15 @@ export const getSizes = () => {
     }
     return allSizes;
 };
+
+export class TaskService {
+    static notifyStart = new Subject<void>();
+
+    static notify(): void {
+        this.notifyStart.next();
+    }
+
+    static listenStart(): Observable<void> {
+        return this.notifyStart.asObservable();
+    }
+}

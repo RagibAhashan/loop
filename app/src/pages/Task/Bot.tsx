@@ -1,10 +1,12 @@
 // import styles from './sidebar.module.css';
 import { DeleteFilled, PlayCircleFilled, EditFilled, StopFilled } from '@ant-design/icons';
 import { Button, Col, Row, Tooltip } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
+import { Subscription } from 'rxjs';
 import { TASK_STOPPED, NOTIFY_STOP_TASK, NOTIFY_START_TASK } from '../../common/Constants';
 import { Proxies } from '../../interfaces/OtherInterfaces';
 import { TaskData, UserProfile } from '../../interfaces/TaskInterfaces';
+import { TaskService } from '../../services/TaskService';
 import EditTaskModal from './EditTaskModal';
 const { ipcRenderer } = window.require('electron');
 
@@ -62,12 +64,14 @@ const getLastStatus = (uuid: string): Status => {
 
 const Bot = (props: any) => {
     const {
+        notify,
         taskData,
         deleteBot,
         editBot,
         storeName,
         style,
     }: {
+        notify: boolean;
         taskData: TaskData;
         deleteBot: any;
         editBot: any;
@@ -112,13 +116,13 @@ const Bot = (props: any) => {
         for (const proxy of set) {
             const alreadyUsed = proxy.usedBy.find((id) => id === uuid);
 
-            if (alreadyUsed) return proxy.proxy;
+            if (alreadyUsed) return proxy;
 
             // todo also check for test status (not banned)
             if (proxy.usedBy.length === 0) {
                 proxy.usedBy.push(uuid);
                 localStorage.setItem('proxies', JSON.stringify(proxies));
-                return proxy.proxy;
+                return proxy;
             }
         }
 
@@ -126,7 +130,7 @@ const Bot = (props: any) => {
         localStorage.setItem('proxies', JSON.stringify(proxies));
 
         // if all proxies are being used just take the first one
-        return set[0].proxy;
+        return set[0];
     };
 
     const startTask = () => {
@@ -135,17 +139,21 @@ const Bot = (props: any) => {
         const profileData = profiles.find((prof) => prof.profile === profile);
         let proxyData = undefined;
         if (proxySet) proxyData = assignProxy();
-
         const deviceId = localStorage.getItem('deviceId');
         ipcRenderer.send(NOTIFY_START_TASK, uuid, storeName, { productSKU, profileData, proxyData, sizes, retryDelay, deviceId });
     };
 
     useEffect(() => {
+        const notifySub = TaskService.listenStart().subscribe(() => {
+            startTask();
+        });
+
         registerTaskStatusListener();
 
         return () => {
             ipcRenderer.removeAllListeners(uuid);
             ipcRenderer.removeAllListeners(uuid + TASK_STOPPED);
+            notifySub.unsubscribe();
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

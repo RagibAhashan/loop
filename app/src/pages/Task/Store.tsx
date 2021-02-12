@@ -6,7 +6,7 @@ import { TaskData } from '../../interfaces/TaskInterfaces';
 import Bot from './Bot';
 import NewTaskModal from './newTaskModal';
 import EditTaskModal from './EditTaskModal';
-import { Task } from 'electron/main';
+import { TaskService } from '../../services/TaskService';
 const { ipcRenderer } = window.require('electron');
 const { v4: uuid } = require('uuid');
 const { Option } = Select;
@@ -46,6 +46,7 @@ const Store = (props: any) => {
 
     const { storeName } = props;
     const [jobs, setJobs] = useState(() => getTasks());
+    const [jobsRunning, setJobsRunning] = useState(() => false);
     const [taskModalVisible, setTaskModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
 
@@ -110,6 +111,7 @@ const Store = (props: any) => {
         let temp: TaskData[] = [];
         for (let i = 0; i < data.quantity; i++) {
             const id = uuid();
+            // eslint-disable-next-line react-hooks/rules-of-hooks
             temp.push({ ...data, uuid: id, store: storeName });
         }
 
@@ -132,6 +134,7 @@ const Store = (props: any) => {
     };
 
     const stopAllTasks = () => {
+        setJobsRunning(false);
         jobs.forEach((job) => {
             ipcRenderer.send(NOTIFY_STOP_TASK, job.uuid);
         });
@@ -189,6 +192,11 @@ const Store = (props: any) => {
         );
     };
 
+    const startAllTasks = () => {
+        setJobsRunning(true);
+        TaskService.notify();
+    };
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'auto' }}>
             <Headers />
@@ -208,12 +216,17 @@ const Store = (props: any) => {
                 </Col>
                 <Col span={3}></Col>
                 <Col span={3}>
-                    <Button type="default" style={{ ...buttonStyle, backgroundColor: 'green' }} disabled={jobs.length === 0}>
+                    <Button
+                        type="default"
+                        style={{ ...buttonStyle, backgroundColor: 'green' }}
+                        onClick={() => startAllTasks()}
+                        disabled={jobs.length === 0 || jobsRunning}
+                    >
                         Run all
                     </Button>
                 </Col>
                 <Col span={3}>
-                    <Button style={buttonStyle} type="primary" onClick={() => stopAllTasks()} danger disabled={jobs.length === 0}>
+                    <Button style={buttonStyle} type="primary" onClick={() => stopAllTasks()} danger disabled={jobs.length === 0 || !jobsRunning}>
                         Stop all
                     </Button>
                 </Col>
