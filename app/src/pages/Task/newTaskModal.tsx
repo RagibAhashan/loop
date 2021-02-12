@@ -1,29 +1,12 @@
 import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, TimePicker } from 'antd';
 import React, { Fragment, useState } from 'react';
-const { Option } = Select;
+import { getProfiles, getProxies, getSizes } from '../../services/TaskService';
 
-/* eslint-disable no-template-curly-in-string */
 const validateMessages = {
     required: 'Required!',
-    types: {
-        email: '${name} is not a valid email!',
-        number: '${name} is not a valid number!',
-    },
-    number: {
-        range: '${name} must be 3 digits or less.',
-    },
 };
 
 const GUTTER: [number, number] = [16, 0];
-
-const allSizes: any[] = [];
-for (let i = 4; i < 14; i += 0.5) {
-    allSizes.push(
-        <Option value={i.toString()} key={i.toString()}>
-            {i.toString()}
-        </Option>,
-    );
-}
 
 const buttonStyle: React.CSSProperties = {
     width: '100%',
@@ -32,35 +15,6 @@ const buttonStyle: React.CSSProperties = {
 };
 
 const format = 'HH:mm';
-
-const getProfiles = () => {
-    let profs: any = JSON.parse(localStorage.getItem('profiles') as string);
-    if (!profs) return [];
-    const profilesTemp: any = [];
-
-    profs.forEach((p: any) => {
-        profilesTemp.push({
-            label: p['profile'].toString(),
-            value: p['profile'].toString(),
-        });
-    });
-
-    return profilesTemp;
-};
-
-const getProxies = (): any => {
-    const proxiesOptions: any = [{ label: 'No Proxies', value: null }];
-    let prox: any = JSON.parse(localStorage.getItem('proxies') as string);
-    if (prox) {
-        Object.entries(prox).forEach(([proxyName, proxies]: [string, unknown]) => {
-            proxiesOptions.push({
-                label: `${proxyName} (${(proxies as string[]).length} proxies)`,
-                value: `${proxyName}`,
-            });
-        });
-    }
-    return proxiesOptions;
-};
 
 const NewTaskModal = (props: any) => {
     const { store, addTasks, visible, cancelTaskModal } = props;
@@ -124,7 +78,7 @@ const NewTaskModal = (props: any) => {
                                 </Form.Item>
                             </Col>
                             <Col span={12}>
-                                <Form.Item name="proxySet" rules={[{ required: false }]} initialValue={'No Proxies'}>
+                                <Form.Item name="proxySet" rules={[{ required: false }]} initialValue={null}>
                                     <Select style={{ width: '100%' }} placeholder="Proxy Set" allowClear options={getProxies()} />
                                 </Form.Item>
                             </Col>
@@ -134,7 +88,7 @@ const NewTaskModal = (props: any) => {
                             <Col span={12}>
                                 <Form.Item name="sizes" rules={[{ required: true }]}>
                                     <Select placeholder="Size" mode="multiple" allowClear>
-                                        {allSizes}
+                                        {getSizes()}
                                     </Select>
                                 </Form.Item>
                             </Col>
