@@ -28,17 +28,23 @@ const TASK_STATUS = 'status';
 
 const CAPTHA_WINDOW_CLOSED = 'captcha-closed';
 
+const GET_SYSTEM_ID = 'GET-SYSTEM-ID';
+const NOTIFY_STOP_PROXY = 'stop-proxy';
+const NOTIFY_START_PROXY = 'start-proxy';
 const NOTIFY_STOP_PROXY_TEST = 'stop-proxy';
 const NOTIFY_START_PROXY_TEST = 'start-proxy';
 const PROXY_TEST_STOPPED = 'proxy-stopped';
 
 module.exports = {
     CAPTCHA_ROUTE,
+    GET_SYSTEM_ID,
     NOTIFY_STOP_TASK,
     TASK_STOPPED,
     NOTIFY_START_TASK,
     NOTIFY_CAPTCHA,
     STORES,
+    NOTIFY_STOP_PROXY,
+    NOTIFY_START_PROXY,
     NOTIFY_EDIT_TASK,
     NOTIFY_STOP_PROXY_TEST,
     NOTIFY_START_PROXY_TEST,

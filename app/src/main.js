@@ -13,8 +13,20 @@ const {
 const captchaWindowManager = require('./core/captcha-window/CaptchaWindowManager');
 const taskFactory = require('./core/TaskFactory');
 const taskManager = require('./core/TaskManager');
+const si = require('systeminformation');
+const hash = require('object-hash');
 
-function createWindow() {
+const getSystemUniqueID = async () => {
+    try {
+        const SYSTEM_ID = await si.system();
+        const HASHED_DATA = await hash(SYSTEM_ID);
+        return HASHED_DATA;
+    } catch (error) {
+        throw new Error('Could not fetch system information');
+    }
+};
+
+const createWindow = () => {
     const win = new BrowserWindow({
         width: 1700,
         height: 830,
@@ -59,7 +71,7 @@ function createWindow() {
             newWin.destroy();
         });
     });
-}
+};
 
 app.whenReady().then(createWindow);
 
@@ -120,6 +132,15 @@ ipcMain.on(NOTIFY_STOP_TASK, async (event, uuid) => {
         if (currentTask) {
             currentTask.emit('stop');
         }
+    } catch (error) {
+        console.log('err', error);
+    }
+});
+
+ipcMain.handle('GET-SYSTEM-ID', async (event) => {
+    try {
+        const ID = await getSystemUniqueID();
+        return ID;
     } catch (error) {
         console.log('err', error);
     }
