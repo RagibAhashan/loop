@@ -224,7 +224,7 @@ const Store = (props: any) => {
                     </Button>
                 </Col>
                 <Col span={3}>
-                    <Button style={buttonStyle} type="primary" onClick={() => stopAllTasks()} danger disabled={jobs.length === 0 || !jobsRunning}>
+                    <Button style={buttonStyle} type="primary" onClick={() => stopAllTasks()} danger disabled={jobs.length === 0}>
                         Stop all
                     </Button>
                 </Col>
