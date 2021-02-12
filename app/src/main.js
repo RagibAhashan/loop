@@ -133,7 +133,6 @@ ipcMain.on(NOTIFY_STOP_TASK, async (event, uuid) => {
 ipcMain.handle('GET-SYSTEM-ID', async (event) => {
     try {
         const ID = await getSystemUniqueID();
-        console.log('GET-SYSTEM-ID', ID);
         return ID;
     } catch (error) {
         console.log('err', error);
