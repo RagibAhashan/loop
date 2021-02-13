@@ -38,12 +38,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
                 "CC_Month": CC_Month,
                 "CC_Year": CC_Year,
             },
-            "system_information": {
-                "CPU": "",
-                "GPU": "",
-                "MAC_ADDRESS": "",
-                "OS": ""
-            },
+            "SYSTEM_KEY": "",
             "discord_id": discord_id,
             "email": email,
             "first_name": first_name,
@@ -100,6 +95,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
                 if(subData) {
                     if (subData.USER_CAP >= count) {
                         await SubscribersRef.collection('UnactivatedSubscribers').doc(USER_ID).set(USER_DATA);
+                        await EmailService.sendRegistrationConfirmationEmail(email, first_name, LICENSE_KEY);
                         SubscribersRef.update({
                             CURRENT_USERS: count
                         })
@@ -166,13 +162,15 @@ export const RegisterUser = async (req: Request, res: Response) => {
 export const ActivateUserLicense = async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
+    console.log('Got em')
+
     if (!errors.isEmpty()) {
         console.error(errors)
         res.status(422).json({ errors: errors.array() });
         return;
     }
 
-    const { L_KEY, CPU, GPU, MAC_ADDRESS, OS } = req.body;
+    const { L_KEY, SYSTEM_KEY } = req.body;
     try {
         const db = new Firestore();
         const SubscribersRef = db.collection("Users").doc("Subscribers");
@@ -190,16 +188,12 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
                     if (data) {
                         const match = await bcrypt.compare(L_KEY, data.LICENSE_KEY)
                         console.log(data.LICENSE_KEY, L_KEY, ' == ', match)
-                        data.system_information = {
-                            "CPU": CPU,
-                            "GPU": GPU,
-                            "MAC_ADDRESS": MAC_ADDRESS,
-                            "OS": OS
-                        }
                         if (match) {
                             // TODO: Fail check (Try-Catch)
+                            data.SYSTEM_KEY = SYSTEM_KEY;
                             await document.ref.delete();
                             await SubscribersRef.collection('ActivatedSubscribers').doc(data.user_id).set(data);
+                            await EmailService.LicenseKeyActivated(data.email, data.first_name)
                         }
                     }
                 });
@@ -237,5 +231,5 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
  * @param res 
  */
 export const ValidateSystemLicense = async (req: Request, res: Response) => {
-    res.status(500).send('Not yet implemented');
+    res.status(200).send('Not yet implemented');
 }
