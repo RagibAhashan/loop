@@ -9,11 +9,6 @@ const { Sider } = Layout;
 
 const SideBar = withRouter(({ history }) => {
     const [collapsed, setCollapsed] = useState(false);
-
-    useEffect(() => {
-        history.push('/profiles');
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
     return (
         <Sider
             collapsible
@@ -31,7 +26,7 @@ const SideBar = withRouter(({ history }) => {
                     className={styles.menuItem}
                     icon={<HomeOutlined className={styles.icon} />}
                     onClick={() => {
-                        history.push('/home');
+                        history.push('/');
                     }}
                 >
                     Home
@@ -42,7 +37,7 @@ const SideBar = withRouter(({ history }) => {
                     className={styles.menuItem}
                     icon={<PieChartOutlined />}
                     onClick={() => {
-                        history.push('/profiles');
+                        history.push('/app/profiles');
                     }}
                 >
                     Profiles
@@ -53,7 +48,7 @@ const SideBar = withRouter(({ history }) => {
                     className={styles.menuItem}
                     icon={<DesktopOutlined />}
                     onClick={() => {
-                        history.push('/proxies');
+                        history.push('/app/proxies');
                     }}
                 >
                     Manage Proxies
@@ -64,7 +59,7 @@ const SideBar = withRouter(({ history }) => {
                     className={styles.menuItem}
                     icon={<FileOutlined />}
                     onClick={() => {
-                        history.push('/tasks');
+                        history.push('/app/tasks');
                     }}
                 >
                     Tasks
@@ -74,7 +69,7 @@ const SideBar = withRouter(({ history }) => {
                     className={styles.menuItem}
                     icon={<SettingOutlined />}
                     onClick={() => {
-                        history.push('/settings');
+                        history.push('/app/settings');
                     }}
                 >
                     Settings

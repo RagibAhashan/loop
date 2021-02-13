@@ -94,7 +94,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
 
                 if(subData) {
                     if (subData.USER_CAP >= count) {
-                        await SubscribersRef.collection('UnactivatedSubscribers').doc(USER_ID).set(USER_DATA);
+                        await SubscribersRef.collection('UnactivatedSubscribers').doc(email).set(USER_DATA);
                         await EmailService.sendRegistrationConfirmationEmail(email, first_name, LICENSE_KEY);
                         SubscribersRef.update({
                             CURRENT_USERS: count
@@ -162,15 +162,13 @@ export const RegisterUser = async (req: Request, res: Response) => {
 export const ActivateUserLicense = async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
-    console.log('Got em')
-
     if (!errors.isEmpty()) {
         console.error(errors)
         res.status(422).json({ errors: errors.array() });
         return;
     }
 
-    const { L_KEY, SYSTEM_KEY } = req.body;
+    const { L_KEY, SYSTEM_KEY, email } = req.body;
     try {
         const db = new Firestore();
         const SubscribersRef = db.collection("Users").doc("Subscribers");
@@ -181,28 +179,40 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
                     throw new Error("Document 'SubscribersRef' does not exist!");
                 }
 
-                const listDocs = await doc.ref.collection('UnactivatedSubscribers').listDocuments();
-                listDocs.map(async (doc) => {
-                    const document = await doc.get();
-                    const data = document.data();
+                const querySnapshot = await doc.ref.collection('ActivatedSubscribers')
+                .where("email", "==", email)
+                .get();
+
+                if (querySnapshot.size >= 1) {
+                    throw new Errors.UserAlreadyExistError('This email was already registered!');
+                }
+
+                const docRef = await doc.ref.collection('UnactivatedSubscribers').doc(email);
+                const docSnapshot = await docRef.get();
+                
+                if (!docSnapshot.exists) {
+                    throw new Errors.UserNotFoundError('This email account is not registered.');
+                } else {
+                    const data = docSnapshot.data();
                     if (data) {
                         const match = await bcrypt.compare(L_KEY, data.LICENSE_KEY)
-                        console.log(data.LICENSE_KEY, L_KEY, ' == ', match)
                         if (match) {
-                            // TODO: Fail check (Try-Catch)
                             data.SYSTEM_KEY = SYSTEM_KEY;
-                            await document.ref.delete();
+                            await docRef.delete();
                             await SubscribersRef.collection('ActivatedSubscribers').doc(data.user_id).set(data);
                             await EmailService.LicenseKeyActivated(data.email, data.first_name)
+                        } else {
+                            throw new Errors.InvalidLicenseKeyError('This license key is invalid or already activated');
                         }
                     }
-                });
-                throw new Errors.LicenseKeyNotFound('License key not found!');
-                
+                }
             });
-            
         });
-
+        
+        return res.status(200).send({
+            message: 'License key activated!',
+            permission: true
+        });
         
             
         } catch(error) {
@@ -218,12 +228,27 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
                     error: 'internalError'
                 });
             }
+            else if (error instanceof Errors.UserAlreadyExistError) {
+                return res.status(409).send({
+                    message: error.message,
+                    error: 'internalError'
+                });
+            }
+            else if (error instanceof Errors.UserNotFoundError) {
+                return res.status(404).send({
+                    message: error.message,
+                    error: 'internalError'
+                });
+            }
             return res.status(500).send({
                 message: error.message,
                 error: 'internalError'
             });
         }
 }
+
+
+
 
 /**
  * Used to validate the system in which the license was activated. This also checks the license.
