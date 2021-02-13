@@ -6,9 +6,10 @@ import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'rea
 import { Subscription } from 'rxjs';
 import { TASK_STOPPED, NOTIFY_STOP_TASK, NOTIFY_START_TASK } from '../../common/Constants';
 import { Proxies, Proxy } from '../../interfaces/OtherInterfaces';
-import { TaskData, UserProfile } from '../../interfaces/TaskInterfaces';
+import { CreditCard, TaskData, UserProfile } from '../../interfaces/TaskInterfaces';
 import { taskService } from '../../services/TaskService';
 import EditTaskModal from './EditTaskModal';
+import ccEncryptor from '../../services/CreditCardEncryption';
 const { ipcRenderer } = window.require('electron');
 
 interface Status {
@@ -137,7 +138,10 @@ const Bot = (props: any) => {
     const startTask = () => {
         setRunning(true);
         const profiles = JSON.parse(localStorage.getItem('profiles') as string) as UserProfile[];
-        const profileData = profiles.find((prof) => prof.profile === profile);
+        const profileData = profiles.find((prof) => prof.profile === profile) as UserProfile;
+
+        profileData.payment = ccEncryptor.encrypt(profileData?.payment as CreditCard);
+
         let proxyData = undefined;
         if (proxySet) proxyData = assignProxy();
         const deviceId = localStorage.getItem('deviceId');

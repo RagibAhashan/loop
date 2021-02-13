@@ -195,14 +195,15 @@ class FootLockerTask extends Task {
                 this.emit('status', { status: msgs.PLACING_ORDER_INFO_MESSAGE, level: 'info' });
 
                 const headers = this.setHeaders();
-
-                const body = this.getOrderForm({ number: '', expiryMonth: '', expiryYear: '', cvc: '' });
+                console.log(this.userProfile);
+                const body = this.getOrderForm(this.userProfile.payment);
 
                 await this.axiosSession.post('/v2/users/orders', body, {
                     headers: headers,
                 });
                 this.emit('status', { status: msgs.CHECKOUT_SUCCESS_MESSAGE, level: 'success' });
             } catch (error) {
+                console.log(error);
                 this.cancelTask();
                 await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
                 retry = true;
