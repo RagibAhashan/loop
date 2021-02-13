@@ -32,6 +32,7 @@ export const getProxies = (): any => {
     return proxiesOptions;
 };
 
+const otherSizes = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
 export const getSizes = () => {
     let allSizes: any[] = [];
     for (let i = 4; i < 14; i += 0.5) {
@@ -41,6 +42,14 @@ export const getSizes = () => {
             </Option>,
         );
     }
+
+    otherSizes.forEach((size) => {
+        allSizes.push(
+            <Option value={size} key={size}>
+                {size}
+            </Option>,
+        );
+    });
     return allSizes;
 };
 
