@@ -58,6 +58,7 @@ const statusColor = (level: string) => {
 };
 
 const getLastStatus = (uuid: string): Status => {
+    console.log('get last status yo');
     const item = JSON.parse(localStorage.getItem(uuid) as string);
     return item ? { ...item, running: item.lastLevel === 'cancel' ? false : true } : { lastStatus: 'Idle', lastLevel: 'idle', running: false };
 };

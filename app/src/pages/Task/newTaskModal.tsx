@@ -3,7 +3,7 @@ import React, { Fragment, useState } from 'react';
 import { getProfiles, getProxies, getSizes } from '../../services/TaskService';
 
 const validateMessages = {
-    required: 'Required!',
+    required: '',
 };
 
 const GUTTER: [number, number] = [16, 0];
@@ -38,12 +38,12 @@ const NewTaskModal = (props: any) => {
             <Fragment>
                 <Col span={4}>
                     <Form.Item name="startDate" rules={[{ required: true }]}>
-                        <DatePicker />
+                        <DatePicker disabled />
                     </Form.Item>
                 </Col>
                 <Col span={4}>
                     <Form.Item name="startTime" rules={[{ required: true }]}>
-                        <TimePicker format={format} />
+                        <TimePicker disabled format={format} />
                     </Form.Item>
                 </Col>
             </Fragment>
@@ -60,7 +60,7 @@ const NewTaskModal = (props: any) => {
                 onCancel={() => cancelTaskModal()}
                 okText="Create tasks"
                 footer={false}
-                width={600}
+                width={900}
             >
                 <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
                     <Form form={form} onFinish={onFinishForm} validateMessages={validateMessages}>

@@ -78,7 +78,6 @@ const createWindow = () => {
 
 app.whenReady().then(() => {
     createWindow();
-    console.log('win yoo', win.webContents.send('app-startup'));
 });
 
 app.on('window-all-closed', () => {

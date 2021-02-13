@@ -3,6 +3,7 @@ import { Button, Form, Modal, Select, Tabs } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useState } from 'react';
 import { NOTIFY_STOP_TASK, STORES } from '../../common/Constants';
+import { IStore } from '../../interfaces/OtherInterfaces';
 import { TaskData } from '../../interfaces/TaskInterfaces';
 import Store from './Store';
 const { TabPane } = Tabs;
@@ -10,13 +11,9 @@ const { Option } = Select;
 const { ipcRenderer } = window.require('electron');
 
 const ALL_STORES: any = STORES;
-interface Pane {
-    title: string;
-    key: string;
-}
 
-const getStores = (): Pane[] => {
-    const stores = JSON.parse(localStorage.getItem('stores') as string) as Pane[];
+const getStores = (): IStore[] => {
+    const stores = JSON.parse(localStorage.getItem('stores') as string) as IStore[];
     return stores ? stores : [];
 };
 
@@ -30,7 +27,7 @@ const TaskPage = () => {
         if (!store) return;
 
         setStoreModalVisible(false);
-        const addedPane: Pane = { title: store.name, key: store.key };
+        const addedPane: IStore = { title: store.name, key: store.key };
         setPanes((old) => {
             const newState = [...old, addedPane];
             localStorage.setItem('stores', JSON.stringify(newState));
@@ -51,7 +48,7 @@ const TaskPage = () => {
 
     const deleteStore = (key: string) => {
         const tasks = JSON.parse(localStorage.getItem(key) as string) as TaskData[];
-        const stores = JSON.parse(localStorage.getItem('stores') as string) as Pane[];
+        const stores = JSON.parse(localStorage.getItem('stores') as string) as IStore[];
 
         if (tasks) {
             // cancel and delete all running tasks from store
@@ -64,7 +61,7 @@ const TaskPage = () => {
         if (stores) {
             localStorage.removeItem(key);
 
-            setPanes((oldStores: Pane[]) => {
+            setPanes((oldStores: IStore[]) => {
                 const newStores = oldStores.filter((store) => store.key !== key);
                 localStorage.setItem('stores', JSON.stringify(newStores));
                 return newStores;

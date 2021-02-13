@@ -1,6 +1,10 @@
 const { FOOTLOCKER_CA_HEADERS, FOOTLOCKER_COM_HEADERS } = require('../core/constants/Constants');
 
 const CAPTCHA_ROUTE = 'captcha';
+const PROFILE_ROUTE = '/app/profiles';
+const PROXY_ROUTE = '/app/proxies';
+const SETTINGS_ROUTE = '/app/settings';
+const TASKS_ROUTE = '/app/tasks';
 
 const STORES = {
     FootlockerCA: {
@@ -50,4 +54,8 @@ module.exports = {
     TASK_STOP,
     TASK_STATUS,
     NOTIFY_CAPTCHA_SOLVED,
+    PROXY_ROUTE,
+    TASKS_ROUTE,
+    PROFILE_ROUTE,
+    SETTINGS_ROUTE,
 };

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { UserProfile } from '../../interfaces/TaskInterfaces';
 import CreateNewProfileModal from './createNewProfile';
 import EditProfileModal from './editProfileModal';
+import './profiles.css';
 
 const ProfilePage = () => {
     const [profiles, setUserProfiles] = useState([] as UserProfile[]);
