@@ -56,6 +56,7 @@ const createWindow = () => {
             webPreferences: {
                 nodeIntegration: true,
             },
+            resizable: false,
         });
 
         captchaWindowManager.register(store, newWin);
