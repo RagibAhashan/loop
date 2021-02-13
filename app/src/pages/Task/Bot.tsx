@@ -65,14 +65,12 @@ const getLastStatus = (uuid: string): Status => {
 
 const Bot = (props: any) => {
     const {
-        notify,
         taskData,
         deleteBot,
         editBot,
         storeName,
         style,
     }: {
-        notify: boolean;
         taskData: TaskData;
         deleteBot: any;
         editBot: any;
