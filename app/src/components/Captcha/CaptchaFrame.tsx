@@ -19,8 +19,6 @@ const CaptchaFrame = () => {
     const [captchaQ, setCaptchaQ] = useState<ICaptcha[]>([]);
 
     useEffect(() => {
-        console.log('got cap from', store + NOTIFY_CAPTCHA);
-
         ipcRenderer.on(store + NOTIFY_CAPTCHA, (e, captcha: ICaptcha) => {
             setCaptchaQ((prevQ) => [...prevQ, captcha]);
         });

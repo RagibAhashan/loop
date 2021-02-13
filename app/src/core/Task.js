@@ -1,7 +1,9 @@
 const EventEmitter = require('events');
 const { CookieJar } = require('./CookieJar');
 const msgs = require('./constants/Constants');
+const { TASK_STOPPED, TASK_STATUS } = require('../common/Constants');
 
+const CANCEL_ERROR = 'Cancel';
 class Task extends EventEmitter {
     constructor(uuid, productSKU, sizes, deviceId, requestInstance, userProfile) {
         super();
@@ -40,9 +42,9 @@ class Task extends EventEmitter {
     async execute() {
         try {
             this.cancel = false;
-            this.on('stop', async () => {
-                this.emit('status', { status: msgs.CANCELED_MESSAGE, level: 'cancel' });
+            this.once('stop', async () => {
                 this.cancel = true;
+                this.emit(TASK_STATUS, { status: msgs.CANCELING_MESSAGE, level: 'cancel' });
             });
 
             await this.getSessionTokens();
@@ -51,11 +53,16 @@ class Task extends EventEmitter {
             await this.setEmail();
             await this.setShipping();
             await this.setBilling();
+
             await this.placeOrder();
         } catch (err) {
-            console.log('error', err);
+            if (err.message === CANCEL_ERROR) {
+                this.emit(TASK_STATUS, { status: msgs.CANCELED_MESSAGE, level: 'cancel' });
+                this.emit(TASK_STOPPED);
+            }
+            // do nothing
         }
     }
 }
 
-module.exports = { Task };
+module.exports = { Task, CANCEL_ERROR };

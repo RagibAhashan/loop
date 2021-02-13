@@ -17,6 +17,7 @@ const PLACING_ORDER_INFO_MESSAGE = 'Placing Order';
 const CHECKOUT_FAILED_MESSAGE = 'Checkout Failed';
 const CHECKOUT_SUCCESS_MESSAGE = 'Checkout ! 🚀';
 const CANCELED_MESSAGE = 'Task Canceled 💔';
+const CANCELING_MESSAGE = 'Canceling Task';
 
 const FOOTLOCKER_CA_HEADERS = {
     // accept: 'application/json',
@@ -69,4 +70,5 @@ module.exports = {
     WAIT_CAPTCHA_MESSAGE,
     CHECKING_SIZE_RETRY_MESSAGE,
     CANCELED_MESSAGE,
+    CANCELING_MESSAGE,
 };

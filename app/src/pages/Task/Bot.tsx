@@ -1,6 +1,7 @@
 // import styles from './sidebar.module.css';
 import { DeleteFilled, PlayCircleFilled, EditFilled, StopFilled } from '@ant-design/icons';
 import { Button, Col, Row, Tooltip } from 'antd';
+import { stat } from 'fs';
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { Subscription } from 'rxjs';
 import { TASK_STOPPED, NOTIFY_STOP_TASK, NOTIFY_START_TASK } from '../../common/Constants';
@@ -92,16 +93,18 @@ const Bot = (props: any) => {
     const [running, setRunning] = useState(() => getLastStatus(uuid).running as boolean);
     const [statusLevel, setStatusLevel] = useState(() => getLastStatus(uuid).lastLevel as string);
     const [editModalVisible, setEditModalVisible] = useState(false);
+    const [disabled, setDisabled] = useState(false);
 
     const registerTaskStatusListener = () => {
         ipcRenderer.on(uuid, (event, status: Status) => {
-            setStatus((prevStatus) => (prevStatus = status.status));
-            setStatusLevel((prevLevel) => (prevLevel = status.level));
+            setStatus(status.status);
+            setStatusLevel(status.level);
             localStorage.setItem(uuid, JSON.stringify({ lastStatus: status.status, lastLevel: status.level }));
         });
 
         ipcRenderer.on(uuid + TASK_STOPPED, () => {
             setRunning(false);
+            setDisabled(false);
         });
     };
 
@@ -159,8 +162,8 @@ const Bot = (props: any) => {
     }, []);
 
     const stopTask = () => {
-        setRunning(false);
         ipcRenderer.send(NOTIFY_STOP_TASK, uuid);
+        setDisabled(true);
     };
 
     const deleteMe = () => {
@@ -204,6 +207,7 @@ const Bot = (props: any) => {
                 style={stopButton}
                 icon={<StopFilled />}
                 size="small"
+                disabled={disabled}
             />
         ) : (
             <Button
@@ -213,6 +217,7 @@ const Bot = (props: any) => {
                 style={startButton}
                 icon={<PlayCircleFilled />}
                 size="small"
+                disabled={disabled}
             />
         );
     };

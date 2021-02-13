@@ -8,8 +8,7 @@ const Captcha = (props: any) => {
 
     return (
         <div style={{ borderBottom: '1px solid grey', padding: 10 }}>
-            <span> {captcha.url}</span>
-            <span> {captcha.uuid}</span>
+            <iframe title={captcha.uuid} width="360" height="200" scrolling="no" sandbox="allow-scripts allow-same-origin" src={captcha.url}></iframe>
         </div>
     );
 };

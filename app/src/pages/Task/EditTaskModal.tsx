@@ -1,7 +1,6 @@
-import { Button, Checkbox, Col, Form, Input, InputNumber, Modal, Row, Select } from 'antd';
+import { Col, Form, Input, InputNumber, Modal, Row, Select } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
-import { ValidateStatus } from 'antd/lib/form/FormItem';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { TaskData } from '../../interfaces/TaskInterfaces';
 import { getProfiles, getProxies, getSizes } from '../../services/TaskService';
 
@@ -11,12 +10,7 @@ const validateMessages = {
 const GUTTER: [number, number] = [16, 0];
 
 export const EditTaskModal = (props: any) => {
-    const {
-        visible,
-        cancelEditModal,
-        confirmEdit,
-        taskData,
-    }: { visible: boolean; cancelEditModal: any; confirmEdit: any; taskData: TaskData } = props;
+    const { visible, cancelEditModal, taskData }: { visible: boolean; cancelEditModal: any; confirmEdit: any; taskData: TaskData } = props;
 
     const [form] = useForm();
 
