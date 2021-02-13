@@ -1,7 +1,10 @@
 // import styles from './sidebar.module.css';
 import { DeleteFilled, PlayCircleFilled, StopFilled } from '@ant-design/icons';
+import { green } from '@material-ui/core/colors';
 import { Button, Col, Row } from 'antd';
 import React, { useState } from 'react';
+import { NOTIFY_STOP_PROXY_TEST, NOTIFY_START_PROXY_TEST, PROXY_TEST_STOPPED, STORES } from '../../common/Constants';
+const { ipcRenderer } = window.require('electron');
 
 const startButton = {
     border: 'none',
@@ -32,6 +35,7 @@ const ProxyRow = (props: any) => {
     const {
         proxy,
         style,
+        currentTab,
         store
     } = props;
 
@@ -39,24 +43,26 @@ const ProxyRow = (props: any) => {
 
     const statusColor = (level: string) => {
         switch (level) {
+            case 'Pick a store':
+                return 'orange';
             case 'idle':
                 return 'yellow';
-            case 'info':
+            case 'Testing...':
                 return 'white';
-            case 'success':
-                return 'green'; // maybe change it to default to just show speed
             case 'error':
                 return 'red';
-            case 'cancel':
+            case 'Canceled Test':
                 return '#f7331e';
+            default:
+                return 'green';
         }
     };
 
     const runButton = () => {
-        return proxy.status === 'Testing' ? (
+        return getStatus(store) === 'Testing...' ? (
             <Button
                 onClick={() => {
-                    // stopTask();
+                    stopTest();
                 }}
                 style={stopButton}
                 icon={<StopFilled />}
@@ -65,7 +71,7 @@ const ProxyRow = (props: any) => {
         ) : (
             <Button
                 onClick={() => {
-                    props.testIndividual(proxy)
+                    testIndividual(proxy)
                 }}
                 disabled={store === undefined}
                 style={store === undefined ? disabledStartButton:startButton}
@@ -75,11 +81,25 @@ const ProxyRow = (props: any) => {
         );
     };
 
+    const testIndividual = (proxy: any) => {
+        const proxyToTest = proxy.ip + ":" + proxy.port;
+        const credential = proxy.username + ":" + proxy.password;
+        props.testIndividual(proxyToTest, currentTab.name);
+        ipcRenderer.send(NOTIFY_START_PROXY_TEST, currentTab.name, proxyToTest, credential, store);
+    }
+
+    const stopTest = () => {
+        const proxyToStop = proxy.ip + ":" + proxy.port;
+        const credential = proxy.username + ":" + proxy.password;
+        props.stopTest(proxyToStop, currentTab.name)
+        ipcRenderer.send(NOTIFY_STOP_PROXY_TEST, currentTab.name, proxyToStop, credential, store);
+    }
+
     const getStatus = (store: any) => {
-        if(store === undefined) {return 'idle'}
+        if(store === undefined) {return 'Pick a store'}
         switch (store) {
             case "FootlockerCA":
-                return proxy.status.FootlockerUS
+                return proxy.status.FootlockerCA
             case "FootlockerUS":
                 return proxy.status.FootlockerUS
             default:

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { DeleteFilled, PlusOutlined, PlayCircleFilled } from '@ant-design/icons';
+import { DeleteFilled, PlusOutlined, PlayCircleFilled, CloseCircleOutlined } from '@ant-design/icons';
 import { Layout, message, Tabs, Button, Tooltip, Row, Col, Empty, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import CollectionFormAdd from './Collections/Add';
@@ -36,7 +36,7 @@ const ProxyPage = () => {
     let [tab, setTabKey] = useState('1'); // for add popup to select between upload and copy pasta
 
     useEffect(() => {
-        // console.log(localStorage)
+        // console.log(localStorage.clear())
         let db_proxies: any = localStorage.getItem('proxies');
         if (!db_proxies) {
             const obj = Object.fromEntries(proxies);
@@ -65,7 +65,7 @@ const ProxyPage = () => {
         });
     };
 
-    const onCreate = (values: any) => {
+    const onCreateSet = (values: any) => {
         const name = values.name;
         // Check if already exists
         if (proxies.get(name)) {
@@ -82,7 +82,17 @@ const ProxyPage = () => {
         }
     };
 
-    const onAdd = (values: any) => {
+    const onDeleteSet = (values: any) => {
+        const arraySetToDelete = values.proxies;
+        arraySetToDelete.forEach((name: any) => {
+            proxies.delete(name);
+            setProxies(proxies);
+            localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
+        });
+        setVisibleDelete(false);
+    };
+
+    const onAddProxies = (values: any) => {
         const name = currentTab.name;
         const proxyArray: any = [];
 
@@ -127,29 +137,80 @@ const ProxyPage = () => {
         tab = '1';
     };
 
-    const onDelete = (values: any) => {
-        const arraySetToDelete = values.proxies;
-        arraySetToDelete.forEach((name: any) => {
-            proxies.delete(name);
-            setProxies(proxies);
+    const deleteIndividual = (record: any) => {
+        let proxiesArray: Array<any> = proxies.get(currentTab.name) || [];
+        let proxyToDelete: string = record.ip + ':' + record.port;
+        for (let i = 0; i < proxiesArray.length; i++) {
+            if (proxiesArray[i].proxy === proxyToDelete) {
+                proxiesArray.splice(i, 1);
+                break;
+            }
+        }
+        setProxies(() => {
+            proxies.set(currentTab.name, proxiesArray);
             localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
+            return proxies;
         });
-        setVisibleDelete(false);
+        ipcRenderer.send(NOTIFY_STOP_PROXY_TEST, currentTab.name, proxyToDelete, record.credential, store);
+        forceUpdate();
     };
+
+    const deleteAll = () => {
+        let proxiesArray: Array<Proxy> = [];
+        proxies.set(currentTab.name, proxiesArray);
+        setProxies(proxies);
+        localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
+        forceUpdate();
+    };
+
+    const testIndividual = (proxyToTest: any, setName:any) => {
+        let proxiesArray: Array<any> = proxies.get(setName) || [];
+        for (let i = 0; i < proxiesArray.length; i++) {
+            if (proxiesArray[i].proxy === proxyToTest) {
+                if(store === 'FootlockerUS') {
+                    proxiesArray[i].testStatus.FootlockerUS = 'Testing...';
+                } 
+                else if (store === 'FootlockerCA') {
+                    proxiesArray[i].testStatus.FootlockerCA = 'Testing...';
+                }
+                break;
+            }
+        }
+        proxies.set(setName, proxiesArray);
+        setProxies(proxies);
+        forceUpdate();
+        localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
+    };
+
+    const stopTest = (proxyToStop: any, setName: any) => {
+        let proxiesArray: Array<any> = proxies.get(setName) || [];
+        for (let i = 0; i < proxiesArray.length; i++) {
+            if (proxiesArray[i].proxy === proxyToStop) {
+                if(store === 'FootlockerUS') {
+                    proxiesArray[i].testStatus.FootlockerUS = 'Canceled Test';
+                } 
+                else if (store === 'FootlockerCA') {
+                    proxiesArray[i].testStatus.FootlockerCA = 'Canceled Test';
+                }
+                break;
+            }
+        }
+        proxies.set(setName, proxiesArray);
+        setProxies(proxies);
+        forceUpdate();
+        localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
+    };
+
+    const testAll = () => {};
 
     const Headers = () => {
         return (
             <Row style={botStyle}>
                 <Col span={4}>IP</Col>
-
                 <Col span={4}>Port</Col>
-
                 <Col span={4}>Username</Col>
-
                 <Col span={4}>Password</Col>
-
                 <Col span={4}>Status</Col>
-
                 <Col span={4}>Actions</Col>
             </Row>
         );
@@ -183,6 +244,7 @@ const ProxyPage = () => {
             <ProxyRow
                 deleteIndividual={deleteIndividual}
                 testIndividual={testIndividual}
+                stopTest={stopTest}
                 currentTab={currentTab}
                 proxy={data}
                 style={style}
@@ -207,12 +269,6 @@ const ProxyPage = () => {
         );
     };
 
-    function useForceUpdate() {
-        const [value, setValue] = useState(0); // integer state
-        return () => setValue((value) => value + 1); // update the state to force render
-    }
-    const forceUpdate = useForceUpdate();
-
     const onCancel = () => {
         tab = '1';
     };
@@ -223,42 +279,6 @@ const ProxyPage = () => {
             setSelection.push(key);
         });
         return setSelection;
-    };
-
-    const testIndividual = (record: any) => {
-        const setName = currentTab.name;
-        const proxy = record.ip + ':' + record.port;
-        const credential = record.username + ':' + record.password;
-        const testStatus = record.status;
-        ipcRenderer.send(NOTIFY_START_PROXY_TEST, setName, proxy, credential, store);
-    };
-
-    const testAll = () => {};
-
-    const deleteIndividual = (record: any) => {
-        let proxiesArray: Array<any> = proxies.get(currentTab.name) || [];
-        let proxyToDelete: string = record.ip + ':' + record.port;
-        for (let i = 0; i < proxiesArray.length; i++) {
-            if (proxiesArray[i].proxy === proxyToDelete) {
-                proxiesArray.splice(i, 1);
-                break;
-            }
-        }
-        setProxies(() => {
-            proxies.set(currentTab.name, proxiesArray);
-            localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
-            return proxies;
-        });
-        ipcRenderer.send(NOTIFY_STOP_PROXY_TEST, currentTab.name, proxyToDelete, record.credential, store);
-        forceUpdate();
-    };
-
-    const deleteAll = () => {
-        let proxiesArray: Array<Proxy> = [];
-        proxies.set(currentTab.name, proxiesArray);
-        setProxies(proxies);
-        localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
-        forceUpdate();
     };
 
     const { TabPane } = Tabs;
@@ -345,7 +365,7 @@ const ProxyPage = () => {
                     </Tooltip>
                     <CollectionFormDelete
                         visible={visibleDelete}
-                        onCreate={onDelete}
+                        onCreate={onDeleteSet}
                         onCancel={() => {
                             setVisibleDelete(false);
                         }}
@@ -356,7 +376,7 @@ const ProxyPage = () => {
             )}
             <CollectionFormCreate
                 visible={visibleCreate}
-                onCreate={onCreate}
+                onCreate={onCreateSet}
                 onCancel={() => {
                     setVisibleCreate(false);
                     onCancel();
@@ -364,6 +384,12 @@ const ProxyPage = () => {
             />
         </div>
     );
+
+    function useForceUpdate() {
+        const [value, setValue] = useState(0); // integer state
+        return () => setValue((value) => value + 1); // update the state to force render
+    }
+    const forceUpdate = useForceUpdate();
 
     return (
         <Layout style={{ padding: 24, backgroundColor: '#212427', height: '100vh', overflow: 'auto' }}>
@@ -386,7 +412,7 @@ const ProxyPage = () => {
                             </Button>
                             <CollectionFormAdd
                                 visible={visibleAdd}
-                                onCreate={onAdd}
+                                onCreate={onAddProxies}
                                 onCancel={() => {
                                     setVisibleAdd(false);
                                 }}
@@ -407,7 +433,7 @@ const ProxyPage = () => {
                         <div>
                             <Button
                                 icon={<DeleteFilled style={{ color: 'red' }} />}
-                                style={{ textAlign: 'center', float: 'right', paddingLeft: '35px', paddingRight: '35px' }}
+                                style={{ textAlign: 'center', float: 'right', marginLeft:'40px', paddingLeft: '35px', paddingRight: '35px' }}
                                 type={'primary'}
                                 onClick={() => {
                                     deleteAll();
@@ -415,6 +441,19 @@ const ProxyPage = () => {
                                 disabled={proxies.get(currentTab.name)?.length === 0 ? true : false}
                             >
                                 Delete All
+                            </Button>
+                        </div>
+                        <div>
+                            <Button
+                                icon={<CloseCircleOutlined style={{ color: 'red' }} />}
+                                style={{ textAlign: 'center', float: 'right', paddingLeft: '35px', paddingRight: '35px' }}
+                                type={'primary'}
+                                onClick={() => {
+                                    // 
+                                }}
+                                disabled={ true }
+                            >
+                                Delete Failed
                             </Button>
                         </div>
                     </div>
