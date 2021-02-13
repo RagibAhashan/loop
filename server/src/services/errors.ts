@@ -22,6 +22,14 @@ export class UserAlreadyExistError extends Error {
     }
 }
 
+export class UserNotFoundError extends Error {
+    constructor(message?: string) {
+        super(message);
+        Object.setPrototypeOf(this, new.target.prototype);
+        this.name = UserNotFoundError.name;
+    }
+}
+
 export class UserAlreadyExistManyTimes extends Error {
     constructor(message?: string) {
         super(message);
@@ -51,5 +59,13 @@ export class LicenseRegistrationError extends Error {
         super(message);
         Object.setPrototypeOf(this, new.target.prototype);
         this.name = LicenseRegistrationError.name;
+    }
+}
+
+export class InvalidLicenseKeyError extends Error {
+    constructor(message?: string) {
+        super(message);
+        Object.setPrototypeOf(this, new.target.prototype);
+        this.name = InvalidLicenseKeyError.name;
     }
 }
