@@ -1,15 +1,13 @@
 // import styles from './sidebar.module.css';
-import { DeleteFilled, PlayCircleFilled, EditFilled, StopFilled } from '@ant-design/icons';
-import { Button, Col, Row, Tooltip } from 'antd';
-import { stat } from 'fs';
-import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
-import { Subscription } from 'rxjs';
-import { TASK_STOPPED, NOTIFY_STOP_TASK, NOTIFY_START_TASK } from '../../common/Constants';
+import { DeleteFilled, EditFilled, PlayCircleFilled, QuestionCircleOutlined, StopFilled } from '@ant-design/icons';
+import { Button, Col, Popconfirm, Row, Tooltip } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { NOTIFY_START_TASK, NOTIFY_STOP_TASK, TASK_STOPPED } from '../../common/Constants';
 import { Proxies, Proxy } from '../../interfaces/OtherInterfaces';
 import { CreditCard, TaskData, UserProfile } from '../../interfaces/TaskInterfaces';
+import ccEncryptor from '../../services/CreditCardEncryption';
 import { taskService } from '../../services/TaskService';
 import EditTaskModal from './EditTaskModal';
-import ccEncryptor from '../../services/CreditCardEncryption';
 const { ipcRenderer } = window.require('electron');
 
 interface Status {
@@ -47,7 +45,7 @@ const deleteButton = {
 const statusColor = (level: string) => {
     switch (level) {
         case 'idle':
-            return 'yellow';
+            return '#faa61a';
         case 'info':
             return 'white';
         case 'success':
@@ -151,6 +149,7 @@ const Bot = (props: any) => {
     useEffect(() => {
         const notifySub = taskService.listenStart().subscribe(() => {
             startTask();
+            setRunning(true);
         });
 
         registerTaskStatusListener();
@@ -234,11 +233,14 @@ const Bot = (props: any) => {
                     borderRadius: 5,
                     height: style.height - 5,
                     whiteSpace: 'nowrap',
+                    userSelect: 'none',
                 }}
             >
-                <Col span={4} style={{ paddingLeft: 15, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{productSKU}</div>
-                </Col>
+                <Tooltip placement="bottomLeft" title={`Retry Delay : ${retryDelay} ms`}>
+                    <Col span={4} style={{ paddingLeft: 15, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{productSKU}</div>
+                    </Col>
+                </Tooltip>
 
                 <Col span={4}>
                     <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{proxySet ? proxySet : 'No Proxies'}</div>
@@ -249,7 +251,7 @@ const Bot = (props: any) => {
                 </Col>
 
                 <Col span={4} style={{ paddingRight: 15 }}>
-                    <Tooltip title={sizes.join(', ')}>
+                    <Tooltip title={sizes.join(', ')} placement="topLeft">
                         <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{sizes.join(', ')}</div>
                     </Tooltip>
                 </Col>
@@ -260,7 +262,13 @@ const Bot = (props: any) => {
                             <circle cx="3" cy="3" r="3" fill={statusColor(statusLevel)} />
                         </svg>
                         <span
-                            style={{ overflow: 'hidden', textOverflow: 'ellipsis', color: statusColor(statusLevel), fontWeight: 500, marginLeft: 5 }}
+                            style={{
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                color: statusColor(statusLevel),
+                                fontWeight: 500,
+                                marginLeft: 5,
+                            }}
                         >
                             {status}
                         </span>
@@ -281,14 +289,16 @@ const Bot = (props: any) => {
                             />
                         </div>
                         <div>
-                            <Button
-                                onClick={() => {
-                                    deleteMe();
-                                }}
-                                style={deleteButton}
-                                icon={<DeleteFilled />}
-                                size="small"
-                            />
+                            <Popconfirm
+                                title="Are you sure？"
+                                icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+                                onConfirm={deleteMe}
+                                onCancel={() => {}}
+                                okText="Yes"
+                                cancelText="No"
+                            >
+                                <Button style={deleteButton} icon={<DeleteFilled />} size="small" />
+                            </Popconfirm>
                         </div>
                     </div>
                 </Col>

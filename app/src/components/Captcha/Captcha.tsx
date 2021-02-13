@@ -12,7 +12,6 @@ const Captcha = (props: any) => {
             (event) => {
                 removeMe(captcha);
                 const datadome = JSON.parse(event.data).cookie;
-                console.log('got datadome cookie', datadome);
                 ipcRenderer.send(NOTIFY_CAPTCHA_SOLVED, captcha.uuid, datadome);
             },
             false,

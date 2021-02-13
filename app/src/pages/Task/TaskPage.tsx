@@ -1,8 +1,9 @@
-import { Button, Select, Tabs, Modal } from 'antd';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Button, Form, Modal, Select, Tabs } from 'antd';
+import { useForm } from 'antd/lib/form/Form';
 import React, { useState } from 'react';
 import { NOTIFY_STOP_TASK, STORES } from '../../common/Constants';
 import { TaskData } from '../../interfaces/TaskInterfaces';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
 import Store from './Store';
 const { TabPane } = Tabs;
 const { Option } = Select;
@@ -23,9 +24,11 @@ const TaskPage = () => {
     const [panes, setPanes] = useState(() => getStores());
     const [isStoreModalVisible, setStoreModalVisible] = useState(false);
     const [store, setStore] = useState({} as any);
+    const [form] = useForm();
 
     const addStore = () => {
         if (!store) return;
+
         setStoreModalVisible(false);
         const addedPane: Pane = { title: store.name, key: store.key };
         setPanes((old) => {
@@ -70,6 +73,7 @@ const TaskPage = () => {
     };
 
     const openStoreModal = () => {
+        form.setFieldsValue({ selectStore: undefined });
         setStoreModalVisible(true);
     };
 
@@ -98,13 +102,17 @@ const TaskPage = () => {
             </Tabs>
 
             <Modal title="Add Store" visible={isStoreModalVisible} onOk={addStore} onCancel={() => setStoreModalVisible(false)}>
-                <Select value={undefined} placeholder="Select Store" onChange={onStoreSelect} style={{ width: 200, margin: 'auto' }}>
-                    {Object.entries(STORES).map(([storeKey, store]) => (
-                        <Option key={store.key} disabled={isStoreCreated(store.name)} value={storeKey}>
-                            {store.name}
-                        </Option>
-                    ))}
-                </Select>
+                <Form form={form}>
+                    <Form.Item name={'selectStore'}>
+                        <Select placeholder="Select Store" onChange={onStoreSelect} style={{ width: 200, margin: 'auto' }}>
+                            {Object.entries(STORES).map(([storeKey, store]) => (
+                                <Option key={store.key} disabled={isStoreCreated(store.name)} value={storeKey}>
+                                    {store.name}
+                                </Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                </Form>
             </Modal>
         </div>
     );

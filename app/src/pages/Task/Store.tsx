@@ -1,14 +1,14 @@
-import { Button, Col, Row, Select, Empty } from 'antd';
+import { QuestionCircleOutlined } from '@ant-design/icons';
+import { Button, Col, Empty, Popconfirm, Row, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { FixedSizeList } from 'react-window';
-import { NOTIFY_STOP_TASK, NOTIFY_EDIT_TASK, CAPTHA_WINDOW_CLOSED, NOTIFY_CAPTCHA } from '../../common/Constants';
-import { TaskData } from '../../interfaces/TaskInterfaces';
-import Bot from './Bot';
-import NewTaskModal from './newTaskModal';
-import EditTaskModal from './EditTaskModal';
-import { taskService } from '../../services/TaskService';
-import Captcha from '../../components/Captcha/Captcha';
+import { CAPTHA_WINDOW_CLOSED, NOTIFY_CAPTCHA, NOTIFY_EDIT_TASK, NOTIFY_STOP_TASK } from '../../common/Constants';
 import { ICaptcha } from '../../components/Captcha/CaptchaFrame';
+import { TaskData } from '../../interfaces/TaskInterfaces';
+import { taskService } from '../../services/TaskService';
+import Bot from './Bot';
+import EditTaskModal from './EditTaskModal';
+import NewTaskModal from './newTaskModal';
 const { ipcRenderer } = window.require('electron');
 const { v4: uuid } = require('uuid');
 const { Option } = Select;
@@ -21,9 +21,8 @@ const buttonStyle: React.CSSProperties = {
 
 const botStyle = {
     fontSize: '18px',
-    // textAlign: 'center',
-    // paddingLeft: 20,
     marginBottom: 20,
+    userSelect: 'none',
 } as React.CSSProperties;
 
 const headerColStyle = {
@@ -230,7 +229,7 @@ const Store = (props: any) => {
                 </Col>
 
                 <Col span={3}>
-                    <Button style={buttonStyle} type="primary" onClick={() => openEditAllTaskModal()}>
+                    <Button style={buttonStyle} type="primary" onClick={() => openEditAllTaskModal()} disabled={jobs.length === 0 || jobsRunning}>
                         Edit All
                     </Button>
                 </Col>
@@ -252,9 +251,18 @@ const Store = (props: any) => {
                 </Col>
                 <Col span={3}></Col>
                 <Col span={3}>
-                    <Button style={buttonStyle} type="primary" danger onClick={() => deleteAllTasks()} disabled={jobs.length === 0}>
-                        Delete all
-                    </Button>
+                    <Popconfirm
+                        title="Are you sure？"
+                        icon={<QuestionCircleOutlined style={{ color: 'red' }} />}
+                        onConfirm={deleteAllTasks}
+                        onCancel={() => {}}
+                        okText="Yes"
+                        cancelText="No"
+                    >
+                        <Button style={buttonStyle} type="primary" danger disabled={jobs.length === 0}>
+                            Delete all
+                        </Button>
+                    </Popconfirm>
                 </Col>
                 <Col span={3}>
                     <Button style={buttonStyle} type="primary" onClick={() => openCaptcha()} disabled={jobs.length === 0 || captchaWinOpened}>

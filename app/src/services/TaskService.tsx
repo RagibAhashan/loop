@@ -1,5 +1,5 @@
-import { Observable, Subject } from 'rxjs';
 import { Select } from 'antd';
+import { Observable, Subject } from 'rxjs';
 import { ICaptcha } from '../components/Captcha/CaptchaFrame';
 const { Option } = Select;
 
