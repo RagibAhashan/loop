@@ -67,7 +67,7 @@ const License = withRouter(({ history }) => {
                         {code === 404 ? 'This email was not found' : ''}
                     </small>
 
-                    <Form.Item name="Email" rules={[{ required: true }]}>
+                    <Form.Item>
                         <Input
                             placeholder="Email"
                             name={'email'}
