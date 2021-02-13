@@ -1,4 +1,4 @@
-const { TASK_STATUS } = require('../../common/Constants');
+const { TASK_STATUS, NOTIFY_CAPTCHA_SOLVED } = require('../../common/Constants');
 const msgs = require('../constants/Constants');
 const { Cookie } = require('../constants/Cookies');
 const { FLCInfoForm, FLCOrderForm } = require('../interface/FootLockerCA');
@@ -73,6 +73,7 @@ class FootLockerTask extends Task {
         let retry = false;
         do {
             try {
+                retry = false;
                 this.cancelTask();
                 this.emit('status', { status: msgs.ADD_CART_INFO_MESSAGE, level: 'info' });
                 const headers = {
@@ -83,7 +84,7 @@ class FootLockerTask extends Task {
 
                 if (this.cookieJar.has(Cookie.DATADOME)) {
                     headers.cookie += this.cookieJar.getCookie(Cookie.DATADOME);
-                    console.log('TRYING AGAIN BUT WITH DATADOME', headers.cookie);
+                    console.log('TRYING AGAIN BUT WITH DATADOME', headers.cookie, this.uuid);
                 }
 
                 const body = { productQuantity: '1', productId: this.productCode };
@@ -105,33 +106,22 @@ class FootLockerTask extends Task {
                     const capDatadome = this.cookieJar.extract(cookies, Cookie.DATADOME);
                     const captcha_url = `${err.response.data['url']}&cid=${capDatadome}`;
 
-                    this.emit('captcha', { uuid: this.uuid, url: captcha_url });
-                    // parentPort?.postMessage(captcha_url);
-                    // let receivedDatadome = false;
-                    // let startTime = performance.now();
-                    // let timeout = 0;
-                    // parentPort?.once('datadome', (datadomeRaw) => {
-                    //     console.log('RECEIVED DATADOME COOKIE !', datadomeRaw);
-                    //     this.cookieJar.setFromRaw(datadomeRaw, Cookie.DATADOME);
-                    //     receivedDatadome = true;
-                    // });
-                    // busy wait
-                    await this.waitError(10000);
-
-                    this.once('captcha-solved', () => {
-                        console.log('captcha should be solved here');
+                    this.emit('captcha', {
+                        uuid: this.uuid,
+                        url: captcha_url,
                     });
 
-                    // await this.waitForCaptcha();
-                    // while (!receivedDatadome || timeout > CAPTCHA_TIMEOUT_SEC) {
-                    //     timeout = Math.round((performance.now() - startTime) / 1000);
-                    // }
-                    // if (!receivedDatadome) throw new Error('Timeout exceeded - Captcha not solved');
+                    const waitCap = this.waitForCaptcha();
+                    this.cancelTimeout = waitCap.cancel;
+
+                    const rawDatadome = await waitCap.promise;
+
+                    this.cookieJar.setFromRaw(rawDatadome, Cookie.DATADOME);
                 } else {
                     // console.log('Add to cart failed', err.response.status);
-                    console.log('retry delay', err);
                     await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error');
                 }
+
                 retry = true;
             }
         } while (retry);
@@ -267,7 +257,7 @@ class FootLockerTask extends Task {
     // This func will return one promise that will act as a sleep for the error message
     // and a cancel sleep so we dont wait the whole retry delay when we cancel our task during an error
     waitError(customDelay = undefined) {
-        var timeout, promise, cancel;
+        let timeout, promise, cancel;
 
         promise = new Promise((resolve, reject) => {
             timeout = setTimeout(() => {
@@ -275,6 +265,7 @@ class FootLockerTask extends Task {
             }, customDelay);
 
             cancel = () => {
+                this.cancelTimeout = () => {};
                 clearTimeout(timeout);
                 reject(CANCEL_ERROR);
             };
@@ -286,10 +277,21 @@ class FootLockerTask extends Task {
         };
     }
 
-    async waitForCaptcha() {
-        while (!this.captchaSolved) {}
+    waitForCaptcha() {
+        let promise, cancel;
 
-        return Promise.resolve('Solved');
+        promise = new Promise((resolve, reject) => {
+            this.once(NOTIFY_CAPTCHA_SOLVED, (datadome) => {
+                resolve(datadome);
+            });
+
+            cancel = () => {
+                this.cancelTimeout = () => {};
+                reject(CANCEL_ERROR);
+            };
+        });
+
+        return { promise: promise, cancel: cancel };
     }
 }
 

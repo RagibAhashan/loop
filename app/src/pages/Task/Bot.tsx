@@ -6,7 +6,7 @@ import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'rea
 import { Subscription } from 'rxjs';
 import { TASK_STOPPED, NOTIFY_STOP_TASK, NOTIFY_START_TASK } from '../../common/Constants';
 import { Proxies, Proxy } from '../../interfaces/OtherInterfaces';
-import { StartTaskData, TaskData, UserProfile } from '../../interfaces/TaskInterfaces';
+import { TaskData, UserProfile } from '../../interfaces/TaskInterfaces';
 import { taskService } from '../../services/TaskService';
 import EditTaskModal from './EditTaskModal';
 const { ipcRenderer } = window.require('electron');
@@ -65,16 +65,18 @@ const getLastStatus = (uuid: string): Status => {
 
 const Bot = (props: any) => {
     const {
-        startTask,
+        notify,
         taskData,
         deleteBot,
         editBot,
+        storeName,
         style,
     }: {
-        startTask: (uuid: string, taskData: StartTaskData) => {};
+        notify: boolean;
         taskData: TaskData;
         deleteBot: any;
         editBot: any;
+        storeName: string;
         style: any;
     } = props;
 
@@ -134,27 +136,27 @@ const Bot = (props: any) => {
         return set[0];
     };
 
-    const prepareTask = () => {
+    const startTask = () => {
         setRunning(true);
         const profiles = JSON.parse(localStorage.getItem('profiles') as string) as UserProfile[];
-        const profileData = profiles.find((prof) => prof.profile === profile) as UserProfile;
+        const profileData = profiles.find((prof) => prof.profile === profile);
         let proxyData = undefined;
         if (proxySet) proxyData = assignProxy();
-
-        startTask(uuid, { productSKU, profileData, proxyData, sizes, retryDelay });
+        const deviceId = localStorage.getItem('deviceId');
+        ipcRenderer.send(NOTIFY_START_TASK, uuid, storeName, { productSKU, profileData, proxyData, sizes, retryDelay, deviceId });
     };
 
     useEffect(() => {
-        // const notifySub = taskService.listenStart().subscribe(() => {
-        //     startTask();
-        // });
+        const notifySub = taskService.listenStart().subscribe(() => {
+            startTask();
+        });
 
         registerTaskStatusListener();
 
         return () => {
             ipcRenderer.removeAllListeners(uuid);
             ipcRenderer.removeAllListeners(uuid + TASK_STOPPED);
-            // notifySub.unsubscribe();
+            notifySub.unsubscribe();
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -210,7 +212,7 @@ const Bot = (props: any) => {
         ) : (
             <Button
                 onClick={() => {
-                    prepareTask();
+                    startTask();
                 }}
                 style={startButton}
                 icon={<PlayCircleFilled />}

@@ -44,9 +44,9 @@ class Task extends EventEmitter {
     async execute() {
         try {
             this.cancel = false;
-            this.on('stop', async () => {
+            this.once('stop', async () => {
                 this.cancel = true;
-                this.emit(TASK_STATUS, { status: msgs.CANCELING_MESSAGE, level: 'cancel' });
+                this.emit(TASK_STATUS, { status: msgs.CANCELED_MESSAGE, level: 'cancel' });
                 this.requestInstance.cancel();
                 this.cancelTimeout();
             });
@@ -62,7 +62,6 @@ class Task extends EventEmitter {
         } catch (err) {
             // waitError cancel would reject promise so error could equal to CANCEL_ERROR
             if (err.message === CANCEL_ERROR || err === CANCEL_ERROR) {
-                this.emit(TASK_STATUS, { status: msgs.CANCELED_MESSAGE, level: 'cancel' });
                 this.emit(TASK_STOPPED);
             }
             // do nothing

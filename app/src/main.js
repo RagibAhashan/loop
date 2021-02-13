@@ -9,6 +9,7 @@ const {
     NOTIFY_STOP_PROXY_TEST,
     NOTIFY_EDIT_TASK,
     CAPTHA_WINDOW_CLOSED,
+    NOTIFY_CAPTCHA_SOLVED,
 } = require('./common/Constants');
 const captchaWindowManager = require('./core/captcha-window/CaptchaWindowManager');
 const taskFactory = require('./core/TaskFactory');
@@ -50,13 +51,13 @@ const createWindow = () => {
     ipcMain.on('new-window', (event, store) => {
         const newWin = new BrowserWindow({
             parent: win,
-            width: 400,
-            height: 700,
+            width: 690,
+            height: 600,
             fullscreenable: false,
             webPreferences: {
                 nodeIntegration: true,
             },
-            resizable: false,
+            // resizable: false,
         });
 
         captchaWindowManager.register(store, newWin);
@@ -132,6 +133,17 @@ ipcMain.on(NOTIFY_STOP_TASK, async (event, uuid) => {
         const currentTask = taskManager.getTask(uuid);
         if (currentTask) {
             currentTask.emit('stop');
+        }
+    } catch (error) {
+        console.log('err', error);
+    }
+});
+
+ipcMain.on(NOTIFY_CAPTCHA_SOLVED, async (event, uuid, datadome) => {
+    try {
+        const currentTask = taskManager.getTask(uuid);
+        if (currentTask) {
+            currentTask.emit(NOTIFY_CAPTCHA_SOLVED, datadome);
         }
     } catch (error) {
         console.log('err', error);

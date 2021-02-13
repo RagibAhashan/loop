@@ -11,14 +11,24 @@ export interface ICaptcha {
 }
 
 const containerStyle = {
-    backgroundColor: '#212427',
     width: '100vw',
     height: '100vh',
-};
+    backgroundColor: '#212427',
+    overflow: 'auto',
+} as React.CSSProperties;
+
+const captchaContainer = {
+    height: '100%',
+    display: 'flex',
+    flexWrap: 'wrap',
+} as React.CSSProperties;
 const CaptchaFrame = () => {
     const { store } = useParams() as any;
     const [captchaQ, setCaptchaQ] = useState<ICaptcha[]>([]);
 
+    const removeFromQueue = (captchaToRemove: ICaptcha) => {
+        setCaptchaQ((prev) => prev.filter((captcha) => captcha.uuid !== captchaToRemove.uuid));
+    };
     useEffect(() => {
         ipcRenderer.on(store + NOTIFY_CAPTCHA, (e, captcha: ICaptcha) => {
             setCaptchaQ((prevQ) => [...prevQ, captcha]);
@@ -40,9 +50,11 @@ const CaptchaFrame = () => {
 
     return (
         <div key={store} style={containerStyle}>
-            {captchaQ.map((captcha) => (
-                <Captcha captcha={captcha} />
-            ))}
+            <div style={captchaContainer}>
+                {captchaQ.map((captcha) => (
+                    <Captcha key={captcha.uuid} captcha={captcha} removeMe={removeFromQueue} />
+                ))}
+            </div>
         </div>
     );
 };

@@ -22,6 +22,7 @@ const NOTIFY_STOP_TASK = 'stop-task';
 const NOTIFY_START_TASK = 'start-task';
 const NOTIFY_EDIT_TASK = 'edit-task';
 const NOTIFY_CAPTCHA = 'captcha';
+const NOTIFY_CAPTCHA_SOLVED = 'captcha-solved';
 const TASK_STOPPED = 'task-stopped';
 const TASK_STOP = 'task-stop';
 const TASK_STATUS = 'status';
@@ -48,4 +49,5 @@ module.exports = {
     CAPTHA_WINDOW_CLOSED,
     TASK_STOP,
     TASK_STATUS,
+    NOTIFY_CAPTCHA_SOLVED,
 };
