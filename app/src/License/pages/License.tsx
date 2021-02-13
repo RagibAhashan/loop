@@ -73,12 +73,13 @@ const License = withRouter(({ history }) => {
                             name={'email'}
                             onChange={(e) => {
                                 setEmail(e.target.value);
-                                if (e.target.value === 'dev') {
+                                if (e.target.value === '$dev') {
                                     history.push('/app/profiles');
                                 }
                             }}
                             style={code !== 201 ? { color: 'red', borderColor: 'red' } : {}}
                         />
+                        type "$dev" to bypass license key
                     </Form.Item>
                     <br />
                     <br />
