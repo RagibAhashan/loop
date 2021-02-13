@@ -49,6 +49,20 @@ class CookieJar {
 
         return match[1];
     }
+
+    /**
+     * Return the refresh seconds in Refresh header
+     *
+     * @return {number} refresh delay in ms
+     *
+     */
+    extractRefresh(rawString) {
+        const regex = new RegExp('(\\d[^;])');
+        const match = regex.exec(rawString);
+        if (!match) throw Error('Refresh could not be extracted');
+
+        return parseInt(match[0]) * 1000;
+    }
 }
 
 module.exports = { CookieJar };

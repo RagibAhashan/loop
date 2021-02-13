@@ -1,6 +1,6 @@
 const { TASK_STATUS, NOTIFY_CAPTCHA_SOLVED } = require('../../common/Constants');
 const msgs = require('../constants/Constants');
-const { Cookie } = require('../constants/Cookies');
+const { Cookie, Headers } = require('../constants/Cookies');
 const { FLCInfoForm, FLCOrderForm } = require('../interface/FootLockerCA');
 const { Task, CANCEL_ERROR } = require('../Task');
 
@@ -12,7 +12,7 @@ class FootLockerTask extends Task {
     }
     async getSessionTokens() {
         let retry = false;
-        this.refresh = false;
+        this.waitingRoom = { refresh: false, delay: 0 };
         let headers = {};
         do {
             try {
@@ -20,12 +20,11 @@ class FootLockerTask extends Task {
                 retry = false;
                 this.emit('status', { status: msgs.SESSION_INFO_MESSAGE, level: 'info' });
 
-                console.log('session with', headers);
-                if (this.refresh) {
-                    console.log('waiting for refresh');
-                    await this.waitError(30000).promise;
-                    console.log(' refresh done');
+                if (this.waitingRoom.refresh) {
+                    this.emit('status', { status: msgs.SESSION_QUEUE_MESSAGE, level: 'info' });
+                    await this.waitError(this.waitingRoom.delay).promise;
                 }
+
                 const response = await this.axiosSession.get('/v4/session', { headers: headers });
                 console.log('yoooo got session');
                 this.refresh = false;
@@ -35,19 +34,19 @@ class FootLockerTask extends Task {
                 const csrf = response.data['data']['csrfToken'];
                 this.cookieJar.set(Cookie.CSRF, csrf);
             } catch (error) {
-                if (error.response.headers['set-cookie'] && error.response.headers['set-cookie'].join().includes('waiting_room')) {
-                    console.log('trying with', error.response.headers['set-cookie']);
-                    const cookies = error.response.headers['set-cookie'].join();
+                this.cancelTask();
+                // If we get a queue page
+                if (error.response.headers['set-cookie'] && error.response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)) {
+                    const cookies = error.response.headers[Headers.SetCookie].join();
+                    const refreshHeader = error.response.headers[Headers.Refresh];
+                    this.cookieJar.setFromRaw(cookies, Cookie.WAITING_ROOM);
+                    headers = { cookie: this.cookieJar.getCookie(Cookie.WAITING_ROOM) };
 
-                    this.cookieJar.setFromRaw(cookies, 'waiting_room');
-                    headers = { cookie: this.cookieJar.getCookie('waiting_room') };
-                    retry = true;
-                    this.refresh = true;
+                    this.waitingRoom = { refresh: true, delay: this.cookieJar.extractRefresh(refreshHeader) };
                 } else {
-                    this.cancelTask();
                     await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
-                    retry = true;
                 }
+                retry = true;
             }
         } while (retry);
     }

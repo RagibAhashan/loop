@@ -1,5 +1,6 @@
 const STATUS_EVENT = 'status';
 const SESSION_INFO_MESSAGE = 'Getting Session';
+const SESSION_QUEUE_MESSAGE = 'Getting Session (In Queue)';
 const SESSION_ERROR_MESSAGE = 'Getting Session Failed';
 const CHECKING_SIZE_INFO_MESSAGE = 'Checking Stock';
 const CHECKING_SIZE_ERROR_MESSAGE = 'Checking Stock Failed';
@@ -71,4 +72,5 @@ module.exports = {
     CHECKING_SIZE_RETRY_MESSAGE,
     CANCELED_MESSAGE,
     CANCELING_MESSAGE,
+    SESSION_QUEUE_MESSAGE,
 };
