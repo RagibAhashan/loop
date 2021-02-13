@@ -5,8 +5,8 @@ const {
     NOTIFY_START_TASK,
     TASK_STOPPED,
     NOTIFY_CAPTCHA,
-    NOTIFY_START_PROXY,
-    NOTIFY_STOP_PROXY,
+    NOTIFY_START_PROXY_TEST,
+    NOTIFY_STOP_PROXY_TEST,
     NOTIFY_EDIT_TASK,
     CAPTHA_WINDOW_CLOSED,
 } = require('./common/Constants');
@@ -155,12 +155,12 @@ ipcMain.on(NOTIFY_EDIT_TASK, async (event, uuid) => {
     }
 });
 
-ipcMain.on(NOTIFY_START_PROXY, (event, setName, proxy, credential, store) => {
+ipcMain.on(NOTIFY_START_PROXY_TEST, (event, setName, proxy, credential, store) => {
     console.log('got notified to start!');
     // start test here
 });
 
-ipcMain.on(NOTIFY_STOP_PROXY, async (event, setName, proxy, credential, store) => {
+ipcMain.on(NOTIFY_STOP_PROXY_TEST, async (event, setName, proxy, credential, store) => {
     try {
         console.log('got notified to stop!');
         // stop test here

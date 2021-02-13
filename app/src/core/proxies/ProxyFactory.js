@@ -9,7 +9,7 @@ class ProxyFactory {
         const axios = new RequestInstance(store.url, { timestamp: Date.now() }, store.header, proxy ? new Proxy(proxy, credential) : proxy);
         const proxyTest = new ProxyTest(setName, axios);
 
-        return proxyTest;
+        return proxyTest.executeTest();
     }
 }
 
