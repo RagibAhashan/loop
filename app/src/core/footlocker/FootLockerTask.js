@@ -12,6 +12,7 @@ class FootLockerTask extends Task {
     }
     async getSessionTokens() {
         let retry = false;
+        this.refresh = false;
         let headers = {};
         do {
             try {
@@ -19,22 +20,29 @@ class FootLockerTask extends Task {
                 retry = false;
                 this.emit('status', { status: msgs.SESSION_INFO_MESSAGE, level: 'info' });
 
-                console.log('session', headers);
+                console.log('session with', headers);
+                if (this.refresh) {
+                    console.log('waiting for refresh');
+                    await this.waitError(30000).promise;
+                    console.log(' refresh done');
+                }
                 const response = await this.axiosSession.get('/v4/session', { headers: headers });
-
+                console.log('yoooo got session');
+                this.refresh = false;
                 const cookies = response.headers['set-cookie'].join();
                 this.cookieJar.setFromRaw(cookies, Cookie.JSESSIONID);
 
                 const csrf = response.data['data']['csrfToken'];
                 this.cookieJar.set(Cookie.CSRF, csrf);
             } catch (error) {
-                if (error.response.headers['set-cookie'].join().includes('waiting_room')) {
+                if (error.response.headers['set-cookie'] && error.response.headers['set-cookie'].join().includes('waiting_room')) {
+                    console.log('trying with', error.response.headers['set-cookie']);
                     const cookies = error.response.headers['set-cookie'].join();
 
                     this.cookieJar.setFromRaw(cookies, 'waiting_room');
                     headers = { cookie: this.cookieJar.getCookie('waiting_room') };
                     retry = true;
-                    continue;
+                    this.refresh = true;
                 } else {
                     this.cancelTask();
                     await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');

@@ -10,6 +10,7 @@ const License = withRouter(({ history }) => {
     const [email, setEmail] = useState('');
     const [code, setCode] = useState(201);
     const [loading, setLoading] = useState(false);
+    history.push('/app/profiles');
 
     function useForceUpdate() {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
