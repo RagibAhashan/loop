@@ -5,9 +5,9 @@ import { stat } from 'fs';
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { Subscription } from 'rxjs';
 import { TASK_STOPPED, NOTIFY_STOP_TASK, NOTIFY_START_TASK } from '../../common/Constants';
-import { Proxies } from '../../interfaces/OtherInterfaces';
-import { TaskData, UserProfile } from '../../interfaces/TaskInterfaces';
-import { TaskService } from '../../services/TaskService';
+import { Proxies, Proxy } from '../../interfaces/OtherInterfaces';
+import { StartTaskData, TaskData, UserProfile } from '../../interfaces/TaskInterfaces';
+import { taskService } from '../../services/TaskService';
 import EditTaskModal from './EditTaskModal';
 const { ipcRenderer } = window.require('electron');
 
@@ -65,18 +65,16 @@ const getLastStatus = (uuid: string): Status => {
 
 const Bot = (props: any) => {
     const {
-        notify,
+        startTask,
         taskData,
         deleteBot,
         editBot,
-        storeName,
         style,
     }: {
-        notify: boolean;
+        startTask: (uuid: string, taskData: StartTaskData) => {};
         taskData: TaskData;
         deleteBot: any;
         editBot: any;
-        storeName: string;
         style: any;
     } = props;
 
@@ -108,7 +106,7 @@ const Bot = (props: any) => {
         });
     };
 
-    const assignProxy = () => {
+    const assignProxy = (): Proxy | undefined => {
         const proxies = JSON.parse(localStorage.getItem('proxies') as string) as Proxies;
         if (!proxies) return undefined;
         const set = proxies[proxySet as string];
@@ -136,27 +134,27 @@ const Bot = (props: any) => {
         return set[0];
     };
 
-    const startTask = () => {
+    const prepareTask = () => {
         setRunning(true);
         const profiles = JSON.parse(localStorage.getItem('profiles') as string) as UserProfile[];
-        const profileData = profiles.find((prof) => prof.profile === profile);
+        const profileData = profiles.find((prof) => prof.profile === profile) as UserProfile;
         let proxyData = undefined;
         if (proxySet) proxyData = assignProxy();
-        const deviceId = localStorage.getItem('deviceId');
-        ipcRenderer.send(NOTIFY_START_TASK, uuid, storeName, { productSKU, profileData, proxyData, sizes, retryDelay, deviceId });
+
+        startTask(uuid, { productSKU, profileData, proxyData, sizes, retryDelay });
     };
 
     useEffect(() => {
-        const notifySub = TaskService.listenStart().subscribe(() => {
-            startTask();
-        });
+        // const notifySub = taskService.listenStart().subscribe(() => {
+        //     startTask();
+        // });
 
         registerTaskStatusListener();
 
         return () => {
             ipcRenderer.removeAllListeners(uuid);
             ipcRenderer.removeAllListeners(uuid + TASK_STOPPED);
-            notifySub.unsubscribe();
+            // notifySub.unsubscribe();
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -212,7 +210,7 @@ const Bot = (props: any) => {
         ) : (
             <Button
                 onClick={() => {
-                    startTask();
+                    prepareTask();
                 }}
                 style={startButton}
                 icon={<PlayCircleFilled />}

@@ -1,5 +1,6 @@
 import { Observable, Subject } from 'rxjs';
 import { Select } from 'antd';
+import { ICaptcha } from '../components/Captcha/CaptchaFrame';
 const { Option } = Select;
 
 export const getProfiles = () => {
@@ -43,14 +44,32 @@ export const getSizes = () => {
     return allSizes;
 };
 
-export class TaskService {
-    static notifyStart = new Subject<void>();
+class TaskService {
+    notifyStart = new Subject<void>();
+    captchaQueue: Map<string, string>;
+    constructor() {
+        this.captchaQueue = new Map();
+    }
 
-    static notify(): void {
+    notify(): void {
         this.notifyStart.next();
     }
 
-    static listenStart(): Observable<void> {
+    listenStart(): Observable<void> {
         return this.notifyStart.asObservable();
     }
+
+    saveCaptcha(captcha: ICaptcha) {
+        this.captchaQueue.set(captcha.uuid, captcha.url);
+    }
+
+    dispatchCaptchas(): ICaptcha[] {
+        if (this.captchaQueue.size === 0) return [];
+
+        const capArr = Array.from(this.captchaQueue, ([uuid, url]) => ({ uuid, url }));
+        this.captchaQueue.clear();
+        return capArr;
+    }
 }
+
+export const taskService = new TaskService();

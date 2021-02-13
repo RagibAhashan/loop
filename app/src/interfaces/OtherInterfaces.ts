@@ -1,21 +1,15 @@
-export interface tempProxy {
-    proxy: string;
-    testStatus: string;
-    usedBy: string[];
-}
-
 export interface Proxies {
-    [proxyName: string]: tempProxy[];
+    [proxyName: string]: Proxy[];
 }
 
 export interface Store {
     FootlockerCA: string;
-    FootlockerUS: string
+    FootlockerUS: string;
 }
 
 export interface Proxy {
     proxy: string;
     credential: string;
     testStatus: Store;
-    usedBy: [];
+    usedBy: string[];
 }

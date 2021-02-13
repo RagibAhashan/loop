@@ -19,7 +19,6 @@ class FootLockerTask extends Task {
                 this.emit('status', { status: msgs.SESSION_INFO_MESSAGE, level: 'info' });
 
                 const response = await this.axiosSession.get('/v4/session');
-                this.cancelTask();
 
                 const cookies = response.headers['set-cookie'].join();
                 this.cookieJar.setFromRaw(cookies, Cookie.JSESSIONID);
@@ -42,7 +41,7 @@ class FootLockerTask extends Task {
                 this.emit('status', { status: msgs.CHECKING_SIZE_INFO_MESSAGE, level: 'info' });
 
                 const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
-                this.cancelTask();
+                console.log(typeof response.data);
                 const sellableUnits = response.data['sellableUnits'];
                 const variantAttributes = response.data['variantAttributes'];
                 const { code: styleCode } = variantAttributes.find((attr) => attr.sku === this.productSKU);
@@ -54,6 +53,7 @@ class FootLockerTask extends Task {
                 for (const size of this.sizes) {
                     for (const unit of inStockUnits) {
                         for (const attr of unit.attributes) {
+                            console.log('currenlty checking size', size);
                             if (attr.type === 'size' && parseFloat(attr.value) === parseFloat(size)) {
                                 retry = false; // not needed
                                 return attr.id;
@@ -61,8 +61,7 @@ class FootLockerTask extends Task {
                         }
                     }
                 }
-                this.emit('status', { status: msgs.CHECKING_SIZE_RETRY_MESSAGE, level: 'error' });
-                await this.waitError();
+                await this.emitStatus(msgs.CHECKING_SIZE_RETRY_MESSAGE, 'error');
             } catch (error) {
                 this.cancelTask();
                 await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
@@ -90,7 +89,6 @@ class FootLockerTask extends Task {
                 const body = { productQuantity: '1', productId: this.productCode };
 
                 const response = await this.axiosSession.post('/users/carts/current/entries', body, { headers: headers });
-                this.cancelTask();
 
                 const cookies = response.headers['set-cookie'].join();
                 this.cookieJar.setFromRaw(cookies, Cookie.CART_GUID);
@@ -149,7 +147,6 @@ class FootLockerTask extends Task {
                 const headers = this.setHeaders();
 
                 await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.shipping.email}`, {}, { headers: headers });
-                this.cancelTask();
             } catch (error) {
                 this.cancelTask();
                 await this.emitStatus(msgs.EMAIL_ERROR_MESSAGE, 'error');
@@ -171,7 +168,6 @@ class FootLockerTask extends Task {
                 const body = { shippingAddress: this.getInfoForm(true) };
 
                 await this.axiosSession.post('/users/carts/current/addresses/shipping', body, { headers: headers });
-                this.cancelTask();
             } catch (error) {
                 this.cancelTask();
 
@@ -193,7 +189,6 @@ class FootLockerTask extends Task {
                 const body = this.getInfoForm(false);
 
                 await this.axiosSession.post('/users/carts/current/set-billing', body, { headers: headers });
-                this.cancelTask();
             } catch (error) {
                 this.cancelTask();
                 await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
@@ -216,7 +211,6 @@ class FootLockerTask extends Task {
                 await this.axiosSession.post('/v2/users/orders', body, {
                     headers: headers,
                 });
-                this.cancelTask();
                 this.emit('status', { status: msgs.CHECKOUT_SUCCESS_MESSAGE, level: 'success' });
             } catch (error) {
                 this.cancelTask();
@@ -264,12 +258,32 @@ class FootLockerTask extends Task {
 
     async emitStatus(message, level) {
         this.emit(TASK_STATUS, { status: message, level: level });
-        await this.waitError(this.retryDelay);
+        const wait = this.waitError(this.retryDelay);
+        this.cancelTimeout = wait.cancel;
+        // this is is promise not a function
+        return wait.promise;
     }
 
-    async waitError(customDelay = undefined) {
-        let delay = customDelay ? customDelay : 300;
-        return new Promise((r) => setTimeout(r, delay));
+    // This func will return one promise that will act as a sleep for the error message
+    // and a cancel sleep so we dont wait the whole retry delay when we cancel our task during an error
+    waitError(customDelay = undefined) {
+        var timeout, promise, cancel;
+
+        promise = new Promise((resolve, reject) => {
+            timeout = setTimeout(() => {
+                resolve('Wait on error done');
+            }, customDelay);
+
+            cancel = () => {
+                clearTimeout(timeout);
+                reject(CANCEL_ERROR);
+            };
+        });
+
+        return {
+            promise: promise,
+            cancel: cancel,
+        };
     }
 
     async waitForCaptcha() {

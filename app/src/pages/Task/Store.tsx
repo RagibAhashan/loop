@@ -1,12 +1,14 @@
 import { Button, Col, Row, Select, Empty } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { FixedSizeList } from 'react-window';
-import { NOTIFY_STOP_TASK, NOTIFY_EDIT_TASK, CAPTHA_WINDOW_CLOSED } from '../../common/Constants';
-import { TaskData } from '../../interfaces/TaskInterfaces';
+import { NOTIFY_STOP_TASK, NOTIFY_EDIT_TASK, CAPTHA_WINDOW_CLOSED, NOTIFY_CAPTCHA, NOTIFY_START_TASK } from '../../common/Constants';
+import { StartTaskData, TaskData } from '../../interfaces/TaskInterfaces';
 import Bot from './Bot';
 import NewTaskModal from './newTaskModal';
 import EditTaskModal from './EditTaskModal';
-import { TaskService } from '../../services/TaskService';
+import { taskService } from '../../services/TaskService';
+import Captcha from '../../components/Captcha/Captcha';
+import { ICaptcha } from '../../components/Captcha/CaptchaFrame';
 const { ipcRenderer } = window.require('electron');
 const { v4: uuid } = require('uuid');
 const { Option } = Select;
@@ -56,12 +58,22 @@ const Store = (props: any) => {
             setCaptchaWinOpened(false);
         });
         getTasks();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-
+        gatherCaptcha();
         return () => {
             ipcRenderer.removeAllListeners(CAPTHA_WINDOW_CLOSED);
+            ipcRenderer.removeAllListeners(storeName + NOTIFY_CAPTCHA);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const gatherCaptcha = () => {
+        if (!captchaWinOpened) {
+            ipcRenderer.on(storeName + NOTIFY_CAPTCHA, (event, captcha: ICaptcha) => {
+                console.log('got captchas yo');
+                taskService.saveCaptcha(captcha);
+            });
+        }
+    };
 
     const deleteBot = (uuid: string) => {
         localStorage.removeItem(uuid);
@@ -78,6 +90,12 @@ const Store = (props: any) => {
         });
 
         ipcRenderer.send(NOTIFY_STOP_TASK, uuid);
+    };
+
+    const startTask = (uuid: string, taskData: StartTaskData) => {
+        const deviceId = localStorage.getItem('deviceId');
+        const { productSKU, profileData, proxyData, sizes, retryDelay } = taskData;
+        ipcRenderer.send(NOTIFY_START_TASK, uuid, storeName, { productSKU, profileData, proxyData, sizes, retryDelay, deviceId });
     };
 
     const openCaptcha = async () => {
@@ -181,7 +199,17 @@ const Store = (props: any) => {
     const renderJobs = (ele: any) => {
         const { index, style } = ele;
 
-        return <Bot key={jobs[index].uuid} taskData={jobs[index]} deleteBot={deleteBot} editBot={editBot} storeName={storeName} style={style} />;
+        return (
+            <Bot
+                key={jobs[index].uuid}
+                taskData={jobs[index]}
+                deleteBot={deleteBot}
+                editBot={editBot}
+                startTask={startTask}
+                storeName={storeName}
+                style={style}
+            />
+        );
     };
 
     const showTasks = () => {
@@ -201,7 +229,7 @@ const Store = (props: any) => {
 
     const startAllTasks = () => {
         setJobsRunning(true);
-        TaskService.notify();
+        taskService.notify();
     };
 
     return (

@@ -1,3 +1,5 @@
+import { Proxy } from './OtherInterfaces';
+
 export interface CreditCard {
     number: string;
     expiryMonth: string;
@@ -38,4 +40,12 @@ export interface TaskData {
     sizes: string[];
     manualTime: boolean;
     monitorDelay?: number;
+}
+
+export interface StartTaskData {
+    profileData: UserProfile;
+    proxyData: Proxy | undefined;
+    sizes: string[];
+    retryDelay: number;
+    productSKU: string;
 }
