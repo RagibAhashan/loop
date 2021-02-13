@@ -18,6 +18,7 @@ class Task extends EventEmitter {
         this.cancel = false;
         this.cancelTimeout = () => {};
         this.uuid = uuid;
+        this.currentSize = undefined;
     }
     getSessionTokens() {
         throw new Error('Method must be implemented');
@@ -60,7 +61,6 @@ class Task extends EventEmitter {
 
             await this.placeOrder();
         } catch (err) {
-            console.log('got error', err);
             // waitError cancel would reject promise so error could equal to CANCEL_ERROR
             this.emit(TASK_STOPPED);
             // do nothing

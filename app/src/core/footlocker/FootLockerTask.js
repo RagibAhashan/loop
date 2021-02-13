@@ -21,13 +21,11 @@ class FootLockerTask extends Task {
                 this.emit('status', { status: msgs.SESSION_INFO_MESSAGE, level: 'info' });
 
                 if (this.waitingRoom.refresh) {
-                    this.emit('status', { status: msgs.SESSION_QUEUE_MESSAGE, level: 'info' });
-                    await this.waitError(this.waitingRoom.delay).promise;
+                    await this.emitStatus(msgs.SESSION_QUEUE_MESSAGE, 'info', this.waitingRoom.delay);
                 }
 
                 const response = await this.axiosSession.get('/v4/session', { headers: headers });
-                console.log('yoooo got session');
-                this.refresh = false;
+                this.waitingRoom.refresh = false;
                 const cookies = response.headers['set-cookie'].join();
                 this.cookieJar.setFromRaw(cookies, Cookie.JSESSIONID);
 
@@ -59,7 +57,6 @@ class FootLockerTask extends Task {
                 this.emit('status', { status: msgs.CHECKING_SIZE_INFO_MESSAGE, level: 'info' });
 
                 const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
-                console.log(typeof response.data);
                 const sellableUnits = response.data['sellableUnits'];
                 const variantAttributes = response.data['variantAttributes'];
                 const { code: styleCode } = variantAttributes.find((attr) => attr.sku === this.productSKU);
@@ -71,10 +68,14 @@ class FootLockerTask extends Task {
                 for (const size of this.sizes) {
                     for (const unit of inStockUnits) {
                         for (const attr of unit.attributes) {
-                            console.log('currenlty checking size', size);
-                            if (attr.type === 'size' && parseFloat(attr.value) === parseFloat(size)) {
-                                retry = false; // not needed
-                                return attr.id;
+                            this.currentSize = size;
+                            if (attr.type === 'size') {
+                                const currSize = parseFloat(attr.value);
+                                if (currSize && currSize === parseFloat(size)) {
+                                    return attr.id;
+                                } else if (attr.value === size) {
+                                    return attr.id;
+                                }
                             }
                         }
                     }
@@ -93,7 +94,7 @@ class FootLockerTask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
-                this.emit('status', { status: msgs.ADD_CART_INFO_MESSAGE, level: 'info' });
+                this.emit('status', { status: msgs.ADD_CART_INFO_MESSAGE + ` (${this.currentSize})`, level: 'info' });
                 const headers = {
                     cookie: this.cookieJar.getCookie(Cookie.JSESSIONID),
                     'x-fl-productid': this.productCode,
@@ -213,7 +214,6 @@ class FootLockerTask extends Task {
                 this.emit('status', { status: msgs.PLACING_ORDER_INFO_MESSAGE, level: 'info' });
 
                 const headers = this.setHeaders();
-                console.log(this.userProfile);
                 const body = this.getOrderForm(this.userProfile.payment);
 
                 await this.axiosSession.post('/v2/users/orders', body, {
@@ -221,7 +221,6 @@ class FootLockerTask extends Task {
                 });
                 this.emit('status', { status: msgs.CHECKOUT_SUCCESS_MESSAGE, level: 'success' });
             } catch (error) {
-                console.log(error);
                 this.cancelTask();
                 await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
                 retry = true;
@@ -265,9 +264,9 @@ class FootLockerTask extends Task {
         if (this.cancel) throw new Error(CANCEL_ERROR);
     }
 
-    async emitStatus(message, level) {
+    async emitStatus(message, level, delay = undefined) {
         this.emit(TASK_STATUS, { status: message, level: level });
-        const wait = this.waitError(this.retryDelay);
+        const wait = this.waitError(delay ? delay : this.retryDelay);
         this.cancelTimeout = wait.cancel;
         // this is is promise not a function
         return wait.promise;

@@ -16,6 +16,7 @@ const taskFactory = require('./core/TaskFactory');
 const taskManager = require('./core/TaskManager');
 const si = require('systeminformation');
 const hash = require('object-hash');
+let win;
 
 const getSystemUniqueID = async () => {
     try {
@@ -28,7 +29,7 @@ const getSystemUniqueID = async () => {
 };
 
 const createWindow = () => {
-    const win = new BrowserWindow({
+    win = new BrowserWindow({
         width: 1700,
         height: 830,
         minWidth: 800,
@@ -75,7 +76,10 @@ const createWindow = () => {
     });
 };
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+    createWindow();
+    console.log('win yoo', win.webContents.send('app-startup'));
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
