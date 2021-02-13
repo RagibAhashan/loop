@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Modal, Button, Tabs, Input, Row, Col, Form, Divider, Select, Checkbox } from 'antd';
 import Cards from 'react-credit-cards';
 import { Option } from 'antd/lib/mentions';
-import { COUNTRY, REGIONS } from '../../common/Regions';
+import { COUNTRY, REGIONS } from '../../../common/Regions';
 
 const { TabPane } = Tabs;
 type IObj = {

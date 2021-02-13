@@ -1,7 +1,7 @@
 import { Button, Select, Tabs, Modal } from 'antd';
 import React, { useState } from 'react';
-import { NOTIFY_STOP_TASK, STORES } from '../../common/Constants';
-import { TaskData } from '../../interfaces/TaskInterfaces';
+import { NOTIFY_STOP_TASK, STORES } from '../../../common/Constants';
+import { TaskData } from '../../../interfaces/TaskInterfaces';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import Store from './Store';
 const { TabPane } = Tabs;

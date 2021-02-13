@@ -1,12 +1,12 @@
 import { Button, Col, Row, Select, Empty } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { FixedSizeList } from 'react-window';
-import { NOTIFY_STOP_TASK, NOTIFY_EDIT_TASK, CAPTHA_WINDOW_CLOSED } from '../../common/Constants';
-import { TaskData } from '../../interfaces/TaskInterfaces';
+import { NOTIFY_STOP_TASK, NOTIFY_EDIT_TASK, CAPTHA_WINDOW_CLOSED } from '../../../common/Constants';
+import { TaskData } from '../../../interfaces/TaskInterfaces';
 import Bot from './Bot';
 import NewTaskModal from './newTaskModal';
 import EditTaskModal from './EditTaskModal';
-import { TaskService } from '../../services/TaskService';
+import { TaskService } from '../../../services/TaskService';
 const { ipcRenderer } = window.require('electron');
 const { v4: uuid } = require('uuid');
 const { Option } = Select;

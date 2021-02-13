@@ -4,10 +4,10 @@ import { Button, Col, Row, Tooltip } from 'antd';
 import { stat } from 'fs';
 import React, { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { Subscription } from 'rxjs';
-import { TASK_STOPPED, NOTIFY_STOP_TASK, NOTIFY_START_TASK } from '../../common/Constants';
-import { Proxies } from '../../interfaces/OtherInterfaces';
-import { TaskData, UserProfile } from '../../interfaces/TaskInterfaces';
-import { TaskService } from '../../services/TaskService';
+import { TASK_STOPPED, NOTIFY_STOP_TASK, NOTIFY_START_TASK } from '../../../common/Constants';
+import { Proxies } from '../../../interfaces/OtherInterfaces';
+import { TaskData, UserProfile } from '../../../interfaces/TaskInterfaces';
+import { TaskService } from '../../../services/TaskService';
 import EditTaskModal from './EditTaskModal';
 const { ipcRenderer } = window.require('electron');
 

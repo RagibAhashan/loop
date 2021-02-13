@@ -7,8 +7,8 @@ import CollectionFormCreate from './Collections/Create';
 import CollectionFormDelete from './Collections/Delete';
 import ProxyRow from './Proxy';
 import { FixedSizeList } from 'react-window';
-import { Proxy } from '../../interfaces/OtherInterfaces';
-import { NOTIFY_STOP_PROXY_TEST, NOTIFY_START_PROXY_TEST, PROXY_TEST_STOPPED, STORES } from '../../common/Constants';
+import { Proxy } from '../../../interfaces/OtherInterfaces';
+import { NOTIFY_STOP_PROXY_TEST, NOTIFY_START_PROXY_TEST, PROXY_TEST_STOPPED, STORES } from '../../../common/Constants';
 const { ipcRenderer } = window.require('electron');
 
 const { Content } = Layout;

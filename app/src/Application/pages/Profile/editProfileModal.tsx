@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Tabs, Input, Row, Col, Form, Divider, Select, Checkbox, Button } from 'antd';
 import Cards from 'react-credit-cards';
-import { UserProfile } from '../../interfaces/TaskInterfaces';
+import { UserProfile } from '../../../interfaces/TaskInterfaces';
 
 const { TabPane } = Tabs;
 

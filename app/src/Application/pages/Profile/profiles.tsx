@@ -1,6 +1,6 @@
 import { Divider, message } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { UserProfile } from '../../interfaces/TaskInterfaces';
+import { UserProfile } from '../../../interfaces/TaskInterfaces';
 import CreateNewProfileModal from './createNewProfile';
 import EditProfileModal from './editProfileModal';
 

@@ -1,8 +1,8 @@
 import { Col, Form, Input, InputNumber, Modal, Row, Select } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useEffect } from 'react';
-import { TaskData } from '../../interfaces/TaskInterfaces';
-import { getProfiles, getProxies, getSizes } from '../../services/TaskService';
+import { TaskData } from '../../../interfaces/TaskInterfaces';
+import { getProfiles, getProxies, getSizes } from '../../../services/TaskService';
 
 const validateMessages = {
     required: 'Required!',

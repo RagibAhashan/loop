@@ -1,6 +1,6 @@
 import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, TimePicker } from 'antd';
 import React, { Fragment, useState } from 'react';
-import { getProfiles, getProxies, getSizes } from '../../services/TaskService';
+import { getProfiles, getProxies, getSizes } from '../../../services/TaskService';
 
 const validateMessages = {
     required: 'Required!',
