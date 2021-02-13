@@ -49,7 +49,9 @@ const SettingsPage = () => {
 
     return (
         <div style={{ backgroundColor: '#212427', height: '100vh', padding: '5%' }}>
-            <Form onFinish={registerAccount}>
+            Client-Server Tests <br />
+            <br />
+            <Form onFinish={registerAccount} style={{ width: '50%' }}>
                 <Form.Item name={'credit_card'} rules={[{ required: true }]}>
                     <Input
                         placeholder={'credit_card'}
@@ -125,13 +127,13 @@ const SettingsPage = () => {
                     </Button>
                 </Form.Item>
             </Form>
-
             <br />
             <br />
             <br />
-
-            <Form onFinish={getID}>
+            <Form onFinish={getID} style={{ width: '50%' }}>
                 <Input placeholder="LICENSE KEY" name={'LICENSE_KEY'} onChange={(e) => setLicenseKey(e.target.value)} />
+                <br />
+                <br />
                 <Form.Item>
                     <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
                         Activate License Key
