@@ -10,11 +10,13 @@ class Task extends EventEmitter {
         this.productSKU = productSKU;
         this.sizes = sizes;
         this.deviceId = deviceId;
+        this.requestInstance = requestInstance;
         this.axiosSession = requestInstance.axios;
         this.cookieJar = new CookieJar();
         this.userProfile = userProfile;
         this.productCode = '';
         this.cancel = false;
+        this.cancelTimeout = () => {};
         this.uuid = uuid;
     }
     getSessionTokens() {
@@ -42,9 +44,11 @@ class Task extends EventEmitter {
     async execute() {
         try {
             this.cancel = false;
-            this.once('stop', async () => {
+            this.on('stop', async () => {
                 this.cancel = true;
                 this.emit(TASK_STATUS, { status: msgs.CANCELING_MESSAGE, level: 'cancel' });
+                this.requestInstance.cancel();
+                this.cancelTimeout();
             });
 
             await this.getSessionTokens();
@@ -56,7 +60,8 @@ class Task extends EventEmitter {
 
             await this.placeOrder();
         } catch (err) {
-            if (err.message === CANCEL_ERROR) {
+            // waitError cancel would reject promise so error could equal to CANCEL_ERROR
+            if (err.message === CANCEL_ERROR || err === CANCEL_ERROR) {
                 this.emit(TASK_STATUS, { status: msgs.CANCELED_MESSAGE, level: 'cancel' });
                 this.emit(TASK_STOPPED);
             }
