@@ -27,11 +27,11 @@ const App = () => {
             <Layout>
                 <Content style={{ height: '100vh', backgroundColor: '#212427' }}>
                     <Switch>
-                        <Route path="/home" exact component={Home} />
-                        <Route path="/profiles" exact component={ProfilePage} />
-                        <Route path="/proxies" exact component={ProxyPage} />
-                        <Route path="/settings" exact component={SettingsPage} />
-                        <Route path="/tasks" exact component={TaskPage} />
+                        <Route path="/app/home" exact component={Home} />
+                        <Route path="/app/profiles" exact component={ProfilePage} />
+                        <Route path="/app/proxies" exact component={ProxyPage} />
+                        <Route path="/app/settings" exact component={SettingsPage} />
+                        <Route path="/app/tasks" exact component={TaskPage} />
                     </Switch>
                 </Content>
             </Layout>
