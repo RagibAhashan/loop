@@ -12,13 +12,15 @@ class FootLockerTask extends Task {
     }
     async getSessionTokens() {
         let retry = false;
+        let headers = {};
         do {
             try {
                 this.cancelTask();
                 retry = false;
                 this.emit('status', { status: msgs.SESSION_INFO_MESSAGE, level: 'info' });
 
-                const response = await this.axiosSession.get('/v4/session');
+                console.log('session', headers);
+                const response = await this.axiosSession.get('/v4/session', { headers: headers });
 
                 const cookies = response.headers['set-cookie'].join();
                 this.cookieJar.setFromRaw(cookies, Cookie.JSESSIONID);
@@ -26,9 +28,18 @@ class FootLockerTask extends Task {
                 const csrf = response.data['data']['csrfToken'];
                 this.cookieJar.set(Cookie.CSRF, csrf);
             } catch (error) {
-                this.cancelTask();
-                await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
-                retry = true;
+                if (error.response.headers['set-cookie'].join().includes('waiting_room')) {
+                    const cookies = error.response.headers['set-cookie'].join();
+
+                    this.cookieJar.setFromRaw(cookies, 'waiting_room');
+                    headers = { cookie: this.cookieJar.getCookie('waiting_room') };
+                    retry = true;
+                    continue;
+                } else {
+                    this.cancelTask();
+                    await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
+                    retry = true;
+                }
             }
         } while (retry);
     }
