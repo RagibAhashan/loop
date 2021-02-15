@@ -1,6 +1,7 @@
 const { FOOTLOCKER_CA_HEADERS, FOOTLOCKER_COM_HEADERS } = require('../core/constants/Constants');
 
 const CAPTCHA_ROUTE = 'captcha';
+const APP_ROUTE = '/app';
 const PROFILE_ROUTE = '/app/profiles';
 const PROXY_ROUTE = '/app/proxies';
 const SETTINGS_ROUTE = '/app/settings';
@@ -30,6 +31,7 @@ const NOTIFY_CAPTCHA_SOLVED = 'captcha-solved';
 const TASK_STOPPED = 'task-stopped';
 const TASK_STOP = 'task-stop';
 const TASK_STATUS = 'status';
+const TASK_SUCCESS = 'checkout';
 
 const CAPTHA_WINDOW_CLOSED = 'captcha-closed';
 
@@ -58,4 +60,6 @@ module.exports = {
     TASKS_ROUTE,
     PROFILE_ROUTE,
     SETTINGS_ROUTE,
+    APP_ROUTE,
+    TASK_SUCCESS,
 };

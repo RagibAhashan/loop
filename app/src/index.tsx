@@ -11,7 +11,7 @@ render(
     <HashRouter>
         <Switch>
             <Route exact path={`/${CAPTCHA_ROUTE}/:store`} component={CaptchaFrame} />
-            <Route exact path="/app/:page" component={App} />
+            <Route path="/app/:page" component={App} />
             <Route path="/" component={License} />
         </Switch>
     </HashRouter>,

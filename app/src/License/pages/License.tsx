@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Button, Input, Row, Col, Form, Spin, Switch, Alert } from 'antd';
-
+import { Button, Form, Input, Spin } from 'antd';
 import axios from 'axios';
+import React, { useState } from 'react';
 import { withRouter } from 'react-router-dom';
+import { PROFILE_ROUTE } from '../../common/Constants';
+
 const { ipcRenderer } = window.require('electron');
 
 const License = withRouter(({ history }) => {
@@ -10,7 +11,8 @@ const License = withRouter(({ history }) => {
     const [email, setEmail] = useState('');
     const [code, setCode] = useState(201);
     const [loading, setLoading] = useState(false);
-    history.push('/app/profiles');
+
+    history.push(PROFILE_ROUTE);
 
     function useForceUpdate() {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -30,7 +32,7 @@ const License = withRouter(({ history }) => {
             });
             console.log(post.status);
             setCode((prev) => (prev = 201));
-            history.push('/app/profiles');
+            history.push(PROFILE_ROUTE);
         } catch (error) {
             if (error.toString() === 'Error: Request failed with status code 409') {
             }
@@ -75,7 +77,7 @@ const License = withRouter(({ history }) => {
                             onChange={(e) => {
                                 setEmail(e.target.value);
                                 if (e.target.value === '-dev') {
-                                    history.push('/app/profiles');
+                                    history.push(PROFILE_ROUTE);
                                 }
                             }}
                             style={code !== 201 ? { color: 'red', borderColor: 'red' } : {}}
