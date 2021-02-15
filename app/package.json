@@ -8,7 +8,6 @@
     "main": "./src/main.prod.js",
     "dependencies": {
         "@craco/craco": "^6.1.1",
-        "@material-ui/core": "^4.11.2",
         "@testing-library/jest-dom": "^5.11.4",
         "@testing-library/react": "^11.1.0",
         "@testing-library/user-event": "^12.1.10",
@@ -22,9 +21,7 @@
         "antd": "^4.12.3",
         "axios": "^0.21.1",
         "craco-less": "^1.17.1",
-        "dexie": "^3.0.3",
         "https-proxy-agent": "^5.0.0",
-        "nedb": "^1.8.0",
         "object-hash": "^2.1.1",
         "react": "^17.0.1",
         "react-credit-cards": "^0.8.3",
@@ -40,7 +37,7 @@
     },
     "scripts": {
         "start:react": "cross-env BROWSER=none craco start",
-        "build": "craco build",
+        "build": "cross-env GENERATE_SOURCEMAP=false craco build",
         "test": "craco test",
         "eject": "craco eject",
         "start:electron": "webpack --config webpack.config.dev.js && cross-env NODE_ENV=prod electron .",

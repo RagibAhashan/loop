@@ -1,9 +1,8 @@
 // import styles from './sidebar.module.css';
 import { DeleteFilled, PlayCircleFilled, StopFilled } from '@ant-design/icons';
-import { green } from '@material-ui/core/colors';
 import { Button, Col, Row } from 'antd';
 import React, { useState } from 'react';
-import { NOTIFY_STOP_PROXY_TEST, NOTIFY_START_PROXY_TEST, PROXY_TEST_STOPPED, STORES } from '../../common/Constants';
+import { NOTIFY_START_PROXY_TEST, NOTIFY_STOP_PROXY_TEST } from '../../common/Constants';
 const { ipcRenderer } = window.require('electron');
 
 const startButton = {
@@ -16,7 +15,7 @@ const disabledStartButton = {
     border: 'none',
     borderRadius: '100%',
     color: 'grey',
-    backgroundColor:'transparent'
+    backgroundColor: 'transparent',
 };
 
 const stopButton = {
@@ -32,14 +31,9 @@ const deleteButton = {
 };
 
 const ProxyRow = (props: any) => {
-    const {
-        proxy,
-        style,
-        currentTab,
-        store
-    } = props;
+    const { proxy, style, currentTab, store } = props;
 
-    const [level, setLevel] = useState('idle')
+    const [level, setLevel] = useState('idle');
 
     const statusColor = (level: string) => {
         switch (level) {
@@ -71,10 +65,10 @@ const ProxyRow = (props: any) => {
         ) : (
             <Button
                 onClick={() => {
-                    testIndividual(proxy)
+                    testIndividual(proxy);
                 }}
                 disabled={store === undefined}
-                style={store === undefined ? disabledStartButton:startButton}
+                style={store === undefined ? disabledStartButton : startButton}
                 icon={<PlayCircleFilled />}
                 size="small"
             />
@@ -82,30 +76,32 @@ const ProxyRow = (props: any) => {
     };
 
     const testIndividual = (proxy: any) => {
-        const proxyToTest = proxy.ip + ":" + proxy.port;
-        const credential = proxy.username + ":" + proxy.password;
+        const proxyToTest = proxy.ip + ':' + proxy.port;
+        const credential = proxy.username + ':' + proxy.password;
         props.testIndividual(proxyToTest, currentTab.name);
         ipcRenderer.send(NOTIFY_START_PROXY_TEST, currentTab.name, proxyToTest, credential, store);
-    }
+    };
 
     const stopTest = () => {
-        const proxyToStop = proxy.ip + ":" + proxy.port;
-        const credential = proxy.username + ":" + proxy.password;
-        props.stopTest(proxyToStop, currentTab.name)
+        const proxyToStop = proxy.ip + ':' + proxy.port;
+        const credential = proxy.username + ':' + proxy.password;
+        props.stopTest(proxyToStop, currentTab.name);
         ipcRenderer.send(NOTIFY_STOP_PROXY_TEST, currentTab.name, proxyToStop, credential, store);
-    }
+    };
 
     const getStatus = (store: any) => {
-        if(store === undefined) {return 'Pick a store'}
-        switch (store) {
-            case "FootlockerCA":
-                return proxy.status.FootlockerCA
-            case "FootlockerUS":
-                return proxy.status.FootlockerUS
-            default:
-                return 'lol'
+        if (store === undefined) {
+            return 'Pick a store';
         }
-    }
+        switch (store) {
+            case 'FootlockerCA':
+                return proxy.status.FootlockerCA;
+            case 'FootlockerUS':
+                return proxy.status.FootlockerUS;
+            default:
+                return 'lol';
+        }
+    };
 
     return (
         <Row
@@ -124,7 +120,7 @@ const ProxyRow = (props: any) => {
             </Col>
 
             <Col span={4}>
-                <div>{ proxy.port}</div>
+                <div>{proxy.port}</div>
             </Col>
 
             <Col span={4}>
@@ -132,7 +128,7 @@ const ProxyRow = (props: any) => {
             </Col>
 
             <Col span={4} style={{ padding: 10 }}>
-                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{proxy.password}</div>
+                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{proxy.password}</div>
             </Col>
 
             <Col span={4}>
@@ -140,7 +136,7 @@ const ProxyRow = (props: any) => {
                     <svg height="6" width="6">
                         <circle cx="3" cy="3" r="3" fill={statusColor(getStatus(store))} />
                     </svg>
-                    <span style={{ color: statusColor(getStatus(store)), fontWeight: 500, marginLeft: 10 }}>{ getStatus(store) }</span>
+                    <span style={{ color: statusColor(getStatus(store)), fontWeight: 500, marginLeft: 10 }}>{getStatus(store)}</span>
                 </div>
             </Col>
 
