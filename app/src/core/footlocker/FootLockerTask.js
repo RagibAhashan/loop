@@ -1,7 +1,7 @@
 const { TASK_STATUS, NOTIFY_CAPTCHA_SOLVED, TASK_SUCCESS } = require('../../common/Constants');
 const msgs = require('../constants/Constants');
 const { Cookie, Headers } = require('../constants/Cookies');
-const { ERRORS_SHIPPING, ERRORS_PAYMENT } = require('../constants/FootLocker');
+const { ERRORS_SHIPPING, ERRORS_PAYMENT, ERRORS_CART } = require('../constants/FootLocker');
 const { FLCInfoForm, FLCOrderForm } = require('../interface/FootLockerCA');
 const { Task, CANCEL_ERROR } = require('../Task');
 
@@ -34,20 +34,21 @@ class FootLockerTask extends Task {
                 this.cookieJar.set(Cookie.CSRF, csrf);
             } catch (error) {
                 this.cancelTask();
-                // If we get a queue page
-                if (
-                    error.response &&
-                    error.response.headers['set-cookie'] &&
-                    error.response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)
-                ) {
-                    const cookies = error.response.headers[Headers.SetCookie].join();
-                    const refreshHeader = error.response.headers[Headers.Refresh];
-                    this.cookieJar.setFromRaw(cookies, Cookie.WAITING_ROOM);
-                    headers = { cookie: this.cookieJar.getCookie(Cookie.WAITING_ROOM) };
+                const response = error.response;
+                if (response) {
+                    // If we get a queue page
+                    if (response.headers['set-cookie'] && response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)) {
+                        const cookies = error.response.headers[Headers.SetCookie].join();
+                        const refreshHeader = error.response.headers[Headers.Refresh];
+                        this.cookieJar.setFromRaw(cookies, Cookie.WAITING_ROOM);
+                        headers = { cookie: this.cookieJar.getCookie(Cookie.WAITING_ROOM) };
 
-                    this.waitingRoom = { refresh: true, delay: this.cookieJar.extractRefresh(refreshHeader) };
-                } else {
+                        this.waitingRoom = { refresh: true, delay: this.cookieJar.extractRefresh(refreshHeader) };
+                    }
+                } else if (error.request) {
                     await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
+                } else {
+                    console.log('SESSION OTHER ERROR', error);
                 }
                 retry = true;
             }
@@ -88,7 +89,15 @@ class FootLockerTask extends Task {
                 await this.emitStatus(msgs.CHECKING_SIZE_RETRY_MESSAGE, 'error');
             } catch (error) {
                 this.cancelTask();
-                await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
+                const response = error.response;
+                if (response) {
+                    console.log('checking stock error response', response);
+                    await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
+                } else if (error.request) {
+                    await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
+                } else {
+                    console.log('CHECKING STOCK OTHER ERROR', error);
+                }
                 retry = true;
             }
         } while (retry);
@@ -122,28 +131,20 @@ class FootLockerTask extends Task {
                 this.cookieJar.setFromRaw(cookies, Cookie.CART_GUID);
             } catch (err) {
                 this.cancelTask();
-                if (err.response && err.response.data['errors'] && err.response.data['errors']['type'] === 'ProductLowStockException') {
-                    await this.emitStatus(msgs.CHECKING_SIZE_RETRY_MESSAGE, 'error');
-                    this.productCode = await this.getProductCode();
-                } else if (err.response.data['url']) {
-                    this.emit(TASK_STATUS, { status: msgs.WAIT_CAPTCHA_MESSAGE, level: 'info' });
-
-                    const cookies = err.response.headers['set-cookie'].join();
-                    const capDatadome = this.cookieJar.extract(cookies, Cookie.DATADOME);
-                    const captcha_url = `${err.response.data['url']}&cid=${capDatadome}`;
-
-                    this.emit('captcha', {
-                        uuid: this.uuid,
-                        url: captcha_url,
-                    });
-
-                    const waitCap = this.waitForCaptcha();
-                    this.cancelTimeout = waitCap.cancel;
-
-                    const rawDatadome = await waitCap.promise;
-
-                    this.cookieJar.setFromRaw(rawDatadome, Cookie.DATADOME);
+                const response = err.response;
+                if (response) {
+                    const oosError = response.data.errors ? ERRORS_CART[response.data.errors[0].code] : undefined;
+                    if (oosError) {
+                        await this.emitStatus(msgs.CHECKING_SIZE_RETRY_MESSAGE, 'error');
+                        this.productCode = await this.getProductCode();
+                    } else if (response.data['url']) {
+                        await this.dispatchCaptcha(response);
+                    }
+                } else if (err.request) {
+                    console.log('ADDING TO CARD error withtou response here', err);
+                    await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error');
                 } else {
+                    console.log('ADDING TO CART OTHER ERROR ', err);
                     await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error');
                 }
 
@@ -164,13 +165,20 @@ class FootLockerTask extends Task {
                 await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.shipping.email}`, {}, { headers: headers });
             } catch (error) {
                 this.cancelTask();
-                console.log('error email', error);
-                const emailError = error.response && error.response.status === 550 && error.response.headers['x-datadome'] === 'protected';
-                if (emailError) {
-                    await this.emitStatus(msgs.EMAIL_PROTECTED_MESSAGE, 'error');
+                const response = error.response;
+
+                if (response) {
+                    if (response.data['url']) {
+                        await this.dispatchCaptcha(response);
+                    } else {
+                        console.log('OTHER  email ERROR IN RESPONSE', error);
+                    }
+                } else if (error.request) {
+                    console.log('EMAIL OTHER ERROR without response here', error);
                 } else {
-                    await this.emitStatus(msgs.EMAIL_ERROR_MESSAGE, 'error');
+                    console.log('EMAIL OTHER ERROR', error);
                 }
+                await this.emitStatus(msgs.EMAIL_ERROR_MESSAGE, 'error');
                 retry = true;
             }
         } while (retry);
@@ -187,16 +195,24 @@ class FootLockerTask extends Task {
                 const headers = this.setHeaders();
 
                 const body = { shippingAddress: this.getInfoForm(true) };
-
                 await this.axiosSession.post('/users/carts/current/addresses/shipping', body, { headers: headers });
             } catch (error) {
-                const terminateError = error.response && error.response.data.errors ? ERRORS_SHIPPING[error.response.data.errors[0].code] : undefined;
-                if (terminateError) {
-                    this.emit(TASK_STATUS, { status: terminateError, level: 'cancel' });
-                    throw new Error(CANCEL_ERROR);
-                }
-
                 this.cancelTask();
+
+                const response = error.response;
+                if (response) {
+                    const dataError = response.data.errors;
+                    if (dataError && ERRORS_SHIPPING[error.response.data.errors[0].code]) {
+                        this.emit(TASK_STATUS, { status: ERRORS_SHIPPING[error.response.data.errors[0].code], level: 'cancel' });
+                        this.cancelTask();
+                    } else if (response.data['url']) {
+                        await this.dispatchCaptcha(response);
+                    }
+                } else if (error.request) {
+                    console.log('SHIPPING ERROR REQUEST', error);
+                } else {
+                    console.log('SHIPPING OTHER ERROR', error);
+                }
 
                 await this.emitStatus(msgs.SHIPPING_ERROR_MESSAGE, 'error');
                 retry = true;
@@ -218,7 +234,17 @@ class FootLockerTask extends Task {
                 await this.axiosSession.post('/users/carts/current/set-billing', body, { headers: headers });
             } catch (error) {
                 this.cancelTask();
-                await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
+                const response = error.response;
+                if (response) {
+                    if (response.data['url']) {
+                        await this.dispatchCaptcha(response);
+                    }
+                } else if (error.request) {
+                    console.log('BILLING OTHER WIHTOUT RESPONSE HERE ERROR', error);
+                } else {
+                    console.log('BILLING OTHER ERROR', error);
+                }
+                await this.emitStatus(msgs.BILLING_ERROR_MESSAGE, 'error');
                 retry = true;
             }
         } while (retry);
@@ -240,15 +266,21 @@ class FootLockerTask extends Task {
                 this.emit(TASK_STATUS, { status: msgs.CHECKOUT_SUCCESS_MESSAGE, level: 'success', checkedSize: this.currentSize });
                 this.emit(TASK_SUCCESS);
             } catch (error) {
-                const terminateError = error.response && error.response.data.errors ? ERRORS_PAYMENT[error.response.data.errors[0].code] : undefined;
-                if (terminateError) {
-                    this.emit(TASK_STATUS, { status: terminateError, level: 'cancel' });
-                    throw new Error(CANCEL_ERROR);
+                this.cancelTask();
+                const response = error.response;
+                if (response) {
+                    const terminateError = response.data.errors ? ERRORS_PAYMENT[error.response.data.errors[0].code] : undefined;
+                    if (terminateError) {
+                        this.emit(TASK_STATUS, { status: terminateError, level: 'cancel' });
+                        throw new Error(CANCEL_ERROR);
+                    }
+                } else if (error.request) {
+                    console.log('OTHER PLACE ORDER without response HERE', error);
+                } else {
+                    console.log('OTHER PLACE ORDER ERROR HERE', error);
                 }
 
-                this.cancelTask();
                 await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
-
                 retry = true;
             }
         } while (retry);
@@ -319,6 +351,26 @@ class FootLockerTask extends Task {
             promise: promise,
             cancel: cancel,
         };
+    }
+
+    async dispatchCaptcha(response) {
+        this.emit(TASK_STATUS, { status: msgs.WAIT_CAPTCHA_MESSAGE, level: 'info' });
+
+        const cookies = response.headers['set-cookie'].join();
+        const capDatadome = this.cookieJar.extract(cookies, Cookie.DATADOME);
+        const captcha_url = `${response.data['url']}&cid=${capDatadome}`;
+
+        this.emit('captcha', {
+            uuid: this.uuid,
+            url: captcha_url,
+        });
+
+        const waitCap = this.waitForCaptcha();
+        this.cancelTimeout = waitCap.cancel;
+
+        const rawDatadome = await waitCap.promise;
+
+        this.cookieJar.setFromRaw(rawDatadome, Cookie.DATADOME);
     }
 
     waitForCaptcha() {

@@ -61,6 +61,7 @@ class Task extends EventEmitter {
 
             await this.placeOrder();
         } catch (err) {
+            console.log('execute error', err);
             // waitError cancel would reject promise so error could equal to CANCEL_ERROR
             this.emit(TASK_STOPPED);
             // do nothing
