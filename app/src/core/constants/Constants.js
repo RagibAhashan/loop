@@ -14,6 +14,7 @@ const SHIPPING_INFO_MESSAGE = 'Setting Shipping Info';
 const SHIPPING_ERROR_MESSAGE = 'Setting Shipping Failed';
 const EMAIL_INFO_MESSAGE = 'Setting Email Info';
 const EMAIL_ERROR_MESSAGE = 'Setting Email Failed';
+const EMAIL_PROTECTED_MESSAGE = 'Email Failed (Datadome Protected)';
 const PLACING_ORDER_INFO_MESSAGE = 'Placing Order';
 const CHECKOUT_FAILED_MESSAGE = 'Checkout Failed';
 const CHECKOUT_SUCCESS_MESSAGE = 'Checkout ! 🚀';
@@ -73,4 +74,5 @@ module.exports = {
     CANCELED_MESSAGE,
     CANCELING_MESSAGE,
     SESSION_QUEUE_MESSAGE,
+    EMAIL_PROTECTED_MESSAGE,
 };

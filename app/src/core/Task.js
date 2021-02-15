@@ -1,7 +1,7 @@
 const EventEmitter = require('events');
 const { CookieJar } = require('./CookieJar');
 const msgs = require('./constants/Constants');
-const { TASK_STOPPED, TASK_STATUS } = require('../common/Constants');
+const { TASK_STOPPED, TASK_STATUS, TASK_SUCCESS, TASK_STOP } = require('../common/Constants');
 
 const CANCEL_ERROR = 'Cancel';
 class Task extends EventEmitter {
@@ -18,7 +18,7 @@ class Task extends EventEmitter {
         this.cancel = false;
         this.cancelTimeout = () => {};
         this.uuid = uuid;
-        this.currentSize = undefined;
+        this.currentSize = '';
     }
     getSessionTokens() {
         throw new Error('Method must be implemented');
@@ -45,7 +45,7 @@ class Task extends EventEmitter {
     async execute() {
         try {
             this.cancel = false;
-            this.once('stop', async () => {
+            this.once(TASK_STOP, async () => {
                 this.cancel = true;
                 this.emit(TASK_STATUS, { status: msgs.CANCELED_MESSAGE, level: 'cancel' });
                 this.requestInstance.cancel();

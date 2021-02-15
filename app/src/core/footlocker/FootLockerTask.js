@@ -1,6 +1,7 @@
-const { TASK_STATUS, NOTIFY_CAPTCHA_SOLVED } = require('../../common/Constants');
+const { TASK_STATUS, NOTIFY_CAPTCHA_SOLVED, TASK_SUCCESS } = require('../../common/Constants');
 const msgs = require('../constants/Constants');
 const { Cookie, Headers } = require('../constants/Cookies');
+const { ERRORS_SHIPPING, ERRORS_PAYMENT } = require('../constants/FootLocker');
 const { FLCInfoForm, FLCOrderForm } = require('../interface/FootLockerCA');
 const { Task, CANCEL_ERROR } = require('../Task');
 
@@ -18,7 +19,7 @@ class FootLockerTask extends Task {
             try {
                 this.cancelTask();
                 retry = false;
-                this.emit('status', { status: msgs.SESSION_INFO_MESSAGE, level: 'info' });
+                this.emit(TASK_STATUS, { status: msgs.SESSION_INFO_MESSAGE, level: 'info' });
 
                 if (this.waitingRoom.refresh) {
                     await this.emitStatus(msgs.SESSION_QUEUE_MESSAGE, 'info', this.waitingRoom.delay);
@@ -34,7 +35,11 @@ class FootLockerTask extends Task {
             } catch (error) {
                 this.cancelTask();
                 // If we get a queue page
-                if (error.response.headers['set-cookie'] && error.response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)) {
+                if (
+                    error.response &&
+                    error.response.headers['set-cookie'] &&
+                    error.response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)
+                ) {
                     const cookies = error.response.headers[Headers.SetCookie].join();
                     const refreshHeader = error.response.headers[Headers.Refresh];
                     this.cookieJar.setFromRaw(cookies, Cookie.WAITING_ROOM);
@@ -54,7 +59,7 @@ class FootLockerTask extends Task {
         do {
             try {
                 this.cancelTask();
-                this.emit('status', { status: msgs.CHECKING_SIZE_INFO_MESSAGE, level: 'info' });
+                this.emit(TASK_STATUS, { status: msgs.CHECKING_SIZE_INFO_MESSAGE, level: 'info' });
 
                 const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
                 const sellableUnits = response.data['sellableUnits'];
@@ -94,7 +99,11 @@ class FootLockerTask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
-                this.emit('status', { status: msgs.ADD_CART_INFO_MESSAGE + ` (${this.currentSize})`, level: 'info' });
+                this.emit(TASK_STATUS, {
+                    status: msgs.ADD_CART_INFO_MESSAGE + ` (${this.currentSize})`,
+                    level: 'info',
+                    checkedSize: this.currentSize,
+                });
                 const headers = {
                     cookie: this.cookieJar.getCookie(Cookie.JSESSIONID),
                     'x-fl-productid': this.productCode,
@@ -103,7 +112,6 @@ class FootLockerTask extends Task {
 
                 if (this.cookieJar.has(Cookie.DATADOME)) {
                     headers.cookie += this.cookieJar.getCookie(Cookie.DATADOME);
-                    console.log('TRYING AGAIN BUT WITH DATADOME', headers.cookie, this.uuid);
                 }
 
                 const body = { productQuantity: '1', productId: this.productCode };
@@ -114,12 +122,11 @@ class FootLockerTask extends Task {
                 this.cookieJar.setFromRaw(cookies, Cookie.CART_GUID);
             } catch (err) {
                 this.cancelTask();
-                // TODO WIP Captcha
-                if (err.response.data['errors'] && err.response.data['errors']['type'] === 'ProductLowStockException') {
+                if (err.response && err.response.data['errors'] && err.response.data['errors']['type'] === 'ProductLowStockException') {
                     await this.emitStatus(msgs.CHECKING_SIZE_RETRY_MESSAGE, 'error');
                     this.productCode = await this.getProductCode();
                 } else if (err.response.data['url']) {
-                    this.emit('status', { status: msgs.WAIT_CAPTCHA_MESSAGE, level: 'info' });
+                    this.emit(TASK_STATUS, { status: msgs.WAIT_CAPTCHA_MESSAGE, level: 'info' });
 
                     const cookies = err.response.headers['set-cookie'].join();
                     const capDatadome = this.cookieJar.extract(cookies, Cookie.DATADOME);
@@ -137,7 +144,6 @@ class FootLockerTask extends Task {
 
                     this.cookieJar.setFromRaw(rawDatadome, Cookie.DATADOME);
                 } else {
-                    // console.log('Add to cart failed', err.response.status);
                     await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error');
                 }
 
@@ -151,14 +157,20 @@ class FootLockerTask extends Task {
             try {
                 this.cancelTask();
                 retry = false;
-                this.emit('status', { status: msgs.EMAIL_INFO_MESSAGE, level: 'info' });
+                this.emit(TASK_STATUS, { status: msgs.EMAIL_INFO_MESSAGE, level: 'info' });
 
                 const headers = this.setHeaders();
 
                 await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.shipping.email}`, {}, { headers: headers });
             } catch (error) {
                 this.cancelTask();
-                await this.emitStatus(msgs.EMAIL_ERROR_MESSAGE, 'error');
+                console.log('error email', error);
+                const emailError = error.response && error.response.status === 550 && error.response.headers['x-datadome'] === 'protected';
+                if (emailError) {
+                    await this.emitStatus(msgs.EMAIL_PROTECTED_MESSAGE, 'error');
+                } else {
+                    await this.emitStatus(msgs.EMAIL_ERROR_MESSAGE, 'error');
+                }
                 retry = true;
             }
         } while (retry);
@@ -170,7 +182,7 @@ class FootLockerTask extends Task {
                 this.cancelTask();
 
                 retry = false;
-                this.emit('status', { status: msgs.SHIPPING_INFO_MESSAGE, level: 'info' });
+                this.emit(TASK_STATUS, { status: msgs.SHIPPING_INFO_MESSAGE, level: 'info' });
 
                 const headers = this.setHeaders();
 
@@ -178,6 +190,12 @@ class FootLockerTask extends Task {
 
                 await this.axiosSession.post('/users/carts/current/addresses/shipping', body, { headers: headers });
             } catch (error) {
+                const terminateError = error.response && error.response.data.errors ? ERRORS_SHIPPING[error.response.data.errors[0].code] : undefined;
+                if (terminateError) {
+                    this.emit(TASK_STATUS, { status: terminateError, level: 'cancel' });
+                    throw new Error(CANCEL_ERROR);
+                }
+
                 this.cancelTask();
 
                 await this.emitStatus(msgs.SHIPPING_ERROR_MESSAGE, 'error');
@@ -191,7 +209,7 @@ class FootLockerTask extends Task {
             try {
                 this.cancelTask();
                 retry = false;
-                this.emit('status', { status: msgs.BILLING_INFO_MESSAGE, level: 'info' });
+                this.emit(TASK_STATUS, { status: msgs.BILLING_INFO_MESSAGE, level: 'info' });
 
                 const headers = this.setHeaders();
 
@@ -211,7 +229,7 @@ class FootLockerTask extends Task {
             try {
                 this.cancelTask();
                 retry = false;
-                this.emit('status', { status: msgs.PLACING_ORDER_INFO_MESSAGE, level: 'info' });
+                this.emit(TASK_STATUS, { status: msgs.PLACING_ORDER_INFO_MESSAGE, level: 'info' });
 
                 const headers = this.setHeaders();
                 const body = this.getOrderForm(this.userProfile.payment);
@@ -219,10 +237,18 @@ class FootLockerTask extends Task {
                 await this.axiosSession.post('/v2/users/orders', body, {
                     headers: headers,
                 });
-                this.emit('status', { status: msgs.CHECKOUT_SUCCESS_MESSAGE, level: 'success' });
+                this.emit(TASK_STATUS, { status: msgs.CHECKOUT_SUCCESS_MESSAGE, level: 'success', checkedSize: this.currentSize });
+                this.emit(TASK_SUCCESS);
             } catch (error) {
+                const terminateError = error.response && error.response.data.errors ? ERRORS_PAYMENT[error.response.data.errors[0].code] : undefined;
+                if (terminateError) {
+                    this.emit(TASK_STATUS, { status: terminateError, level: 'cancel' });
+                    throw new Error(CANCEL_ERROR);
+                }
+
                 this.cancelTask();
                 await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
+
                 retry = true;
             }
         } while (retry);

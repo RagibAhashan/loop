@@ -72,6 +72,10 @@ class TaskService {
         this.captchaQueue.set(captcha.uuid, captcha.url);
     }
 
+    removeCaptcha(uuid: string) {
+        this.captchaQueue.delete(uuid);
+    }
+
     dispatchCaptchas(): ICaptcha[] {
         if (this.captchaQueue.size === 0) return [];
 

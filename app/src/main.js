@@ -10,6 +10,9 @@ const {
     NOTIFY_EDIT_TASK,
     CAPTHA_WINDOW_CLOSED,
     NOTIFY_CAPTCHA_SOLVED,
+    TASK_SUCCESS,
+    TASK_STOP,
+    TASK_STATUS,
 } = require('./common/Constants');
 const captchaWindowManager = require('./core/captcha-window/CaptchaWindowManager');
 const taskFactory = require('./core/TaskFactory');
@@ -32,7 +35,7 @@ const createWindow = () => {
     win = new BrowserWindow({
         width: 1700,
         height: 830,
-        minWidth: 800,
+        minWidth: 960,
         minHeight: 600,
         webPreferences: {
             nodeIntegration: true,
@@ -50,9 +53,15 @@ const createWindow = () => {
     win.setAutoHideMenuBar(true);
 
     ipcMain.on('new-window', (event, store) => {
+        const capWin = captchaWindowManager.getWindow(store);
+        if (capWin) {
+            console.log('showing');
+            capWin.show();
+            return;
+        }
         const newWin = new BrowserWindow({
             parent: win,
-            width: 690,
+            width: 700,
             height: 600,
             fullscreenable: false,
             webPreferences: {
@@ -61,6 +70,8 @@ const createWindow = () => {
             // resizable: false,
         });
 
+        newWin.setMenuBarVisibility(false);
+        newWin.setAutoHideMenuBar(true);
         captchaWindowManager.register(store, newWin);
 
         newWin.loadURL(
@@ -68,10 +79,11 @@ const createWindow = () => {
                 ? `http://localhost:3000/#/${CAPTCHA_ROUTE}/${store}`
                 : `file://${__dirname}/../build/index.html#${CAPTCHA_ROUTE}/${store}`,
         );
-        newWin.on('close', () => {
+        newWin.on('close', (e) => {
+            e.preventDefault();
             console.log('win got closed');
             event.reply(CAPTHA_WINDOW_CLOSED);
-            newWin.destroy();
+            newWin.hide();
         });
     });
 };
@@ -114,7 +126,7 @@ ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
             taskData.proxyData,
         );
 
-        newTask.on('status', (message) => {
+        newTask.on(TASK_STATUS, (message) => {
             event.reply(uuid, message);
         });
 
@@ -124,7 +136,12 @@ ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
 
         newTask.on(NOTIFY_CAPTCHA, (captcha) => {
             const capWin = captchaWindowManager.getWindow(storeName);
+            event.reply(storeName + NOTIFY_CAPTCHA, captcha);
             if (capWin) capWin.webContents.send(storeName + NOTIFY_CAPTCHA, captcha);
+        });
+
+        newTask.on(TASK_SUCCESS, () => {
+            event.reply(uuid + TASK_SUCCESS);
         });
 
         newTask.execute();
@@ -135,7 +152,7 @@ ipcMain.on(NOTIFY_STOP_TASK, async (event, uuid) => {
     try {
         const currentTask = taskManager.getTask(uuid);
         if (currentTask) {
-            currentTask.emit('stop');
+            currentTask.emit(TASK_STOP);
         }
     } catch (error) {
         console.log('err', error);

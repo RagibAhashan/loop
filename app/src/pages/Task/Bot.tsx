@@ -1,8 +1,8 @@
 // import styles from './sidebar.module.css';
 import { DeleteFilled, EditFilled, PlayCircleFilled, QuestionCircleOutlined, StopFilled } from '@ant-design/icons';
-import { Button, Col, Popconfirm, Row, Tooltip } from 'antd';
+import { Button, Col, Popconfirm, Row, Tag, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { NOTIFY_START_TASK, NOTIFY_STOP_TASK, TASK_STOPPED } from '../../common/Constants';
+import { NOTIFY_START_TASK, NOTIFY_STOP_TASK, TASK_STOPPED, TASK_SUCCESS } from '../../common/Constants';
 import { Proxies, Proxy } from '../../interfaces/OtherInterfaces';
 import { CreditCard, TaskData, UserProfile } from '../../interfaces/TaskInterfaces';
 import ccEncryptor from '../../services/CreditCardEncryption';
@@ -12,10 +12,11 @@ const { ipcRenderer } = window.require('electron');
 
 interface Status {
     status: string;
-    level: 'error' | 'status' | 'info' | 'idle' | 'cancel';
+    level: 'error' | 'status' | 'info' | 'idle' | 'cancel' | 'success';
     running: boolean;
     lastStatus?: string;
     lastLevel?: string;
+    checkedSize?: string;
 }
 
 const editButton = {
@@ -51,16 +52,17 @@ const statusColor = (level: string) => {
         case 'success':
             return 'green';
         case 'error':
-            return 'red';
+            return '#ff001e';
         case 'cancel':
             return '#f7331e';
     }
 };
 
 const getLastStatus = (uuid: string): Status => {
-    console.log('get last status yo');
     const item = JSON.parse(localStorage.getItem(uuid) as string);
-    return item ? { ...item, running: item.lastLevel === 'cancel' ? false : true } : { lastStatus: 'Idle', lastLevel: 'idle', running: false };
+    return item
+        ? { ...item, running: item.lastLevel === 'cancel' || item.lastLevel === 'success' ? false : true }
+        : { lastStatus: 'Idle', lastLevel: 'idle', running: false };
 };
 
 const Bot = (props: any) => {
@@ -92,17 +94,40 @@ const Bot = (props: any) => {
     const [statusLevel, setStatusLevel] = useState(() => getLastStatus(uuid).lastLevel as string);
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [disabled, setDisabled] = useState(false);
+    const [currentSize, setCurrentSize] = useState<string | undefined>(() => getLastStatus(uuid).checkedSize);
 
     const registerTaskStatusListener = () => {
         ipcRenderer.on(uuid, (event, status: Status) => {
+            console.log(status);
             setStatus(status.status);
             setStatusLevel(status.level);
-            localStorage.setItem(uuid, JSON.stringify({ lastStatus: status.status, lastLevel: status.level }));
+            if (status.checkedSize) setCurrentSize(status.checkedSize as string);
+            if (status.level === 'success') {
+                console.log('here in suces');
+                setRunning(false);
+            }
+            localStorage.setItem(uuid, JSON.stringify({ lastStatus: status.status, lastLevel: status.level, checkedSize: status.checkedSize }));
         });
 
         ipcRenderer.on(uuid + TASK_STOPPED, () => {
+            taskService.removeCaptcha(uuid);
             setRunning(false);
+            setCurrentSize(undefined);
             setDisabled(false);
+        });
+
+        // Rocket emoji waterfall
+        ipcRenderer.once(uuid + TASK_SUCCESS, () => {
+            console.log('TASK SUCCESS');
+
+            setRunning(false);
+            const myNotification = new Notification('Checkout !', {
+                body: `Checked Out Size ${currentSize} ! 🚀🌑`,
+            });
+
+            setTimeout(() => {
+                myNotification.close();
+            }, 2000);
         });
     };
 
@@ -158,6 +183,8 @@ const Bot = (props: any) => {
         return () => {
             ipcRenderer.removeAllListeners(uuid);
             ipcRenderer.removeAllListeners(uuid + TASK_STOPPED);
+            ipcRenderer.removeAllListeners(uuid + TASK_SUCCESS);
+
             notifySub.unsubscribe();
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -224,6 +251,16 @@ const Bot = (props: any) => {
         );
     };
 
+    const renderSize = () => {
+        return currentSize ? (
+            <Tag color="gold">{currentSize}</Tag>
+        ) : (
+            <Tooltip title={sizes.join(', ')} placement="topLeft">
+                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{sizes.join(', ')}</div>
+            </Tooltip>
+        );
+    };
+
     return (
         <>
             <Row
@@ -252,9 +289,7 @@ const Bot = (props: any) => {
                 </Col>
 
                 <Col span={4} style={{ paddingRight: 15 }}>
-                    <Tooltip title={sizes.join(', ')} placement="topLeft">
-                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{sizes.join(', ')}</div>
-                    </Tooltip>
+                    {renderSize()}
                 </Col>
 
                 <Col span={6}>
@@ -269,6 +304,7 @@ const Bot = (props: any) => {
                                 color: statusColor(statusLevel),
                                 fontWeight: 500,
                                 marginLeft: 5,
+                                flex: 1,
                             }}
                         >
                             {status}

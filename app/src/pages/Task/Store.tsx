@@ -57,7 +57,7 @@ const Store = (props: any) => {
             setCaptchaWinOpened(false);
         });
         getTasks();
-        gatherCaptcha();
+        listenCaptcha();
         return () => {
             ipcRenderer.removeAllListeners(CAPTHA_WINDOW_CLOSED);
             ipcRenderer.removeAllListeners(storeName + NOTIFY_CAPTCHA);
@@ -65,12 +65,11 @@ const Store = (props: any) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const gatherCaptcha = () => {
-        console.log('gathering captcha', captchaWinOpened);
+    const listenCaptcha = () => {
         if (!captchaWinOpened) {
             ipcRenderer.on(storeName + NOTIFY_CAPTCHA, (event, captcha: ICaptcha) => {
-                console.log('got captchas yo');
-                taskService.saveCaptcha(captcha);
+                console.log('got captcha');
+                openCaptcha();
             });
         }
     };
