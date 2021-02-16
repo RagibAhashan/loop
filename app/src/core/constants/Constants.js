@@ -8,13 +8,8 @@ const CHECKING_SIZE_RETRY_MESSAGE = 'Out of Stock, retrying';
 const ADD_CART_INFO_MESSAGE = 'Adding to Cart';
 const ADD_CART_ERROR_MESSAGE = 'Adding to Cart Failed';
 const WAIT_CAPTCHA_MESSAGE = 'Waiting on Captcha';
-const BILLING_INFO_MESSAGE = 'Setting Billing Info';
+const BILLING_INFO_MESSAGE = 'Setting Shipping and Billing';
 const BILLING_ERROR_MESSAGE = 'Setting Billing Failed';
-const SHIPPING_INFO_MESSAGE = 'Setting Shipping Info';
-const SHIPPING_ERROR_MESSAGE = 'Setting Shipping Failed';
-const EMAIL_INFO_MESSAGE = 'Setting Email Info';
-const EMAIL_ERROR_MESSAGE = 'Setting Email Failed';
-const EMAIL_PROTECTED_MESSAGE = 'Email Failed (Datadome Protected)';
 const PLACING_ORDER_INFO_MESSAGE = 'Placing Order';
 const CHECKOUT_FAILED_MESSAGE = 'Checkout Failed';
 const CHECKOUT_SUCCESS_MESSAGE = 'Checkout ! 🚀';
@@ -29,7 +24,7 @@ const FOOTLOCKER_CA_HEADERS = {
     'content-type': 'application/json',
     pragma: 'no-cache',
     origin: 'https://www.footlocker.ca',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.3=',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36',
     'sec-fetch-dest': 'empty',
     'sec-fetch-mode': 'cors',
     'sec-fetch-site': 'same-origin',
@@ -62,10 +57,6 @@ module.exports = {
     ADD_CART_ERROR_MESSAGE,
     BILLING_INFO_MESSAGE,
     BILLING_ERROR_MESSAGE,
-    SHIPPING_INFO_MESSAGE,
-    SHIPPING_ERROR_MESSAGE,
-    EMAIL_INFO_MESSAGE,
-    EMAIL_ERROR_MESSAGE,
     PLACING_ORDER_INFO_MESSAGE,
     CHECKOUT_FAILED_MESSAGE,
     CHECKOUT_SUCCESS_MESSAGE,
@@ -74,5 +65,4 @@ module.exports = {
     CANCELED_MESSAGE,
     CANCELING_MESSAGE,
     SESSION_QUEUE_MESSAGE,
-    EMAIL_PROTECTED_MESSAGE,
 };

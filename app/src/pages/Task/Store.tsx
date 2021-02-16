@@ -66,12 +66,20 @@ const Store = (props: any) => {
     }, []);
 
     const listenCaptcha = () => {
-        if (!captchaWinOpened) {
-            ipcRenderer.on(storeName + NOTIFY_CAPTCHA, (event, captcha: ICaptcha) => {
+        ipcRenderer.on(storeName + NOTIFY_CAPTCHA, (event, captcha: ICaptcha) => {
+            if (!captchaWinOpened) {
                 console.log('got captcha');
+                setCaptchaWinOpened(true);
                 openCaptcha();
-            });
-        }
+            }
+            let curr = JSON.parse(localStorage.getItem('currentCaptcha') as string);
+            if (!curr) {
+                curr = [captcha];
+            } else {
+                curr.push(captcha);
+            }
+            localStorage.setItem('currentCaptcha', JSON.stringify(curr));
+        });
     };
 
     const deleteBot = (uuid: string) => {
@@ -92,7 +100,6 @@ const Store = (props: any) => {
     };
 
     const openCaptcha = async () => {
-        setCaptchaWinOpened(true);
         ipcRenderer.send('new-window', storeName);
     };
     const Headers = () => {
@@ -158,6 +165,8 @@ const Store = (props: any) => {
         jobs.forEach((job) => {
             ipcRenderer.send(NOTIFY_STOP_TASK, job.uuid);
         });
+
+        localStorage.removeItem('currentCaptcha');
     };
 
     const editBot = (newValues: TaskData, uuid: string) => {

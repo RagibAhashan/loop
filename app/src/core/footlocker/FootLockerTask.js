@@ -48,7 +48,7 @@ class FootLockerTask extends Task {
                 } else if (error.request) {
                     await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
                 } else {
-                    console.log('SESSION OTHER ERROR', error);
+                    // console.log('SESSION OTHER ERROR', error);
                 }
                 retry = true;
             }
@@ -91,12 +91,14 @@ class FootLockerTask extends Task {
                 this.cancelTask();
                 const response = error.response;
                 if (response) {
-                    console.log('checking stock error response', response);
+                    // console.log('checking stock error response', response);
                     await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
                 } else if (error.request) {
+                    // console.log('CHECKING STOCK ERROR without request wtf', error);
+
                     await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
                 } else {
-                    console.log('CHECKING STOCK OTHER ERROR', error);
+                    // console.log('CHECKING STOCK OTHER ERROR', error);
                 }
                 retry = true;
             }
@@ -129,6 +131,7 @@ class FootLockerTask extends Task {
 
                 const cookies = response.headers['set-cookie'].join();
                 this.cookieJar.setFromRaw(cookies, Cookie.CART_GUID);
+                this.cookieJar.setFromRaw(cookies, Cookie.DATADOME);
             } catch (err) {
                 this.cancelTask();
                 const response = err.response;
@@ -141,80 +144,13 @@ class FootLockerTask extends Task {
                         await this.dispatchCaptcha(response);
                     }
                 } else if (err.request) {
-                    console.log('ADDING TO CARD error withtou response here', err);
+                    // console.log('ADDING TO CARD error withtou response here', err);
                     await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error');
                 } else {
-                    console.log('ADDING TO CART OTHER ERROR ', err);
+                    // console.log('ADDING TO CART OTHER ERROR ', err);
                     await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error');
                 }
 
-                retry = true;
-            }
-        } while (retry);
-    }
-    async setEmail() {
-        let retry = false;
-        do {
-            try {
-                this.cancelTask();
-                retry = false;
-                this.emit(TASK_STATUS, { status: msgs.EMAIL_INFO_MESSAGE, level: 'info' });
-
-                const headers = this.setHeaders();
-
-                await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.shipping.email}`, {}, { headers: headers });
-            } catch (error) {
-                this.cancelTask();
-                const response = error.response;
-
-                if (response) {
-                    if (response.data['url']) {
-                        await this.dispatchCaptcha(response);
-                    } else {
-                        console.log('OTHER  email ERROR IN RESPONSE', error);
-                    }
-                } else if (error.request) {
-                    console.log('EMAIL OTHER ERROR without response here', error);
-                } else {
-                    console.log('EMAIL OTHER ERROR', error);
-                }
-                await this.emitStatus(msgs.EMAIL_ERROR_MESSAGE, 'error');
-                retry = true;
-            }
-        } while (retry);
-    }
-    async setShipping() {
-        let retry = false;
-        do {
-            try {
-                this.cancelTask();
-
-                retry = false;
-                this.emit(TASK_STATUS, { status: msgs.SHIPPING_INFO_MESSAGE, level: 'info' });
-
-                const headers = this.setHeaders();
-
-                const body = { shippingAddress: this.getInfoForm(true) };
-                await this.axiosSession.post('/users/carts/current/addresses/shipping', body, { headers: headers });
-            } catch (error) {
-                this.cancelTask();
-
-                const response = error.response;
-                if (response) {
-                    const dataError = response.data.errors;
-                    if (dataError && ERRORS_SHIPPING[error.response.data.errors[0].code]) {
-                        this.emit(TASK_STATUS, { status: ERRORS_SHIPPING[error.response.data.errors[0].code], level: 'cancel' });
-                        this.cancelTask();
-                    } else if (response.data['url']) {
-                        await this.dispatchCaptcha(response);
-                    }
-                } else if (error.request) {
-                    console.log('SHIPPING ERROR REQUEST', error);
-                } else {
-                    console.log('SHIPPING OTHER ERROR', error);
-                }
-
-                await this.emitStatus(msgs.SHIPPING_ERROR_MESSAGE, 'error');
                 retry = true;
             }
         } while (retry);
@@ -229,26 +165,36 @@ class FootLockerTask extends Task {
 
                 const headers = this.setHeaders();
 
-                const body = this.getInfoForm(false);
+                await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.shipping.email}`, {}, { headers: headers });
 
-                await this.axiosSession.post('/users/carts/current/set-billing', body, { headers: headers });
+                const userShipping = { shippingAddress: this.getInfoForm(true) };
+                await this.axiosSession.post('/users/carts/current/addresses/shipping', userShipping, { headers: headers });
+
+                const userBilling = this.getInfoForm(false);
+                await this.axiosSession.post('/users/carts/current/set-billing', userBilling, { headers: headers });
             } catch (error) {
                 this.cancelTask();
                 const response = error.response;
                 if (response) {
-                    if (response.data['url']) {
+                    const dataError = response.data.errors;
+                    // console.log('BILLING ERRORS', dataError, response);
+                    if (dataError && ERRORS_SHIPPING[error.response.data.errors[0].code]) {
+                        this.emit(TASK_STATUS, { status: ERRORS_SHIPPING[error.response.data.errors[0].code], level: 'cancel' });
+                        this.cancelTask();
+                    } else if (response.data['url']) {
                         await this.dispatchCaptcha(response);
                     }
                 } else if (error.request) {
-                    console.log('BILLING OTHER WIHTOUT RESPONSE HERE ERROR', error);
+                    // console.log('BILLING OTHER WIHTOUT RESPONSE HERE ERROR', error);
                 } else {
-                    console.log('BILLING OTHER ERROR', error);
+                    // console.log('BILLING OTHER ERROR', error);
                 }
                 await this.emitStatus(msgs.BILLING_ERROR_MESSAGE, 'error');
                 retry = true;
             }
         } while (retry);
     }
+
     async placeOrder() {
         let retry = false;
         do {
@@ -275,9 +221,9 @@ class FootLockerTask extends Task {
                         throw new Error(CANCEL_ERROR);
                     }
                 } else if (error.request) {
-                    console.log('OTHER PLACE ORDER without response HERE', error);
+                    // console.log('OTHER PLACE ORDER without response HERE', error);
                 } else {
-                    console.log('OTHER PLACE ORDER ERROR HERE', error);
+                    // console.log('OTHER PLACE ORDER ERROR HERE', error);
                 }
 
                 await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
@@ -303,13 +249,9 @@ class FootLockerTask extends Task {
 
     setHeaders() {
         const headers = {
-            cookie: this.cookieJar.getCookie(Cookie.JSESSIONID, Cookie.CART_GUID),
+            cookie: this.cookieJar.getCookie(Cookie.JSESSIONID, Cookie.CART_GUID, Cookie.DATADOME),
             'x-csrf-token': this.cookieJar.getValue(Cookie.CSRF),
         };
-
-        if (this.cookieJar.has(Cookie.DATADOME)) {
-            headers.cookie += this.cookieJar.getCookie(Cookie.DATADOME);
-        }
 
         return headers;
     }

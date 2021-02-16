@@ -52,10 +52,10 @@ const createWindow = () => {
     win.setMenuBarVisibility(false);
     win.setAutoHideMenuBar(true);
 
-    ipcMain.on('new-window', (event, store) => {
+    ipcMain.on('new-window', (event, store, captcha) => {
         const capWin = captchaWindowManager.getWindow(store);
         if (capWin) {
-            console.log('showing');
+            // on open send the captcha
             capWin.show();
             return;
         }
@@ -113,6 +113,7 @@ if (process.platform === 'darwin') {
 ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
     const task = taskManager.getTask(uuid);
     if (task) {
+        task.updateProxy(taskData.proxyData);
         task.execute();
     } else {
         const newTask = taskFactory.createFootlockerTask(

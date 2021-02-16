@@ -55,9 +55,9 @@ export const getSizes = () => {
 
 class TaskService {
     notifyStart = new Subject<void>();
-    captchaQueue: Map<string, string>;
+    captchaQueue: ICaptcha[];
     constructor() {
-        this.captchaQueue = new Map();
+        this.captchaQueue = [];
     }
 
     notify(): void {
@@ -69,19 +69,18 @@ class TaskService {
     }
 
     saveCaptcha(captcha: ICaptcha) {
-        this.captchaQueue.set(captcha.uuid, captcha.url);
+        this.captchaQueue.push(captcha);
     }
 
     removeCaptcha(uuid: string) {
-        this.captchaQueue.delete(uuid);
+        const index = this.captchaQueue.findIndex((cap) => cap.uuid === uuid);
+        if (index > -1) {
+            this.captchaQueue.splice(index, 1);
+        }
     }
 
-    dispatchCaptchas(): ICaptcha[] {
-        if (this.captchaQueue.size === 0) return [];
-
-        const capArr = Array.from(this.captchaQueue, ([uuid, url]) => ({ uuid, url }));
-        this.captchaQueue.clear();
-        return capArr;
+    dispatchCaptcha(): ICaptcha | undefined {
+        return this.captchaQueue.shift();
     }
 }
 

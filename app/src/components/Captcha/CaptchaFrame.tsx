@@ -1,7 +1,7 @@
+import { Spin } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { NOTIFY_CAPTCHA } from '../../common/Constants';
-import { taskService } from '../../services/TaskService';
+import { NOTIFY_CAPTCHA, NOTIFY_CAPTCHA_SOLVED } from '../../common/Constants';
 import Captcha from './Captcha';
 const { ipcRenderer } = window.require('electron');
 
@@ -21,40 +21,67 @@ const captchaContainer = {
     height: '100%',
     display: 'flex',
     flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
 } as React.CSSProperties;
+
 const CaptchaFrame = () => {
-    const { store } = useParams() as any;
-    const [captchaQ, setCaptchaQ] = useState<ICaptcha[]>([]);
+    const dispatchCaptcha = (): ICaptcha | undefined => {
+        console.log('dispatching');
+        const currentCaptcha = JSON.parse(localStorage.getItem('currentCaptcha') as string) as ICaptcha[];
+        if (!currentCaptcha) return undefined;
 
-    const removeFromQueue = (captchaToRemove: ICaptcha) => {
-        setCaptchaQ((prev) => prev.filter((captcha) => captcha.uuid !== captchaToRemove.uuid));
+        return currentCaptcha.shift();
     };
-    useEffect(() => {
-        ipcRenderer.on(store + NOTIFY_CAPTCHA, (e, captcha: ICaptcha) => {
-            setCaptchaQ((prevQ) => [...prevQ, captcha]);
-        });
 
-        fetchCaptchas();
+    const { store } = useParams() as any;
+    const [currentCaptcha, setCurrentCaptcha] = useState<ICaptcha | undefined>(() => dispatchCaptcha());
+
+    useEffect(() => {
+        console.log('init use effect');
+        ipcRenderer.on(store + NOTIFY_CAPTCHA, (event, captcha: ICaptcha) => {
+            console.log('got captcha in window', currentCaptcha);
+
+            if (!currentCaptcha) {
+                console.log('setting');
+
+                // console.log('received cap');
+                setCurrentCaptcha(captcha);
+            }
+        });
 
         return () => {
             ipcRenderer.removeAllListeners(store + NOTIFY_CAPTCHA);
+            ipcRenderer.removeAllListeners(currentCaptcha?.uuid + NOTIFY_CAPTCHA);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const fetchCaptchas = () => {
-        const capArray = taskService.dispatchCaptchas();
+    const solved = (datadome: string) => {
+        console.log('solved that bitch');
+        // for the moment just clear the queue, we are assuming all captchas are solved from only one
+        setCurrentCaptcha(undefined);
+        const captchas = JSON.parse(localStorage.getItem('currentCaptcha') as string) as ICaptcha[];
+        captchas?.forEach((captcha) => ipcRenderer.send(NOTIFY_CAPTCHA_SOLVED, captcha.uuid, datadome));
+        localStorage.removeItem('currentCaptcha');
+    };
 
-        setCaptchaQ((prevQ) => [...prevQ, ...capArray]);
+    const renderCaptcha = () => {
+        console.log('rerendering', currentCaptcha);
+        return currentCaptcha ? (
+            <Captcha key={currentCaptcha.uuid} captcha={currentCaptcha} solved={solved}></Captcha>
+        ) : (
+            <div>
+                <Spin />
+            </div>
+        );
+        // const capArray = taskService.dispatchCaptchas();
+        // setCaptchaQ((prevQ) => [...prevQ, ...capArray]);
     };
 
     return (
         <div key={store} style={containerStyle}>
-            <div style={captchaContainer}>
-                {captchaQ.map((captcha) => (
-                    <Captcha key={captcha.uuid} captcha={captcha} removeMe={removeFromQueue} />
-                ))}
-            </div>
+            <div style={captchaContainer}>{renderCaptcha()}</div>
         </div>
     );
 };

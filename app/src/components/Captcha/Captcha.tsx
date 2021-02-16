@@ -4,15 +4,15 @@ import { ICaptcha } from './CaptchaFrame';
 const { ipcRenderer } = window.require('electron');
 
 const Captcha = (props: any) => {
-    const { captcha, removeMe }: { captcha: ICaptcha; removeMe: any } = props;
+    const { captcha, solved }: { captcha: ICaptcha; solved: any } = props;
 
     useEffect(() => {
         window.addEventListener(
             'message',
             (event) => {
-                removeMe(captcha);
                 const datadome = JSON.parse(event.data).cookie;
                 ipcRenderer.send(NOTIFY_CAPTCHA_SOLVED, captcha.uuid, datadome);
+                solved(datadome);
             },
             false,
         );

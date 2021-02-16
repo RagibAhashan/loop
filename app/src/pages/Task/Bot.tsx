@@ -167,7 +167,10 @@ const Bot = (props: any) => {
         profileData.payment = ccEncryptor.encrypt(profileData?.payment as CreditCard);
 
         let proxyData = undefined;
-        if (proxySet) proxyData = assignProxy();
+        if (proxySet) {
+            proxyData = assignProxy();
+            console.log('proxy assigned', proxyData);
+        }
         const deviceId = localStorage.getItem('deviceId');
         ipcRenderer.send(NOTIFY_START_TASK, uuid, storeName, { productSKU, profileData, proxyData, sizes, retryDelay, deviceId });
     };

@@ -1,4 +1,6 @@
 const axios = require('axios').default;
+const { Proxy } = require('./Proxy');
+
 const CancelToken = axios.CancelToken;
 class RequestInstance {
     constructor(baseURL, params = undefined, headers = undefined, proxy = undefined) {
@@ -17,6 +19,20 @@ class RequestInstance {
         //Get another source token
         this.source = CancelToken.source();
         this.axios.defaults.cancelToken = this.source.token;
+    }
+
+    updateProxy(proxyData) {
+        console.log('updateing proxy with', proxyData);
+        if (!proxyData) {
+            this.axios.defaults.httpsAgent = undefined;
+        } else {
+            const newProxy = new Proxy(proxyData.proxy, proxyData.credential);
+            this.axios.defaults.httpsAgent = newProxy.getAgent();
+        }
+    }
+
+    get proxy() {
+        return this.axios.defaults.httpsAgent;
     }
 }
 
