@@ -1,12 +1,31 @@
-import { NOTIFY_STOP_PROXY_TEST, NOTIFY_START_PROXY_TEST, PROXY_TEST_STOPPED, STORES } from '../../common/Constants';
-const { ipcRenderer } = window.require('electron');
-
-export const testIndividual = (record: any, tabName: string, store: any) => {
-    const setName = tabName;
-    const proxy = record.ip + ':' + record.port;
-    const credential = record.username + ':' + record.password;
-
-    const testStatus = 'Testing..';
-    
-    ipcRenderer.send(NOTIFY_START_PROXY_TEST, setName, proxy, credential, store);
+export const testIndividual = (proxyToTest: any, proxiesArray: Array<any>, store: any) => {
+    for (let i = 0; i < proxiesArray.length; i++) {
+        if (proxiesArray[i].proxy === proxyToTest) {
+            if(store === 'FootlockerUS') {
+                proxiesArray[i].testStatus.FootlockerUS = 'Testing...';
+            } 
+            else if (store === 'FootlockerCA') {
+                proxiesArray[i].testStatus.FootlockerCA = 'Testing...';
+            }
+            break;
+        }
+    }
+    return proxiesArray
 };
+
+export const stopIndividual = (proxyToStop: any, proxiesArray: Array<any>, store: any) => {
+    for (let i = 0; i < proxiesArray.length; i++) {
+        if (proxiesArray[i].proxy === proxyToStop) {
+            if(store === 'FootlockerUS') {
+                proxiesArray[i].testStatus.FootlockerUS = 'Canceled Test';
+            } 
+            else if (store === 'FootlockerCA') {
+                proxiesArray[i].testStatus.FootlockerCA = 'Canceled Test';
+            }
+            break;
+        }
+    }
+    return proxiesArray
+};
+
+export const testAll = () => {};

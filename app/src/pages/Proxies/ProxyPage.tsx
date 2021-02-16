@@ -6,6 +6,8 @@ import CollectionFormAdd from './Collections/Add';
 import CollectionFormCreate from './Collections/Create';
 import CollectionFormDelete from './Collections/Delete';
 import ProxyRow from './Proxy';
+import * as ProxyManager from './ProxyManager'
+import * as ProxyTester from './ProxyTester'
 import { FixedSizeList } from 'react-window';
 import { Proxy } from '../../interfaces/OtherInterfaces';
 import { NOTIFY_STOP_PROXY_TEST, NOTIFY_START_PROXY_TEST, PROXY_TEST_STOPPED, STORES } from '../../common/Constants';
@@ -13,8 +15,6 @@ const { ipcRenderer } = window.require('electron');
 
 const { Content } = Layout;
 const { Option } = Select;
-const UPLOAD = '1';
-const COPYPASTE = '2';
 
 const botStyle = {
     fontSize: '18px',
@@ -92,60 +92,21 @@ const ProxyPage = () => {
         setVisibleDelete(false);
     };
 
-    const onAddProxies = (values: any) => {
+    const onAddProxies = async(values: any) => {
         const name = currentTab.name;
-        const proxyArray: any = [];
-
-        if (tab === UPLOAD) {
-            const files = values.uploadedProxies.fileList;
-            // Read file
-            let reader = new FileReader();
-            reader.onload = (e) => {
-                // called after readAsText
-                proxyArray.push(e.target?.result);
-                const arrayProxy: Array<string> = proxyArray[0].split('\n');
-                objectifySets(name, arrayProxy);
-            };
-            reader.readAsText(files[0].originFileObj);
-        } else if (tab === COPYPASTE) {
-            proxyArray.push(values.copiedProxies);
-            const arrayProxy: Array<string> = proxyArray[0].split('\n');
-            objectifySets(name, arrayProxy);
-        }
-    };
-
-    const objectifySets = (name: string, arrayProxy: Array<string>) => {
-        let array: Array<Proxy> = [];
-        let proxyObject: Proxy = { proxy: '', testStatus: { FootlockerCA: '', FootlockerUS: '' }, credential: '', usedBy: [] };
-        let fields = [];
-        let ipPort = '';
-        let userPass: any = '';
-        for (let i = 0; i < arrayProxy.length; i++) {
-            fields = arrayProxy[i].split(':');
-            ipPort = fields[0] + ':' + fields[1];
-            userPass = fields[2] + ':' + fields[3];
-            if (fields[2] === undefined && fields[3] === undefined) {
-                userPass = null;
-            }
-            proxyObject = { proxy: ipPort, testStatus: { FootlockerCA: 'idle', FootlockerUS: 'idle' }, credential: userPass, usedBy: [] };
-            array.push(proxyObject);
-        }
-        setProxies(proxies.set(name, array));
+        let proxyArray: any = [];
+        proxyArray = await ProxyManager.Add(values, name, tab, proxies);
+        setProxies(proxies.set(name, proxyArray));
         localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
         forceUpdate();
         setVisibleAdd(false);
         tab = '1';
     };
 
-    const deleteIndividual = (record: any) => {
+    const deleteIndividualProxy = (record: any) => {
         let proxiesArray: Array<any> = proxies.get(currentTab.name) || [];
         let proxyToDelete: string = record.ip + ':' + record.port;
-        for (let i = 0; i < proxiesArray.length; i++) {
-            if (proxiesArray[i].proxy === proxyToDelete) {
-                proxiesArray.splice(i, 1);
-                break;
-            }
-        }
+        proxiesArray = ProxyManager.Delete(proxiesArray, proxyToDelete)
         setProxies(() => {
             proxies.set(currentTab.name, proxiesArray);
             localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
@@ -165,36 +126,16 @@ const ProxyPage = () => {
 
     const testIndividual = (proxyToTest: any, setName:any) => {
         let proxiesArray: Array<any> = proxies.get(setName) || [];
-        for (let i = 0; i < proxiesArray.length; i++) {
-            if (proxiesArray[i].proxy === proxyToTest) {
-                if(store === 'FootlockerUS') {
-                    proxiesArray[i].testStatus.FootlockerUS = 'Testing...';
-                } 
-                else if (store === 'FootlockerCA') {
-                    proxiesArray[i].testStatus.FootlockerCA = 'Testing...';
-                }
-                break;
-            }
-        }
+        proxiesArray = ProxyTester.testIndividual(proxyToTest, proxiesArray, store);
         proxies.set(setName, proxiesArray);
         setProxies(proxies);
         forceUpdate();
         localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
     };
 
-    const stopTest = (proxyToStop: any, setName: any) => {
+    const stopIndividual = (proxyToStop: any, setName: any) => {
         let proxiesArray: Array<any> = proxies.get(setName) || [];
-        for (let i = 0; i < proxiesArray.length; i++) {
-            if (proxiesArray[i].proxy === proxyToStop) {
-                if(store === 'FootlockerUS') {
-                    proxiesArray[i].testStatus.FootlockerUS = 'Canceled Test';
-                } 
-                else if (store === 'FootlockerCA') {
-                    proxiesArray[i].testStatus.FootlockerCA = 'Canceled Test';
-                }
-                break;
-            }
-        }
+        proxiesArray = ProxyTester.stopIndividual(proxyToStop, proxiesArray, store);
         proxies.set(setName, proxiesArray);
         setProxies(proxies);
         forceUpdate();
@@ -224,10 +165,8 @@ const ProxyPage = () => {
         var port = fields[1];
         var username;
         var password;
-        if (proxy[index].credential === null) {
-            username = 'None';
-            password = 'None';
-        } else {
+        if (proxy[index].credential === null) { username = 'None'; password = 'None'; } 
+        else {
             fields = proxy[index].credential.split(':');
             username = fields[0];
             password = fields[1];
@@ -242,9 +181,9 @@ const ProxyPage = () => {
         };
         return (
             <ProxyRow
-                deleteIndividual={deleteIndividual}
+                deleteIndividual={deleteIndividualProxy}
                 testIndividual={testIndividual}
-                stopTest={stopTest}
+                stopTest={stopIndividual}
                 currentTab={currentTab}
                 proxy={data}
                 style={style}
