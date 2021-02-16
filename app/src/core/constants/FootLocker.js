@@ -4,7 +4,7 @@ const ERRORS_SHIPPING = {
 };
 
 const ERRORS_CART = {
-    11518: 'Size Out of Stock, retrying',
+    ProductLowStockException: 'Size Out of Stock, retrying',
 };
 
 const ERRORS_PAYMENT = {

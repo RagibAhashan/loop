@@ -71,17 +71,16 @@ class FootLockerTask extends Task {
                     (unit) => unit.stockLevelStatus === 'inStock' && unit.attributes.some((attr) => attr.id === styleCode && attr.type === 'style'),
                 );
 
-                for (const size of this.sizes) {
-                    for (const unit of inStockUnits) {
-                        for (const attr of unit.attributes) {
-                            this.currentSize = size;
-                            if (attr.type === 'size') {
-                                const currSize = parseFloat(attr.value);
-                                if (currSize && currSize === parseFloat(size)) {
-                                    return attr.id;
-                                } else if (attr.value === size) {
-                                    return attr.id;
-                                }
+                const size = this.sizes[Math.floor(Math.random() * this.sizes.length)];
+                this.currentSize = size;
+                for (const unit of inStockUnits) {
+                    for (const attr of unit.attributes) {
+                        if (attr.type === 'size') {
+                            const currSize = parseFloat(attr.value);
+                            if (currSize && currSize === parseFloat(size)) {
+                                return attr.id;
+                            } else if (attr.value === size) {
+                                return attr.id;
                             }
                         }
                     }
@@ -135,13 +134,16 @@ class FootLockerTask extends Task {
             } catch (err) {
                 this.cancelTask();
                 const response = err.response;
+                console.log('add', response.data);
                 if (response) {
-                    const oosError = response.data.errors ? ERRORS_CART[response.data.errors[0].code] : undefined;
+                    const oosError = response.data.errors ? ERRORS_CART[response.data.errors[0].type] : undefined;
                     if (oosError) {
                         await this.emitStatus(msgs.CHECKING_SIZE_RETRY_MESSAGE, 'error');
                         this.productCode = await this.getProductCode();
                     } else if (response.data['url']) {
                         await this.dispatchCaptcha(response);
+                    } else {
+                        await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error');
                     }
                 } else if (err.request) {
                     // console.log('ADDING TO CARD error withtou response here', err);
