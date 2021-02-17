@@ -7,6 +7,9 @@ const PROXY_ROUTE = '/app/proxies';
 const SETTINGS_ROUTE = '/app/settings';
 const TASKS_ROUTE = '/app/tasks';
 
+const VALIDATE_USER_DATA_ROUTE = '/license/validate';
+const ACTIVATE_LICENSE_ROUTE = '/license/activate';
+
 const STORES = {
     FootlockerCA: {
         name: 'Footlocker CA',
@@ -62,4 +65,6 @@ module.exports = {
     SETTINGS_ROUTE,
     APP_ROUTE,
     TASK_SUCCESS,
+    ACTIVATE_LICENSE_ROUTE,
+    VALIDATE_USER_DATA_ROUTE,
 };
