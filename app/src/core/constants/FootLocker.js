@@ -14,4 +14,9 @@ const ERRORS_PAYMENT = {
     13506: "State and ZIP Code don't match",
 };
 
-module.exports = { ERRORS_PAYMENT, ERRORS_SHIPPING, ERRORS_CART };
+const STATUS_ERROR = {
+    429: ' (Rate Limit)',
+    403: ' (DataDome Protected)',
+};
+
+module.exports = { ERRORS_PAYMENT, ERRORS_SHIPPING, ERRORS_CART, STATUS_ERROR };

@@ -1,7 +1,7 @@
 const { TASK_STATUS, NOTIFY_CAPTCHA_SOLVED, TASK_SUCCESS } = require('../../common/Constants');
 const msgs = require('../constants/Constants');
 const { Cookie, Headers } = require('../constants/Cookies');
-const { ERRORS_SHIPPING, ERRORS_PAYMENT, ERRORS_CART } = require('../constants/FootLocker');
+const { ERRORS_SHIPPING, ERRORS_PAYMENT, ERRORS_CART, STATUS_ERROR } = require('../constants/FootLocker');
 const { FLCInfoForm, FLCOrderForm } = require('../interface/FootLockerCA');
 const { Task, CANCEL_ERROR } = require('../Task');
 
@@ -36,6 +36,7 @@ class FootLockerTask extends Task {
                 this.cancelTask();
                 const response = error.response;
                 if (response) {
+                    console.log('SESSION ERROR ', error);
                     // If we get a queue page
                     if (response.headers['set-cookie'] && response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)) {
                         const cookies = error.response.headers[Headers.SetCookie].join();
@@ -44,11 +45,15 @@ class FootLockerTask extends Task {
                         headers = { cookie: this.cookieJar.getCookie(Cookie.WAITING_ROOM) };
 
                         this.waitingRoom = { refresh: true, delay: this.cookieJar.extractRefresh(refreshHeader) };
+                    } else {
+                        await this.handleStatusError(response.status, msgs.SESSION_ERROR_MESSAGE);
                     }
                 } else if (error.request) {
+                    console.log('SESSION OTHER ERROR without response', error);
                     await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
                 } else {
-                    // console.log('SESSION OTHER ERROR', error);
+                    console.log('SESSION OTHER ERROR', error);
+                    await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
                 }
                 retry = true;
             }
@@ -91,13 +96,14 @@ class FootLockerTask extends Task {
                 const response = error.response;
                 if (response) {
                     // console.log('checking stock error response', response);
-                    await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
+                    if (error.status) {
+                        await this.handleStatusError(response.status, msgs.CHECKING_SIZE_ERROR_MESSAGE);
+                    }
                 } else if (error.request) {
-                    // console.log('CHECKING STOCK ERROR without request wtf', error);
-
-                    await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
+                    // here means server did not respond, so lets just not log anything an keep saying checking stock
                 } else {
-                    // console.log('CHECKING STOCK OTHER ERROR', error);
+                    console.log('chceking other error', error);
+                    await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
                 }
                 retry = true;
             }
@@ -134,7 +140,6 @@ class FootLockerTask extends Task {
             } catch (err) {
                 this.cancelTask();
                 const response = err.response;
-                console.log('add', response.data);
                 if (response) {
                     const oosError = response.data.errors ? ERRORS_CART[response.data.errors[0].type] : undefined;
                     if (oosError) {
@@ -143,13 +148,13 @@ class FootLockerTask extends Task {
                     } else if (response.data['url']) {
                         await this.dispatchCaptcha(response);
                     } else {
-                        await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error');
+                        await this.handleStatusError(response.status, msgs.ADD_CART_ERROR_MESSAGE);
                     }
                 } else if (err.request) {
-                    // console.log('ADDING TO CARD error withtou response here', err);
+                    console.log('ADDING TO CARD error withtou response here', err);
                     await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error');
                 } else {
-                    // console.log('ADDING TO CART OTHER ERROR ', err);
+                    console.log('ADDING TO CART OTHER ERROR ', err);
                     await this.emitStatus(msgs.ADD_CART_ERROR_MESSAGE, 'error');
                 }
 
@@ -167,7 +172,7 @@ class FootLockerTask extends Task {
 
                 const headers = this.setHeaders();
 
-                await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.shipping.email}`, {}, { headers: headers });
+                await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.shipping.email}`, undefined, { headers: headers });
 
                 const userShipping = { shippingAddress: this.getInfoForm(true) };
                 await this.axiosSession.post('/users/carts/current/addresses/shipping', userShipping, { headers: headers });
@@ -178,20 +183,23 @@ class FootLockerTask extends Task {
                 this.cancelTask();
                 const response = error.response;
                 if (response) {
+                    console.log('BILLING ERRORS WITH RESPONSE', error);
                     const dataError = response.data.errors;
-                    // console.log('BILLING ERRORS', dataError, response);
                     if (dataError && ERRORS_SHIPPING[error.response.data.errors[0].code]) {
                         this.emit(TASK_STATUS, { status: ERRORS_SHIPPING[error.response.data.errors[0].code], level: 'cancel' });
                         this.cancelTask();
                     } else if (response.data['url']) {
                         await this.dispatchCaptcha(response);
+                    } else {
+                        await this.handleStatusError(response.status, msgs.BILLING_ERROR_MESSAGE);
                     }
                 } else if (error.request) {
-                    // console.log('BILLING OTHER WIHTOUT RESPONSE HERE ERROR', error);
+                    console.log('BILLING OTHER WIHTOUT RESPONSE HERE ERROR', error);
+                    await this.emitStatus(msgs.BILLING_ERROR_MESSAGE, 'error');
                 } else {
-                    // console.log('BILLING OTHER ERROR', error);
+                    console.log('BILLING OTHER ERROR', error);
+                    await this.emitStatus(msgs.BILLING_ERROR_MESSAGE, 'error');
                 }
-                await this.emitStatus(msgs.BILLING_ERROR_MESSAGE, 'error');
                 retry = true;
             }
         } while (retry);
@@ -221,14 +229,17 @@ class FootLockerTask extends Task {
                     if (terminateError) {
                         this.emit(TASK_STATUS, { status: terminateError, level: 'cancel' });
                         throw new Error(CANCEL_ERROR);
+                    } else {
+                        await this.handleStatusError(response.status, msgs.CHECKOUT_FAILED_MESSAGE);
                     }
                 } else if (error.request) {
-                    // console.log('OTHER PLACE ORDER without response HERE', error);
+                    console.log('OTHER PLACE ORDER without response HERE', error);
+                    await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
                 } else {
-                    // console.log('OTHER PLACE ORDER ERROR HERE', error);
+                    console.log('OTHER PLACE ORDER ERROR HERE', error);
+                    await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
                 }
 
-                await this.emitStatus(msgs.CHECKOUT_FAILED_MESSAGE, 'error');
                 retry = true;
             }
         } while (retry);
@@ -332,6 +343,16 @@ class FootLockerTask extends Task {
         });
 
         return { promise: promise, cancel: cancel };
+    }
+
+    async handleStatusError(status, message) {
+        const err = STATUS_ERROR[status];
+        if (err) {
+            await this.emitStatus(message + err, 'error');
+        } else {
+            console.log('OTHER STATUS ERROR ,', status);
+            await this.emitStatus(message + ` (${status})`, 'error');
+        }
     }
 }
 
