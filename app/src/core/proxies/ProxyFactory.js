@@ -1,9 +1,9 @@
-const { Proxy } = require('./Proxy');
+const { Proxy } = require('../Proxy');
 
 class ProxyFactory {
     createProxyTest(setName, proxy, credential, store) {
 
-        const { RequestInstance } = require('./RequestInstance');
+        const { RequestInstance } = require('../RequestInstance');
         const { ProxyTest } = require('./ProxyTest');
 
         const axios = new RequestInstance(
@@ -12,6 +12,7 @@ class ProxyFactory {
             store.header, 
             proxy ? new Proxy(proxy, credential) : undefined
         );
+        console.log(new Proxy(proxy, credential));
         const proxyTest = new ProxyTest(setName, axios);
 
         return proxyTest.executeTest();

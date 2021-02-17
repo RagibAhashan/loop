@@ -17,6 +17,7 @@ const {
 const captchaWindowManager = require('./core/captcha-window/CaptchaWindowManager');
 const taskFactory = require('./core/TaskFactory');
 const taskManager = require('./core/TaskManager');
+const proxyFactory = require('./core/proxies/ProxyFactory');
 const si = require('systeminformation');
 const hash = require('object-hash');
 let win;
@@ -191,7 +192,9 @@ ipcMain.on(NOTIFY_EDIT_TASK, async (event, uuid) => {
 
 ipcMain.on(NOTIFY_START_PROXY_TEST, (event, setName, proxy, credential, store) => {
     console.log('got notified to start!');
-    // start test here
+    const proxyTest = proxyFactory.createProxyTest(setName, proxy, credential, store);
+    
+    console.log(proxyTest);
 });
 
 ipcMain.on(NOTIFY_STOP_PROXY_TEST, async (event, setName, proxy, credential, store) => {

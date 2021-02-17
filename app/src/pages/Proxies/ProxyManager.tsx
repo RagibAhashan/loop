@@ -62,6 +62,8 @@ const objectifySets = (name: string, arrayProxy: Array<string>) => {
         userPass = fields[2] + ':' + fields[3];
         if (fields[2] === undefined && fields[3] === undefined) {
             userPass = null;
+        } else {
+            userPass = userPass.replace(/\r/gm,'');
         }
         proxyObject = { proxy: ipPort, testStatus: { FootlockerCA: 'idle', FootlockerUS: 'idle' }, credential: userPass, usedBy: [] };
         array.push(proxyObject);
