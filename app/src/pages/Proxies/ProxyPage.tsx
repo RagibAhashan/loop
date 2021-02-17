@@ -16,12 +16,6 @@ const { ipcRenderer } = window.require('electron');
 const { Content } = Layout;
 const { Option } = Select;
 
-const botStyle = {
-    fontSize: '18px',
-    textAlign: 'center',
-    marginBottom: 20,
-} as React.CSSProperties;
-
 const ProxyPage = () => {
     const [proxies, setProxies] = useState(new Map<string, Proxy[]>());
     const [store, setStore] = useState(undefined);
@@ -36,7 +30,7 @@ const ProxyPage = () => {
     let [tab, setTabKey] = useState('1'); // for add popup to select between upload and copy pasta
 
     useEffect(() => {
-        // console.log(localStorage.clear())
+        console.log(localStorage)
         let db_proxies: any = localStorage.getItem('proxies');
         if (!db_proxies) {
             const obj = Object.fromEntries(proxies);
@@ -146,7 +140,7 @@ const ProxyPage = () => {
 
     const Headers = () => {
         return (
-            <Row style={botStyle}>
+            <Row style={{  fontSize: '18px', textAlign: 'center', marginBottom: 20 }}>
                 <Col span={4}>IP</Col>
                 <Col span={4}>Port</Col>
                 <Col span={4}>Username</Col>
@@ -234,14 +228,7 @@ const ProxyPage = () => {
     }
 
     const Sets = () => (
-        <Tabs
-            activeKey={currentTab.key}
-            defaultActiveKey="1"
-            onChange={callback}
-            style={{ height: '100%' }}
-            onTabClick={tabClick}
-            tabBarExtraContent={AddRemoveSets}
-        >
+        <Tabs activeKey={currentTab.key} onChange={callback} style={{ height: '100%' }} onTabClick={tabClick} tabBarExtraContent={AddRemoveSets}>
             {TabPanes()}
         </Tabs>
     );
