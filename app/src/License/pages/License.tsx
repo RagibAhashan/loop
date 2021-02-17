@@ -63,60 +63,6 @@ const License = withRouter(({ history }) => {
         return SYSTEM_KEY;
     };
 
-    // return (
-    //     <Spin spinning={validateSystemLoading}>
-    //         <div>
-    //             {validateSystemLoading ? (
-    //                 <div> process 1 </div>
-    //             ) : (
-    //                 <div>
-    //                     <Spin spinning={loading}>
-    //                         <div style={{ backgroundColor: '#212427', height: '100vh', padding: '5%' }}>
-    //                             <Form onFinish={getID} style={{ width: '50%' }}>
-    //                                 <Form.Item name="License key" rules={[{ required: true }]}>
-    //                                     <Input placeholder="LICENSE KEY" name={'LICENSE_KEY'} onChange={(e) => setLicenseKey(e.target.value)} />
-    //                                 </Form.Item>
-    //                                 <small style={{ color: 'red', marginTop: '-100px' }}>
-    //                                     {code === 409 ? 'This email is already registered!' : ''}
-    //                                     {code === 404 ? 'This email was not found' : ''}
-    //                                 </small>
-
-    //                                 <Form.Item>
-    //                                     <Input
-    //                                         placeholder="Email"
-    //                                         name={'email'}
-    //                                         onChange={(e) => {
-    //                                             setEmail(e.target.value);
-    //                                         }}
-    //                                         style={code !== 201 ? { color: 'red', borderColor: 'red' } : {}}
-    //                                     />
-    //                                 </Form.Item>
-    //                                 <br />
-    //                                 <br />
-    //                                 <Form.Item>
-    //                                     <Button
-    //                                         type="primary"
-    //                                         htmlType="submit"
-    //                                         style={{ width: '100%' }}
-    //                                         disabled={email === '' || LICENSE_KEY === ''}
-    //                                     >
-    //                                         Activate License Key
-    //                                     </Button>
-    //                                 </Form.Item>
-
-    //                                 <Button type="primary" style={{ width: '1000px' }} danger onClick={() => history.push(PROFILE_ROUTE)}>
-    //                                     {' '}
-    //                                     Bypass{' '}
-    //                                 </Button>
-    //                             </Form>
-    //                         </div>
-    //                     </Spin>
-    //                 </div>
-    //             )}
-    //         </div>
-    //     </Spin>
-    // );
-
     return (
         <div>
             <Route path={VALIDATE_USER_DATA_ROUTE} exact component={ValidateUserComponent} />
