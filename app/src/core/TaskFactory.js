@@ -8,7 +8,7 @@ class TaskFactory {
         const { RequestInstance } = require('./RequestInstance');
         const { FootLockerTask } = require('./footlocker/FootLockerTask');
         const axios = new RequestInstance(
-            store.url,
+            store.baseURL,
             { timestamp: Date.now() },
             store.header,
             proxy ? new Proxy(proxy.proxy, proxy.credential) : undefined,

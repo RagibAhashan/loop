@@ -10,7 +10,7 @@ import * as ProxyManager from './ProxyManager'
 import * as ProxyTester from './ProxyTester'
 import { FixedSizeList } from 'react-window';
 import { Proxy } from '../../interfaces/OtherInterfaces';
-import { NOTIFY_STOP_PROXY_TEST, NOTIFY_START_PROXY_TEST, PROXY_TEST_STOPPED, STORES } from '../../common/Constants';
+import { NOTIFY_STOP_PROXY_TEST, NOTIFY_START_PROXY_TEST, PROXY_TEST_REPLY, STORES } from '../../common/Constants';
 const { ipcRenderer } = window.require('electron');
 
 const { Content } = Layout;
@@ -30,7 +30,6 @@ const ProxyPage = () => {
     let [tab, setTabKey] = useState('1'); // for add popup to select between upload and copy pasta
 
     useEffect(() => {
-        console.log(localStorage)
         let db_proxies: any = localStorage.getItem('proxies');
         if (!db_proxies) {
             const obj = Object.fromEntries(proxies);
@@ -47,17 +46,21 @@ const ProxyPage = () => {
                 setCurrentTab({ name: array[0][0], key: '1' });
             }
         }
-        registerTestsListener();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const registerTestsListener = () => {
-        ipcRenderer.on('', (event, status: any) => {});
-
-        ipcRenderer.on(PROXY_TEST_STOPPED, () => {
-            console.log('stopped proxy');
-        });
-    };
+    ipcRenderer.on(PROXY_TEST_REPLY, (message, info) => {
+        let set = proxies.get(info.setName) || [];
+        for(let i = 0; i < set?.length; i++) {
+            if(set[i].proxy == info.proxy) {
+                info.store.key == "FootlockerCA" ? set[i].testStatus.FootlockerCA = info.delay : set[i].testStatus.FootlockerUS = info.delay;
+            }
+        }
+        proxies.set(info.setName, set);
+        localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
+        forceUpdate();
+        ipcRenderer.removeAllListeners(PROXY_TEST_REPLY);
+    });
 
     const onCreateSet = (values: any) => {
         const name = values.name;
@@ -136,7 +139,13 @@ const ProxyPage = () => {
         localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
     };
 
-    const testAll = () => {};
+    const testAll = () => {
+        let set = proxies.get(currentTab.name) || [];
+        for(let i = 0; i < set?.length; i++) {
+            testIndividual(set[i].proxy, currentTab.name);
+            ipcRenderer.send(NOTIFY_START_PROXY_TEST, currentTab.name, set[i].proxy, set[i].credential, store);
+        }
+    };
 
     const Headers = () => {
         return (

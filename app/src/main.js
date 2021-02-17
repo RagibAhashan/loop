@@ -7,6 +7,8 @@ const {
     NOTIFY_CAPTCHA,
     NOTIFY_START_PROXY_TEST,
     NOTIFY_STOP_PROXY_TEST,
+    PROXY_TEST_SUCCEEDED,
+    PROXY_TEST_REPLY,
     NOTIFY_EDIT_TASK,
     CAPTHA_WINDOW_CLOSED,
     NOTIFY_CAPTCHA_SOLVED,
@@ -191,10 +193,13 @@ ipcMain.on(NOTIFY_EDIT_TASK, async (event, uuid) => {
 });
 
 ipcMain.on(NOTIFY_START_PROXY_TEST, (event, setName, proxy, credential, store) => {
-    console.log('got notified to start!');
     const proxyTest = proxyFactory.createProxyTest(setName, proxy, credential, store);
     
-    console.log(proxyTest);
+    proxyTest.on(PROXY_TEST_SUCCEEDED, (delay) => {
+        event.reply(PROXY_TEST_REPLY, delay, proxy);
+    });
+
+    proxyTest.executeTest()
 });
 
 ipcMain.on(NOTIFY_STOP_PROXY_TEST, async (event, setName, proxy, credential, store) => {

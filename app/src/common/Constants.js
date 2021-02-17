@@ -13,15 +13,17 @@ const ACTIVATE_LICENSE_ROUTE = '/license/activate';
 const STORES = {
     FootlockerCA: {
         name: 'Footlocker CA',
-        url: 'https://www.footlocker.ca/api',
+        baseURL: 'https://www.footlocker.ca/api',
         key: 'FootlockerCA',
         header: FOOTLOCKER_CA_HEADERS,
+        url:'https://www.footlocker.ca',
     },
     FootlockerUS: {
         name: 'Footlocker US',
-        url: 'https://www.footlocker.com/api',
+        baseURL: 'https://www.footlocker.com/api',
         key: 'FootlockerUS',
         header: FOOTLOCKER_COM_HEADERS,
+        url:'https://www.footlocker.com',
     },
 };
 
@@ -41,7 +43,9 @@ const CAPTHA_WINDOW_CLOSED = 'captcha-closed';
 const GET_SYSTEM_ID = 'GET-SYSTEM-ID';
 const NOTIFY_STOP_PROXY_TEST = 'stop-proxy';
 const NOTIFY_START_PROXY_TEST = 'start-proxy';
+const PROXY_TEST_SUCCEEDED = 'sucess-proxy';
 const PROXY_TEST_STOPPED = 'proxy-stopped';
+const PROXY_TEST_REPLY = 'proxy-reply'
 
 module.exports = {
     CAPTCHA_ROUTE,
@@ -54,7 +58,9 @@ module.exports = {
     NOTIFY_EDIT_TASK,
     NOTIFY_STOP_PROXY_TEST,
     NOTIFY_START_PROXY_TEST,
+    PROXY_TEST_SUCCEEDED,
     PROXY_TEST_STOPPED,
+    PROXY_TEST_REPLY,
     CAPTHA_WINDOW_CLOSED,
     TASK_STOP,
     TASK_STATUS,
