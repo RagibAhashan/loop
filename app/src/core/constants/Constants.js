@@ -3,6 +3,7 @@ const SESSION_INFO_MESSAGE = 'Getting Session';
 const SESSION_QUEUE_MESSAGE = 'Getting Session (In Queue)';
 const SESSION_ERROR_MESSAGE = 'Getting Session Failed';
 const CHECKING_SIZE_INFO_MESSAGE = 'Checking Stock';
+const CHECKING_SIZE_QUEUE_MESSAGE = 'Checking Stock (In Queue)';
 const CHECKING_SIZE_ERROR_MESSAGE = 'Checking Stock Failed';
 const CHECKING_SIZE_RETRY_MESSAGE = 'Out of Stock, retrying';
 const ADD_CART_INFO_MESSAGE = 'Adding to Cart';
@@ -65,4 +66,5 @@ module.exports = {
     CANCELED_MESSAGE,
     CANCELING_MESSAGE,
     SESSION_QUEUE_MESSAGE,
+    CHECKING_SIZE_QUEUE_MESSAGE,
 };

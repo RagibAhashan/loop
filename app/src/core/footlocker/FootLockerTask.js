@@ -1,7 +1,7 @@
 const { TASK_STATUS, NOTIFY_CAPTCHA_SOLVED, TASK_SUCCESS } = require('../../common/Constants');
 const msgs = require('../constants/Constants');
 const { Cookie, Headers } = require('../constants/Cookies');
-const { ERRORS_SHIPPING, ERRORS_PAYMENT, ERRORS_CART, STATUS_ERROR } = require('../constants/FootLocker');
+const { ERRORS_SHIPPING, ERRORS_PAYMENT, ERRORS_CART, STATUS_ERROR, ERRORS_CHECKOUT } = require('../constants/FootLocker');
 const { FLCInfoForm, FLCOrderForm } = require('../interface/FootLockerCA');
 const { Task, CANCEL_ERROR } = require('../Task');
 
@@ -70,15 +70,21 @@ class FootLockerTask extends Task {
 
     async getProductCode() {
         let retry = true;
+        this.waitingRoom = { refresh: false, delay: 0 };
+        let headers = undefined;
         do {
             try {
                 this.cancelTask();
                 this.emit(TASK_STATUS, { status: msgs.CHECKING_SIZE_INFO_MESSAGE, level: 'info' });
 
-                const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
+                if (this.cookieJar.has(Cookie.WAITING_ROOM)) {
+                    headers = { cookie: this.cookieJar.getCookie(Cookie.WAITING_ROOM) };
+                    console.log('checkout setting waiting room cookie', headers);
+                }
+
+                const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`, undefined, { headers: headers });
                 const sellableUnits = response.data['sellableUnits'];
                 const variantAttributes = response.data['variantAttributes'];
-                console.log('got checkout response', response.status, response.statusText);
                 if (!sellableUnits || !variantAttributes) {
                     console.log('undefined respo', response);
                     await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
@@ -109,8 +115,11 @@ class FootLockerTask extends Task {
                 this.cancelTask();
                 const response = error.response;
                 if (response) {
-                    // console.log('checking stock error response', response);
-                    if (error.status) {
+                    const notAvai = response.data.errors ? ERRORS_CHECKOUT[response.data.errors[0].code] : undefined;
+                    if (notAvai) {
+                        console.log('checking stock error response not available', response.data);
+                        await this.emitStatus(notAvai + ', retrying', 'error');
+                    } else {
                         await this.handleStatusError(response.status, msgs.CHECKING_SIZE_ERROR_MESSAGE);
                     }
                 } else if (error.request) {
@@ -144,6 +153,11 @@ class FootLockerTask extends Task {
 
                 if (this.cookieJar.has(Cookie.DATADOME)) {
                     headers.cookie += this.cookieJar.getCookie(Cookie.DATADOME);
+                }
+
+                if (this.cookieJar.has(Cookie.WAITING_ROOM)) {
+                    headers.cookie += this.cookieJar.getCookie(Cookie.WAITING_ROOM);
+                    console.log('add to cart setting waiting room cookie', headers);
                 }
 
                 const body = { productQuantity: 1, productId: this.productCode };
@@ -281,6 +295,11 @@ class FootLockerTask extends Task {
             cookie: this.cookieJar.getCookie(Cookie.JSESSIONID, Cookie.CART_GUID, Cookie.DATADOME),
             'x-csrf-token': this.cookieJar.getValue(Cookie.CSRF),
         };
+
+        if (this.cookieJar.has(Cookie.WAITING_ROOM)) {
+            headers.cookie += this.cookieJar.getCookie(Cookie.WAITING_ROOM);
+            console.log('billing setting waiting room cookie', headers);
+        }
 
         return headers;
     }

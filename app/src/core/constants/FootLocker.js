@@ -3,18 +3,10 @@ const ERRORS_SHIPPING = {
     NoSuchMessageException: 'Proxy Banned',
 };
 
-/*
-on get product info
-{
-    "errors": [
-        {
-          "code": "11506",
-          "message": "The product you are trying to view is no longer available.",
-          "type": "FlBusinessErrorWebServiceException"
-        }
-      ]
-    }
-    */
+const ERRORS_CHECKOUT = {
+    12502: 'Product no longer available',
+    11506: 'Product no longer available',
+};
 
 const ERRORS_CART = {
     ProductLowStockException: 'Size Out of Stock, retrying',
@@ -32,4 +24,4 @@ const STATUS_ERROR = {
     403: ' (DataDome Protected)',
 };
 
-module.exports = { ERRORS_PAYMENT, ERRORS_SHIPPING, ERRORS_CART, STATUS_ERROR };
+module.exports = { ERRORS_PAYMENT, ERRORS_SHIPPING, ERRORS_CART, STATUS_ERROR, ERRORS_CHECKOUT };
