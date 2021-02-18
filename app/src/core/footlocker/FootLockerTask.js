@@ -114,7 +114,7 @@ class FootLockerTask extends Task {
                         await this.handleStatusError(response.status, msgs.CHECKING_SIZE_ERROR_MESSAGE);
                     }
                 } else if (error.request) {
-                    console.log('checking stock without response');
+                    console.log('checking stock without response', error.request);
                     // here means server did not respond, so lets just not log anything an keep saying checking stock
                     await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
                 } else {
