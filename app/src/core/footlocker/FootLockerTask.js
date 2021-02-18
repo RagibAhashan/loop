@@ -78,6 +78,7 @@ class FootLockerTask extends Task {
                 const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
                 const sellableUnits = response.data['sellableUnits'];
                 const variantAttributes = response.data['variantAttributes'];
+                console.log('got checkout response', response.status, response.statusText);
                 if (!sellableUnits || !variantAttributes) {
                     console.log('undefined respo', response);
                     await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
@@ -113,7 +114,9 @@ class FootLockerTask extends Task {
                         await this.handleStatusError(response.status, msgs.CHECKING_SIZE_ERROR_MESSAGE);
                     }
                 } else if (error.request) {
+                    console.log('checking stock without response');
                     // here means server did not respond, so lets just not log anything an keep saying checking stock
+                    await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
                 } else {
                     console.log('chceking other error', error);
                     await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
