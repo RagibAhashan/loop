@@ -32,7 +32,10 @@ const CaptchaFrame = () => {
         console.log('dispatching', currentCaptcha);
         if (!currentCaptcha) return undefined;
 
-        return currentCaptcha.shift();
+        const cap = currentCaptcha.shift();
+        console.log('shift yo', cap);
+        taskService.currentCaptcha = cap;
+        return cap;
     };
 
     const { store } = useParams() as any;
@@ -42,11 +45,11 @@ const CaptchaFrame = () => {
         console.log('init use effect');
         ipcRenderer.on(store + NOTIFY_CAPTCHA, (event, captcha: ICaptcha) => {
             console.log('got captcha in window', currentCaptcha, taskService.currentCaptcha);
-            if (!currentCaptcha) {
+            if (!taskService.currentCaptcha) {
                 console.log('setting');
 
                 // console.log('received cap');
-                // taskService.currentCaptcha = captcha;
+                taskService.currentCaptcha = captcha;
                 setCurrentCaptcha(captcha);
             }
         });
@@ -62,16 +65,19 @@ const CaptchaFrame = () => {
         console.log('solved that bitch');
         // for the moment just clear the queue, we are assuming all captchas are solved from only one
         const captchas = JSON.parse(localStorage.getItem('currentCaptcha') as string) as ICaptcha[];
-        captchas?.forEach((captcha) => ipcRenderer.send(NOTIFY_CAPTCHA_SOLVED, captcha.uuid, datadome));
+        captchas?.forEach((captcha) => {
+            console.log('sending to ', captcha.uuid);
+            ipcRenderer.send(NOTIFY_CAPTCHA_SOLVED, captcha.uuid, datadome);
+        });
         localStorage.removeItem('currentCaptcha');
         taskService.currentCaptcha = undefined;
         setCurrentCaptcha(undefined);
     };
 
     const renderCaptcha = () => {
-        console.log('rerendering', currentCaptcha);
-        return currentCaptcha ? (
-            <Captcha key={currentCaptcha.uuid} captcha={currentCaptcha} solved={solved}></Captcha>
+        console.log('rerendering', taskService.currentCaptcha);
+        return taskService.currentCaptcha ? (
+            <Captcha key={taskService.currentCaptcha.uuid} captcha={taskService.currentCaptcha} solved={solved}></Captcha>
         ) : (
             <div>
                 <Spin />

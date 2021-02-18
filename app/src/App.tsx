@@ -30,6 +30,8 @@ const initTasksStatus = () => {
             storeTasks.forEach((task) => localStorage.removeItem(task.uuid));
         }
     });
+
+    localStorage.removeItem('currentCaptcha');
 };
 const App = () => {
     useEffect(() => {
