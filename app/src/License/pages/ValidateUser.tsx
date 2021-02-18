@@ -13,20 +13,21 @@ const spiraley = 'https://i.gifer.com/1etH.gif';
 const ValidateUserComponent = (props: any) => {
     const { history } = props;
     useEffect(() => {
-        setTimeout(() => {
-            ipcRenderer.invoke('GET-SYSTEM-ID').then((SYSTEM_KEY) => {
-                axios
-                    .post('http://localhost:4000/user/validateSystem', {
-                        SYSTEM_KEY: SYSTEM_KEY,
-                    })
-                    .then(() => {
-                        history.push(PROFILE_ROUTE);
-                    })
-                    .catch((error) => {
-                        history.push(ACTIVATE_LICENSE_ROUTE);
-                    });
-            });
-        }, 2500);
+        // setTimeout(() => {
+        //     ipcRenderer.invoke('GET-SYSTEM-ID').then((SYSTEM_KEY) => {
+        //         axios
+        //             .post('http://localhost:4000/user/validateSystem', {
+        //                 SYSTEM_KEY: SYSTEM_KEY,
+        //             })
+        //             .then(() => {
+        //                 history.push(PROFILE_ROUTE);
+        //             })
+        //             .catch((error) => {
+        //                 history.push(ACTIVATE_LICENSE_ROUTE);
+        //             });
+        //     });
+        // }, 2500);
+        history.push(PROFILE_ROUTE);
     }, []);
 
     return (
