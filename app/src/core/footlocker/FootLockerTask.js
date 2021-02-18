@@ -78,7 +78,10 @@ class FootLockerTask extends Task {
                 const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
                 const sellableUnits = response.data['sellableUnits'];
                 const variantAttributes = response.data['variantAttributes'];
-                if (!sellableUnits || !variantAttributes) continue;
+                if (!sellableUnits || !variantAttributes) {
+                    console.log('undefined respo', response);
+                    await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
+                }
                 const { code: styleCode } = variantAttributes.find((attr) => attr.sku === this.productSKU);
 
                 const inStockUnits = sellableUnits.filter(
