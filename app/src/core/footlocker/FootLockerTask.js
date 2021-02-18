@@ -81,6 +81,7 @@ class FootLockerTask extends Task {
                 if (!sellableUnits || !variantAttributes) {
                     console.log('undefined respo', response);
                     await this.emitStatus(msgs.CHECKING_SIZE_ERROR_MESSAGE, 'error');
+                    continue;
                 }
                 const { code: styleCode } = variantAttributes.find((attr) => attr.sku === this.productSKU);
 
