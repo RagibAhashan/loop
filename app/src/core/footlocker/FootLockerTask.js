@@ -22,9 +22,12 @@ class FootLockerTask extends Task {
                 this.emit(TASK_STATUS, { status: msgs.SESSION_INFO_MESSAGE, level: 'info' });
 
                 if (this.waitingRoom.refresh) {
+                    console.log('waiting queue');
                     await this.emitStatus(msgs.SESSION_QUEUE_MESSAGE, 'info', this.waitingRoom.delay);
+                    console.log('finish waiting refresh queue');
                 }
 
+                console.log('session headers ', headers);
                 const response = await this.axiosSession.get('/v4/session', { headers: headers });
                 this.waitingRoom.refresh = false;
                 const cookies = response.headers['set-cookie'].join();
@@ -36,22 +39,25 @@ class FootLockerTask extends Task {
                 this.cancelTask();
                 const response = error.response;
                 if (response) {
-                    console.log('SESSION ERROR ', error);
+                    // console.log('SESSION ERROR ', error);
                     // If we get a queue page
                     if (response.headers['set-cookie'] && response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)) {
+                        console.log('got hit with queue');
                         const cookies = error.response.headers[Headers.SetCookie].join();
                         const refreshHeader = error.response.headers[Headers.Refresh];
                         this.cookieJar.setFromRaw(cookies, Cookie.WAITING_ROOM);
                         headers = { cookie: this.cookieJar.getCookie(Cookie.WAITING_ROOM) };
 
                         this.waitingRoom = { refresh: true, delay: this.cookieJar.extractRefresh(refreshHeader) };
+                        console.log('trying again with quue', this.waitingRoom.delay);
                     } else if (response.data['url']) {
                         await this.dispatchCaptcha(response);
                     } else {
+                        console.log('SESSION ERROR', response.statusText, response.status);
                         await this.handleStatusError(response.status, msgs.SESSION_ERROR_MESSAGE);
                     }
                 } else if (error.request) {
-                    console.log('SESSION OTHER ERROR without response', error);
+                    // console.log('SESSION OTHER ERROR without response', error);
                     await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
                 } else {
                     console.log('SESSION OTHER ERROR', error);

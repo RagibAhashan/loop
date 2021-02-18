@@ -3,6 +3,19 @@ const ERRORS_SHIPPING = {
     NoSuchMessageException: 'Proxy Banned',
 };
 
+/*
+on get product info
+{
+    "errors": [
+        {
+          "code": "11506",
+          "message": "The product you are trying to view is no longer available.",
+          "type": "FlBusinessErrorWebServiceException"
+        }
+      ]
+    }
+    */
+
 const ERRORS_CART = {
     ProductLowStockException: 'Size Out of Stock, retrying',
 };
