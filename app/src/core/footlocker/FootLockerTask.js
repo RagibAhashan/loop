@@ -45,6 +45,8 @@ class FootLockerTask extends Task {
                         headers = { cookie: this.cookieJar.getCookie(Cookie.WAITING_ROOM) };
 
                         this.waitingRoom = { refresh: true, delay: this.cookieJar.extractRefresh(refreshHeader) };
+                    } else if (response.data['url']) {
+                        await this.dispatchCaptcha(response);
                     } else {
                         await this.handleStatusError(response.status, msgs.SESSION_ERROR_MESSAGE);
                     }
@@ -70,6 +72,7 @@ class FootLockerTask extends Task {
                 const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`);
                 const sellableUnits = response.data['sellableUnits'];
                 const variantAttributes = response.data['variantAttributes'];
+                if (!sellableUnits || !variantAttributes) continue;
                 const { code: styleCode } = variantAttributes.find((attr) => attr.sku === this.productSKU);
 
                 const inStockUnits = sellableUnits.filter(
@@ -130,7 +133,7 @@ class FootLockerTask extends Task {
                     headers.cookie += this.cookieJar.getCookie(Cookie.DATADOME);
                 }
 
-                const body = { productQuantity: '1', productId: this.productCode };
+                const body = { productQuantity: 1, productId: this.productCode };
 
                 const response = await this.axiosSession.post('/users/carts/current/entries', body, { headers: headers });
 
@@ -309,7 +312,7 @@ class FootLockerTask extends Task {
     }
 
     async dispatchCaptcha(response) {
-        this.emit(TASK_STATUS, { status: msgs.WAIT_CAPTCHA_MESSAGE, level: 'info' });
+        this.emit(TASK_STATUS, { status: msgs.WAIT_CAPTCHA_MESSAGE, level: 'info', checkedSize: this.currentSize });
 
         const cookies = response.headers['set-cookie'].join();
         const capDatadome = this.cookieJar.extract(cookies, Cookie.DATADOME);

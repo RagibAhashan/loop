@@ -98,12 +98,10 @@ const Bot = (props: any) => {
 
     const registerTaskStatusListener = () => {
         ipcRenderer.on(uuid, (event, status: Status) => {
-            console.log(status);
             setStatus(status.status);
             setStatusLevel(status.level);
             if (status.checkedSize) setCurrentSize(status.checkedSize as string);
             if (status.level === 'success') {
-                console.log('here in suces');
                 setRunning(false);
             }
             localStorage.setItem(uuid, JSON.stringify({ lastStatus: status.status, lastLevel: status.level, checkedSize: status.checkedSize }));

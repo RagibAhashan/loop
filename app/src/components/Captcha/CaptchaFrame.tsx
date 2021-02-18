@@ -2,6 +2,7 @@ import { Spin } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { NOTIFY_CAPTCHA, NOTIFY_CAPTCHA_SOLVED } from '../../common/Constants';
+import { taskService } from '../../services/TaskService';
 import Captcha from './Captcha';
 const { ipcRenderer } = window.require('electron');
 
@@ -27,8 +28,8 @@ const captchaContainer = {
 
 const CaptchaFrame = () => {
     const dispatchCaptcha = (): ICaptcha | undefined => {
-        console.log('dispatching');
         const currentCaptcha = JSON.parse(localStorage.getItem('currentCaptcha') as string) as ICaptcha[];
+        console.log('dispatching', currentCaptcha);
         if (!currentCaptcha) return undefined;
 
         return currentCaptcha.shift();
@@ -40,12 +41,12 @@ const CaptchaFrame = () => {
     useEffect(() => {
         console.log('init use effect');
         ipcRenderer.on(store + NOTIFY_CAPTCHA, (event, captcha: ICaptcha) => {
-            console.log('got captcha in window', currentCaptcha);
-
+            console.log('got captcha in window', currentCaptcha, taskService.currentCaptcha);
             if (!currentCaptcha) {
                 console.log('setting');
 
                 // console.log('received cap');
+                // taskService.currentCaptcha = captcha;
                 setCurrentCaptcha(captcha);
             }
         });
@@ -60,10 +61,11 @@ const CaptchaFrame = () => {
     const solved = (datadome: string) => {
         console.log('solved that bitch');
         // for the moment just clear the queue, we are assuming all captchas are solved from only one
-        setCurrentCaptcha(undefined);
         const captchas = JSON.parse(localStorage.getItem('currentCaptcha') as string) as ICaptcha[];
         captchas?.forEach((captcha) => ipcRenderer.send(NOTIFY_CAPTCHA_SOLVED, captcha.uuid, datadome));
         localStorage.removeItem('currentCaptcha');
+        taskService.currentCaptcha = undefined;
+        setCurrentCaptcha(undefined);
     };
 
     const renderCaptcha = () => {
@@ -75,8 +77,6 @@ const CaptchaFrame = () => {
                 <Spin />
             </div>
         );
-        // const capArray = taskService.dispatchCaptchas();
-        // setCaptchaQ((prevQ) => [...prevQ, ...capArray]);
     };
 
     return (

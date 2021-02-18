@@ -69,15 +69,15 @@ const Store = (props: any) => {
         ipcRenderer.on(storeName + NOTIFY_CAPTCHA, (event, captcha: ICaptcha) => {
             if (!captchaWinOpened) {
                 console.log('got captcha');
-                setCaptchaWinOpened(true);
                 openCaptcha();
             }
-            let curr = JSON.parse(localStorage.getItem('currentCaptcha') as string);
+            let curr = JSON.parse(localStorage.getItem('currentCaptcha') as string) as ICaptcha[];
             if (!curr) {
                 curr = [captcha];
             } else {
                 curr.push(captcha);
             }
+            console.log('storing captcahs in local', curr);
             localStorage.setItem('currentCaptcha', JSON.stringify(curr));
         });
     };
@@ -101,6 +101,7 @@ const Store = (props: any) => {
 
     const openCaptcha = async () => {
         ipcRenderer.send('new-window', storeName);
+        setCaptchaWinOpened(true);
     };
     const Headers = () => {
         return (
@@ -273,7 +274,7 @@ const Store = (props: any) => {
                     </Popconfirm>
                 </Col>
                 <Col span={3}>
-                    <Button style={buttonStyle} type="primary" onClick={() => openCaptcha()} disabled={jobs.length === 0 || captchaWinOpened}>
+                    <Button style={buttonStyle} type="primary" onClick={() => openCaptcha()} disabled={captchaWinOpened}>
                         Captcha
                     </Button>
                 </Col>

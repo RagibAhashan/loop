@@ -11,6 +11,10 @@ class CaptchaWindowManager {
     register(storeName, window) {
         this.windows.set(storeName, window);
     }
+
+    closeAll() {
+        this.windows.forEach((win) => win.destroy());
+    }
 }
 
 module.exports = new CaptchaWindowManager();

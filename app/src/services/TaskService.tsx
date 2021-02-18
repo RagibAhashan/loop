@@ -56,8 +56,10 @@ export const getSizes = () => {
 class TaskService {
     notifyStart = new Subject<void>();
     captchaQueue: ICaptcha[];
+    currentCaptcha: ICaptcha | undefined;
     constructor() {
         this.captchaQueue = [];
+        this.currentCaptcha = undefined;
     }
 
     notify(): void {

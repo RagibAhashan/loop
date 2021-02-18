@@ -22,6 +22,7 @@ const taskManager = require('./core/TaskManager');
 const proxyFactory = require('./core/proxies/ProxyFactory');
 const si = require('systeminformation');
 const hash = require('object-hash');
+
 let win;
 
 const getSystemUniqueID = async () => {
@@ -55,6 +56,11 @@ const createWindow = () => {
     win.setMenuBarVisibility(false);
     win.setAutoHideMenuBar(true);
 
+    // if main windows is close, close all other captcha window
+    win.on('close', () => {
+        captchaWindowManager.closeAll();
+    });
+
     ipcMain.on('new-window', (event, store, captcha) => {
         const capWin = captchaWindowManager.getWindow(store);
         if (capWin) {
@@ -63,14 +69,13 @@ const createWindow = () => {
             return;
         }
         const newWin = new BrowserWindow({
-            parent: win,
+            // parent: win, //dont set parent or else it will not be visible in taskbar
             width: 700,
             height: 600,
             fullscreenable: false,
             webPreferences: {
                 nodeIntegration: true,
             },
-            // resizable: false,
         });
 
         newWin.setMenuBarVisibility(false);
@@ -83,8 +88,8 @@ const createWindow = () => {
                 : `file://${__dirname}/../build/index.html#${CAPTCHA_ROUTE}/${store}`,
         );
         newWin.on('close', (e) => {
+            console.log('cap got closed');
             e.preventDefault();
-            console.log('win got closed');
             event.reply(CAPTHA_WINDOW_CLOSED);
             newWin.hide();
         });
@@ -96,6 +101,7 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => {
+    console.log('closing ');
     if (process.platform !== 'darwin') {
         app.quit();
     }
@@ -194,12 +200,12 @@ ipcMain.on(NOTIFY_EDIT_TASK, async (event, uuid) => {
 
 ipcMain.on(NOTIFY_START_PROXY_TEST, (event, setName, proxy, credential, store) => {
     const proxyTest = proxyFactory.createProxyTest(setName, proxy, credential, store);
-    
+
     proxyTest.on(PROXY_TEST_SUCCEEDED, (delay) => {
         event.reply(PROXY_TEST_REPLY, delay, proxy);
     });
 
-    proxyTest.executeTest()
+    proxyTest.executeTest();
 });
 
 ipcMain.on(NOTIFY_STOP_PROXY_TEST, async (event, setName, proxy, credential, store) => {
