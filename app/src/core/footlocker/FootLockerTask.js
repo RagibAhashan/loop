@@ -57,7 +57,7 @@ class FootLockerTask extends Task {
                         await this.handleStatusError(response.status, msgs.SESSION_ERROR_MESSAGE);
                     }
                 } else if (error.request) {
-                    // console.log('SESSION OTHER ERROR without response', error);
+                    console.log('SESSION OTHER ERROR without response', error.request);
                     await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
                 } else {
                     console.log('SESSION OTHER ERROR', error);
