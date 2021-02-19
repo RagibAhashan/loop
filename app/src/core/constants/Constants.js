@@ -17,7 +17,13 @@ const CHECKOUT_SUCCESS_MESSAGE = 'Checkout ! 🚀';
 const CANCELED_MESSAGE = 'Task Canceled 💔';
 const CANCELING_MESSAGE = 'Canceling Task';
 
+const ua = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36';
+
+const COMMONG_HEADERS = {
+    'user-agent': ua,
+};
 const FOOTLOCKER_CA_HEADERS = {
+    ...COMMONG_HEADERS,
     // accept: 'application/json',
     // 'accept-encoding': 'gzip, deflate, br',
     // 'accept-language': 'en-CA,en;q=0.9',
@@ -25,7 +31,6 @@ const FOOTLOCKER_CA_HEADERS = {
     // 'content-type': 'application/json',
     // pragma: 'no-cache',
     // origin: 'https://www.footlocker.ca',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36',
     // 'sec-fetch-dest': 'empty',
     // 'sec-fetch-mode': 'cors',
     // 'sec-fetch-site': 'same-origin',
@@ -33,6 +38,7 @@ const FOOTLOCKER_CA_HEADERS = {
 };
 
 const FOOTLOCKER_COM_HEADERS = {
+    ...COMMONG_HEADERS,
     // accept: 'application/json',
     // 'accept-encoding': 'gzip, deflate, br',
     // 'accept-language': 'en-CA,en;q=0.9',
@@ -40,7 +46,6 @@ const FOOTLOCKER_COM_HEADERS = {
     // 'content-type': 'application/json',
     // pragma: 'no-cache',
     // origin: 'https://www.footlocker.com',
-    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.3=',
     // 'sec-fetch-dest': 'empty',
     // 'sec-fetch-mode': 'cors',
     // 'sec-fetch-site': 'same-origin',
@@ -67,4 +72,6 @@ module.exports = {
     CANCELING_MESSAGE,
     SESSION_QUEUE_MESSAGE,
     CHECKING_SIZE_QUEUE_MESSAGE,
+    ua,
+    COMMONG_HEADERS,
 };

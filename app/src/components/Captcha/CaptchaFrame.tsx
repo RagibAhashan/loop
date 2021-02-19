@@ -1,14 +1,17 @@
 import { Spin } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { NOTIFY_CAPTCHA, NOTIFY_CAPTCHA_SOLVED } from '../../common/Constants';
-import { taskService } from '../../services/TaskService';
+import { NOTIFY_CAPTCHA, NOTIFY_CAPTCHA_SOLVED, STORES } from '../../common/Constants';
 import Captcha from './Captcha';
 const { ipcRenderer } = window.require('electron');
 
 export interface ICaptcha {
-    url: string;
+    params: { [key: string]: string };
     uuid: string;
+}
+
+interface Store {
+    [key: string]: any;
 }
 
 const containerStyle = {
@@ -20,43 +23,37 @@ const containerStyle = {
 
 const captchaContainer = {
     height: '100%',
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
+    // display: 'flex',
+    // flexWrap: 'wrap',
+    // justifyContent: 'center',
+    // alignItems: 'center',
 } as React.CSSProperties;
 
 const CaptchaFrame = () => {
-    const dispatchCaptcha = (): ICaptcha | undefined => {
-        const currentCaptcha = JSON.parse(localStorage.getItem('currentCaptcha') as string) as ICaptcha[];
-        console.log('dispatching', currentCaptcha);
-        if (!currentCaptcha) return undefined;
+    const { store } = useParams() as any;
 
-        const cap = currentCaptcha.shift();
-        console.log('shift yo', cap);
-        taskService.currentCaptcha = cap;
-        return cap;
+    const dispatchCaptcha = (): undefined | ICaptcha => {
+        const captchas = JSON.parse(localStorage.getItem(store + NOTIFY_CAPTCHA) as string) as ICaptcha[];
+        console.log('dispatching', captchas);
+        if (!captchas) return undefined;
+
+        return captchas[0];
     };
 
-    const { store } = useParams() as any;
-    const [currentCaptcha, setCurrentCaptcha] = useState<ICaptcha | undefined>(() => dispatchCaptcha());
+    const [solvingCaptcha, setSolvingCaptcha] = useState<undefined | ICaptcha>(() => dispatchCaptcha());
+    const siteKey = (STORES as Store)[store].siteKey;
 
     useEffect(() => {
-        console.log('init use effect');
-        ipcRenderer.on(store + NOTIFY_CAPTCHA, (event, captcha: ICaptcha) => {
-            console.log('got captcha in window', currentCaptcha, taskService.currentCaptcha);
-            if (!taskService.currentCaptcha) {
-                console.log('setting');
-
-                // console.log('received cap');
-                taskService.currentCaptcha = captcha;
-                setCurrentCaptcha(captcha);
+        console.log('init use effect', siteKey);
+        ipcRenderer.on(store + NOTIFY_CAPTCHA, (event, captcha) => {
+            console.log('got captcha in window', solvingCaptcha, captcha);
+            if (!solvingCaptcha) {
+                setSolvingCaptcha(captcha);
             }
         });
 
         return () => {
             ipcRenderer.removeAllListeners(store + NOTIFY_CAPTCHA);
-            ipcRenderer.removeAllListeners(currentCaptcha?.uuid + NOTIFY_CAPTCHA);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -64,20 +61,18 @@ const CaptchaFrame = () => {
     const solved = (datadome: string) => {
         console.log('solved that bitch');
         // for the moment just clear the queue, we are assuming all captchas are solved from only one
-        const captchas = JSON.parse(localStorage.getItem('currentCaptcha') as string) as ICaptcha[];
+        const captchas = JSON.parse(localStorage.getItem(store + NOTIFY_CAPTCHA) as string) as ICaptcha[];
         captchas?.forEach((captcha) => {
             console.log('sending to ', captcha.uuid);
             ipcRenderer.send(NOTIFY_CAPTCHA_SOLVED, captcha.uuid, datadome);
         });
-        localStorage.removeItem('currentCaptcha');
-        taskService.currentCaptcha = undefined;
-        setCurrentCaptcha(undefined);
+        localStorage.removeItem(store + NOTIFY_CAPTCHA);
+        setSolvingCaptcha(undefined);
     };
 
     const renderCaptcha = () => {
-        console.log('rerendering', taskService.currentCaptcha);
-        return taskService.currentCaptcha ? (
-            <Captcha key={taskService.currentCaptcha.uuid} captcha={taskService.currentCaptcha} solved={solved}></Captcha>
+        return solvingCaptcha ? (
+            <Captcha siteKey={siteKey} solved={solved} captcha={solvingCaptcha}></Captcha>
         ) : (
             <div>
                 <Spin />

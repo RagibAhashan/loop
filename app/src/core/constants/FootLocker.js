@@ -10,6 +10,7 @@ const ERRORS_CHECKOUT = {
 
 const ERRORS_CART = {
     ProductLowStockException: 'Size Out of Stock, retrying',
+    NotFoundException: 'Product not Found',
 };
 
 const ERRORS_PAYMENT = {

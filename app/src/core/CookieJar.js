@@ -1,3 +1,5 @@
+const { ua } = require('./constants/Constants');
+
 class CookieJar {
     constructor() {
         this.cookies = new Map();
@@ -62,6 +64,30 @@ class CookieJar {
         if (!match) throw Error('Refresh could not be extracted');
 
         return parseInt(match[0]) * 1000;
+    }
+
+    // extractQueryParams(rawString) {
+    //     const regex = new RegExp(/(\?|&)([^=]+)=([^&]+)/g);
+    //     const params = [];
+    //     let match;
+
+    //     while ((match = regex.exec(rawString))) {
+    //         params.push({ [match[2]]: match[3] });
+    //     }
+
+    //     return params;
+    // }
+
+    extractQueryParams(urlString) {
+        const url = new URL(urlString);
+
+        return {
+            icid: url.searchParams.get('initialCid'),
+            referer: 'www.footlocker.ca',
+            hash: url.searchParams.get('hash'),
+            cid: url.searchParams.get('cid'),
+            ua: ua,
+        };
     }
 }
 

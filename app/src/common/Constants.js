@@ -16,14 +16,16 @@ const STORES = {
         baseURL: 'https://www.footlocker.ca/api',
         key: 'FootlockerCA',
         header: FOOTLOCKER_CA_HEADERS,
-        url:'https://www.footlocker.ca',
+        url: 'https://www.footlocker.ca',
+        siteKey: '6LccSjEUAAAAANCPhaM2c-WiRxCZ5CzsjR_vd8uX', //captcha key
     },
     FootlockerUS: {
         name: 'Footlocker US',
         baseURL: 'https://www.footlocker.com/api',
         key: 'FootlockerUS',
         header: FOOTLOCKER_COM_HEADERS,
-        url:'https://www.footlocker.com',
+        url: 'https://www.footlocker.com',
+        siteKey: '6LccSjEUAAAAANCPhaM2c-WiRxCZ5CzsjR_vd8uX',
     },
 };
 
@@ -32,6 +34,7 @@ const NOTIFY_STOP_TASK = 'stop-task';
 const NOTIFY_START_TASK = 'start-task';
 const NOTIFY_EDIT_TASK = 'edit-task';
 const NOTIFY_CAPTCHA = 'captcha';
+const GET_DATADOME = 'get-datadome';
 const NOTIFY_CAPTCHA_SOLVED = 'captcha-solved';
 const TASK_STOPPED = 'task-stopped';
 const TASK_STOP = 'task-stop';
@@ -45,7 +48,7 @@ const NOTIFY_STOP_PROXY_TEST = 'stop-proxy';
 const NOTIFY_START_PROXY_TEST = 'start-proxy';
 const PROXY_TEST_SUCCEEDED = 'sucess-proxy';
 const PROXY_TEST_STOPPED = 'proxy-stopped';
-const PROXY_TEST_REPLY = 'proxy-reply'
+const PROXY_TEST_REPLY = 'proxy-reply';
 
 module.exports = {
     CAPTCHA_ROUTE,
@@ -73,4 +76,5 @@ module.exports = {
     TASK_SUCCESS,
     ACTIVATE_LICENSE_ROUTE,
     VALIDATE_USER_DATA_ROUTE,
+    GET_DATADOME,
 };

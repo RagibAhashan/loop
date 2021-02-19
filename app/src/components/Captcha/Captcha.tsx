@@ -1,43 +1,28 @@
 import React, { useEffect } from 'react';
-import { NOTIFY_CAPTCHA_SOLVED } from '../../common/Constants';
+import { GET_DATADOME } from '../../common/Constants';
 import { ICaptcha } from './CaptchaFrame';
 const { ipcRenderer } = window.require('electron');
 
 const Captcha = (props: any) => {
-    const { captcha, solved }: { captcha: ICaptcha; solved: any } = props;
+    const { siteKey, solved, captcha }: { siteKey: string; solved: any; captcha: ICaptcha } = props;
 
     useEffect(() => {
-        window.addEventListener(
-            'message',
-            (event) => {
-                const datadome = JSON.parse(event.data).cookie;
-                ipcRenderer.send(NOTIFY_CAPTCHA_SOLVED, captcha.uuid, datadome);
-                solved(datadome);
-            },
-            false,
-        );
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        console.log('site', siteKey);
+    });
+    const onSolveCap = async (token: string) => {
+        console.log('solved', token);
+        const datadome = await ipcRenderer.invoke(GET_DATADOME, token, captcha);
+        console.log('got datadome cookie', datadome);
+        solved(datadome);
+    };
+
+    (window as any).onSolveCap = onSolveCap;
 
     return (
-        <div
-            style={{
-                margin: 10,
-                width: 320,
-                height: 520,
-                position: 'relative',
-                overflow: 'hidden',
-            }}
-        >
-            <iframe
-                title={captcha.uuid}
-                style={{ position: 'absolute', left: -20, top: -0 }}
-                width="360"
-                height="520"
-                scrolling="no"
-                sandbox="allow-scripts allow-same-origin"
-                src={captcha.url}
-            ></iframe>
+        <div>
+            <form action="?" method="POST">
+                <div className="g-recaptcha" data-sitekey={siteKey} data-callback="onSolveCap"></div>
+            </form>
         </div>
     );
 };

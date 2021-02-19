@@ -67,18 +67,18 @@ const Store = (props: any) => {
 
     const listenCaptcha = () => {
         ipcRenderer.on(storeName + NOTIFY_CAPTCHA, (event, captcha: ICaptcha) => {
+            // store tasks with captcha in localstorage
+            let curr = JSON.parse(localStorage.getItem(storeName + NOTIFY_CAPTCHA) as string) as ICaptcha[];
+            curr = curr ? [...curr, captcha] : [captcha];
+
+            console.log('storing captcahs in local', curr);
+            localStorage.setItem(storeName + NOTIFY_CAPTCHA, JSON.stringify(curr));
+
+            // and then open window
             if (!captchaWinOpened) {
                 console.log('got captcha');
                 openCaptcha();
             }
-            let curr = JSON.parse(localStorage.getItem('currentCaptcha') as string) as ICaptcha[];
-            if (!curr) {
-                curr = [captcha];
-            } else {
-                curr.push(captcha);
-            }
-            console.log('storing captcahs in local', curr);
-            localStorage.setItem('currentCaptcha', JSON.stringify(curr));
         });
     };
 
@@ -167,7 +167,7 @@ const Store = (props: any) => {
             ipcRenderer.send(NOTIFY_STOP_TASK, job.uuid);
         });
 
-        localStorage.removeItem('currentCaptcha');
+        localStorage.removeItem(storeName + NOTIFY_CAPTCHA);
     };
 
     const editBot = (newValues: TaskData, uuid: string) => {

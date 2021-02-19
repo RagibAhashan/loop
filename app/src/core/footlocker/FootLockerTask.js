@@ -1,4 +1,4 @@
-const { TASK_STATUS, NOTIFY_CAPTCHA_SOLVED, TASK_SUCCESS } = require('../../common/Constants');
+const { TASK_STATUS, NOTIFY_CAPTCHA_SOLVED, TASK_SUCCESS, NOTIFY_CAPTCHA } = require('../../common/Constants');
 const msgs = require('../constants/Constants');
 const { Cookie, Headers } = require('../constants/Cookies');
 const { ERRORS_SHIPPING, ERRORS_PAYMENT, ERRORS_CART, STATUS_ERROR, ERRORS_CHECKOUT } = require('../constants/FootLocker');
@@ -11,10 +11,11 @@ class FootLockerTask extends Task {
         this.retryDelay = retryDelay;
         this.captchaSolved = false;
     }
+
     async getSessionTokens() {
         let retry = false;
         this.waitingRoom = { refresh: false, delay: 0 };
-        let headers = {};
+        let headers = undefined;
         do {
             try {
                 this.cancelTask();
@@ -36,6 +37,7 @@ class FootLockerTask extends Task {
                 const csrf = response.data['data']['csrfToken'];
                 this.cookieJar.set(Cookie.CSRF, csrf);
             } catch (error) {
+                this.waitingRoom = { refresh: false, delay: 0 };
                 this.cancelTask();
                 const response = error.response;
                 if (response) {
@@ -43,13 +45,7 @@ class FootLockerTask extends Task {
                     // If we get a queue page
                     if (response.headers['set-cookie'] && response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)) {
                         console.log('got hit with queue');
-                        const cookies = error.response.headers[Headers.SetCookie].join();
-                        const refreshHeader = error.response.headers[Headers.Refresh];
-                        this.cookieJar.setFromRaw(cookies, Cookie.WAITING_ROOM);
-                        headers = { cookie: this.cookieJar.getCookie(Cookie.WAITING_ROOM) };
-
-                        this.waitingRoom = { refresh: true, delay: this.cookieJar.extractRefresh(refreshHeader) };
-                        console.log('trying again with quue', this.waitingRoom.delay);
+                        headers = { cookie: this.dispatchQueue(response) };
                     } else if (response.data['url']) {
                         await this.dispatchCaptcha(response);
                     } else {
@@ -76,6 +72,12 @@ class FootLockerTask extends Task {
             try {
                 this.cancelTask();
                 this.emit(TASK_STATUS, { status: msgs.CHECKING_SIZE_INFO_MESSAGE, level: 'info' });
+
+                if (this.waitingRoom.refresh) {
+                    console.log('waiting queue');
+                    await this.emitStatus(msgs.CHECKING_SIZE_INFO_MESSAGE + ' (In Queue)', 'info', this.waitingRoom.delay);
+                    console.log('finish waiting refresh queue');
+                }
 
                 if (this.cookieJar.has(Cookie.WAITING_ROOM)) {
                     headers = { cookie: this.cookieJar.getCookie(Cookie.WAITING_ROOM) };
@@ -119,6 +121,9 @@ class FootLockerTask extends Task {
                     if (notAvai) {
                         console.log('checking stock error response not available', response.data);
                         await this.emitStatus(notAvai + ', retrying', 'error');
+                    } else if (response.headers['set-cookie'] && response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)) {
+                        console.log('got hit with queue');
+                        headers = { cookie: this.dispatchQueue(response) };
                     } else {
                         await this.handleStatusError(response.status, msgs.CHECKING_SIZE_ERROR_MESSAGE);
                     }
@@ -136,6 +141,7 @@ class FootLockerTask extends Task {
     }
     async addToCart() {
         let retry = false;
+        let headers = {};
         do {
             try {
                 retry = false;
@@ -145,7 +151,7 @@ class FootLockerTask extends Task {
                     level: 'info',
                     checkedSize: this.currentSize,
                 });
-                const headers = {
+                headers = {
                     cookie: this.cookieJar.getCookie(Cookie.JSESSIONID),
                     'x-fl-productid': this.productCode,
                     'x-csrf-token': this.cookieJar.getValue(Cookie.CSRF),
@@ -158,6 +164,12 @@ class FootLockerTask extends Task {
                 if (this.cookieJar.has(Cookie.WAITING_ROOM)) {
                     headers.cookie += this.cookieJar.getCookie(Cookie.WAITING_ROOM);
                     console.log('add to cart setting waiting room cookie', headers);
+                }
+
+                if (this.waitingRoom.refresh) {
+                    console.log('waiting queue');
+                    await this.emitStatus(msgs.ADD_CART_INFO_MESSAGE + ' (In Queue)', 'info', this.waitingRoom.delay);
+                    console.log('finish waiting refresh queue');
                 }
 
                 const body = { productQuantity: 1, productId: this.productCode };
@@ -177,7 +189,11 @@ class FootLockerTask extends Task {
                         this.productCode = await this.getProductCode();
                     } else if (response.data['url']) {
                         await this.dispatchCaptcha(response);
+                    } else if (response.headers['set-cookie'] && response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)) {
+                        console.log('got hit with queue');
+                        headers.cookie += this.dispatchQueue(response);
                     } else {
+                        console.log(response.statusText, response.data);
                         await this.handleStatusError(response.status, msgs.ADD_CART_ERROR_MESSAGE);
                     }
                 } else if (err.request) {
@@ -194,13 +210,20 @@ class FootLockerTask extends Task {
     }
     async setBilling() {
         let retry = false;
+        let headers = {};
         do {
             try {
                 this.cancelTask();
                 retry = false;
                 this.emit(TASK_STATUS, { status: msgs.BILLING_INFO_MESSAGE, level: 'info' });
 
-                const headers = this.setHeaders();
+                headers = this.setHeaders();
+
+                if (this.waitingRoom.refresh) {
+                    console.log('waiting queue');
+                    await this.emitStatus(msgs.BILLING_INFO_MESSAGE + ' (In Queue)', 'info', this.waitingRoom.delay);
+                    console.log('finish waiting refresh queue');
+                }
 
                 await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.shipping.email}`, undefined, { headers: headers });
 
@@ -220,6 +243,9 @@ class FootLockerTask extends Task {
                         this.cancelTask();
                     } else if (response.data['url']) {
                         await this.dispatchCaptcha(response);
+                    } else if (response.headers['set-cookie'] && response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)) {
+                        console.log('got hit with queue');
+                        headers.cookie += this.dispatchQueue(response);
                     } else {
                         await this.handleStatusError(response.status, msgs.BILLING_ERROR_MESSAGE);
                     }
@@ -237,18 +263,25 @@ class FootLockerTask extends Task {
 
     async placeOrder() {
         let retry = false;
+        let headers = {};
         do {
             try {
                 this.cancelTask();
                 retry = false;
                 this.emit(TASK_STATUS, { status: msgs.PLACING_ORDER_INFO_MESSAGE, level: 'info' });
 
-                const headers = this.setHeaders();
+                headers = this.setHeaders();
+
+                if (this.waitingRoom.refresh) {
+                    console.log('waiting queue');
+                    await this.emitStatus(msgs.PLACING_ORDER_INFO_MESSAGE + ' (In Queue)', 'info', this.waitingRoom.delay);
+                    console.log('finish waiting refresh queue');
+                }
+
                 const body = this.getOrderForm(this.userProfile.payment);
 
-                await this.axiosSession.post('/v2/users/orders', body, {
-                    headers: headers,
-                });
+                await this.axiosSession.post('/v2/users/orders', body, { headers: headers });
+
                 this.emit(TASK_STATUS, { status: msgs.CHECKOUT_SUCCESS_MESSAGE, level: 'success', checkedSize: this.currentSize });
                 this.emit(TASK_SUCCESS);
             } catch (error) {
@@ -259,6 +292,9 @@ class FootLockerTask extends Task {
                     if (terminateError) {
                         this.emit(TASK_STATUS, { status: terminateError, level: 'cancel' });
                         throw new Error(CANCEL_ERROR);
+                    } else if (response.headers['set-cookie'] && response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)) {
+                        console.log('got hit with queue');
+                        headers.cookie += this.dispatchQueue(response);
                     } else {
                         await this.handleStatusError(response.status, msgs.CHECKOUT_FAILED_MESSAGE);
                     }
@@ -344,15 +380,15 @@ class FootLockerTask extends Task {
     }
 
     async dispatchCaptcha(response) {
-        this.emit(TASK_STATUS, { status: msgs.WAIT_CAPTCHA_MESSAGE, level: 'info', checkedSize: this.currentSize });
+        this.emit(TASK_STATUS, { status: msgs.WAIT_CAPTCHA_MESSAGE, level: 'captcha', checkedSize: this.currentSize });
 
         const cookies = response.headers['set-cookie'].join();
         const capDatadome = this.cookieJar.extract(cookies, Cookie.DATADOME);
         const captcha_url = `${response.data['url']}&cid=${capDatadome}`;
 
-        this.emit('captcha', {
+        this.emit(NOTIFY_CAPTCHA, {
             uuid: this.uuid,
-            url: captcha_url,
+            params: this.cookieJar.extractQueryParams(captcha_url),
         });
 
         const waitCap = this.waitForCaptcha();
@@ -361,6 +397,17 @@ class FootLockerTask extends Task {
         const rawDatadome = await waitCap.promise;
 
         this.cookieJar.setFromRaw(rawDatadome, Cookie.DATADOME);
+    }
+
+    async dispatchQueue(response) {
+        const cookies = response.headers[Headers.SetCookie].join();
+        const refreshHeader = response.headers[Headers.Refresh];
+        this.cookieJar.setFromRaw(cookies, Cookie.WAITING_ROOM);
+
+        this.waitingRoom = { refresh: true, delay: this.cookieJar.extractRefresh(refreshHeader) };
+        console.log('trying again with quue', this.waitingRoom.delay);
+
+        return this.cookieJar.getCookie(Cookie.WAITING_ROOM);
     }
 
     waitForCaptcha() {

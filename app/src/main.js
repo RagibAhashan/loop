@@ -15,6 +15,7 @@ const {
     TASK_SUCCESS,
     TASK_STOP,
     TASK_STATUS,
+    GET_DATADOME,
 } = require('./common/Constants');
 const captchaWindowManager = require('./core/captcha-window/CaptchaWindowManager');
 const taskFactory = require('./core/TaskFactory');
@@ -22,6 +23,8 @@ const taskManager = require('./core/TaskManager');
 const proxyFactory = require('./core/proxies/ProxyFactory');
 const si = require('systeminformation');
 const hash = require('object-hash');
+const { default: axios } = require('axios');
+const { COMMONG_HEADERS } = require('./core/constants/Constants');
 
 let win;
 
@@ -70,8 +73,8 @@ const createWindow = () => {
         }
         const newWin = new BrowserWindow({
             // parent: win, //dont set parent or else it will not be visible in taskbar
-            width: 700,
-            height: 600,
+            width: 465,
+            height: 630,
             fullscreenable: false,
             webPreferences: {
                 nodeIntegration: true,
@@ -166,6 +169,28 @@ ipcMain.on(NOTIFY_STOP_TASK, async (event, uuid) => {
         }
     } catch (error) {
         console.log('err', error);
+    }
+});
+
+ipcMain.handle(GET_DATADOME, async (event, token, captcha) => {
+    try {
+        const url = new URL('https://geo.captcha-delivery.com/captcha/check');
+        for (const param in captcha.params) {
+            console.log(param, ':', captcha.params[param]);
+            url.searchParams.append(param, captcha.params[param]);
+        }
+
+        console.log(token);
+        url.searchParams.append('g-captcha-response', token);
+
+        console.log('GEO URL CHECK', url.toString());
+        // const response = await axios.get(url.toString(), { headers: COMMONG_HEADERS });
+
+        // console.log(response);
+
+        // return response['cookie'];
+    } catch (error) {
+        console.log('GEO CAPTCAH ERROR');
     }
 });
 
