@@ -23,7 +23,7 @@ const ActivateLicense = (props: any) => {
         const SYSTEM_KEY = await ipcRenderer.invoke('GET-SYSTEM-ID');
         try {
             setLoading((prev) => (prev = true));
-            const post = await axios.post('http://localhost:4000/user/activatekey/', {
+            const post = await axios.post('http://340f2d9f51e4.ngrok.io/user/activatekey/', {
                 L_KEY: LICENSE_KEY,
                 SYSTEM_KEY: SYSTEM_KEY,
                 email: email,

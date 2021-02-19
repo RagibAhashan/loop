@@ -11,7 +11,7 @@ const SettingsPage = () => {
     const getID = async () => {
         const SYSTEM_KEY = await ipcRenderer.invoke('GET-SYSTEM-ID');
         try {
-            const post = await axios.post('http://localhost:4000/user/activatekey/', {
+            const post = await axios.post('http://340f2d9f51e4.ngrok.io/user/activatekey/', {
                 L_KEY: LICENSE_KEY,
                 SYSTEM_KEY: SYSTEM_KEY,
             });
@@ -26,7 +26,7 @@ const SettingsPage = () => {
 
     const registerAccount = async (data: any) => {
         try {
-            const post = await axios.post('http://localhost:4000/user/register/', {
+            const post = await axios.post('http://340f2d9f51e4.ngrok.io/user/register/', {
                 credit_card: data.credit_card,
                 cvc: data.cvc,
 
