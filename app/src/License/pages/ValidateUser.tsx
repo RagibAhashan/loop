@@ -17,21 +17,20 @@ const ValidateUserComponent = (props: any) => {
     const [failed, setFailed] = useState(false);
 
     useEffect(() => {
-
         setTimeout(() => {
             ipcRenderer.invoke('GET-SYSTEM-ID').then((SYSTEM_KEY) => {
                 axios
-                    .post('http://localhost:4000/user/validateSystem', {
+                    .post('http://340f2d9f51e4.ngrok.io/user/validateSystem', {
                         SYSTEM_KEY: SYSTEM_KEY,
                     })
                     .then(() => {
-                        setValidated(prev => prev = true);
+                        setValidated((prev) => (prev = true));
                         setTimeout(() => {
                             history.push(PROFILE_ROUTE);
                         }, 500);
                     })
                     .catch((error) => {
-                        setFailed(prev => prev = true);
+                        setFailed((prev) => (prev = true));
                         setTimeout(() => {
                             history.push(ACTIVATE_LICENSE_ROUTE);
                         }, 500);
@@ -40,63 +39,62 @@ const ValidateUserComponent = (props: any) => {
         }, 2700);
         // history.push(PROFILE_ROUTE);
 
-        
         setTimeout(() => {
-            setProg(prev => prev = 25);
+            setProg((prev) => (prev = 25));
         }, 800);
 
         setTimeout(() => {
-            setProg(prev => prev = 40);
+            setProg((prev) => (prev = 40));
         }, 1000);
 
         setTimeout(() => {
-            setProg(prev => prev = 75);
+            setProg((prev) => (prev = 75));
         }, 1500);
 
         setTimeout(() => {
-            setProg(prev => prev = 90);
+            setProg((prev) => (prev = 90));
         }, 2300);
 
         setTimeout(() => {
-            setProg(prev => prev = 100);
+            setProg((prev) => (prev = 100));
         }, 2500);
-        
-
     }, []);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-            <div style={{backgroundColor: 'white'}}>
+            <div style={{ backgroundColor: 'white' }}>
                 <img title="loading" src={smokey} alt="circle" style={{ height: '20vh' }} />
             </div>
 
-            <div style={{width: '25vh'}}>
-
-                {failed ? 
-                <Progress
-                strokeColor={{
-                    '0%': '#ff3300',
-                    '100%': '#ff3300',
-                    }}
-                    percent={prog}
-                    showInfo={false}
-                    status="active"
-                /> :
-                
-                <Progress
-                strokeColor={validated? {
-                    '0%': '#b8ff66',
-                    '100%': '#b8ff66',
-                } : 
-                {
-                    '0%': '#0f0f0f',
-                    '100%': '#ffffff',
-                }}
-                percent={prog}
-                showInfo={false}
-                status="active"
-                />
-                }
+            <div style={{ width: '25vh' }}>
+                {failed ? (
+                    <Progress
+                        strokeColor={{
+                            '0%': '#ff3300',
+                            '100%': '#ff3300',
+                        }}
+                        percent={prog}
+                        showInfo={false}
+                        status="active"
+                    />
+                ) : (
+                    <Progress
+                        strokeColor={
+                            validated
+                                ? {
+                                      '0%': '#b8ff66',
+                                      '100%': '#b8ff66',
+                                  }
+                                : {
+                                      '0%': '#0f0f0f',
+                                      '100%': '#ffffff',
+                                  }
+                        }
+                        percent={prog}
+                        showInfo={false}
+                        status="active"
+                    />
+                )}
                 <br />
             </div>
         </div>
