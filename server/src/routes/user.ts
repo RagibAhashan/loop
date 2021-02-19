@@ -38,7 +38,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
             },
             SYSTEM_KEY: '',
             discord_id: discord_id,
-            email: email,
+            email: (email as String).toLocaleLowerCase(),
             first_name: first_name,
             last_name: last_name,
             user_id: USER_ID,
@@ -152,7 +152,9 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
         return;
     }
 
-    const { L_KEY, SYSTEM_KEY, email } = req.body;
+    const { L_KEY, SYSTEM_KEY } = req.body;
+    const email = (req.body.email as String).toLocaleLowerCase();
+
     try {
         const db = new Firestore();
         const SubscribersRef = db.collection('Users').doc('Subscribers');
