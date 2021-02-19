@@ -38,13 +38,14 @@ export const RegisterUser = async (req: Request, res: Response) => {
             },
             SYSTEM_KEY: '',
             discord_id: discord_id,
-            email: (email as String).toLocaleLowerCase(),
+            email: email,
             first_name: first_name,
             last_name: last_name,
             user_id: USER_ID,
             LICENSE_KEY: HASHED_LKEY,
             joined: { Date: new Date().toString(), unix: Date.now() },
         };
+
         const BannedUsersRef = db.collection('Users').doc('BannedUsers');
         const SubscribersRef = db.collection('Users').doc('Subscribers');
 
@@ -85,7 +86,9 @@ export const RegisterUser = async (req: Request, res: Response) => {
 
                 if (subData) {
                     if (subData.USER_CAP >= count) {
-                        await SubscribersRef.collection('UnactivatedSubscribers').doc(email).set(USER_DATA);
+                        await SubscribersRef.collection('UnactivatedSubscribers')
+                            .doc((email as String).toLocaleLowerCase())
+                            .set(USER_DATA);
                         await EmailService.sendRegistrationConfirmationEmail(email, first_name, LICENSE_KEY);
                         SubscribersRef.update({
                             CURRENT_USERS: count,
@@ -153,7 +156,10 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
     }
 
     const { L_KEY, SYSTEM_KEY } = req.body;
-    const email = (req.body.email as String).toLocaleLowerCase();
+    let email = req.body.email;
+
+    email = email.toLowerCase();
+    console.log(email);
 
     try {
         const db = new Firestore();
