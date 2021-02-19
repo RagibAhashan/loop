@@ -83,7 +83,7 @@ class CookieJar {
 
         return {
             icid: url.searchParams.get('initialCid'),
-            referer: 'www.footlocker.ca',
+            referer: url.searchParams.get('referer'),
             hash: url.searchParams.get('hash'),
             cid: url.searchParams.get('cid'),
             ua: ua,

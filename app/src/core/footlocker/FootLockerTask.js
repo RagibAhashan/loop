@@ -30,6 +30,8 @@ class FootLockerTask extends Task {
 
                 console.log('session headers ', headers);
                 const response = await this.axiosSession.get('/v4/session', { headers: headers });
+                console.log('GOT SESSION ! ', headers);
+
                 this.waitingRoom.refresh = false;
                 const cookies = response.headers['set-cookie'].join();
                 this.cookieJar.setFromRaw(cookies, Cookie.JSESSIONID);
@@ -37,13 +39,15 @@ class FootLockerTask extends Task {
                 const csrf = response.data['data']['csrfToken'];
                 this.cookieJar.set(Cookie.CSRF, csrf);
             } catch (error) {
-                this.waitingRoom = { refresh: false, delay: 0 };
                 this.cancelTask();
                 const response = error.response;
                 if (response) {
-                    // console.log('SESSION ERROR ', error);
+                    console.log('SESSION ERROR ', response.headers);
                     // If we get a queue page
-                    if (response.headers['set-cookie'] && response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)) {
+                    if (this.waitingRoom.refresh) {
+                        // do nothing
+                        console.log('refreshing');
+                    } else if (response.headers['set-cookie'] && response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)) {
                         console.log('got hit with queue');
                         headers = { cookie: this.dispatchQueue(response) };
                     } else if (response.data['url']) {
@@ -55,9 +59,11 @@ class FootLockerTask extends Task {
                 } else if (error.request) {
                     console.log('SESSION OTHER ERROR without response', error.request);
                     await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
+                    this.waitingRoom = { refresh: false, delay: 0 };
                 } else {
                     console.log('SESSION OTHER ERROR', error);
                     await this.emitStatus(msgs.SESSION_ERROR_MESSAGE, 'error');
+                    this.waitingRoom = { refresh: false, delay: 0 };
                 }
                 retry = true;
             }
@@ -399,7 +405,7 @@ class FootLockerTask extends Task {
         this.cookieJar.setFromRaw(rawDatadome, Cookie.DATADOME);
     }
 
-    async dispatchQueue(response) {
+    dispatchQueue(response) {
         const cookies = response.headers[Headers.SetCookie].join();
         const refreshHeader = response.headers[Headers.Refresh];
         this.cookieJar.setFromRaw(cookies, Cookie.WAITING_ROOM);

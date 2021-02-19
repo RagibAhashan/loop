@@ -17,7 +17,7 @@ const CHECKOUT_SUCCESS_MESSAGE = 'Checkout ! 🚀';
 const CANCELED_MESSAGE = 'Task Canceled 💔';
 const CANCELING_MESSAGE = 'Canceling Task';
 
-const ua = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36';
+const ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36';
 
 const COMMONG_HEADERS = {
     'user-agent': ua,

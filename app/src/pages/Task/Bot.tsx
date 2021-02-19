@@ -158,7 +158,6 @@ const Bot = (props: any) => {
     };
 
     const startTask = () => {
-        setRunning(true);
         const profiles = JSON.parse(localStorage.getItem('profiles') as string) as UserProfile[];
         const profileData = profiles.find((prof) => prof.profile === profile) as UserProfile;
 
@@ -171,12 +170,13 @@ const Bot = (props: any) => {
         }
         const deviceId = localStorage.getItem('deviceId');
         ipcRenderer.send(NOTIFY_START_TASK, uuid, storeName, { productSKU, profileData, proxyData, sizes, retryDelay, deviceId });
+        console.log('setting running to true');
+        setRunning(true);
     };
 
     useEffect(() => {
         const notifySub = taskService.listenStart().subscribe(() => {
             startTask();
-            setRunning(true);
         });
 
         registerTaskStatusListener();
@@ -229,6 +229,7 @@ const Bot = (props: any) => {
     };
 
     const runButton = () => {
+        console.log('rerendereing', running);
         return running ? (
             <Button
                 onClick={() => {
@@ -324,6 +325,7 @@ const Bot = (props: any) => {
                                 style={editButton}
                                 size="small"
                                 icon={<EditFilled />}
+                                disabled={running}
                             />
                         </div>
                         <div>

@@ -59,9 +59,9 @@ const CaptchaFrame = () => {
     }, []);
 
     const solved = (datadome: string) => {
-        console.log('solved that bitch');
         // for the moment just clear the queue, we are assuming all captchas are solved from only one
         const captchas = JSON.parse(localStorage.getItem(store + NOTIFY_CAPTCHA) as string) as ICaptcha[];
+        console.log('solved that bitch', captchas);
         captchas?.forEach((captcha) => {
             console.log('sending to ', captcha.uuid);
             ipcRenderer.send(NOTIFY_CAPTCHA_SOLVED, captcha.uuid, datadome);

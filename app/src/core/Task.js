@@ -42,6 +42,8 @@ class Task extends EventEmitter {
 
     async execute() {
         try {
+            this.cookieJar = new CookieJar();
+
             console.log('proxy used', this.requestInstance.proxy);
 
             this.cancel = false;

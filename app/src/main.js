@@ -181,14 +181,14 @@ ipcMain.handle(GET_DATADOME, async (event, token, captcha) => {
         }
 
         console.log(token);
-        url.searchParams.append('g-captcha-response', token);
+        url.searchParams.append('g-recaptcha-response', token);
 
         console.log('GEO URL CHECK', url.toString());
-        // const response = await axios.get(url.toString(), { headers: COMMONG_HEADERS });
+        const response = await axios.get(url.toString(), { headers: COMMONG_HEADERS });
 
-        // console.log(response);
+        console.log(response.data['cookie']);
 
-        // return response['cookie'];
+        return response.data['cookie'];
     } catch (error) {
         console.log('GEO CAPTCAH ERROR');
     }
