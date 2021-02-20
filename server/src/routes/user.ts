@@ -310,7 +310,10 @@ export const AddLogActivity = async (req: Request, res: Response) => {
                 data = {};
             }
 
-            data[Date.now().toString()] = isLogIn ? 'Log in' : 'Log off';
+            data[Date.now().toString()] = {
+                isLogIn: isLogIn ? 'Log in' : 'Log off',
+                time: dateObj.toString(),
+            };
 
             userDocRef.ref.set(data);
 

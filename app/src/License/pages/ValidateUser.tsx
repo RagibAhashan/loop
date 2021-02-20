@@ -17,35 +17,35 @@ const ValidateUserComponent = (props: any) => {
     const [failed, setFailed] = useState(false);
 
     useEffect(() => {
-        setTimeout(() => {
-            ipcRenderer.invoke('GET-SYSTEM-ID').then((SYSTEM_KEY) => {
-                axios
-                    .post('http://localhost:4000/user/log', {
-                        SYSTEM_KEY: SYSTEM_KEY,
-                        isLogIn: true,
-                    })
-                    .then((res) => console.log(res))
-                    .catch((error) => console.log(error));
+        // setTimeout(() => {
+        //     ipcRenderer.invoke('GET-SYSTEM-ID').then((SYSTEM_KEY) => {
+        //         axios
+        //             .post('http://localhost:4000/user/log', {
+        //                 SYSTEM_KEY: SYSTEM_KEY,
+        //                 isLogIn: true,
+        //             })
+        //             .then((res) => console.log(res))
+        //             .catch((error) => console.log(error));
 
-                axios
-                    .post('http://localhost:4000/user/validateSystem', {
-                        SYSTEM_KEY: SYSTEM_KEY,
-                    })
-                    .then(() => {
-                        setValidated((prev) => (prev = true));
-                        setTimeout(() => {
-                            history.push(PROFILE_ROUTE);
-                        }, 500);
-                    })
-                    .catch((error) => {
-                        setFailed((prev) => (prev = true));
-                        setTimeout(() => {
-                            history.push(ACTIVATE_LICENSE_ROUTE);
-                        }, 500);
-                    });
-            });
-        }, 2700);
-        // history.push(PROFILE_ROUTE);
+        //         axios
+        //             .post('http://localhost:4000/user/validateSystem', {
+        //                 SYSTEM_KEY: SYSTEM_KEY,
+        //             })
+        //             .then(() => {
+        //                 setValidated((prev) => (prev = true));
+        //                 setTimeout(() => {
+        //                     history.push(PROFILE_ROUTE);
+        //                 }, 500);
+        //             })
+        //             .catch((error) => {
+        //                 setFailed((prev) => (prev = true));
+        //                 setTimeout(() => {
+        //                     history.push(ACTIVATE_LICENSE_ROUTE);
+        //                 }, 500);
+        //             });
+        //     });
+        // }, 2700);
+        history.push(PROFILE_ROUTE);
 
         setTimeout(() => {
             setProg((prev) => (prev = 25));
