@@ -4,6 +4,7 @@ import { validationResult } from 'express-validator';
 import * as EmailService from '../services/email';
 import * as Errors from '../services/errors';
 import { v4 as uuidv4 } from 'uuid';
+import validator from 'validator';
 
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -24,10 +25,16 @@ export const RegisterUser = async (req: Request, res: Response) => {
     }
 
     try {
-        const { credit_card, cvc, discord_id, email, first_name, last_name, CC_Month, CC_Year } = req.body;
+        const { credit_card, cvc, discord_id, first_name, last_name, CC_Month, CC_Year } = req.body;
+
+        const email = req.body.email.toLowerCase();
+        if (!validator.isEmail(email)) {
+            throw new Error('Not an email!');
+        }
+
         const db = new Firestore();
-        const USER_ID = uuidv4();
-        const LICENSE_KEY = uuidv4();
+        const USER_ID = uuidv4().toUpperCase();
+        const LICENSE_KEY = uuidv4().toUpperCase();
         const HASHED_LKEY = await bcrypt.hash(LICENSE_KEY, saltRounds);
         const USER_DATA = {
             billing: {
@@ -38,13 +45,16 @@ export const RegisterUser = async (req: Request, res: Response) => {
             },
             SYSTEM_KEY: '',
             discord_id: discord_id,
-            email: email,
+            email: email.toString().toLowerCase(),
             first_name: first_name,
             last_name: last_name,
             user_id: USER_ID,
             LICENSE_KEY: HASHED_LKEY,
             joined: { Date: new Date().toString(), unix: Date.now() },
         };
+
+        console.log('=======USER_DATA=======', USER_DATA);
+
         const BannedUsersRef = db.collection('Users').doc('BannedUsers');
         const SubscribersRef = db.collection('Users').doc('Subscribers');
 
@@ -54,13 +64,13 @@ export const RegisterUser = async (req: Request, res: Response) => {
                     throw new Error("Document 'Subscribers' does not exist!");
                 }
 
-                let querySnapshot = await doc.ref.collection('UnactivatedSubscribers').where('email', '==', email).get();
+                const emailExistsUnactivatedSubscribers = (await doc.ref.collection('UnactivatedSubscribers').doc(email).get()).exists;
 
-                if (querySnapshot.size >= 1) {
+                if (emailExistsUnactivatedSubscribers) {
                     throw new Errors.EmailAlreadySent('You have already received an email!');
                 }
 
-                querySnapshot = await doc.ref.collection('ActivatedSubscribers').where('email', '==', email).get();
+                let querySnapshot = await doc.ref.collection('ActivatedSubscribers').where('email', '==', email).get();
 
                 if (querySnapshot.size > 1) {
                     throw new Errors.UserAlreadyExistManyTimes(`This user exists ${querySnapshot.size} times`);
@@ -85,7 +95,9 @@ export const RegisterUser = async (req: Request, res: Response) => {
 
                 if (subData) {
                     if (subData.USER_CAP >= count) {
-                        await SubscribersRef.collection('UnactivatedSubscribers').doc(email).set(USER_DATA);
+                        await SubscribersRef.collection('UnactivatedSubscribers')
+                            .doc((email as String).toLocaleLowerCase())
+                            .set(USER_DATA);
                         await EmailService.sendRegistrationConfirmationEmail(email, first_name, LICENSE_KEY);
                         SubscribersRef.update({
                             CURRENT_USERS: count,
@@ -152,8 +164,13 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
         return;
     }
 
-    const { L_KEY, SYSTEM_KEY, email } = req.body;
+    const { L_KEY, SYSTEM_KEY } = req.body;
+
     try {
+        let email = req.body.email.toLowerCase();
+        if (!validator.isEmail(email)) {
+            throw new Error('Not an email!');
+        }
         const db = new Firestore();
         const SubscribersRef = db.collection('Users').doc('Subscribers');
 
@@ -230,7 +247,7 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
  * @param res
  */
 export const ValidateSystemLicense = async (req: Request, res: Response) => {
-    const { email, SYSTEM_KEY } = req.body;
+    const { SYSTEM_KEY } = req.body;
 
     try {
         const db = new Firestore();
