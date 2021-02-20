@@ -4,6 +4,7 @@ import { validationResult } from 'express-validator';
 import * as EmailService from '../services/email';
 import * as Errors from '../services/errors';
 import { v4 as uuidv4 } from 'uuid';
+import validator from 'validator';
 
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -25,11 +26,15 @@ export const RegisterUser = async (req: Request, res: Response) => {
 
     try {
         const { credit_card, cvc, discord_id, first_name, last_name, CC_Month, CC_Year } = req.body;
+
         const email = req.body.email.toLowerCase();
+        if (!validator.isEmail(email)) {
+            throw new Error('Not an email!');
+        }
 
         const db = new Firestore();
         const USER_ID = uuidv4().toUpperCase();
-        const LICENSE_KEY = uuidv4();
+        const LICENSE_KEY = uuidv4().toUpperCase();
         const HASHED_LKEY = await bcrypt.hash(LICENSE_KEY, saltRounds);
         const USER_DATA = {
             billing: {
@@ -93,7 +98,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
                         await SubscribersRef.collection('UnactivatedSubscribers')
                             .doc((email as String).toLocaleLowerCase())
                             .set(USER_DATA);
-                        // await EmailService.sendRegistrationConfirmationEmail(email, first_name, LICENSE_KEY);
+                        await EmailService.sendRegistrationConfirmationEmail(email, first_name, LICENSE_KEY);
                         SubscribersRef.update({
                             CURRENT_USERS: count,
                         });
@@ -160,12 +165,12 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
     }
 
     const { L_KEY, SYSTEM_KEY } = req.body;
-    let email = req.body.email.toLowerCase();
-
-    email = email.toLowerCase();
-    console.log(email);
 
     try {
+        let email = req.body.email.toLowerCase();
+        if (!validator.isEmail(email)) {
+            throw new Error('Not an email!');
+        }
         const db = new Firestore();
         const SubscribersRef = db.collection('Users').doc('Subscribers');
 

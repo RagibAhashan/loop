@@ -32,23 +32,19 @@ const ActivateLicense = (props: any) => {
             setCode((prev) => (prev = 201));
             history.push(PROFILE_ROUTE);
         } catch (error) {
-            if (error.toString() === 'Error: Request failed with status code 409') {
-            }
+            setLoading((prev) => (prev = false));
 
             switch (error.toString()) {
                 case 'Error: Request failed with status code 409': {
                     setCode((prev) => (prev = 409));
-                    setLoading(false);
                     break;
                 }
                 case 'Error: Request failed with status code 404': {
                     setCode((prev) => (prev = 404));
-                    setLoading(false);
                     break;
                 }
                 default:
                     setCode((prev) => (prev = 500));
-                    setLoading(false);
                     break;
             }
         }

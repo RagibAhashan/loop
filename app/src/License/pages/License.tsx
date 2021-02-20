@@ -52,6 +52,10 @@ const License = withRouter(({ history }) => {
                     setCode((prev) => (prev = 404));
                     break;
                 }
+                case 'Error: Request failed with status code 404': {
+                    setCode((prev) => (prev = 404));
+                    break;
+                }
                 default:
                     setCode((prev) => (prev = 500));
                     break;
