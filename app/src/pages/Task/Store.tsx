@@ -136,6 +136,25 @@ const Store = (props: any) => {
         );
     };
 
+    const addTaskEvent = (temp: TaskData[]) => {
+        ipcRenderer.invoke('GET-SYSTEM-ID').then((SYSTEM_KEY) => {
+            const aTask = temp[0];
+            const uploadData = {
+                SYSTEM_KEY: SYSTEM_KEY,
+                item: aTask['productSKU'],
+                amountTasks: Number(temp.length),
+                storeName: storeName,
+                usingProxies: aTask.proxySet ? true : false,
+                size: aTask.sizes,
+            };
+
+            axios
+                .post('http://localhost:4000/events/tasks/', uploadData)
+                .then(() => console.log('task added'))
+                .catch((error) => console.log(error));
+        });
+    };
+
     const addTasks = (data: TaskData) => {
         let temp: TaskData[] = [];
         for (let i = 0; i < data.quantity; i++) {
@@ -144,16 +163,9 @@ const Store = (props: any) => {
             temp.push({ ...data, uuid: id, store: storeName });
         }
 
-        const uploadData = {
-            SYSTEM_KEY: '9bb10e693c0a6cffef43c1fbd6960d3805f2f7fe',
-            item: temp[0]['productSKU'],
-            amountTasks: Number(data.quantity),
-        };
+        addTaskEvent(temp);
 
-        axios
-            .post('http://localhost:4000/events/tasks/', uploadData)
-            .then(() => console.log('task added'))
-            .catch((error) => console.log(error));
+        console.log(temp);
 
         setJobs((oldJobs) => {
             const newJobs = [...oldJobs, ...temp];

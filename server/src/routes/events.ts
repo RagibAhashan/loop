@@ -25,7 +25,7 @@ export const AddManyTaskEvents = async (req: Request, res: Response) => {
     }
 
     try {
-        const { item, amountTasks, SYSTEM_KEY } = req.body;
+        const { item, amountTasks, SYSTEM_KEY, storeName, usingProxies, size } = req.body;
         const db = new Firestore();
 
         const UserDocRef = await db.collection('Users').doc('Subscribers').collection('ActivatedSubscribers').doc(SYSTEM_KEY).get();
@@ -39,9 +39,14 @@ export const AddManyTaskEvents = async (req: Request, res: Response) => {
             data = {};
         }
 
-        data[Date.now().toString()] = {
+        const date = new Date().toString();
+
+        data[date] = {
             item: item,
             amountTasks: amountTasks,
+            storeName: storeName,
+            usingProxies: usingProxies,
+            size: size,
         };
 
         await EventDocRef.ref.set(data);
