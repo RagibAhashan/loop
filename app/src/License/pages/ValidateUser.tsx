@@ -20,7 +20,7 @@ const ValidateUserComponent = (props: any) => {
         setTimeout(() => {
             ipcRenderer.invoke('GET-SYSTEM-ID').then((SYSTEM_KEY) => {
                 axios
-                    .post('http://340f2d9f51e4.ngrok.io/user/validateSystem', {
+                    .post('http://c87c5e069515.ngrok.io/user/validateSystem', {
                         SYSTEM_KEY: SYSTEM_KEY,
                     })
                     .then(() => {
