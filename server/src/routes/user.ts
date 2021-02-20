@@ -53,8 +53,6 @@ export const RegisterUser = async (req: Request, res: Response) => {
             joined: { Date: new Date().toString(), unix: Date.now() },
         };
 
-        console.log('=======USER_DATA=======', USER_DATA);
-
         const BannedUsersRef = db.collection('Users').doc('BannedUsers');
         const SubscribersRef = db.collection('Users').doc('Subscribers');
 
@@ -139,7 +137,6 @@ export const RegisterUser = async (req: Request, res: Response) => {
                 error: 'UserCapReachedError',
             });
         } else {
-            console.log(error);
             return res.status(500).send({
                 message: error.message,
                 error: 'internalError',
@@ -198,7 +195,7 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
                         if (match) {
                             data.SYSTEM_KEY = SYSTEM_KEY;
                             await docRef.delete();
-                            await SubscribersRef.collection('ActivatedSubscribers').doc(data.user_id).set(data);
+                            await SubscribersRef.collection('ActivatedSubscribers').doc(SYSTEM_KEY).set(data);
                             await EmailService.LicenseKeyActivated(data.email, data.first_name);
                         } else {
                             throw new Errors.InvalidLicenseKeyError('This license key is invalid or already activated');
@@ -267,5 +264,64 @@ export const ValidateSystemLicense = async (req: Request, res: Response) => {
         }
     } catch (error) {
         res.status(402).send('Not yet implemented');
+    }
+};
+
+export const AddLogActivity = async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        console.error(errors);
+        res.status(422).json({ errors: errors.array() });
+        return;
+    }
+    const { isLogIn, SYSTEM_KEY } = req.body;
+
+    try {
+        const db = new Firestore();
+
+        const docRef = await db.collection('Users').doc('Subscribers').collection('ActivatedSubscribers').doc(SYSTEM_KEY).get();
+
+        if (!docRef.exists) {
+            const VisitorDocRef = await db.collection('Visitors').doc(SYSTEM_KEY).get();
+            let data: any = VisitorDocRef.data();
+
+            if (!data) {
+                data = {};
+            }
+
+            data[Date.now().toString()] = {
+                time: new Date().toString(),
+            };
+
+            await VisitorDocRef.ref.set(data);
+
+            return res.status(200).send({
+                message: 'New visitor',
+            });
+        } else {
+            const dateObj = new Date();
+            const docName = `${dateObj.getDate()}-${dateObj.getMonth() + 1}-${dateObj.getFullYear()}`;
+
+            const userDocRef = await docRef.ref.collection('logs').doc(docName).get();
+
+            let data = userDocRef.data();
+            if (!data) {
+                data = {};
+            }
+
+            data[Date.now().toString()] = isLogIn ? 'Log in' : 'Log off';
+
+            userDocRef.ref.set(data);
+
+            return res.status(200).send({
+                message: 'Log added!',
+            });
+        }
+    } catch (error) {
+        return res.status(500).send({
+            message: error.message,
+            error: 'internalError',
+        });
     }
 };

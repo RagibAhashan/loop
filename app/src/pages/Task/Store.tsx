@@ -1,5 +1,6 @@
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { Button, Col, Empty, Popconfirm, Row, Select } from 'antd';
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { FixedSizeList } from 'react-window';
 import { CAPTHA_WINDOW_CLOSED, NOTIFY_CAPTCHA, NOTIFY_EDIT_TASK, NOTIFY_STOP_TASK } from '../../common/Constants';
@@ -142,6 +143,17 @@ const Store = (props: any) => {
             // eslint-disable-next-line react-hooks/rules-of-hooks
             temp.push({ ...data, uuid: id, store: storeName });
         }
+
+        const uploadData = {
+            SYSTEM_KEY: '9bb10e693c0a6cffef43c1fbd6960d3805f2f7fe',
+            item: temp[0]['productSKU'],
+            amountTasks: Number(data.quantity),
+        };
+
+        axios
+            .post('http://localhost:4000/events/tasks/', uploadData)
+            .then(() => console.log('task added'))
+            .catch((error) => console.log(error));
 
         setJobs((oldJobs) => {
             const newJobs = [...oldJobs, ...temp];
