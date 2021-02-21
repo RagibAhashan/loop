@@ -3,6 +3,13 @@ import express, { Application } from 'express'
 import { initializeApp } from 'firebase-admin';
 import * as admin from "firebase-admin";
 import { exit } from 'process';
+import session from 'express-session';
+import passport from 'passport';
+// import discordStrategy from './routes/Discord/strategies/discordStrategy'
+
+
+
+const FULL_DAY = 60000*60*24;
 
 const RunServer = () => {
   initializeApp();
@@ -17,9 +24,19 @@ const RunServer = () => {
     exposedHeaders: 'Location',
   };
   
+  app.use(session({
+    secret: 'random shit here',
+    cookie: {
+      maxAge: FULL_DAY
+    },
+    saveUninitialized: false
+  }));
+
+  app.use(passport.initialize());
+  app.use(passport.session())
   
   app.use(cors(corsOptions));
-  
+
   app.use(require('./routes').default);
   
   const PORT = process.env.PORT || 8000;
