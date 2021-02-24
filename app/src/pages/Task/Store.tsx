@@ -1,5 +1,6 @@
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { Button, Col, Empty, Popconfirm, Row, Select } from 'antd';
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { FixedSizeList } from 'react-window';
 import { CAPTHA_WINDOW_CLOSED, NOTIFY_CAPTCHA, NOTIFY_EDIT_TASK, NOTIFY_START_TASK, NOTIFY_STOP_TASK } from '../../common/Constants';
@@ -142,6 +143,25 @@ const Store = (props: any) => {
         );
     };
 
+    const addTaskEvent = (temp: TaskData[]) => {
+        ipcRenderer.invoke('GET-SYSTEM-ID').then((SYSTEM_KEY) => {
+            const aTask = temp[0];
+            const uploadData = {
+                SYSTEM_KEY: SYSTEM_KEY,
+                item: aTask['productSKU'],
+                amountTasks: Number(temp.length),
+                storeName: storeName,
+                usingProxies: aTask.proxySet ? true : false,
+                size: aTask.sizes,
+            };
+
+            axios
+                .post('http://localhost:4000/events/tasks/', uploadData)
+                .then(() => console.log('task added'))
+                .catch((error) => console.log(error));
+        });
+    };
+
     const addTasks = (data: TaskData) => {
         let temp: TaskData[] = [];
         for (let i = 0; i < (data.quantity as number); i++) {
@@ -149,6 +169,10 @@ const Store = (props: any) => {
             // eslint-disable-next-line react-hooks/rules-of-hooks
             temp.push({ ...data, uuid: id, store: storeName });
         }
+
+        addTaskEvent(temp);
+
+        console.log(temp);
 
         setJobs((oldJobs) => {
             const newJobs = [...oldJobs, ...temp];

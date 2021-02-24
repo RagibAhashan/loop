@@ -4,6 +4,7 @@ import { validationResult } from 'express-validator';
 import * as EmailService from '../services/email';
 import * as Errors from '../services/errors';
 import { v4 as uuidv4 } from 'uuid';
+import validator from 'validator';
 
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
@@ -24,10 +25,16 @@ export const RegisterUser = async (req: Request, res: Response) => {
     }
 
     try {
-        const { credit_card, cvc, discord_id, email, first_name, last_name, CC_Month, CC_Year } = req.body;
+        const { credit_card, cvc, discord_id, first_name, last_name, CC_Month, CC_Year } = req.body;
+
+        const email = req.body.email.toLowerCase();
+        if (!validator.isEmail(email)) {
+            throw new Error('Not an email!');
+        }
+
         const db = new Firestore();
-        const USER_ID = uuidv4();
-        const LICENSE_KEY = uuidv4();
+        const USER_ID = uuidv4().toUpperCase();
+        const LICENSE_KEY = uuidv4().toUpperCase();
         const HASHED_LKEY = await bcrypt.hash(LICENSE_KEY, saltRounds);
         const USER_DATA = {
             billing: {
@@ -38,13 +45,14 @@ export const RegisterUser = async (req: Request, res: Response) => {
             },
             SYSTEM_KEY: '',
             discord_id: discord_id,
-            email: email,
+            email: email.toString().toLowerCase(),
             first_name: first_name,
             last_name: last_name,
             user_id: USER_ID,
             LICENSE_KEY: HASHED_LKEY,
             joined: { Date: new Date().toString(), unix: Date.now() },
         };
+
         const BannedUsersRef = db.collection('Users').doc('BannedUsers');
         const SubscribersRef = db.collection('Users').doc('Subscribers');
 
@@ -54,13 +62,13 @@ export const RegisterUser = async (req: Request, res: Response) => {
                     throw new Error("Document 'Subscribers' does not exist!");
                 }
 
-                let querySnapshot = await doc.ref.collection('UnactivatedSubscribers').where('email', '==', email).get();
+                const emailExistsUnactivatedSubscribers = (await doc.ref.collection('UnactivatedSubscribers').doc(email).get()).exists;
 
-                if (querySnapshot.size >= 1) {
+                if (emailExistsUnactivatedSubscribers) {
                     throw new Errors.EmailAlreadySent('You have already received an email!');
                 }
 
-                querySnapshot = await doc.ref.collection('ActivatedSubscribers').where('email', '==', email).get();
+                let querySnapshot = await doc.ref.collection('ActivatedSubscribers').where('email', '==', email).get();
 
                 if (querySnapshot.size > 1) {
                     throw new Errors.UserAlreadyExistManyTimes(`This user exists ${querySnapshot.size} times`);
@@ -85,7 +93,9 @@ export const RegisterUser = async (req: Request, res: Response) => {
 
                 if (subData) {
                     if (subData.USER_CAP >= count) {
-                        await SubscribersRef.collection('UnactivatedSubscribers').doc(email).set(USER_DATA);
+                        await SubscribersRef.collection('UnactivatedSubscribers')
+                            .doc((email as String).toLocaleLowerCase())
+                            .set(USER_DATA);
                         await EmailService.sendRegistrationConfirmationEmail(email, first_name, LICENSE_KEY);
                         SubscribersRef.update({
                             CURRENT_USERS: count,
@@ -127,7 +137,6 @@ export const RegisterUser = async (req: Request, res: Response) => {
                 error: 'UserCapReachedError',
             });
         } else {
-            console.log(error);
             return res.status(500).send({
                 message: error.message,
                 error: 'internalError',
@@ -152,8 +161,13 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
         return;
     }
 
-    const { L_KEY, SYSTEM_KEY, email } = req.body;
+    const { L_KEY, SYSTEM_KEY } = req.body;
+
     try {
+        let email = req.body.email.toLowerCase();
+        if (!validator.isEmail(email)) {
+            throw new Error('Not an email!');
+        }
         const db = new Firestore();
         const SubscribersRef = db.collection('Users').doc('Subscribers');
 
@@ -181,7 +195,7 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
                         if (match) {
                             data.SYSTEM_KEY = SYSTEM_KEY;
                             await docRef.delete();
-                            await SubscribersRef.collection('ActivatedSubscribers').doc(data.user_id).set(data);
+                            await SubscribersRef.collection('ActivatedSubscribers').doc(SYSTEM_KEY).set(data);
                             await EmailService.LicenseKeyActivated(data.email, data.first_name);
                         } else {
                             throw new Errors.InvalidLicenseKeyError('This license key is invalid or already activated');
@@ -230,7 +244,7 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
  * @param res
  */
 export const ValidateSystemLicense = async (req: Request, res: Response) => {
-    const { email, SYSTEM_KEY } = req.body;
+    const { SYSTEM_KEY } = req.body;
 
     try {
         const db = new Firestore();
@@ -250,5 +264,67 @@ export const ValidateSystemLicense = async (req: Request, res: Response) => {
         }
     } catch (error) {
         res.status(402).send('Not yet implemented');
+    }
+};
+
+export const AddLogActivity = async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        console.error(errors);
+        res.status(422).json({ errors: errors.array() });
+        return;
+    }
+    const { isLogIn, SYSTEM_KEY } = req.body;
+
+    try {
+        const db = new Firestore();
+
+        const docRef = await db.collection('Users').doc('Subscribers').collection('ActivatedSubscribers').doc(SYSTEM_KEY).get();
+
+        if (!docRef.exists) {
+            const VisitorDocRef = await db.collection('Visitors').doc(SYSTEM_KEY).get();
+            let data: any = VisitorDocRef.data();
+
+            if (!data) {
+                data = {};
+            }
+
+            data[Date.now().toString()] = {
+                time: new Date().toString(),
+            };
+
+            await VisitorDocRef.ref.set(data);
+
+            return res.status(200).send({
+                message: 'New visitor',
+            });
+        } else {
+            const dateObj = new Date();
+            const docName = `${dateObj.getDate()}-${dateObj.getMonth() + 1}-${dateObj.getFullYear()}`;
+
+            const userDocRef = await docRef.ref.collection('logs').doc(docName).get();
+
+            let data = userDocRef.data();
+            if (!data) {
+                data = {};
+            }
+
+            data[Date.now().toString()] = {
+                isLogIn: isLogIn ? 'Log in' : 'Log off',
+                time: dateObj.toString(),
+            };
+
+            userDocRef.ref.set(data);
+
+            return res.status(200).send({
+                message: 'Log added!',
+            });
+        }
+    } catch (error) {
+        return res.status(500).send({
+            message: error.message,
+            error: 'internalError',
+        });
     }
 };

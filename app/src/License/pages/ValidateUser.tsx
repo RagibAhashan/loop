@@ -20,17 +20,25 @@ const ValidateUserComponent = (props: any) => {
         // setTimeout(() => {
         //     ipcRenderer.invoke('GET-SYSTEM-ID').then((SYSTEM_KEY) => {
         //         axios
+        //             .post('http://localhost:4000/user/log', {
+        //                 SYSTEM_KEY: SYSTEM_KEY,
+        //                 isLogIn: true,
+        //             })
+        //             .then((res) => console.log(res))
+        //             .catch((error) => console.log(error));
+
+        //         axios
         //             .post('http://localhost:4000/user/validateSystem', {
         //                 SYSTEM_KEY: SYSTEM_KEY,
         //             })
         //             .then(() => {
-        //                 setValidated(prev => prev = true);
+        //                 setValidated((prev) => (prev = true));
         //                 setTimeout(() => {
         //                     history.push(PROFILE_ROUTE);
         //                 }, 500);
         //             })
         //             .catch((error) => {
-        //                 setFailed(prev => prev = true);
+        //                 setFailed((prev) => (prev = true));
         //                 setTimeout(() => {
         //                     history.push(ACTIVATE_LICENSE_ROUTE);
         //                 }, 500);
@@ -63,7 +71,7 @@ const ValidateUserComponent = (props: any) => {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
             <div style={{ backgroundColor: 'white' }}>
-                <img title="loading" src={smokey} alt="circle" style={{ height: '20vh' }} />
+                <img src={smokey} alt="circle" style={{ height: '20vh' }} />
             </div>
 
             <div style={{ width: '25vh' }}>
