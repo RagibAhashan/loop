@@ -2,10 +2,11 @@ import { QuestionCircleOutlined } from '@ant-design/icons';
 import { Button, Col, Empty, Popconfirm, Row, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { FixedSizeList } from 'react-window';
-import { CAPTHA_WINDOW_CLOSED, NOTIFY_CAPTCHA, NOTIFY_EDIT_TASK, NOTIFY_STOP_TASK } from '../../common/Constants';
+import { CAPTHA_WINDOW_CLOSED, NOTIFY_CAPTCHA, NOTIFY_EDIT_TASK, NOTIFY_START_TASK, NOTIFY_STOP_TASK } from '../../common/Constants';
 import { ICaptcha } from '../../components/Captcha/CaptchaFrame';
-import { TaskData } from '../../interfaces/TaskInterfaces';
-import { taskService } from '../../services/TaskService';
+import { CreditCard, TaskData, UserProfile } from '../../interfaces/TaskInterfaces';
+import ccEncryptor from '../../services/CreditCardEncryption';
+import { assignProxy } from '../../services/TaskService';
 import Bot from './Bot';
 import EditTaskModal from './EditTaskModal';
 import NewTaskModal from './newTaskModal';
@@ -38,6 +39,7 @@ for (let i = 4; i < 14; i += 0.5) {
         </Option>,
     );
 }
+const STATE = 'State';
 
 const Store = (props: any) => {
     const getTasks = (): TaskData[] => {
@@ -45,9 +47,14 @@ const Store = (props: any) => {
         return tasks ? tasks : [];
     };
 
+    const getRunningTasks = (): number => {
+        const num = JSON.parse(localStorage.getItem(storeName + STATE) as string) as number;
+        return num ? num : 0;
+    };
+
     const { storeName } = props;
     const [jobs, setJobs] = useState(() => getTasks());
-    const [jobsRunning, setJobsRunning] = useState(() => false);
+    const [numRunningTasks, setNumRunningTasks] = useState(() => getRunningTasks());
     const [taskModalVisible, setTaskModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [captchaWinOpened, setCaptchaWinOpened] = useState(false);
@@ -137,7 +144,7 @@ const Store = (props: any) => {
 
     const addTasks = (data: TaskData) => {
         let temp: TaskData[] = [];
-        for (let i = 0; i < data.quantity; i++) {
+        for (let i = 0; i < (data.quantity as number); i++) {
             const id = uuid();
             // eslint-disable-next-line react-hooks/rules-of-hooks
             temp.push({ ...data, uuid: id, store: storeName });
@@ -162,7 +169,9 @@ const Store = (props: any) => {
     };
 
     const stopAllTasks = () => {
-        setJobsRunning(false);
+        setNumRunningTasks(0);
+        localStorage.setItem(storeName + STATE, JSON.stringify(0));
+
         jobs.forEach((job) => {
             ipcRenderer.send(NOTIFY_STOP_TASK, job.uuid);
         });
@@ -199,10 +208,54 @@ const Store = (props: any) => {
 
     const ROW_GUTTER: [number, number] = [24, 0];
 
+    const startTask = (taskData: TaskData) => {
+        const { uuid, proxySet, profile, productSKU, sizes, retryDelay } = taskData;
+
+        setNumRunningTasks((prev) => {
+            localStorage.setItem(storeName + STATE, JSON.stringify(prev + 1));
+            return prev + 1;
+        });
+
+        const profiles = JSON.parse(localStorage.getItem('profiles') as string) as UserProfile[];
+        const profileData = profiles.find((prof) => prof.profile === profile) as UserProfile;
+
+        profileData.payment = ccEncryptor.encrypt(profileData?.payment as CreditCard);
+
+        let proxyData = undefined;
+        if (proxySet) {
+            proxyData = assignProxy(uuid, proxySet);
+            // console.log('proxy assigned', proxyData);
+        }
+        const deviceId = localStorage.getItem('deviceId');
+        ipcRenderer.send(NOTIFY_START_TASK, uuid, storeName, { productSKU, profileData, proxyData, sizes, retryDelay, deviceId });
+    };
+
+    const stopTask = (uuid: string) => {
+        console.log('stop', uuid);
+
+        setNumRunningTasks((prev) => {
+            localStorage.setItem(storeName + STATE, JSON.stringify(prev - 1));
+            return prev - 1;
+        });
+
+        ipcRenderer.send(NOTIFY_STOP_TASK, uuid);
+    };
+
     const renderJobs = (ele: any) => {
         const { index, style } = ele;
 
-        return <Bot key={jobs[index].uuid} taskData={jobs[index]} deleteBot={deleteBot} editBot={editBot} storeName={storeName} style={style} />;
+        return (
+            <Bot
+                key={jobs[index].uuid}
+                taskData={jobs[index]}
+                startTask={startTask}
+                stopTask={stopTask}
+                deleteBot={deleteBot}
+                editBot={editBot}
+                storeName={storeName}
+                style={style}
+            />
+        );
     };
 
     const showTasks = () => {
@@ -221,8 +274,9 @@ const Store = (props: any) => {
     };
 
     const startAllTasks = () => {
-        setJobsRunning(true);
-        taskService.notify();
+        jobs.forEach((job) => {
+            startTask(job);
+        });
     };
 
     return (
@@ -238,7 +292,12 @@ const Store = (props: any) => {
                 </Col>
 
                 <Col span={3}>
-                    <Button style={buttonStyle} type="primary" onClick={() => openEditAllTaskModal()} disabled={jobs.length === 0 || jobsRunning}>
+                    <Button
+                        style={buttonStyle}
+                        type="primary"
+                        onClick={() => openEditAllTaskModal()}
+                        disabled={jobs.length === 0 || numRunningTasks > 0}
+                    >
                         Edit All
                     </Button>
                 </Col>
@@ -248,7 +307,7 @@ const Store = (props: any) => {
                         type="default"
                         style={{ ...buttonStyle, backgroundColor: 'green' }}
                         onClick={() => startAllTasks()}
-                        disabled={jobs.length === 0 || jobsRunning}
+                        disabled={jobs.length === 0}
                     >
                         Run all
                     </Button>

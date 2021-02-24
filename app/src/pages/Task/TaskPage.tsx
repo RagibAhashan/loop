@@ -28,11 +28,9 @@ const TaskPage = () => {
 
         setStoreModalVisible(false);
         const addedPane: IStore = { title: store.name, key: store.key };
-        setPanes((old) => {
-            const newState = [...old, addedPane];
-            localStorage.setItem('stores', JSON.stringify(newState));
-            return newState;
-        });
+        const newState = [...panes, addedPane];
+        localStorage.setItem('stores', JSON.stringify(newState));
+        setPanes(newState);
     };
 
     const onEdit = (targetKey: any, action: any) => {
@@ -61,11 +59,10 @@ const TaskPage = () => {
         if (stores) {
             localStorage.removeItem(key);
 
-            setPanes((oldStores: IStore[]) => {
-                const newStores = oldStores.filter((store) => store.key !== key);
-                localStorage.setItem('stores', JSON.stringify(newStores));
-                return newStores;
-            });
+            const newStores = panes.filter((store) => store.key !== key);
+            localStorage.setItem('stores', JSON.stringify(newStores));
+
+            setPanes(newStores);
         }
     };
 

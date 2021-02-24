@@ -2,10 +2,9 @@
 import { DeleteFilled, EditFilled, PlayCircleFilled, QuestionCircleOutlined, StopFilled } from '@ant-design/icons';
 import { Button, Col, Popconfirm, Row, Tag, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { NOTIFY_START_TASK, NOTIFY_STOP_TASK, TASK_STOPPED, TASK_SUCCESS } from '../../common/Constants';
-import { Proxies, Proxy } from '../../interfaces/OtherInterfaces';
-import { CreditCard, TaskData, UserProfile } from '../../interfaces/TaskInterfaces';
-import ccEncryptor from '../../services/CreditCardEncryption';
+import { TASK_STOPPED, TASK_SUCCESS } from '../../common/Constants';
+import { Proxies } from '../../interfaces/OtherInterfaces';
+import { TaskData } from '../../interfaces/TaskInterfaces';
 import { taskService } from '../../services/TaskService';
 import EditTaskModal from './EditTaskModal';
 const { ipcRenderer } = window.require('electron');
@@ -70,14 +69,17 @@ const Bot = (props: any) => {
         taskData,
         deleteBot,
         editBot,
-        storeName,
         style,
+        startTask,
+        stopTask,
     }: {
         taskData: TaskData;
         deleteBot: any;
         editBot: any;
         storeName: string;
         style: any;
+        startTask: (taskData: TaskData) => {};
+        stopTask: (uuid: string) => {};
     } = props;
 
     const {
@@ -100,8 +102,10 @@ const Bot = (props: any) => {
         ipcRenderer.on(uuid, (event, status: Status) => {
             setStatus(status.status);
             setStatusLevel(status.level);
+            setRunning(true);
+
             if (status.checkedSize) setCurrentSize(status.checkedSize as string);
-            if (status.level === 'success') {
+            if (status.level === 'success' || status.level === 'cancel') {
                 setRunning(false);
             }
             localStorage.setItem(uuid, JSON.stringify({ lastStatus: status.status, lastLevel: status.level, checkedSize: status.checkedSize }));
@@ -129,70 +133,24 @@ const Bot = (props: any) => {
         });
     };
 
-    const assignProxy = (): Proxy | undefined => {
-        const proxies = JSON.parse(localStorage.getItem('proxies') as string) as Proxies;
-        if (!proxies) return undefined;
-        const set = proxies[proxySet as string];
-        // no proxies in the set
-        if (set.length === 0) return undefined;
-
-        //look for unused proxy and assign it to task
-        for (const proxy of set) {
-            const alreadyUsed = proxy.usedBy.find((id) => id === uuid);
-
-            if (alreadyUsed) return proxy;
-
-            // todo also check for test status (not banned)
-            if (proxy.usedBy.length === 0) {
-                proxy.usedBy.push(uuid);
-                localStorage.setItem('proxies', JSON.stringify(proxies));
-                return proxy;
-            }
-        }
-
-        set[0].usedBy.push(uuid);
-        localStorage.setItem('proxies', JSON.stringify(proxies));
-
-        // if all proxies are being used just take the first one
-        return set[0];
-    };
-
-    const startTask = () => {
-        const profiles = JSON.parse(localStorage.getItem('profiles') as string) as UserProfile[];
-        const profileData = profiles.find((prof) => prof.profile === profile) as UserProfile;
-
-        profileData.payment = ccEncryptor.encrypt(profileData?.payment as CreditCard);
-
-        let proxyData = undefined;
-        if (proxySet) {
-            proxyData = assignProxy();
-            console.log('proxy assigned', proxyData);
-        }
-        const deviceId = localStorage.getItem('deviceId');
-        ipcRenderer.send(NOTIFY_START_TASK, uuid, storeName, { productSKU, profileData, proxyData, sizes, retryDelay, deviceId });
-        console.log('setting running to true');
-        setRunning(true);
-    };
-
     useEffect(() => {
-        const notifySub = taskService.listenStart().subscribe(() => {
-            startTask();
-        });
-
         registerTaskStatusListener();
 
         return () => {
             ipcRenderer.removeAllListeners(uuid);
             ipcRenderer.removeAllListeners(uuid + TASK_STOPPED);
             ipcRenderer.removeAllListeners(uuid + TASK_SUCCESS);
-
-            notifySub.unsubscribe();
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const stopTask = () => {
-        ipcRenderer.send(NOTIFY_STOP_TASK, uuid);
+    const _startTask = () => {
+        startTask({ uuid, productSKU, sizes, retryDelay, profile, proxySet });
+        setRunning(true);
+    };
+
+    const _stopTask = () => {
+        stopTask(uuid);
         setDisabled(true);
     };
 
@@ -229,11 +187,10 @@ const Bot = (props: any) => {
     };
 
     const runButton = () => {
-        console.log('rerendereing', running);
         return running ? (
             <Button
                 onClick={() => {
-                    stopTask();
+                    _stopTask();
                 }}
                 style={stopButton}
                 icon={<StopFilled />}
@@ -243,7 +200,7 @@ const Bot = (props: any) => {
         ) : (
             <Button
                 onClick={() => {
-                    startTask();
+                    _startTask();
                 }}
                 style={startButton}
                 icon={<PlayCircleFilled />}

@@ -1,6 +1,7 @@
 import { Select } from 'antd';
 import { Observable, Subject } from 'rxjs';
 import { ICaptcha } from '../components/Captcha/CaptchaFrame';
+import { Proxies, Proxy } from '../interfaces/OtherInterfaces';
 const { Option } = Select;
 
 export const getProfiles = () => {
@@ -51,6 +52,34 @@ export const getSizes = () => {
         );
     });
     return allSizes;
+};
+
+export const assignProxy = (uuid: string, proxySet: string): Proxy | undefined => {
+    const proxies = JSON.parse(localStorage.getItem('proxies') as string) as Proxies;
+    if (!proxies) return undefined;
+    const set = proxies[proxySet as string];
+    // no proxies in the set
+    if (set.length === 0) return undefined;
+
+    //look for unused proxy and assign it to task
+    for (const proxy of set) {
+        const alreadyUsed = proxy.usedBy.find((id) => id === uuid);
+
+        if (alreadyUsed) return proxy;
+
+        // todo also check for test status (not banned)
+        if (proxy.usedBy.length === 0) {
+            proxy.usedBy.push(uuid);
+            localStorage.setItem('proxies', JSON.stringify(proxies));
+            return proxy;
+        }
+    }
+
+    set[0].usedBy.push(uuid);
+    localStorage.setItem('proxies', JSON.stringify(proxies));
+
+    // if all proxies are being used just take the first one
+    return set[0];
 };
 
 class TaskService {

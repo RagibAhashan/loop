@@ -29,16 +29,15 @@ export interface UserProfile {
 export interface TaskData {
     uuid: string;
     store?: string;
-    productLink: string;
     productSKU: string;
     proxySet: string | undefined;
     profile: string;
-    quantity: number;
+    quantity?: number;
     retryDelay: number;
     startDate?: moment.Moment;
     startTime?: moment.Moment;
     sizes: string[];
-    manualTime: boolean;
+    manualTime?: boolean;
     monitorDelay?: number;
 }
 
