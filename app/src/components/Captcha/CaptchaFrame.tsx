@@ -34,9 +34,9 @@ const CaptchaFrame = () => {
 
     const dispatchCaptcha = (): undefined | ICaptcha => {
         const captchas = JSON.parse(localStorage.getItem(store + NOTIFY_CAPTCHA) as string) as ICaptcha[];
-        console.log('dispatching', captchas);
         if (!captchas) return undefined;
 
+        console.log('dispatching', captchas[0]);
         return captchas[0];
     };
 
@@ -71,6 +71,7 @@ const CaptchaFrame = () => {
     };
 
     const renderCaptcha = () => {
+        console.log('rendering', solvingCaptcha);
         return solvingCaptcha ? (
             <Captcha siteKey={siteKey} solved={solved} captcha={solvingCaptcha}></Captcha>
         ) : (

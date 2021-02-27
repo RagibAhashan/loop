@@ -54,6 +54,8 @@ const statusColor = (level: string) => {
             return '#ff001e';
         case 'cancel':
             return '#f7331e';
+        default:
+            return 'white';
     }
 };
 

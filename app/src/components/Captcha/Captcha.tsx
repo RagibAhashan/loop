@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import ReCAPTCHA from 'react-google-recaptcha';
 import { GET_DATADOME } from '../../common/Constants';
 import { ICaptcha } from './CaptchaFrame';
 const { ipcRenderer } = window.require('electron');
@@ -9,20 +10,16 @@ const Captcha = (props: any) => {
     useEffect(() => {
         console.log('site', siteKey);
     });
-    const onSolveCap = async (token: string) => {
+    const onSolveCap = async (token: string | null) => {
         console.log('solved', token);
         const datadome = await ipcRenderer.invoke(GET_DATADOME, token, captcha);
         console.log('got datadome cookie', datadome);
         solved(datadome);
     };
 
-    (window as any).onSolveCap = onSolveCap;
-
     return (
         <div>
-            <form action="?" method="POST">
-                <div className="g-recaptcha" data-sitekey={siteKey} data-callback="onSolveCap"></div>
-            </form>
+            <ReCAPTCHA sitekey={siteKey} onChange={onSolveCap} />
         </div>
     );
 };

@@ -255,6 +255,13 @@ const Store = (props: any) => {
     };
 
     const stopTask = (uuid: string) => {
+        // remove captcha from list if task was waiting for one
+        const captchas = JSON.parse(localStorage.getItem(storeName + NOTIFY_CAPTCHA) as string) as ICaptcha[];
+        if (captchas) {
+            const newCap = captchas.filter((cap) => cap.uuid !== uuid);
+            localStorage.setItem(storeName + NOTIFY_CAPTCHA, JSON.stringify(newCap));
+        }
+
         console.log('stop', uuid);
 
         setNumRunningTasks((prev) => {
@@ -331,7 +338,7 @@ const Store = (props: any) => {
                         type="default"
                         style={{ ...buttonStyle, backgroundColor: 'green' }}
                         onClick={() => startAllTasks()}
-                        disabled={jobs.length === 0}
+                        disabled={jobs.length === 0 || numRunningTasks > 0}
                     >
                         Run all
                     </Button>

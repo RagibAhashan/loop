@@ -1,7 +1,7 @@
 import { Layout } from 'antd';
 import React, { useEffect } from 'react';
 import { Route } from 'react-router-dom';
-import { PROFILE_ROUTE, PROXY_ROUTE, SETTINGS_ROUTE, TASKS_ROUTE } from './common/Constants';
+import { NOTIFY_CAPTCHA, PROFILE_ROUTE, PROXY_ROUTE, SETTINGS_ROUTE, TASKS_ROUTE } from './common/Constants';
 import SideBar from './components/sidebar';
 import { IStore } from './interfaces/OtherInterfaces';
 import { TaskData } from './interfaces/TaskInterfaces';
@@ -25,6 +25,7 @@ const initTasksStatus = () => {
     if (!stores) return;
 
     stores.forEach((store) => {
+        localStorage.removeItem(store.key + NOTIFY_CAPTCHA);
         const storeTasks = JSON.parse(localStorage.getItem(store.key) as string) as TaskData[];
         if (storeTasks) {
             storeTasks.forEach((task) => localStorage.removeItem(task.uuid));
