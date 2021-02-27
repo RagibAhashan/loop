@@ -25,7 +25,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
     }
 
     try {
-        const { credit_card, cvc, discord_id, first_name, last_name, CC_Month, CC_Year } = req.body;
+        const { credit_card, cvc, first_name, last_name, CC_Month, CC_Year } = req.body;
 
         const email = req.body.email.toLowerCase();
         if (!validator.isEmail(email)) {
@@ -36,15 +36,12 @@ export const RegisterUser = async (req: Request, res: Response) => {
         const USER_ID = uuidv4().toUpperCase();
         const LICENSE_KEY = uuidv4().toUpperCase();
         const HASHED_LKEY = await bcrypt.hash(LICENSE_KEY, saltRounds);
+
+
+
         const USER_DATA = {
-            billing: {
-                credit_card: credit_card,
-                cvc: cvc,
-                CC_Month: CC_Month,
-                CC_Year: CC_Year,
-            },
             SYSTEM_KEY: '',
-            discord_id: discord_id,
+            discord: {},
             email: email.toString().toLowerCase(),
             first_name: first_name,
             last_name: last_name,
@@ -62,7 +59,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
                     throw new Error("Document 'Subscribers' does not exist!");
                 }
 
-                const emailExistsUnactivatedSubscribers = (await doc.ref.collection('UnactivatedSubscribers').doc(email).get()).exists;
+                const emailExistsUnactivatedSubscribers = (await doc.ref.collection('UnactivatedSubscribers-discord').doc(email).get()).exists;
 
                 if (emailExistsUnactivatedSubscribers) {
                     throw new Errors.EmailAlreadySent('You have already received an email!');
@@ -93,7 +90,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
 
                 if (subData) {
                     if (subData.USER_CAP >= count) {
-                        await SubscribersRef.collection('UnactivatedSubscribers')
+                        await SubscribersRef.collection('UnactivatedSubscribers-discord')
                             .doc((email as String).toLocaleLowerCase())
                             .set(USER_DATA);
                         await EmailService.sendRegistrationConfirmationEmail(email, first_name, LICENSE_KEY);
@@ -145,6 +142,43 @@ export const RegisterUser = async (req: Request, res: Response) => {
     }
 };
 
+
+export const ActivateDiscord = async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        console.error(errors);
+        res.status(422).json({ errors: errors.array() });
+        return;
+    }
+
+    const { discord, L_KEY } = req.body;
+
+
+    try {
+        const db = new Firestore();
+        const discordDocRef = await db.collection('Users').doc('Subscribers').collection('UnactivatedSubscribers-discord').doc(L_KEY).get();
+
+        const data = discordDocRef.data();
+        if (!data) {
+            throw new Errors.LicenseKeyNotFound('LicenseKeyNotFound');
+        } else {
+            await discordDocRef.ref.delete();
+            data.discord = discord;
+            db.collection('Users').doc('Subscribers').collection('UnactivatedSubscribers-app')
+            .doc(L_KEY).set(data);
+        }
+
+    } catch (error) {
+        if (error instanceof Errors.LicenseKeyNotFound) {
+            return res.status(404).send({
+                message: error.message,
+                error: 'LicenseKeyNotFound'
+            })
+        }
+    }
+}
+
 /**
  * Activates the license key and puts the user in the activated collection.
  * Once this happens, the system data is binded and the user can only use the system he used
@@ -152,7 +186,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
  * @param req
  * @param res
  */
-export const ActivateUserLicense = async (req: Request, res: Response) => {
+export const ActivateLicenseBot = async (req: Request, res: Response) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -191,6 +225,15 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
                 } else {
                     const data = docSnapshot.data();
                     if (data) {
+                        console.log(!data.discord);
+                        if (data['discord'] === {}) {
+                            console.log('lol')
+                            // throw new Errors.DiscordNotFound('Discord is not activated!');
+                            return res.status(404).send({
+                                // message: error.message,
+                                error: 'DiscordNotFound',
+                            });
+                        }
                         const match = await bcrypt.compare(L_KEY, data.LICENSE_KEY);
                         if (match) {
                             data.SYSTEM_KEY = SYSTEM_KEY;
@@ -213,22 +256,27 @@ export const ActivateUserLicense = async (req: Request, res: Response) => {
         if (error instanceof Errors.LicenseKeyNotFound) {
             return res.status(404).send({
                 message: error.message,
-                error: 'internalError',
+                error: 'LicenseKeyNotFound',
             });
         } else if (error instanceof Errors.LicenseKeyNotFound) {
             return res.status(404).send({
                 message: error.message,
-                error: 'internalError',
+                error: 'LicenseKeyNotFound',
             });
         } else if (error instanceof Errors.UserAlreadyExistError) {
             return res.status(409).send({
                 message: error.message,
-                error: 'internalError',
+                error: 'UserAlreadyExistError',
             });
         } else if (error instanceof Errors.UserNotFoundError) {
             return res.status(404).send({
                 message: error.message,
-                error: 'internalError',
+                error: 'UserNotFoundError',
+            });
+        } else if (error instanceof Errors.DiscordNotFound) {
+            return res.status(404).send({
+                message: error.message,
+                error: 'DiscordNotFound',
             });
         }
         return res.status(500).send({

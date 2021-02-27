@@ -3,6 +3,7 @@ import * as User from './user';
 import * as Events from './events';
 import * as Discord from './Discord/discord';
 import passport from 'passport';
+import axios from 'axios';
 
 import { json } from 'body-parser';
 
@@ -17,11 +18,14 @@ passport.use(new DiscordStrategy({
     clientSecret: process.env.CLIENT_SECRET,
     callbackURL: process.env.CLIENT_REDIRECT,
     scope: ['identify', 'guilds']
-}, (accessToken: any, refreshToken: any, profile: any, done: any) => {
+}, async (accessToken: any, refreshToken: any, profile: any, done: any) => {
     console.log(accessToken);
     console.log(refreshToken)
     console.log(profile)
     console.log(done)
+
+    
+
 }));
 
 
@@ -31,7 +35,7 @@ passport.use(new DiscordStrategy({
 // USER REQUESTS.
 router.post('/user/validateSystem', jsonParser, User.ValidateSystemLicense);
 router.post('/user/register/', jsonParser, User.RegisterUser);
-router.post('/user/activatekey/', jsonParser, User.ActivateUserLicense);
+router.post('/user/activatekey/', jsonParser, User.ActivateLicenseBot);
 
 // USER ANALYTICS
 router.post('/user/log/', jsonParser, User.AddLogActivity);
