@@ -9,6 +9,30 @@ import validator from 'validator';
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
 
+export const UserPaymentLicenseKey = async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        console.error(errors);
+        res.status(422).json({ errors: errors.array() });
+        return;
+    }
+
+    try {
+        const { first_name, last_name } = req.body;
+
+        const email = req.body.email.toLowerCase();
+        if (!validator.isEmail(email)) {
+            throw new Error('Not an email!');
+        }
+        res.send('paid')
+    } catch (error) {
+        
+    }
+
+}
+
+
 /**
  * Receives user data and holds the data in a collection temporary until the license key is
  * activated for the very first time.
@@ -25,7 +49,7 @@ export const RegisterUser = async (req: Request, res: Response) => {
     }
 
     try {
-        const { credit_card, cvc, first_name, last_name, CC_Month, CC_Year } = req.body;
+        const { first_name, last_name } = req.body;
 
         const email = req.body.email.toLowerCase();
         if (!validator.isEmail(email)) {
@@ -50,7 +74,6 @@ export const RegisterUser = async (req: Request, res: Response) => {
             joined: { Date: new Date().toString(), unix: Date.now() },
         };
 
-        const BannedUsersRef = db.collection('Users').doc('BannedUsers');
         const SubscribersRef = db.collection('Users').doc('Subscribers');
 
         await db.runTransaction(async (transaction) => {
@@ -58,49 +81,23 @@ export const RegisterUser = async (req: Request, res: Response) => {
                 if (!doc.exists) {
                     throw new Error("Document 'Subscribers' does not exist!");
                 }
+                
+                const querySnapshot = await doc.ref.collection('UnactivatedUsers')
+                .doc('discord-stage')
+                .collection('unactivated-discord')
+                .where('email', '==', email)
+                .get();
+                
 
-                const emailExistsUnactivatedSubscribers = (await doc.ref.collection('UnactivatedSubscribers-discord').doc(email).get()).exists;
-
-                if (emailExistsUnactivatedSubscribers) {
-                    throw new Errors.EmailAlreadySent('You have already received an email!');
-                }
-
-                let querySnapshot = await doc.ref.collection('ActivatedSubscribers').where('email', '==', email).get();
-
-                if (querySnapshot.size > 1) {
-                    throw new Errors.UserAlreadyExistManyTimes(`This user exists ${querySnapshot.size} times`);
-                } else if (querySnapshot.size === 1) {
-                    throw new Errors.UserAlreadyExistError('This user already exist!');
-                }
-
-                if (querySnapshot.size > 1) {
-                    throw new Errors.UserAlreadyExistManyTimes(`This user exists ${querySnapshot.size} times`);
-                } else if (querySnapshot.size === 1) {
-                    throw new Errors.UserAlreadyExistError('This user already exist!');
-                }
-
-                querySnapshot = await BannedUsersRef.collection('BannedList').where('email', '==', email).get();
                 if (querySnapshot.size === 1) {
-                    throw new Errors.BannedUserError('This user is banned!');
+                    throw new Errors.EmailAlreadySent('This email was already sent!')
                 }
 
-                const subData: FirebaseFirestore.DocumentData | undefined = await (await SubscribersRef.get()).data();
-                const snapshot: any = await SubscribersRef.collection('ActivatedSubscribers').get();
-                const count: number = snapshot.size + 1;
-
-                if (subData) {
-                    if (subData.USER_CAP >= count) {
-                        await SubscribersRef.collection('UnactivatedSubscribers-discord')
-                            .doc((email as String).toLocaleLowerCase())
-                            .set(USER_DATA);
-                        await EmailService.sendRegistrationConfirmationEmail(email, first_name, LICENSE_KEY);
-                        SubscribersRef.update({
-                            CURRENT_USERS: count,
-                        });
-                    } else {
-                        throw new Errors.UserCapReachedError('User cap reached!');
-                    }
-                }
+                doc.ref.collection('UnactivatedUsers')
+                .doc('discord-stage')
+                .collection('unactivated-discord')
+                .doc(email)
+                .set(USER_DATA)
             });
         });
 
@@ -157,17 +154,63 @@ export const ActivateDiscord = async (req: Request, res: Response) => {
 
     try {
         const db = new Firestore();
-        const discordDocRef = await db.collection('Users').doc('Subscribers').collection('UnactivatedSubscribers-discord').doc(L_KEY).get();
 
-        const data = discordDocRef.data();
-        if (!data) {
-            throw new Errors.LicenseKeyNotFound('LicenseKeyNotFound');
-        } else {
-            await discordDocRef.ref.delete();
-            data.discord = discord;
-            db.collection('Users').doc('Subscribers').collection('UnactivatedSubscribers-app')
-            .doc(L_KEY).set(data);
-        }
+        const ListUnactivatedDiscordDocuments = await db.collection('Users')
+        .doc('Subscribers')
+        .collection('UnactivatedUsers')
+        .doc('discord-stage')
+        .collection('unactivated-discord')
+        .listDocuments();
+
+        let found = false;
+
+        (await Promise.all(ListUnactivatedDiscordDocuments)).map(async (docRef) => {
+
+
+            const doc: any = await docRef.get();
+            const data: any = doc.data();
+            
+            const match = await bcrypt.compare(L_KEY, data.LICENSE_KEY);
+
+            console.log(data, match);
+
+            if (match) {
+                data.discord = discord;
+                console.log('\n\n\n');
+                console.log(data);
+
+                try {
+
+                    await docRef.delete();
+                    await db.collection('Users')
+                    .doc('Subscribers')
+                    .collection('UnactivatedUsers')
+                    .doc('electron-stage')
+                    .collection('unactivated-electron')
+                    .doc(data.email)
+                    .set(data);
+                } catch (error) {
+                    throw new Errors.UnableActivateDiscordStage('Could not activate discord account.')
+                }
+                
+
+                return res.status(200).send({
+                    message: 'Discord is activated!',
+                    L_KEY: L_KEY,
+                    discord: discord
+                })
+            }
+
+
+        })
+
+        res.setTimeout(1000*10, () => {
+            return res.status(404).send({
+                message: 'License key not found!',
+                error: 'LicenseKeyNotFound'
+            })
+        });
+
 
     } catch (error) {
         if (error instanceof Errors.LicenseKeyNotFound) {
@@ -176,6 +219,14 @@ export const ActivateDiscord = async (req: Request, res: Response) => {
                 error: 'LicenseKeyNotFound'
             })
         }
+
+        if (error instanceof Errors.UnableActivateDiscordStage) {
+            return res.status(500).send({
+                message: error.message,
+                error: 'UnableActivateDiscordStage'
+            })
+        }
+
     }
 }
 
@@ -198,60 +249,62 @@ export const ActivateLicenseBot = async (req: Request, res: Response) => {
     const { L_KEY, SYSTEM_KEY } = req.body;
 
     try {
-        let email = req.body.email.toLowerCase();
-        if (!validator.isEmail(email)) {
-            throw new Error('Not an email!');
-        }
+
         const db = new Firestore();
-        const SubscribersRef = db.collection('Users').doc('Subscribers');
 
-        await db.runTransaction(async (transaction) => {
-            return transaction.get(SubscribersRef).then(async (doc) => {
-                if (!doc.exists) {
-                    throw new Error("Document 'SubscribersRef' does not exist!");
+        const ListUnactivatedElectronDocuments = await db.collection('Users')
+        .doc('Subscribers')
+        .collection('UnactivatedUsers')
+        .doc('electron-stage')
+        .collection('unactivated-electron')
+        .listDocuments();
+
+        (await Promise.all(ListUnactivatedElectronDocuments)).map(async (docRef) => {
+
+
+            const doc: any = await docRef.get();
+            const data: any = doc.data();
+
+
+            
+            const match = await bcrypt.compare(L_KEY, data.LICENSE_KEY);
+
+            console.log(data, match);
+
+            if (match) {
+                console.log('\n\n\n');
+                console.log(data);
+
+                try {
+                    data.SYSTEM_KEY = SYSTEM_KEY;
+                    await docRef.delete();
+                    await db.collection('Users')
+                    .doc('Subscribers')
+                    .collection('ActivatedSubscribers')
+                    .doc(data.user_id)
+                    .set(data);
+                } catch (error) {
+                    throw new Errors.UnableActivateElectronStage('Could not activate electron account.')
                 }
+                
 
-                const querySnapshot = await doc.ref.collection('ActivatedSubscribers').where('email', '==', email).get();
+                return res.status(200).send({
+                    message: 'Key binded with application!',
+                    L_KEY: L_KEY,
+                    discord: data.discord
+                })
+            }
 
-                if (querySnapshot.size >= 1) {
-                    throw new Errors.UserAlreadyExistError('This email was already registered!');
-                }
 
-                const docRef = await doc.ref.collection('UnactivatedSubscribers').doc(email);
-                const docSnapshot = await docRef.get();
+        })
 
-                if (!docSnapshot.exists) {
-                    throw new Errors.UserNotFoundError('This email account is not registered.');
-                } else {
-                    const data = docSnapshot.data();
-                    if (data) {
-                        console.log(!data.discord);
-                        if (data['discord'] === {}) {
-                            console.log('lol')
-                            // throw new Errors.DiscordNotFound('Discord is not activated!');
-                            return res.status(404).send({
-                                // message: error.message,
-                                error: 'DiscordNotFound',
-                            });
-                        }
-                        const match = await bcrypt.compare(L_KEY, data.LICENSE_KEY);
-                        if (match) {
-                            data.SYSTEM_KEY = SYSTEM_KEY;
-                            await docRef.delete();
-                            await SubscribersRef.collection('ActivatedSubscribers').doc(SYSTEM_KEY).set(data);
-                            await EmailService.LicenseKeyActivated(data.email, data.first_name);
-                        } else {
-                            throw new Errors.InvalidLicenseKeyError('This license key is invalid or already activated');
-                        }
-                    }
-                }
-            });
+        res.setTimeout(1000*10, () => {
+            return res.status(404).send({
+                message: 'License key not found!',
+                error: 'LicenseKeyNotFound'
+            })
         });
 
-        return res.status(200).send({
-            message: 'License key activated!',
-            permission: true,
-        });
     } catch (error) {
         if (error instanceof Errors.LicenseKeyNotFound) {
             return res.status(404).send({
@@ -263,20 +316,15 @@ export const ActivateLicenseBot = async (req: Request, res: Response) => {
                 message: error.message,
                 error: 'LicenseKeyNotFound',
             });
-        } else if (error instanceof Errors.UserAlreadyExistError) {
+        } else if (error instanceof Errors.UnableActivateElectronStage) {
             return res.status(409).send({
                 message: error.message,
-                error: 'UserAlreadyExistError',
+                error: 'UnableActivateElectronStage',
             });
         } else if (error instanceof Errors.UserNotFoundError) {
             return res.status(404).send({
                 message: error.message,
                 error: 'UserNotFoundError',
-            });
-        } else if (error instanceof Errors.DiscordNotFound) {
-            return res.status(404).send({
-                message: error.message,
-                error: 'DiscordNotFound',
             });
         }
         return res.status(500).send({

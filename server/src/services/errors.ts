@@ -69,3 +69,19 @@ export class InvalidLicenseKeyError extends Error {
         this.name = InvalidLicenseKeyError.name;
     }
 }
+
+export class UnableActivateDiscordStage extends Error {
+    constructor(message?: string) {
+        super(message);
+        Object.setPrototypeOf(this, new.target.prototype);
+        this.name = UnableActivateDiscordStage.name;
+    }
+}
+
+export class UnableActivateElectronStage extends Error {
+    constructor(message?: string) {
+        super(message);
+        Object.setPrototypeOf(this, new.target.prototype);
+        this.name = UnableActivateElectronStage.name;
+    }
+}

@@ -5,10 +5,13 @@ import passport from 'passport';
 
 
 export const Authenticate = async (req: Request, res: Response) => {
+    console.log('Authenticate', req.body);
+
     try {
-        res.status(200).send({
-            message: 'Discord auth!',
-        });
+        return res.send({
+            'from' : 'server',
+            profile: req.body
+        })
     } catch (error) {
         return res.status(500).send({
             message: error.message,
