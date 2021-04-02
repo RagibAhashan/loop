@@ -11,8 +11,10 @@
         "@testing-library/jest-dom": "^5.11.4",
         "@testing-library/react": "^11.1.0",
         "@testing-library/user-event": "^12.1.10",
+        "@types/events": "^3.0.0",
         "@types/jest": "^26.0.15",
         "@types/node": "^12.0.0",
+        "@types/object-hash": "^2.1.0",
         "@types/react": "^16.9.53",
         "@types/react-credit-cards": "^0.8.0",
         "@types/react-dom": "^16.9.8",
@@ -43,12 +45,14 @@
         "test": "craco test",
         "eject": "craco eject",
         "start:electron": "webpack --config webpack.config.dev.js && cross-env NODE_ENV=prod electron .",
-        "package": "yarn build && webpack --config webpack.config.prod.js && electron-builder build"
+        "package": "yarn build && webpack --config webpack.config.prod.js && electron-builder build",
+        "lint:react": "eslint ./src --ext .tsx --max-warnings=0",
+        "lint:electron": "eslint ./src --ext .ts --max-warnings=0",
+        "prepare": "cd .. && husky install ./app/.husky"
     },
     "eslintConfig": {
         "extends": [
-            "react-app",
-            "react-app/jest"
+            "react-app"
         ]
     },
     "browserslist": {
@@ -68,6 +72,8 @@
         "cross-env": "^7.0.3",
         "electron": "^11.2.0",
         "electron-builder": "^22.9.1",
+        "husky": "^6.0.0",
+        "ts-loader": "^8.1.0",
         "webpack-cli": "^4.4.0"
     },
     "build": {

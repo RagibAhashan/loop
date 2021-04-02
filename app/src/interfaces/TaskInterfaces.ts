@@ -1,5 +1,5 @@
+import { Moment } from 'moment';
 import { Proxy } from './OtherInterfaces';
-
 export interface CreditCard {
     number: string;
     expiryMonth: string;
@@ -34,11 +34,12 @@ export interface TaskData {
     profile: string;
     quantity?: number;
     retryDelay: number;
-    startDate?: moment.Moment;
-    startTime?: moment.Moment;
+    startDate?: Moment;
+    startTime?: Moment;
     sizes: string[];
     manualTime?: boolean;
     monitorDelay?: number;
+    running?: boolean;
 }
 
 export interface StartTaskData {

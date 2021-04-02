@@ -1,20 +1,18 @@
-import { Progress, Button } from 'antd';
-import axios from 'axios';
+import { Progress } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { PROFILE_ROUTE, ACTIVATE_LICENSE_ROUTE, VALIDATE_USER_DATA_ROUTE } from '../../common/Constants';
+import { PROFILE_ROUTE } from '../../common/Constants';
 
-const { ipcRenderer } = window.require('electron');
 const smokey = 'https://cdn.dribbble.com/users/1106178/screenshots/4175222/orb.gif';
-const pink = 'https://cdn.dribbble.com/users/1106178/screenshots/4211140/circle.gif';
-const whitey = 'https://thumbs.gfycat.com/DearWellinformedDalmatian-size_restricted.gif';
-const blackey = 'http://static.demilked.com/wp-content/uploads/2016/06/gif-animations-replace-loading-screen-2.gif';
-const redey = 'https://cdn.dribbble.com/users/1417337/screenshots/5750630/bubble-loader.gif';
-const spiraley = 'https://i.gifer.com/1etH.gif';
+// const pink = 'https://cdn.dribbble.com/users/1106178/screenshots/4211140/circle.gif';
+// const whitey = 'https://thumbs.gfycat.com/DearWellinformedDalmatian-size_restricted.gif';
+// const blackey = 'http://static.demilked.com/wp-content/uploads/2016/06/gif-animations-replace-loading-screen-2.gif';
+// const redey = 'https://cdn.dribbble.com/users/1417337/screenshots/5750630/bubble-loader.gif';
+// const spiraley = 'https://i.gifer.com/1etH.gif';
 const ValidateUserComponent = (props: any) => {
     const { history } = props;
     const [prog, setProg] = useState(0);
-    const [validated, setValidated] = useState(false);
-    const [failed, setFailed] = useState(false);
+    const [validated] = useState(false);
+    const [failed] = useState(false);
 
     useEffect(() => {
         // setTimeout(() => {
@@ -66,6 +64,7 @@ const ValidateUserComponent = (props: any) => {
         setTimeout(() => {
             setProg((prev) => (prev = 100));
         }, 2500);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

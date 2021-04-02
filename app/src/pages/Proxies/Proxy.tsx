@@ -1,7 +1,7 @@
 // import styles from './sidebar.module.css';
 import { DeleteFilled, PlayCircleFilled, StopFilled } from '@ant-design/icons';
 import { Button, Col, Row } from 'antd';
-import React, { useState } from 'react';
+import React from 'react';
 import { NOTIFY_START_PROXY_TEST, NOTIFY_STOP_PROXY_TEST } from '../../common/Constants';
 const { ipcRenderer } = window.require('electron');
 
@@ -32,8 +32,6 @@ const deleteButton = {
 
 const ProxyRow = (props: any) => {
     const { proxy, style, currentTab, store } = props;
-
-    const [level, setLevel] = useState('idle');
 
     const statusColor = (level: string) => {
         switch (level) {

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
 import { Button, Form, Input, Spin } from 'antd';
 import axios from 'axios';
+import React, { useState } from 'react';
 import { PROFILE_ROUTE } from '../../common/Constants';
 const { ipcRenderer } = window.require('electron');
 
@@ -10,14 +10,6 @@ const ActivateLicense = (props: any) => {
     const [email, setEmail] = useState('');
     const [code, setCode] = useState(201);
     const [loading, setLoading] = useState(false);
-    const [validateSystemLoading, SetValidationSystem] = useState(true);
-
-    function useForceUpdate() {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [value, setValue] = useState(0); // integer state
-        return () => setValue((value) => value + 1); // update the state to force render
-    }
-    const forceUpdate = useForceUpdate();
 
     const getID = async () => {
         const SYSTEM_KEY = await ipcRenderer.invoke('GET-SYSTEM-ID');
@@ -84,8 +76,7 @@ const ActivateLicense = (props: any) => {
                         </Form.Item>
 
                         <Button type="primary" style={{ width: '1000px' }} danger onClick={() => history.push(PROFILE_ROUTE)}>
-                            {' '}
-                            Bypass{' '}
+                            Bypass
                         </Button>
                     </Form>
                 </div>

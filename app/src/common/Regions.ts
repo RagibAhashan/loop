@@ -1,4 +1,4 @@
-const REGIONS_CANADA = {
+export const REGIONS_CANADA = {
     Alberta: { countryIso: 'CA', isocode: 'CA-AB', isocodeShort: 'AB' },
     'British Columbia': { countryIso: 'CA', isocode: 'CA-BC', isocodeShort: 'BC' },
     Manitoba: { countryIso: 'CA', isocode: 'CA-MB', isocodeShort: 'MB' },
@@ -14,7 +14,7 @@ const REGIONS_CANADA = {
     Yukon: { countryIso: 'CA', isocode: 'CA-YT', isocodeShort: 'YT' },
 };
 
-const REGIONS_USA = {
+export const REGIONS_USA = {
     Alabama: { countryIso: 'US', isocode: 'US-AL', isocodeShort: 'AL' },
     Alaska: { countryIso: 'US', isocode: 'US-AK', isocodeShort: 'AK' },
     Arizona: { countryIso: 'US', isocode: 'US-AZ', isocodeShort: 'AZ' },
@@ -73,12 +73,10 @@ const REGIONS_USA = {
     'U.S. Virgin Islands': { countryIso: 'US', isocode: 'US-VI', isocodeShort: 'VI' },
 };
 
-const REGIONS = {
+export const REGIONS: any = {
     Canada: REGIONS_CANADA,
     'United States': REGIONS_USA,
     default: {},
 };
 
-const COUNTRY = { Canada: 'CA', 'United States': 'US' };
-
-module.exports = { REGIONS, COUNTRY, REGIONS_CANADA, REGIONS_USA };
+export const COUNTRY: any = { Canada: 'CA', 'United States': 'US' };

@@ -4,12 +4,12 @@ import { Route } from 'react-router-dom';
 import { NOTIFY_CAPTCHA, PROFILE_ROUTE, PROXY_ROUTE, SETTINGS_ROUTE, TASKS_ROUTE } from './common/Constants';
 import SideBar from './components/sidebar';
 import { IStore } from './interfaces/OtherInterfaces';
-import { TaskData } from './interfaces/TaskInterfaces';
 import ProfilePage from './pages/Profile/profiles';
 import ProxyPage from './pages/Proxies/ProxyPage';
 import SettingsPage from './pages/settingsPage';
 import TaskPage from './pages/Task/TaskPage';
 import { Fingerprint } from './services/Fingerprint';
+import { StoreState } from './services/StoreService';
 const { Content } = Layout;
 
 const generateFingerPrint = () => {
@@ -26,9 +26,9 @@ const initTasksStatus = () => {
 
     stores.forEach((store) => {
         localStorage.removeItem(store.key + NOTIFY_CAPTCHA);
-        const storeTasks = JSON.parse(localStorage.getItem(store.key) as string) as TaskData[];
-        if (storeTasks) {
-            storeTasks.forEach((task) => localStorage.removeItem(task.uuid));
+        const storeState = JSON.parse(localStorage.getItem(store.key) as string) as StoreState;
+        if (storeState) {
+            storeState.tasks.forEach((task) => localStorage.removeItem(task.uuid));
         }
     });
 };

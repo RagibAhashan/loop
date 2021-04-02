@@ -7,6 +7,7 @@ import { CAPTHA_WINDOW_CLOSED, NOTIFY_CAPTCHA, NOTIFY_EDIT_TASK, NOTIFY_START_TA
 import { ICaptcha } from '../../components/Captcha/CaptchaFrame';
 import { CreditCard, TaskData, UserProfile } from '../../interfaces/TaskInterfaces';
 import ccEncryptor from '../../services/CreditCardEncryption';
+import { storeService } from '../../services/StoreService';
 import { assignProxy } from '../../services/TaskService';
 import Bot from './Bot';
 import EditTaskModal from './EditTaskModal';
@@ -40,21 +41,18 @@ for (let i = 4; i < 14; i += 0.5) {
         </Option>,
     );
 }
-const STATE = 'State';
 
 const Store = (props: any) => {
     const getTasks = (): TaskData[] => {
-        const tasks = JSON.parse(localStorage.getItem(storeName) as string) as TaskData[];
-        return tasks ? tasks : [];
+        return storeService.getTasks(storeName);
     };
 
     const getRunningTasks = (): number => {
-        const num = JSON.parse(localStorage.getItem(storeName + STATE) as string) as number;
-        return num ? num : 0;
+        return storeService.countRunningTasks(storeName);
     };
 
     const { storeName } = props;
-    const [jobs, setJobs] = useState(() => getTasks());
+    const [tasks, setTasks] = useState(() => getTasks());
     const [numRunningTasks, setNumRunningTasks] = useState(() => getRunningTasks());
     const [taskModalVisible, setTaskModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
@@ -92,14 +90,14 @@ const Store = (props: any) => {
 
     const deleteBot = (uuid: string) => {
         localStorage.removeItem(uuid);
-        for (let i = 0; i < jobs.length; i++) {
-            if (jobs[i].uuid === uuid) {
-                jobs.splice(i, 1);
+        for (let i = 0; i < tasks.length; i++) {
+            if (tasks[i].uuid === uuid) {
+                tasks.splice(i, 1);
                 break;
             }
         }
-        setJobs(() => {
-            const newJobs = [...jobs];
+        setTasks(() => {
+            const newJobs = [...tasks];
             localStorage.setItem(storeName, JSON.stringify(newJobs));
             return newJobs;
         });
@@ -143,6 +141,7 @@ const Store = (props: any) => {
         );
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const addTaskEvent = (temp: TaskData[]) => {
         ipcRenderer.invoke('GET-SYSTEM-ID').then((SYSTEM_KEY) => {
             const aTask = temp[0];
@@ -167,48 +166,49 @@ const Store = (props: any) => {
         for (let i = 0; i < (data.quantity as number); i++) {
             const id = uuid();
             // eslint-disable-next-line react-hooks/rules-of-hooks
-            temp.push({ ...data, uuid: id, store: storeName });
+            temp.push({ ...data, uuid: id, store: storeName, running: false });
         }
 
-        addTaskEvent(temp);
+        // addTaskEvent(temp);
 
-        console.log(temp);
+        // console.log(temp);
 
-        setJobs((oldJobs) => {
-            const newJobs = [...oldJobs, ...temp];
-            localStorage.setItem(storeName, JSON.stringify(newJobs));
-            return newJobs;
-        });
+        const newTasks = [...tasks, ...temp];
+
+        storeService.setTasks(storeName, newTasks);
+
+        setTasks(newTasks);
 
         setTaskModalVisible(false);
     };
 
     const deleteAllTasks = () => {
-        jobs.forEach((job) => {
-            localStorage.removeItem(job.uuid);
-            ipcRenderer.send(NOTIFY_STOP_TASK, job.uuid);
+        tasks.forEach((task) => {
+            localStorage.removeItem(task.uuid);
+            ipcRenderer.send(NOTIFY_STOP_TASK, task.uuid);
         });
-        setJobs(() => new Array<TaskData>());
-        localStorage.removeItem(storeName);
+        setTasks(() => new Array<TaskData>());
+        storeService.delete(storeName);
     };
 
     const stopAllTasks = () => {
         setNumRunningTasks(0);
-        localStorage.setItem(storeName + STATE, JSON.stringify(0));
+        storeService.setNumRunningTasks(storeName, 0);
 
-        jobs.forEach((job) => {
-            ipcRenderer.send(NOTIFY_STOP_TASK, job.uuid);
+        tasks.forEach((task) => {
+            ipcRenderer.send(NOTIFY_STOP_TASK, task.uuid);
         });
 
+        // todo add captcha state for store, captcha state will prob have multiple window/solver
         localStorage.removeItem(storeName + NOTIFY_CAPTCHA);
     };
 
     const editBot = (newValues: TaskData, uuid: string) => {
-        const newJobs = [...jobs];
-        const idx = jobs.findIndex((job) => job.uuid === uuid);
-        newJobs[idx] = { ...newJobs[idx], ...newValues };
-        localStorage.setItem(storeName, JSON.stringify(newJobs));
-        setJobs(newJobs);
+        const newTasks = [...tasks];
+        const idx = tasks.findIndex((task) => task.uuid === uuid);
+        newTasks[idx] = { ...newTasks[idx], ...newValues };
+        storeService.setTasks(storeName, newTasks);
+        setTasks(newTasks);
         ipcRenderer.send(NOTIFY_EDIT_TASK, uuid);
     };
 
@@ -217,15 +217,15 @@ const Store = (props: any) => {
     };
 
     const editAllTasks = (newValues: TaskData) => {
-        const newJobs = [...jobs];
+        const newJobs = [...tasks];
 
-        jobs.forEach((job, idx) => {
+        tasks.forEach((task, idx) => {
             newJobs[idx] = { ...newJobs[idx], ...newValues };
-            ipcRenderer.send(NOTIFY_EDIT_TASK, job.uuid);
+            ipcRenderer.send(NOTIFY_EDIT_TASK, task.uuid);
         });
 
-        localStorage.setItem(storeName, JSON.stringify(newJobs));
-        setJobs(newJobs);
+        storeService.setTasks(storeName, newJobs);
+        setTasks(newJobs);
 
         setEditModalVisible(false);
     };
@@ -236,7 +236,7 @@ const Store = (props: any) => {
         const { uuid, proxySet, profile, productSKU, sizes, retryDelay } = taskData;
 
         setNumRunningTasks((prev) => {
-            localStorage.setItem(storeName + STATE, JSON.stringify(prev + 1));
+            storeService.setNumRunningTasks(storeName, prev + 1);
             return prev + 1;
         });
 
@@ -265,7 +265,7 @@ const Store = (props: any) => {
         console.log('stop', uuid);
 
         setNumRunningTasks((prev) => {
-            localStorage.setItem(storeName + STATE, JSON.stringify(prev - 1));
+            storeService.setNumRunningTasks(storeName, prev - 1);
             return prev - 1;
         });
 
@@ -277,8 +277,8 @@ const Store = (props: any) => {
 
         return (
             <Bot
-                key={jobs[index].uuid}
-                taskData={jobs[index]}
+                key={tasks[index].uuid}
+                taskData={tasks[index]}
                 startTask={startTask}
                 stopTask={stopTask}
                 deleteBot={deleteBot}
@@ -290,7 +290,7 @@ const Store = (props: any) => {
     };
 
     const showTasks = () => {
-        return jobs.length === 0 ? (
+        return tasks.length === 0 ? (
             <div style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <Empty
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
@@ -298,15 +298,15 @@ const Store = (props: any) => {
                 />
             </div>
         ) : (
-            <FixedSizeList height={700} itemCount={jobs.length} itemSize={45} width="100%" style={{ flex: 1, padding: 10 }}>
+            <FixedSizeList height={700} itemCount={tasks.length} itemSize={45} width="100%" style={{ flex: 1, padding: 10 }}>
                 {renderJobs}
             </FixedSizeList>
         );
     };
 
     const startAllTasks = () => {
-        jobs.forEach((job) => {
-            startTask(job);
+        tasks.forEach((task) => {
+            startTask(task);
         });
     };
 
@@ -327,7 +327,7 @@ const Store = (props: any) => {
                         style={buttonStyle}
                         type="primary"
                         onClick={() => openEditAllTaskModal()}
-                        disabled={jobs.length === 0 || numRunningTasks > 0}
+                        disabled={tasks.length === 0 || numRunningTasks > 0}
                     >
                         Edit All
                     </Button>
@@ -338,13 +338,13 @@ const Store = (props: any) => {
                         type="default"
                         style={{ ...buttonStyle, backgroundColor: 'green' }}
                         onClick={() => startAllTasks()}
-                        disabled={jobs.length === 0 || numRunningTasks > 0}
+                        disabled={tasks.length === 0 || numRunningTasks > 0}
                     >
                         Run all
                     </Button>
                 </Col>
                 <Col span={3}>
-                    <Button style={buttonStyle} type="primary" onClick={() => stopAllTasks()} danger disabled={jobs.length === 0}>
+                    <Button style={buttonStyle} type="primary" onClick={() => stopAllTasks()} danger disabled={tasks.length === 0}>
                         Stop all
                     </Button>
                 </Col>
@@ -358,7 +358,7 @@ const Store = (props: any) => {
                         okText="Yes"
                         cancelText="No"
                     >
-                        <Button style={buttonStyle} type="primary" danger disabled={jobs.length === 0}>
+                        <Button style={buttonStyle} type="primary" danger disabled={tasks.length === 0}>
                             Delete all
                         </Button>
                     </Popconfirm>

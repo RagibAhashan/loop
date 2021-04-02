@@ -114,7 +114,6 @@ const Bot = (props: any) => {
         });
 
         ipcRenderer.on(uuid + TASK_STOPPED, () => {
-            taskService.removeCaptcha(uuid);
             setRunning(false);
             setCurrentSize(undefined);
             setDisabled(false);
@@ -149,11 +148,13 @@ const Bot = (props: any) => {
     const _startTask = () => {
         startTask({ uuid, productSKU, sizes, retryDelay, profile, proxySet });
         setRunning(true);
+        taskService.setRunning(taskData.store as string, taskData.uuid, true);
     };
 
     const _stopTask = () => {
         stopTask(uuid);
         setDisabled(true);
+        taskService.setRunning(taskData.store as string, taskData.uuid, false);
     };
 
     const deleteMe = () => {

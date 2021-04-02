@@ -1,22 +1,21 @@
-import { Button, Form, Input, Spin } from 'antd';
 import axios from 'axios';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Route, withRouter } from 'react-router-dom';
-import { PROFILE_ROUTE, ACTIVATE_LICENSE_ROUTE, VALIDATE_USER_DATA_ROUTE } from '../../common/Constants';
-import ValidateUserComponent from './ValidateUser';
+import { ACTIVATE_LICENSE_ROUTE, PROFILE_ROUTE, VALIDATE_USER_DATA_ROUTE } from '../../common/Constants';
 import ActivateLicense from './ActivateLicense';
+import ValidateUserComponent from './ValidateUser';
 
 const { ipcRenderer } = window.require('electron');
 
 const License = withRouter(({ history }) => {
-    const [LICENSE_KEY, setLicenseKey] = useState('');
-    const [email, setEmail] = useState('');
-    const [code, setCode] = useState(201);
-    const [loading, setLoading] = useState(false);
-    const [validateSystemLoading, SetValidationSystem] = useState(true);
+    const [LICENSE_KEY] = useState('');
+    const [email] = useState('');
+    const [, setCode] = useState(201);
+    const [, setLoading] = useState(false);
 
     useEffect(() => {
         history.push(VALIDATE_USER_DATA_ROUTE);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     function useForceUpdate() {
@@ -26,6 +25,7 @@ const License = withRouter(({ history }) => {
     }
     const forceUpdate = useForceUpdate();
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const getID = async () => {
         const SYSTEM_KEY = await ipcRenderer.invoke('GET-SYSTEM-ID');
         try {

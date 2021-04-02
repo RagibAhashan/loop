@@ -1,34 +1,34 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
-const {
+import axios from 'axios';
+import { app, BrowserWindow, ipcMain } from 'electron';
+import hash from 'object-hash';
+import si from 'systeminformation';
+import {
     CAPTCHA_ROUTE,
-    NOTIFY_STOP_TASK,
-    NOTIFY_START_TASK,
-    TASK_STOPPED,
-    NOTIFY_CAPTCHA,
-    NOTIFY_START_PROXY_TEST,
-    NOTIFY_STOP_PROXY_TEST,
-    PROXY_TEST_SUCCEEDED,
-    PROXY_TEST_REPLY,
-    NOTIFY_EDIT_TASK,
     CAPTHA_WINDOW_CLOSED,
-    NOTIFY_CAPTCHA_SOLVED,
-    TASK_SUCCESS,
-    TASK_STOP,
-    TASK_STATUS,
     GET_DATADOME,
-} = require('./common/Constants');
-const captchaWindowManager = require('./core/captcha-window/CaptchaWindowManager');
-const taskFactory = require('./core/TaskFactory');
-const taskManager = require('./core/TaskManager');
-const proxyFactory = require('./core/proxies/ProxyFactory');
-const si = require('systeminformation');
-const hash = require('object-hash');
-const { default: axios } = require('axios');
-const { COMMONG_HEADERS } = require('./core/constants/Constants');
+    NOTIFY_CAPTCHA,
+    NOTIFY_CAPTCHA_SOLVED,
+    NOTIFY_EDIT_TASK,
+    NOTIFY_START_PROXY_TEST,
+    NOTIFY_START_TASK,
+    NOTIFY_STOP_PROXY_TEST,
+    NOTIFY_STOP_TASK,
+    PROXY_TEST_REPLY,
+    PROXY_TEST_SUCCEEDED,
+    TASK_STATUS,
+    TASK_STOP,
+    TASK_STOPPED,
+    TASK_SUCCESS,
+} from './common/Constants';
+import { captchaWindowManager } from './core/captcha-window/CaptchaWindowManager';
+import { COMMONG_HEADERS } from './core/constants/Constants';
+import { ProxyFactory } from './core/proxies/ProxyFactory';
+import { TaskFactory } from './core/TaskFactory';
+import { taskManager } from './core/TaskManager';
 
-let win;
+let win: BrowserWindow;
 
-const getSystemUniqueID = async () => {
+const getSystemUniqueID = async (): Promise<string> => {
     try {
         const SYSTEM_ID = await si.system();
         const HASHED_DATA = await hash(SYSTEM_ID);
@@ -128,7 +128,7 @@ ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
         task.updateProxy(taskData.proxyData);
         task.execute();
     } else {
-        const newTask = taskFactory.createFootlockerTask(
+        const newTask = TaskFactory.createFootlockerTask(
             storeName,
             uuid,
             taskData.productSKU,
@@ -139,7 +139,7 @@ ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
             taskData.proxyData,
         );
 
-        newTask.on(TASK_STATUS, (message) => {
+        newTask.on(TASK_STATUS, (message: any) => {
             event.reply(uuid, message);
         });
 
@@ -147,7 +147,7 @@ ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
             event.reply(uuid + TASK_STOPPED, uuid);
         });
 
-        newTask.on(NOTIFY_CAPTCHA, (captcha) => {
+        newTask.on(NOTIFY_CAPTCHA, (captcha: any) => {
             const capWin = captchaWindowManager.getWindow(storeName);
             event.reply(storeName + NOTIFY_CAPTCHA, captcha);
             if (capWin) capWin.webContents.send(storeName + NOTIFY_CAPTCHA, captcha);
@@ -224,9 +224,9 @@ ipcMain.on(NOTIFY_EDIT_TASK, async (event, uuid) => {
 });
 
 ipcMain.on(NOTIFY_START_PROXY_TEST, (event, setName, proxy, credential, store) => {
-    const proxyTest = proxyFactory.createProxyTest(setName, proxy, credential, store);
+    const proxyTest = ProxyFactory.createProxyTest(setName, proxy, credential, store);
 
-    proxyTest.on(PROXY_TEST_SUCCEEDED, (delay) => {
+    proxyTest.on(PROXY_TEST_SUCCEEDED, (delay: any) => {
         event.reply(PROXY_TEST_REPLY, delay, proxy);
     });
 

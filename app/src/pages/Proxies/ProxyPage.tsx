@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { DeleteFilled, PlusOutlined, PlayCircleFilled, CloseCircleOutlined } from '@ant-design/icons';
-import { Layout, message, Tabs, Button, Tooltip, Row, Col, Empty, Select } from 'antd';
+import { CloseCircleOutlined, DeleteFilled, PlayCircleFilled, PlusOutlined } from '@ant-design/icons';
+import { Button, Col, Empty, Layout, message, Row, Select, Tabs, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
+import { FixedSizeList } from 'react-window';
+import { NOTIFY_START_PROXY_TEST, NOTIFY_STOP_PROXY_TEST, PROXY_TEST_REPLY, STORES } from '../../common/Constants';
+import { Proxy } from '../../interfaces/OtherInterfaces';
 import CollectionFormAdd from './Collections/Add';
 import CollectionFormCreate from './Collections/Create';
 import CollectionFormDelete from './Collections/Delete';
 import ProxyRow from './Proxy';
-import * as ProxyManager from './ProxyManager'
-import * as ProxyTester from './ProxyTester'
-import { FixedSizeList } from 'react-window';
-import { Proxy } from '../../interfaces/OtherInterfaces';
-import { NOTIFY_STOP_PROXY_TEST, NOTIFY_START_PROXY_TEST, PROXY_TEST_REPLY, STORES } from '../../common/Constants';
+import * as ProxyManager from './ProxyManager';
+import * as ProxyTester from './ProxyTester';
 const { ipcRenderer } = window.require('electron');
 
 const { Content } = Layout;
@@ -51,9 +51,9 @@ const ProxyPage = () => {
 
     ipcRenderer.on(PROXY_TEST_REPLY, (message, info) => {
         let set = proxies.get(info.setName) || [];
-        for(let i = 0; i < set?.length; i++) {
-            if(set[i].proxy == info.proxy) {
-                info.store.key == "FootlockerCA" ? set[i].testStatus.FootlockerCA = info.delay : set[i].testStatus.FootlockerUS = info.delay;
+        for (let i = 0; i < set?.length; i++) {
+            if (set[i].proxy === info.proxy) {
+                info.store.key === 'FootlockerCA' ? (set[i].testStatus.FootlockerCA = info.delay) : (set[i].testStatus.FootlockerUS = info.delay);
             }
         }
         proxies.set(info.setName, set);
@@ -89,7 +89,7 @@ const ProxyPage = () => {
         setVisibleDelete(false);
     };
 
-    const onAddProxies = async(values: any) => {
+    const onAddProxies = async (values: any) => {
         const name = currentTab.name;
         let proxyArray: any = [];
         proxyArray = await ProxyManager.Add(values, name, tab, proxies);
@@ -103,7 +103,7 @@ const ProxyPage = () => {
     const deleteIndividualProxy = (record: any) => {
         let proxiesArray: Array<any> = proxies.get(currentTab.name) || [];
         let proxyToDelete: string = record.ip + ':' + record.port;
-        proxiesArray = ProxyManager.Delete(proxiesArray, proxyToDelete)
+        proxiesArray = ProxyManager.Delete(proxiesArray, proxyToDelete);
         setProxies(() => {
             proxies.set(currentTab.name, proxiesArray);
             localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
@@ -121,7 +121,7 @@ const ProxyPage = () => {
         forceUpdate();
     };
 
-    const testIndividual = (proxyToTest: any, setName:any) => {
+    const testIndividual = (proxyToTest: any, setName: any) => {
         let proxiesArray: Array<any> = proxies.get(setName) || [];
         proxiesArray = ProxyTester.testIndividual(proxyToTest, proxiesArray, store);
         proxies.set(setName, proxiesArray);
@@ -141,7 +141,7 @@ const ProxyPage = () => {
 
     const testAll = () => {
         let set = proxies.get(currentTab.name) || [];
-        for(let i = 0; i < set?.length; i++) {
+        for (let i = 0; i < set?.length; i++) {
             testIndividual(set[i].proxy, currentTab.name);
             ipcRenderer.send(NOTIFY_START_PROXY_TEST, currentTab.name, set[i].proxy, set[i].credential, store);
         }
@@ -149,7 +149,7 @@ const ProxyPage = () => {
 
     const Headers = () => {
         return (
-            <Row style={{  fontSize: '18px', textAlign: 'center', marginBottom: 20 }}>
+            <Row style={{ fontSize: '18px', textAlign: 'center', marginBottom: 20 }}>
                 <Col span={4}>IP</Col>
                 <Col span={4}>Port</Col>
                 <Col span={4}>Username</Col>
@@ -168,8 +168,10 @@ const ProxyPage = () => {
         var port = fields[1];
         var username;
         var password;
-        if (proxy[index].credential === null) { username = 'None'; password = 'None'; } 
-        else {
+        if (proxy[index].credential === null) {
+            username = 'None';
+            password = 'None';
+        } else {
             fields = proxy[index].credential.split(':');
             username = fields[0];
             password = fields[1];
@@ -368,7 +370,7 @@ const ProxyPage = () => {
                         <div>
                             <Button
                                 icon={<DeleteFilled style={{ color: 'red' }} />}
-                                style={{ textAlign: 'center', float: 'right', marginLeft:'40px', paddingLeft: '35px', paddingRight: '35px' }}
+                                style={{ textAlign: 'center', float: 'right', marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
                                 type={'primary'}
                                 onClick={() => {
                                     deleteAll();
@@ -384,9 +386,9 @@ const ProxyPage = () => {
                                 style={{ textAlign: 'center', float: 'right', paddingLeft: '35px', paddingRight: '35px' }}
                                 type={'primary'}
                                 onClick={() => {
-                                    // 
+                                    //
                                 }}
-                                disabled={ true }
+                                disabled={true}
                             >
                                 Delete Failed
                             </Button>

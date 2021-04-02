@@ -1,17 +1,19 @@
-const { ua } = require('./constants/Constants');
+import { ua } from './constants/Constants';
+import { Cookie } from './constants/Cookies';
 
-class CookieJar {
+export class CookieJar {
+    private cookies: Map<Cookie, string>;
     constructor() {
         this.cookies = new Map();
     }
 
-    _getCookie(cookie) {
+    _getCookie(cookie: Cookie) {
         if (!this.cookies.has(cookie)) return '';
         const value = this.getValue(cookie);
         return `${cookie}=${value};`;
     }
 
-    getCookie(...cookie) {
+    getCookie(...cookie: Cookie[]) {
         let cookieString = '';
         cookie.forEach((cookie) => {
             cookieString += this._getCookie(cookie);
@@ -19,21 +21,24 @@ class CookieJar {
         return cookieString;
     }
 
-    getValue(cookie) {
-        if (!this.cookies.has(cookie)) return '';
+    getValue(cookie: Cookie): string | undefined {
+        if (!this.cookies.has(cookie)) return undefined;
         return this.cookies.get(cookie);
     }
 
-    setFromRaw(rawString, name) {
+    setFromRaw(rawString: string, name: Cookie): void {
         const value = this.extract(rawString, name);
-        return this.cookies.set(name, value);
+
+        if (value) {
+            this.cookies.set(name, value);
+        }
     }
 
-    set(cookie, value) {
+    set(cookie: Cookie, value: string) {
         return this.cookies.set(cookie, value);
     }
 
-    has(cookie) {
+    has(cookie: Cookie) {
         return this.cookies.has(cookie);
     }
 
@@ -43,11 +48,11 @@ class CookieJar {
      * @return {string} cookie value
      *
      */
-    extract(rawString, name) {
+    extract(rawString: string, name: string): string | undefined {
         const regex = new RegExp(`${name}=([^;]*)`);
         const match = regex.exec(rawString);
 
-        if (!match) throw Error('Cookie could not be extracted');
+        if (!match) return undefined;
 
         return match[1];
     }
@@ -58,7 +63,7 @@ class CookieJar {
      * @return {number} refresh delay in ms
      *
      */
-    extractRefresh(rawString) {
+    extractRefresh(rawString: string): number {
         const regex = new RegExp('(\\d[^;])');
         const match = regex.exec(rawString);
         if (!match) throw Error('Refresh could not be extracted');
@@ -78,7 +83,7 @@ class CookieJar {
     //     return params;
     // }
 
-    extractQueryParams(urlString) {
+    extractQueryParams(urlString: string) {
         const url = new URL(urlString);
 
         return {
@@ -90,5 +95,3 @@ class CookieJar {
         };
     }
 }
-
-module.exports = { CookieJar };

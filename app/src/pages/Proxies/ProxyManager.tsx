@@ -1,21 +1,21 @@
-import { Result } from 'antd';
-import { rejects } from 'assert';
 import { Proxy } from '../../interfaces/OtherInterfaces';
 const UPLOAD = '1';
 const COPYPASTE = '2';
 
-export const Add = async(values: any, currentSetName: string, currentTabName: string, proxies: any) => {
+export const Add = async (values: any, currentSetName: string, currentTabName: string, proxies: any) => {
     const name = currentSetName;
     const proxyArray: any = [];
     let data: any = {};
 
     if (currentTabName === UPLOAD) {
-        const promiseResult = await getPromiseResult(values, name, proxyArray, data).then((result) => {data = result});
-
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const promiseResult = await getPromiseResult(values, name, proxyArray, data).then((result) => {
+            data = result;
+        });
     } else if (currentTabName === COPYPASTE) {
         proxyArray.push(values.copiedProxies);
         const arrayProxy: Array<string> = proxyArray[0].split('\n');
-        data = objectifySets(name, arrayProxy)
+        data = objectifySets(name, arrayProxy);
     }
     return data;
 };
@@ -28,27 +28,26 @@ export const Delete = (proxiesArray: any, proxyToDelete: string) => {
         }
     }
     return proxiesArray;
-}
+};
 
 const getPromiseResult = (values: any, name: string, proxyArray: any, data: any) => {
     return new Promise((resolve, reject) => {
         const files = values.uploadedProxies.fileList;
-         // Read file
-         let reader = new FileReader();
-         reader.onload = (e) => {
-             // called after readAsText
-             proxyArray.push(e.target?.result);
-             const arrayProxy: Array<string> = proxyArray[0].split('\n');
-             data = objectifySets(name, arrayProxy)
-             resolve(data)
-             
-         };
-         reader.onerror = (e) => {
-             reject(e);
-         }
-         reader.readAsText(files[0].originFileObj); 
-     })
-}
+        // Read file
+        let reader = new FileReader();
+        reader.onload = (e) => {
+            // called after readAsText
+            proxyArray.push(e.target?.result);
+            const arrayProxy: Array<string> = proxyArray[0].split('\n');
+            data = objectifySets(name, arrayProxy);
+            resolve(data);
+        };
+        reader.onerror = (e) => {
+            reject(e);
+        };
+        reader.readAsText(files[0].originFileObj);
+    });
+};
 
 const objectifySets = (name: string, arrayProxy: Array<string>) => {
     let array: Array<Proxy> = [];
@@ -63,11 +62,10 @@ const objectifySets = (name: string, arrayProxy: Array<string>) => {
         if (fields[2] === undefined && fields[3] === undefined) {
             userPass = null;
         } else {
-            userPass = userPass.replace(/\r/gm,'');
+            userPass = userPass.replace(/\r/gm, '');
         }
         proxyObject = { proxy: ipPort, testStatus: { FootlockerCA: 'idle', FootlockerUS: 'idle' }, credential: userPass, usedBy: [] };
         array.push(proxyObject);
     }
     return array;
-    
 };

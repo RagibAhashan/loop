@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { Button, Input, Row, Col, Form } from 'antd';
+import { Button, Form, Input } from 'antd';
 import axios from 'axios';
+import React, { useState } from 'react';
 const { ipcRenderer } = window.require('electron');
 
 const SettingsPage = () => {
-    const [discord, setDiscord] = useState('');
-    const [first, setFirst] = useState('');
+    // const [discord, setDiscord] = useState('');
+    // const [first, setFirst] = useState('');
     const [LICENSE_KEY, setLicenseKey] = useState('');
 
     const getID = async () => {

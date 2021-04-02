@@ -2,6 +2,7 @@ import { Select } from 'antd';
 import { Observable, Subject } from 'rxjs';
 import { ICaptcha } from '../components/Captcha/CaptchaFrame';
 import { Proxies, Proxy } from '../interfaces/OtherInterfaces';
+import { StoreState } from './StoreService';
 const { Option } = Select;
 
 export const getProfiles = () => {
@@ -99,19 +100,16 @@ class TaskService {
         return this.notifyStart.asObservable();
     }
 
-    saveCaptcha(captcha: ICaptcha) {
-        this.captchaQueue.push(captcha);
-    }
+    setRunning(storeKey: string, uuid: string, value: boolean): void {
+        let store = JSON.parse(localStorage.getItem(storeKey) as string) as StoreState;
 
-    removeCaptcha(uuid: string) {
-        const index = this.captchaQueue.findIndex((cap) => cap.uuid === uuid);
-        if (index > -1) {
-            this.captchaQueue.splice(index, 1);
-        }
-    }
+        if (!store) return;
 
-    dispatchCaptcha(): ICaptcha | undefined {
-        return this.captchaQueue.shift();
+        const newTasks = store.tasks.map((task) => (task.uuid === uuid ? { ...task, running: value } : task));
+
+        store = { ...store, tasks: newTasks };
+
+        localStorage.setItem(storeKey, JSON.stringify(store));
     }
 }
 
