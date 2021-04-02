@@ -1,4 +1,4 @@
-# sneaker
+# sneaker bot
 
 ## Install dependencies
 
