@@ -2,7 +2,9 @@
 import { DeleteFilled, PlayCircleFilled, StopFilled } from '@ant-design/icons';
 import { Button, Col, Row } from 'antd';
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import { NOTIFY_START_PROXY_TEST, NOTIFY_STOP_PROXY_TEST } from '../../common/Constants';
+import { deleteProxyFromSet } from '../../services/Proxy/ProxyService';
 const { ipcRenderer } = window.require('electron');
 
 const startButton = {
@@ -30,8 +32,11 @@ const deleteButton = {
     color: 'red',
 };
 
+// TODO Refactor this component with redux
 const ProxyRow = (props: any) => {
-    const { proxy, style, currentTab, store } = props;
+    const { proxyData, style, currentTab, store, proxySetName } = props;
+
+    const dispatch = useDispatch();
 
     const statusColor = (level: string) => {
         switch (level) {
@@ -63,7 +68,7 @@ const ProxyRow = (props: any) => {
         ) : (
             <Button
                 onClick={() => {
-                    testIndividual(proxy);
+                    testIndividual(proxyData);
                 }}
                 disabled={store === undefined}
                 style={store === undefined ? disabledStartButton : startButton}
@@ -71,6 +76,13 @@ const ProxyRow = (props: any) => {
                 size="small"
             />
         );
+    };
+
+    const deleteIndividual = () => {
+        dispatch(deleteProxyFromSet({ name: proxySetName, proxyHost: proxyData.ip + ':' + proxyData.port }));
+
+        // TODO test logic
+        // ipcRenderer.send(NOTIFY_STOP_PROXY_TEST, currentTab.name, proxyToDelete, record.credential, store);
     };
 
     const testIndividual = (proxy: any) => {
@@ -81,8 +93,8 @@ const ProxyRow = (props: any) => {
     };
 
     const stopTest = () => {
-        const proxyToStop = proxy.ip + ':' + proxy.port;
-        const credential = proxy.username + ':' + proxy.password;
+        const proxyToStop = proxyData.ip + ':' + proxyData.port;
+        const credential = proxyData.username + ':' + proxyData.password;
         props.stopTest(proxyToStop, currentTab.name);
         ipcRenderer.send(NOTIFY_STOP_PROXY_TEST, currentTab.name, proxyToStop, credential, store);
     };
@@ -93,9 +105,9 @@ const ProxyRow = (props: any) => {
         }
         switch (store) {
             case 'FootlockerCA':
-                return proxy.status.FootlockerCA;
+                return proxyData.status.FootlockerCA;
             case 'FootlockerUS':
-                return proxy.status.FootlockerUS;
+                return proxyData.status.FootlockerUS;
             default:
                 return 'lol';
         }
@@ -114,19 +126,19 @@ const ProxyRow = (props: any) => {
             }}
         >
             <Col span={4} style={{ paddingLeft: 10, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                <div>{proxy.ip}</div>
+                <div>{proxyData.ip}</div>
             </Col>
 
             <Col span={4}>
-                <div>{proxy.port}</div>
+                <div>{proxyData.port}</div>
             </Col>
 
             <Col span={4}>
-                <div>{proxy.username}</div>
+                <div>{proxyData.username}</div>
             </Col>
 
             <Col span={4} style={{ padding: 10 }}>
-                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{proxy.password}</div>
+                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{proxyData.password}</div>
             </Col>
 
             <Col span={4}>
@@ -142,14 +154,7 @@ const ProxyRow = (props: any) => {
                 <div style={{ display: 'flex', justifyContent: 'center', marginLeft: '5px' }}>
                     <div>{runButton()}</div>
                     <div>
-                        <Button
-                            onClick={() => {
-                                props.deleteIndividual(proxy);
-                            }}
-                            style={deleteButton}
-                            icon={<DeleteFilled />}
-                            size="small"
-                        />
+                        <Button onClick={deleteIndividual} style={deleteButton} icon={<DeleteFilled />} size="small" />
                     </div>
                 </div>
             </Col>

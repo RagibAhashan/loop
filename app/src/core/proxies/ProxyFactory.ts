@@ -1,10 +1,11 @@
-import { STORES } from '../../common/Constants';
+import { STORES } from '../../constants/Stores';
+import { StoreType } from './../../constants/Stores';
 import { Proxy } from './../Proxy';
 import { RequestInstance } from './../RequestInstance';
 import { ProxyTest } from './ProxyTest';
 
 export class ProxyFactory {
-    public static createProxyTest(setName: string, proxy: string, credential: string, storeName: string): ProxyTest {
+    public static createProxyTest(setName: string, proxy: string, credential: string, storeName: StoreType): ProxyTest {
         const store = STORES[storeName];
 
         const axios = new RequestInstance(undefined, proxy ? new Proxy(proxy, credential) : undefined);

@@ -1,5 +1,6 @@
-export interface Proxies {
-    [proxyName: string]: Proxy[];
+import { StoreType } from './../constants/Stores';
+export interface ProxyState {
+    [proxyName: string]: ProxySet;
 }
 
 export interface Stores {
@@ -9,11 +10,15 @@ export interface Stores {
 
 export interface IStore {
     title: string;
-    key: string;
+    key: StoreType;
 }
 
+export interface ProxySet {
+    proxies: { [proxyHost: string]: Proxy };
+    notUsed: { [proxyHost: string]: Proxy };
+}
 export interface Proxy {
-    proxy: string;
+    host: string;
     credential: string;
     testStatus: Stores;
     usedBy: string[];

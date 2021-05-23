@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { app, BrowserWindow, ipcMain } from 'electron';
+import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer';
 import hash from 'object-hash';
 import si from 'systeminformation';
 import {
@@ -13,6 +14,7 @@ import {
     NOTIFY_START_TASK,
     NOTIFY_STOP_PROXY_TEST,
     NOTIFY_STOP_TASK,
+    NOTIFY_TASK_STATUS,
     PROXY_TEST_REPLY,
     PROXY_TEST_SUCCEEDED,
     TASK_STATUS,
@@ -20,6 +22,7 @@ import {
     TASK_STOPPED,
     TASK_SUCCESS,
 } from './common/Constants';
+import { StoreType } from './constants/Stores';
 import { captchaWindowManager } from './core/captcha-window/CaptchaWindowManager';
 import { COMMONG_HEADERS } from './core/constants/Constants';
 import { ProxyFactory } from './core/proxies/ProxyFactory';
@@ -99,7 +102,14 @@ const createWindow = () => {
     });
 };
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+    installExtension(REDUX_DEVTOOLS)
+        .then((name) => console.log(`Added Extension:  ${name}`))
+        .catch((err) => console.log('An error occurred: ', err));
+
+    installExtension(REACT_DEVELOPER_TOOLS)
+        .then((name) => console.log(`Added Extension:  ${name}`))
+        .catch((err) => console.log('An error occurred: ', err));
     createWindow();
 });
 
@@ -122,7 +132,8 @@ if (process.platform === 'darwin') {
 
 // IPC EVENTS
 
-ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
+ipcMain.on(NOTIFY_START_TASK(StoreType.FootlockerCA), (event, uuid, storeName, taskData) => {
+    console.log('starting task !', uuid, storeName);
     const task = taskManager.getTask(uuid);
     if (task) {
         task.updateProxy(taskData.proxyData);
@@ -140,7 +151,8 @@ ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
         );
 
         newTask.on(TASK_STATUS, (message: any) => {
-            event.reply(uuid, message);
+            event.reply(NOTIFY_TASK_STATUS(storeName), uuid, message); //this event is for retrieving status message even for components that are not rendered
+            event.reply(uuid, message); // this one is unique to each component task (update local state)
         });
 
         newTask.on(TASK_STOPPED, () => {
@@ -161,9 +173,10 @@ ipcMain.on(NOTIFY_START_TASK, (event, uuid, storeName, taskData) => {
     }
 });
 
-ipcMain.on(NOTIFY_STOP_TASK, async (event, uuid) => {
+ipcMain.on(NOTIFY_STOP_TASK(StoreType.FootlockerCA), async (event, uuid) => {
     try {
         const currentTask = taskManager.getTask(uuid);
+        console.log('stopping task', uuid);
         if (currentTask) {
             currentTask.emit(TASK_STOP);
         }

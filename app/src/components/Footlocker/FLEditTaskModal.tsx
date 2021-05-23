@@ -1,26 +1,39 @@
 import { Col, Form, Input, InputNumber, Modal, Row, Select } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useEffect } from 'react';
-import { TaskData } from '../../interfaces/TaskInterfaces';
-import { getProfiles, getProxies, getSizes } from '../../services/TaskService';
+import { useSelector } from 'react-redux';
+import { FLTaskData } from '../../interfaces/TaskInterfaces';
+import { getProfiles } from '../../services/Profile/ProfileService';
+import { getProxySets } from '../../services/Proxy/ProxyService';
+import { getSizes } from '../../services/task/TaskUtils';
 
 const validateMessages = {
     required: 'Required!',
 };
 const GUTTER: [number, number] = [16, 0];
 
-export const EditTaskModal = (props: any) => {
-    const { visible, cancelEditModal, taskData }: { visible: boolean; cancelEditModal: any; confirmEdit: any; taskData: TaskData } = props;
-
+export const FLEditTaskModal = (props: any) => {
+    const { visible, onClose, onEdit, task }: { visible: boolean; onClose: () => {}; onEdit: (newVal: any) => {}; task: FLTaskData } = props;
     const [form] = useForm();
+
+    const profiles = useSelector(getProfiles);
+    const optionProfiles = Object.entries(profiles).map(([key, profile]) => {
+        return { label: profile.name, value: profile.name };
+    });
+
+    const proxies = useSelector(getProxySets);
+    const proxiesOptions = Object.keys(proxies).map((proxySetName) => {
+        return { label: proxySetName, value: proxySetName };
+    });
 
     useEffect(() => {
         form.resetFields();
-        form.setFieldsValue(taskData);
+        form.setFieldsValue(task);
     });
 
     const title = () => {
-        return Object.keys(taskData).length > 0 ? 'Edit Task' : 'Mass Edit All';
+        if (!task) return '';
+        return Object.keys(task).length > 0 ? 'Edit Task' : 'Mass Edit All';
     };
 
     const removeUndefined = () => {
@@ -35,17 +48,17 @@ export const EditTaskModal = (props: any) => {
             centered
             visible={visible}
             onOk={() => {
-                Object.keys(taskData).length > 0
+                Object.keys(task).length > 0
                     ? form
                           .validateFields()
                           .then((values) => {
-                              form.resetFields();
-                              props.confirmEdit(values);
+                              //   form.resetFields();
+                              onEdit(values);
                           })
                           .catch((err) => {})
-                    : props.confirmEdit(removeUndefined());
+                    : onEdit(removeUndefined());
             }}
-            onCancel={() => cancelEditModal()}
+            onCancel={onClose}
             okText="Edit"
             cancelText="Cancel"
             width={600}
@@ -62,12 +75,12 @@ export const EditTaskModal = (props: any) => {
                     <Row gutter={GUTTER}>
                         <Col span={12}>
                             <Form.Item name="profile" rules={[{ required: true }]}>
-                                <Select placeholder="Profile" allowClear options={getProfiles()} />
+                                <Select placeholder="Profile" allowClear options={optionProfiles} />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
                             <Form.Item name="proxySet" rules={[{ required: false }]}>
-                                <Select style={{ width: '100%' }} placeholder="Proxy Set" allowClear options={getProxies()} />
+                                <Select style={{ width: '100%' }} placeholder="Proxy Set" allowClear options={proxiesOptions} />
                             </Form.Item>
                         </Col>
                     </Row>
@@ -93,4 +106,4 @@ export const EditTaskModal = (props: any) => {
     );
 };
 
-export default EditTaskModal;
+export default FLEditTaskModal;

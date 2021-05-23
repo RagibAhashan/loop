@@ -1,4 +1,4 @@
-import { FOOTLOCKER_CA_HEADERS, FOOTLOCKER_COM_HEADERS } from '../core/constants/Constants';
+import { StoreType } from '../constants/Stores';
 
 export const CAPTCHA_ROUTE = 'captcha';
 export const APP_ROUTE = '/app';
@@ -10,29 +10,10 @@ export const TASKS_ROUTE = '/app/tasks';
 export const VALIDATE_USER_DATA_ROUTE = '/license/validate';
 export const ACTIVATE_LICENSE_ROUTE = '/license/activate';
 
-type STORE = { [key: string]: { [key: string]: any } };
-export const STORES: STORE = {
-    FootlockerCA: {
-        name: 'Footlocker CA',
-        baseURL: 'https://www.footlocker.ca/api',
-        key: 'FootlockerCA',
-        header: FOOTLOCKER_CA_HEADERS,
-        url: 'https://www.footlocker.ca',
-        siteKey: '6LccSjEUAAAAANCPhaM2c-WiRxCZ5CzsjR_vd8uX', //captcha key
-    },
-    FootlockerUS: {
-        name: 'Footlocker US',
-        baseURL: 'https://www.footlocker.com/api',
-        key: 'FootlockerUS',
-        header: FOOTLOCKER_COM_HEADERS,
-        url: 'https://www.footlocker.com',
-        siteKey: '6LccSjEUAAAAANCPhaM2c-WiRxCZ5CzsjR_vd8uX',
-    },
-};
-
 // CHANNEL EVENTS
-export const NOTIFY_STOP_TASK = 'stop-task';
-export const NOTIFY_START_TASK = 'start-task';
+export const NOTIFY_STOP_TASK = (store: StoreType) => `stop-task-${store}`;
+export const NOTIFY_START_TASK = (store: StoreType) => `start-task-${store}`;
+export const NOTIFY_TASK_STATUS = (store: StoreType) => `task-status-${store}`;
 export const NOTIFY_EDIT_TASK = 'edit-task';
 export const NOTIFY_CAPTCHA = 'captcha';
 export const GET_DATADOME = 'get-datadome';

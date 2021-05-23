@@ -1,39 +1,59 @@
-import { InboxOutlined } from '@ant-design/icons';
-import { Form, Input, message, Modal,  Tabs, Upload } from 'antd';
-import React from 'react';
-
-
+import { InboxOutlined, PlusOutlined } from '@ant-design/icons';
+import { Button, Form, Input, message, Modal, Tabs, Upload } from 'antd';
+import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { addProxiesToSet } from '../../../services/Proxy/ProxyService';
+import * as ProxyManager from '../ProxyManager';
 const { TabPane } = Tabs;
 const { Dragger } = Upload;
 
-const CollectionFormAdd = (props:any) => {
+const CollectionFormAdd = (props: any) => {
     const [form] = Form.useForm();
+    const [visibleAdd, setVisibleAdd] = useState(false);
+    const [currentAddType, setCurrentAddType] = useState(ProxyManager.AddType.UPLOAD);
+
+    const { proxySetName } = props;
+
+    const dispatch = useDispatch();
+
+    const onAdd = async (values: any) => {
+        const proxyArray = await ProxyManager.Add(values, proxySetName, currentAddType);
+        dispatch(addProxiesToSet({ name: proxySetName, proxies: proxyArray }));
+        setVisibleAdd(false);
+    };
+
+    const addTypeChange = (key: string) => {
+        setCurrentAddType(key as ProxyManager.AddType);
+    };
+
     return (
-        <Modal
-            // footer={null}
-            visible={props.visible}
-            bodyStyle={{ height: '370px', paddingTop: 5 }}
-            title="Create a new set"
-            okText="Create"
-            cancelText="Cancel"
-            onCancel={props.onCancel}
-            onOk={() => {
-                form.validateFields()
-                    .then((values) => {
-                        form.resetFields();
-                        props.onCreate(values);
-                    })
-                    .catch((info) => {
-                        console.log('Validate Failed:', info);
-                    });
-            }}
-        >
-            <Form
-                form={form}
-                layout="vertical"
-                name="form_in_modal"
-                initialValues={{
-                    modifier: 'public',
+        <div>
+            <Button
+                icon={<PlusOutlined style={{ color: 'green' }} />}
+                style={{ textAlign: 'center', float: 'left', paddingLeft: '35px', paddingRight: '35px' }}
+                type={'primary'}
+                onClick={() => {
+                    setVisibleAdd(true);
+                }}
+            >
+                Add Proxies
+            </Button>
+            <Modal
+                visible={visibleAdd}
+                bodyStyle={{ height: '370px', paddingTop: 5 }}
+                title="Create a new set"
+                okText="Create"
+                cancelText="Cancel"
+                onCancel={() => setVisibleAdd(false)}
+                onOk={() => {
+                    form.validateFields()
+                        .then((values) => {
+                            form.resetFields();
+                            onAdd(values);
+                        })
+                        .catch((info) => {
+                            console.log('Validate Failed:', info);
+                        });
                 }}
             >
                 <Form
@@ -44,7 +64,7 @@ const CollectionFormAdd = (props:any) => {
                         modifier: 'public',
                     }}
                 >
-                    <Tabs defaultActiveKey="1" onChange={props.callback} style={{ backgroundColor: '#282c31', height: '350px' }}>
+                    <Tabs defaultActiveKey="1" onChange={addTypeChange} style={{ backgroundColor: '#282c31', height: '350px' }}>
                         <TabPane tab={'Upload'} key={1}>
                             <Form.Item name="uploadedProxies" rules={[{ required: false, message: 'Please input the list of proxies to add!' }]}>
                                 <Dragger style={{ padding: 40 }} {...prop}>
@@ -69,8 +89,8 @@ const CollectionFormAdd = (props:any) => {
                         </TabPane>
                     </Tabs>
                 </Form>
-            </Form>
-        </Modal>
+            </Modal>
+        </div>
     );
 };
 

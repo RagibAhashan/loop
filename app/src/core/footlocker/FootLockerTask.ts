@@ -5,6 +5,7 @@ import { ERRORS_CART, ERRORS_CHECKOUT, ERRORS_PAYMENT, ERRORS_SHIPPING, STATUS_E
 import { CANCEL_ERROR, Task } from '../Task';
 import { CreditCard, UserProfile } from './../../interfaces/TaskInterfaces';
 import { MESSAGES } from './../constants/Constants';
+import { CookieJar } from './../CookieJar';
 import { FLCInfoForm, FLCOrderForm } from './../interface/FootLockerCA';
 import { RequestInstance } from './../RequestInstance';
 
@@ -12,21 +13,53 @@ export class FootLockerTask extends Task {
     retryDelay: number;
     captchaSolved: boolean;
     waitingRoom: { refresh: boolean; delay: number };
+    productCode: string;
+    currentSize: string;
+    productSKU: string;
+    sizes: string[];
+    userProfile: UserProfile;
+    deviceId: string;
+
     constructor(
         uuid: string,
+        requestInstance: RequestInstance,
         productSKU: string,
         sizes: string[],
         deviceId: string,
-        requestInstance: RequestInstance,
         userProfile: UserProfile,
         retryDelay: number,
     ) {
-        super(uuid, productSKU, sizes, deviceId, requestInstance, userProfile);
+        super(uuid, requestInstance);
         this.retryDelay = retryDelay;
         this.captchaSolved = false;
         this.waitingRoom = { refresh: false, delay: 0 };
+        this.productSKU = productSKU;
+        this.sizes = sizes;
+        this.userProfile = userProfile;
+        this.deviceId = deviceId;
+        this.currentSize = '';
+        this.productCode = '';
     }
 
+    async doTask(): Promise<void> {
+        try {
+            this.cookieJar = new CookieJar();
+
+            console.log('proxy used footlocker', this.requestInstance.proxy);
+
+            await this.getSessionTokens();
+
+            this.productCode = await this.getProductCode();
+
+            await this.addToCart();
+
+            await this.setBilling();
+
+            await this.placeOrder();
+        } catch (e) {
+            throw new Error();
+        }
+    }
     async getSessionTokens(): Promise<void> {
         let retry = false;
         this.waitingRoom = { refresh: false, delay: 0 };
@@ -35,7 +68,7 @@ export class FootLockerTask extends Task {
             try {
                 this.cancelTask();
                 retry = false;
-                this.emit(TASK_STATUS, { status: MESSAGES.SESSION_INFO_MESSAGE, level: 'info' });
+                this.emit(TASK_STATUS, { message: MESSAGES.SESSION_INFO_MESSAGE, level: 'info' });
 
                 if (this.waitingRoom.refresh) {
                     console.log('waiting queue for session');
@@ -97,7 +130,7 @@ export class FootLockerTask extends Task {
         do {
             try {
                 this.cancelTask();
-                this.emit(TASK_STATUS, { status: MESSAGES.CHECKING_SIZE_INFO_MESSAGE, level: 'info' });
+                this.emit(TASK_STATUS, { message: MESSAGES.CHECKING_SIZE_INFO_MESSAGE, level: 'info' });
 
                 headers = {
                     cookie: this.cookieJar.getCookie(Cookie.JSESSIONID),
@@ -186,7 +219,7 @@ export class FootLockerTask extends Task {
                 retry = false;
                 this.cancelTask();
                 this.emit(TASK_STATUS, {
-                    status: MESSAGES.ADD_CART_INFO_MESSAGE + ` (${this.currentSize})`,
+                    message: MESSAGES.ADD_CART_INFO_MESSAGE + ` (${this.currentSize})`,
                     level: 'info',
                     checkedSize: this.currentSize,
                 });
@@ -254,7 +287,7 @@ export class FootLockerTask extends Task {
             try {
                 this.cancelTask();
                 retry = false;
-                this.emit(TASK_STATUS, { status: MESSAGES.BILLING_INFO_MESSAGE, level: 'info' });
+                this.emit(TASK_STATUS, { message: MESSAGES.BILLING_INFO_MESSAGE, level: 'info' });
 
                 headers = this.setHeaders();
 
@@ -278,7 +311,7 @@ export class FootLockerTask extends Task {
                     console.log('BILLING ERRORS WITH RESPONSE', error);
                     const dataError = response.data.errors;
                     if (dataError && ERRORS_SHIPPING[error.response.data.errors[0].code]) {
-                        this.emit(TASK_STATUS, { status: ERRORS_SHIPPING[error.response.data.errors[0].code], level: 'cancel' });
+                        this.emit(TASK_STATUS, { message: ERRORS_SHIPPING[error.response.data.errors[0].code], level: 'cancel' });
                         this.cancelTask();
                     } else if (response.data['url']) {
                         await this.dispatchCaptcha(response);
@@ -307,7 +340,7 @@ export class FootLockerTask extends Task {
             try {
                 this.cancelTask();
                 retry = false;
-                this.emit(TASK_STATUS, { status: MESSAGES.PLACING_ORDER_INFO_MESSAGE, level: 'info' });
+                this.emit(TASK_STATUS, { message: MESSAGES.PLACING_ORDER_INFO_MESSAGE, level: 'info' });
 
                 headers = this.setHeaders();
 
@@ -321,7 +354,7 @@ export class FootLockerTask extends Task {
 
                 await this.axiosSession.post('/v2/users/orders', body, { headers: headers });
 
-                this.emit(TASK_STATUS, { status: MESSAGES.CHECKOUT_SUCCESS_MESSAGE, level: 'success', checkedSize: this.currentSize });
+                this.emit(TASK_STATUS, { message: MESSAGES.CHECKOUT_SUCCESS_MESSAGE, level: 'success', checkedSize: this.currentSize });
                 this.emit(TASK_SUCCESS);
             } catch (error) {
                 this.cancelTask();
@@ -329,7 +362,7 @@ export class FootLockerTask extends Task {
                 if (response) {
                     const terminateError = response.data.errors ? ERRORS_PAYMENT[error.response.data.errors[0].code] : undefined;
                     if (terminateError) {
-                        this.emit(TASK_STATUS, { status: terminateError, level: 'cancel' });
+                        this.emit(TASK_STATUS, { message: terminateError, level: 'cancel' });
                         throw new Error(CANCEL_ERROR);
                     } else if (response.headers['set-cookie'] && response.headers[Headers.SetCookie].join().includes(Cookie.WAITING_ROOM)) {
                         console.log('got hit with queue');
@@ -388,7 +421,7 @@ export class FootLockerTask extends Task {
     }
 
     async emitStatus(message: string, level: string, delay?: number): Promise<any> {
-        this.emit(TASK_STATUS, { status: message, level: level });
+        this.emit(TASK_STATUS, { message: message, level: level });
         const wait = this.waitError(delay ? delay : this.retryDelay);
         this.cancelTimeout = wait.cancel;
         // this is is promise not a function
@@ -419,7 +452,7 @@ export class FootLockerTask extends Task {
     }
 
     async dispatchCaptcha(response: AxiosResponse): Promise<void> {
-        this.emit(TASK_STATUS, { status: MESSAGES.WAIT_CAPTCHA_MESSAGE, level: 'captcha', checkedSize: this.currentSize });
+        this.emit(TASK_STATUS, { message: MESSAGES.WAIT_CAPTCHA_MESSAGE, level: 'captcha', checkedSize: this.currentSize });
 
         const cookies = response.headers['set-cookie'].join();
         const capDatadome = this.cookieJar.extract(cookies, Cookie.DATADOME);

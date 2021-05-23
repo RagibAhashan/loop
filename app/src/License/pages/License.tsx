@@ -14,6 +14,7 @@ const License = withRouter(({ history }) => {
     const [, setLoading] = useState(false);
 
     useEffect(() => {
+        console.log('heyyyyy !!');
         history.push(VALIDATE_USER_DATA_ROUTE);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

@@ -1,17 +1,14 @@
 import { Spin } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { NOTIFY_CAPTCHA, NOTIFY_CAPTCHA_SOLVED, STORES } from '../../common/Constants';
+import { NOTIFY_CAPTCHA, NOTIFY_CAPTCHA_SOLVED } from '../../common/Constants';
+import { STORES, StoreType } from '../../constants/Stores';
 import Captcha from './Captcha';
 const { ipcRenderer } = window.require('electron');
 
 export interface ICaptcha {
     params: { [key: string]: string };
     uuid: string;
-}
-
-interface Store {
-    [key: string]: any;
 }
 
 const containerStyle = {
@@ -41,7 +38,7 @@ const CaptchaFrame = () => {
     };
 
     const [solvingCaptcha, setSolvingCaptcha] = useState<undefined | ICaptcha>(() => dispatchCaptcha());
-    const siteKey = (STORES as Store)[store].siteKey;
+    const siteKey = STORES[store as StoreType].siteKey;
 
     useEffect(() => {
         console.log('init use effect', siteKey);

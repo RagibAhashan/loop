@@ -1,9 +1,11 @@
+import { Button, Checkbox, Col, Divider, Form, Input, Modal, Row, Select, Tabs } from 'antd';
 import React, { useState } from 'react';
-import { Modal, Button, Tabs, Input, Row, Col, Form, Divider, Select, Checkbox } from 'antd';
 import Cards from 'react-credit-cards';
-import { Option } from 'antd/lib/mentions';
+import { useDispatch } from 'react-redux';
 import { COUNTRY, REGIONS } from '../../common/Regions';
-
+import { UserProfile } from '../../interfaces/TaskInterfaces';
+import { createProfile } from '../../services/Profile/ProfileService';
+const { Option } = Select;
 const { TabPane } = Tabs;
 type IObj = {
     [key: string]: any;
@@ -52,8 +54,8 @@ const getMonths = (): any => {
 };
 
 const CreateNewProfileModal = (props: any) => {
-    const { addProfile } = props;
     const [form] = Form.useForm();
+    const dispatch = useDispatch();
 
     const [same, setSame] = useState(false);
     const [focused, setFocused] = useState<focus>(undefined);
@@ -94,8 +96,9 @@ const CreateNewProfileModal = (props: any) => {
         form.resetFields([['shipping', 'region']]);
     };
 
-    const onFinish = (values: any) => {
-        addProfile(values);
+    const onFinish = (profile: UserProfile) => {
+        if (same) profile.billing = profile.shipping;
+        dispatch(createProfile({ name: profile.name, profile: profile }));
     };
     return (
         <div>
@@ -117,7 +120,7 @@ const CreateNewProfileModal = (props: any) => {
                             <TabPane tab="Profile and Shipping" key="1">
                                 <Row gutter={ROW_GUTTER}>
                                     <Col span={8}>
-                                        <Form.Item name="profile" rules={[{ required: true }]}>
+                                        <Form.Item name="name" rules={[{ required: true }]}>
                                             <Input placeholder={'Profile name'} />
                                         </Form.Item>
                                     </Col>
@@ -169,7 +172,9 @@ const CreateNewProfileModal = (props: any) => {
                                         <Form.Item name={['shipping', 'country']} rules={[{ required: true }]}>
                                             <Select placeholder="Country" onChange={onCountryChange} allowClear>
                                                 {Object.keys(COUNTRY).map((name) => (
-                                                    <Option value={name}>{name}</Option>
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
                                                 ))}
                                             </Select>
                                         </Form.Item>
@@ -181,7 +186,9 @@ const CreateNewProfileModal = (props: any) => {
                                         <Form.Item name={['shipping', 'region']} rules={[{ required: true }]}>
                                             <Select placeholder="Province/State" allowClear>
                                                 {Object.entries(ALL_REGIONS[country]).map(([name, value]: [string, any]) => (
-                                                    <Option value={name}>{name}</Option>
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
                                                 ))}
                                             </Select>
                                         </Form.Item>
@@ -248,7 +255,9 @@ const CreateNewProfileModal = (props: any) => {
                                         <Form.Item name={[same ? 'shipping' : 'billing', 'country']} rules={[{ required: true }]}>
                                             <Select placeholder="Country" onChange={onCountryChange} allowClear>
                                                 {Object.keys(COUNTRY).map((name) => (
-                                                    <Option value={name}>{name}</Option>
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
                                                 ))}
                                             </Select>
                                         </Form.Item>
@@ -260,7 +269,9 @@ const CreateNewProfileModal = (props: any) => {
                                         <Form.Item name={[same ? 'shipping' : 'billing', 'region']} rules={[{ required: true }]}>
                                             <Select placeholder="Province/State" allowClear>
                                                 {Object.entries(ALL_REGIONS[country]).map(([name, value]: [string, any]) => (
-                                                    <Option value={name}>{name}</Option>
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
                                                 ))}
                                             </Select>
                                         </Form.Item>

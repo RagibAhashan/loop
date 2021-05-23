@@ -1,19 +1,25 @@
 import { Proxy } from '../../interfaces/OtherInterfaces';
-const UPLOAD = '1';
-const COPYPASTE = '2';
 
-export const Add = async (values: any, currentSetName: string, currentTabName: string, proxies: any) => {
+export enum AddType {
+    UPLOAD = '1',
+    COPYPASTE = '2',
+}
+
+export const Add = async (
+    values: { uploadedProxies: any; copiedProxies: string },
+    currentSetName: string,
+    currentTabName: AddType,
+): Promise<Proxy[]> => {
     const name = currentSetName;
     const proxyArray: any = [];
     let data: any = {};
-
-    if (currentTabName === UPLOAD) {
+    if (currentTabName === AddType.UPLOAD) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const promiseResult = await getPromiseResult(values, name, proxyArray, data).then((result) => {
             data = result;
         });
-    } else if (currentTabName === COPYPASTE) {
-        proxyArray.push(values.copiedProxies);
+    } else if (currentTabName === AddType.COPYPASTE) {
+        proxyArray.push(values.copiedProxies.trim());
         const arrayProxy: Array<string> = proxyArray[0].split('\n');
         data = objectifySets(name, arrayProxy);
     }
@@ -51,7 +57,7 @@ const getPromiseResult = (values: any, name: string, proxyArray: any, data: any)
 
 const objectifySets = (name: string, arrayProxy: Array<string>) => {
     let array: Array<Proxy> = [];
-    let proxyObject: Proxy = { proxy: '', testStatus: { FootlockerCA: '', FootlockerUS: '' }, credential: '', usedBy: [] };
+    let proxyObject: Proxy = { host: '', testStatus: { FootlockerCA: '', FootlockerUS: '' }, credential: '', usedBy: [] };
     let fields = [];
     let ipPort = '';
     let userPass: any = '';
@@ -64,7 +70,7 @@ const objectifySets = (name: string, arrayProxy: Array<string>) => {
         } else {
             userPass = userPass.replace(/\r/gm, '');
         }
-        proxyObject = { proxy: ipPort, testStatus: { FootlockerCA: 'idle', FootlockerUS: 'idle' }, credential: userPass, usedBy: [] };
+        proxyObject = { host: ipPort, testStatus: { FootlockerCA: 'idle', FootlockerUS: 'idle' }, credential: userPass, usedBy: [] };
         array.push(proxyObject);
     }
     return array;

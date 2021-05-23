@@ -1,37 +1,16 @@
 import { ExclamationCircleOutlined } from '@ant-design/icons';
-import { Button, Form, Modal, Select, Tabs } from 'antd';
-import { useForm } from 'antd/lib/form/Form';
-import React, { useState } from 'react';
-import { NOTIFY_STOP_TASK, STORES } from '../../common/Constants';
-import { IStore } from '../../interfaces/OtherInterfaces';
-import { TaskData } from '../../interfaces/TaskInterfaces';
-import Store from './Store';
+import { Modal, Tabs } from 'antd';
+import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import AddStoreModal from '../../components/AddStoreModal/AddStoreModal';
+import FootlockerStore from '../../components/Footlocker/FootlockerStore';
+import { StoreType } from '../../constants/Stores';
+import { deleteStore, getStores } from '../../services/Store/StoreService';
 const { TabPane } = Tabs;
-const { Option } = Select;
-const { ipcRenderer } = window.require('electron');
-
-const ALL_STORES: any = STORES;
-
-const getStores = (): IStore[] => {
-    const stores = JSON.parse(localStorage.getItem('stores') as string) as IStore[];
-    return stores ? stores : [];
-};
 
 const TaskPage = () => {
-    const [panes, setPanes] = useState(() => getStores());
-    const [isStoreModalVisible, setStoreModalVisible] = useState(false);
-    const [store, setStore] = useState({} as any);
-    const [form] = useForm();
-
-    const addStore = () => {
-        if (!store) return;
-
-        setStoreModalVisible(false);
-        const addedPane: IStore = { title: store.name, key: store.key };
-        const newState = [...panes, addedPane];
-        localStorage.setItem('stores', JSON.stringify(newState));
-        setPanes(newState);
-    };
+    const dispatch = useDispatch();
+    const currentStores = useSelector(getStores);
 
     const onEdit = (targetKey: any, action: any) => {
         Modal.confirm({
@@ -40,74 +19,31 @@ const TaskPage = () => {
             content: 'Are you sure to delete this store? ',
             okText: 'Yes',
             cancelText: 'No',
-            onOk: () => deleteStore(targetKey),
+            onOk: () => onDeleteStore(targetKey),
         });
     };
 
-    const deleteStore = (key: string) => {
-        const tasks = JSON.parse(localStorage.getItem(key) as string) as TaskData[];
-        const stores = JSON.parse(localStorage.getItem('stores') as string) as IStore[];
-
-        if (tasks) {
-            // cancel and delete all running tasks from store
-            tasks.forEach((task) => {
-                ipcRenderer.send(NOTIFY_STOP_TASK, task.uuid);
-                localStorage.removeItem(task.uuid);
-            });
-        }
-
-        if (stores) {
-            localStorage.removeItem(key);
-
-            const newStores = panes.filter((store) => store.key !== key);
-            localStorage.setItem('stores', JSON.stringify(newStores));
-
-            setPanes(newStores);
-        }
+    const onDeleteStore = (key: StoreType) => {
+        dispatch(deleteStore({ storeKey: key }));
     };
-
-    const openStoreModal = () => {
-        form.setFieldsValue({ selectStore: undefined });
-        setStoreModalVisible(true);
-    };
-
-    const onStoreSelect = (key: string) => {
-        setStore(ALL_STORES[key]);
-    };
-
-    const isStoreCreated = (store: string): boolean => {
-        return panes.find((s) => s.title === store) ? true : false;
-    };
-
-    const addMenu = (
-        <Button type="primary" onClick={() => openStoreModal()}>
-            Add Store
-        </Button>
-    );
 
     return (
-        <div style={{ padding: 24, height: '100%' }}>
-            <Tabs hideAdd style={{ height: '100%' }} defaultActiveKey="1" tabBarExtraContent={addMenu} type="editable-card" onEdit={onEdit}>
-                {panes.map((pane) => (
-                    <TabPane tab={<span>{pane.title}</span>} key={pane.key}>
-                        <Store key={pane.key} storeName={pane.key} />
+        <div style={{ padding: 24, height: '100%', width: '100%' }}>
+            <AddStoreModal />
+            <Tabs hideAdd style={{ height: '100%' }} defaultActiveKey="1" type="editable-card" onEdit={onEdit}>
+                {/* <div>test </div> */}
+                {Object.entries(currentStores).map(([storeKey, store]) => (
+                    <TabPane tab={<span>{store.displayName}</span>} key={storeKey}>
+                        <FootlockerStore
+                            key={storeKey}
+                            storeKey={storeKey}
+                            // TaskComponent={STORES_COMPONENT[storeKey].TaskComponent}
+                            // NewTaskModalComponent={STORES_COMPONENT[pane.key].NewTaskModalComponent}
+                            // EditTaskModalComponent={STORES_COMPONENT[pane.key].EditTaskModalComponent}
+                        />
                     </TabPane>
                 ))}
             </Tabs>
-
-            <Modal title="Add Store" visible={isStoreModalVisible} onOk={addStore} onCancel={() => setStoreModalVisible(false)}>
-                <Form form={form}>
-                    <Form.Item name={'selectStore'}>
-                        <Select placeholder="Select Store" onChange={onStoreSelect} style={{ width: 200, margin: 'auto' }}>
-                            {Object.entries(STORES).map(([storeKey, store]) => (
-                                <Option key={store.key} disabled={isStoreCreated(store.name)} value={storeKey}>
-                                    {store.name}
-                                </Option>
-                            ))}
-                        </Select>
-                    </Form.Item>
-                </Form>
-            </Modal>
         </div>
     );
 };

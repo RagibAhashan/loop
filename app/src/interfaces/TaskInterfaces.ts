@@ -23,23 +23,41 @@ export interface UserProfile {
     billing: Billing;
     shipping: Billing;
     same: boolean;
-    profile: string;
+    name: string;
 }
 
+export type StatusLevel = 'error' | 'status' | 'info' | 'idle' | 'cancel' | 'success';
+export interface Status {
+    message: string;
+    level: StatusLevel;
+    checkedSize?: string;
+}
+
+export interface Task {
+    [key: string]: TaskData; //a task have its uuid as key
+}
 export interface TaskData {
     uuid: string;
-    store?: string;
+    running: boolean;
+    status: Status;
+    proxy: Proxy | null;
+    proxySet: string | null;
+    profile: UserProfile;
+    profileName: string;
+}
+
+export interface FLTaskData extends TaskData {
     productSKU: string;
-    proxySet: string | undefined;
-    profile: string;
-    quantity?: number;
+    deviceId: string | null;
     retryDelay: number;
     startDate?: Moment;
     startTime?: Moment;
     sizes: string[];
     manualTime?: boolean;
-    monitorDelay?: number;
-    running?: boolean;
+}
+
+export interface WalmartTaskData extends TaskData {
+    productURL: string;
 }
 
 export interface StartTaskData {

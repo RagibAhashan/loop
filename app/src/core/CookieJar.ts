@@ -1,13 +1,38 @@
+import cookieParser from 'cookie';
 import { ua } from './constants/Constants';
 import { Cookie } from './constants/Cookies';
 
 export class CookieJar {
-    private cookies: Map<Cookie, string>;
+    private cookies: Map<string, string>;
     constructor() {
         this.cookies = new Map();
     }
 
-    _getCookie(cookie: Cookie) {
+    // gather all set-cookie and store them in the cookies map
+    saveInSession(cookies: string[]): void {
+        for (let rawCookie of cookies) {
+            // set-cookie array from axios might have additional info we dont need, so preprocess to have only name=value
+            const nameValue = rawCookie.split(';')[0];
+            const parsed = cookieParser.parse(nameValue);
+
+            if (Object.keys(parsed).length === 0) continue;
+
+            this.cookies.set(Object.keys(parsed)[0], Object.values(parsed)[0]);
+        }
+    }
+
+    // get all present cookies in the session map and pack them as a string
+    serialize(): string {
+        const cookieArr = [];
+        for (let [name, value] of this.cookies) {
+            const ser = cookieParser.serialize(name, value);
+            cookieArr.push(ser);
+        }
+
+        return cookieArr.join(';');
+    }
+
+    private _getCookie(cookie: Cookie) {
         if (!this.cookies.has(cookie)) return '';
         const value = this.getValue(cookie);
         return `${cookie}=${value};`;
@@ -70,18 +95,6 @@ export class CookieJar {
 
         return parseInt(match[0]) * 1000;
     }
-
-    // extractQueryParams(rawString) {
-    //     const regex = new RegExp(/(\?|&)([^=]+)=([^&]+)/g);
-    //     const params = [];
-    //     let match;
-
-    //     while ((match = regex.exec(rawString))) {
-    //         params.push({ [match[2]]: match[3] });
-    //     }
-
-    //     return params;
-    // }
 
     extractQueryParams(urlString: string) {
         const url = new URL(urlString);
