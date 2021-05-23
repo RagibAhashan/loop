@@ -20,12 +20,9 @@ const StopAllTasksAction = (props: any) => {
 
     const handleStopAllTasks = () => {
         dispatch(stopAllTasks({ storeKey }));
-        console.log('stopped action dispatch done');
         Object.values(tasks).forEach((task) => {
             ipcRenderer.send(NOTIFY_STOP_TASK(storeKey), task.uuid);
         });
-
-        console.log('stopped action send notif done');
     };
 
     return (

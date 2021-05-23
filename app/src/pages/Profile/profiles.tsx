@@ -21,8 +21,6 @@ const ProfilePage = () => {
 
     const showProfiles = () => {
         if (!Object.keys(allProfiles).length) return <h1> No Profile Found. </h1>;
-        console.log('TPPP', allProfiles);
-        console.log(Object.entries(allProfiles));
         return Object.entries(allProfiles).map(([name, profile]) => <ProfileCard key={name} profile={profile} onProfileClick={onProfileClick} />);
     };
 
