@@ -29,3 +29,9 @@ export interface CreditCard {
     expiryYear: string;
     cvc: string;
 }
+
+export interface WalmartCreditCard extends CreditCard {
+    integrityCheck: string;
+    keyId: string;
+    phase: string;
+}

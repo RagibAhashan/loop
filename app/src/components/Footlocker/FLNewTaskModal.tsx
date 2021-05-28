@@ -2,7 +2,7 @@ import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Row
 import React, { Fragment, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { CreditCard, FLTaskData } from '../../interfaces/TaskInterfaces';
-import ccEncryptor from '../../services/CreditCardEncryption';
+import ccEncryptor from '../../services/Encryption/EncryptionContext';
 import { getProfiles } from '../../services/Profile/ProfileService';
 import { getProxySets } from '../../services/Proxy/ProxyService';
 import { getSizes } from '../../services/task/TaskUtils';
@@ -41,16 +41,16 @@ const FLNewTaskModal = (props: any) => {
 
     const getProfileByname = (profName: string) => profiles[profName];
 
-    const onFinishForm = (data: FLTaskData) => {
-        const setData = setTaskData(data);
+    const onFinishForm = async (data: FLTaskData) => {
+        const setData = await setTaskData(data);
         onAdd(setData, quantity);
     };
 
-    const setTaskData = (data: FLTaskData) => {
+    const setTaskData = async (data: FLTaskData) => {
         const deviceId = localStorage.getItem('deviceId');
         let currProf = getProfileByname(data.profileName);
 
-        const encryptedPayment = ccEncryptor.encrypt(currProf.payment as CreditCard);
+        const encryptedPayment = await ccEncryptor.encrypt(currProf.payment as CreditCard);
         currProf = { ...currProf, payment: encryptedPayment };
         data = { ...data, deviceId: deviceId, profile: { ...currProf } };
 
