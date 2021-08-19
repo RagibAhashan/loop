@@ -1,33 +1,19 @@
-import axios from 'axios';
 import { app, BrowserWindow, ipcMain } from 'electron';
-import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer';
 import hash from 'object-hash';
 import si from 'systeminformation';
 import {
     CAPTCHA_ROUTE,
     CAPTHA_WINDOW_CLOSED,
-    GET_DATADOME,
-    NOTIFY_CAPTCHA,
-    NOTIFY_CAPTCHA_SOLVED,
-    NOTIFY_EDIT_TASK,
     NOTIFY_START_PROXY_TEST,
-    NOTIFY_START_TASK,
     NOTIFY_STOP_PROXY_TEST,
-    NOTIFY_STOP_TASK,
-    NOTIFY_TASK_STATUS,
     PROXY_TEST_REPLY,
     PROXY_TEST_SUCCEEDED,
-    TASK_STATUS,
-    TASK_STOP,
-    TASK_STOPPED,
-    TASK_SUCCESS,
 } from './common/Constants';
 import { StoreType } from './constants/Stores';
 import { captchaWindowManager } from './core/captcha-window/CaptchaWindowManager';
-import { COMMONG_HEADERS } from './core/constants/Constants';
+import { FootLockerEvents } from './core/footlocker/FootLockerEvents';
 import { ProxyFactory } from './core/proxies/ProxyFactory';
-import { TaskFactory } from './core/TaskFactory';
-import { taskManager } from './core/TaskManager';
+import { WalmartEvents } from './core/walmart/WalmartEvents';
 
 let win: BrowserWindow;
 
@@ -103,13 +89,13 @@ const createWindow = () => {
 };
 
 app.whenReady().then(async () => {
-    installExtension(REDUX_DEVTOOLS)
-        .then((name) => console.log(`Added Extension:  ${name}`))
-        .catch((err) => console.log('An error occurred: ', err));
+    // installExtension(REDUX_DEVTOOLS)
+    //     .then((name) => console.log(`Added Extension:  ${name}`))
+    //     .catch((err) => console.log('An error occurred: ', err));
 
-    installExtension(REACT_DEVELOPER_TOOLS)
-        .then((name) => console.log(`Added Extension:  ${name}`))
-        .catch((err) => console.log('An error occurred: ', err));
+    // installExtension(REACT_DEVELOPER_TOOLS)
+    //     .then((name) => console.log(`Added Extension:  ${name}`))
+    //     .catch((err) => console.log('An error occurred: ', err));
     createWindow();
 });
 
@@ -132,105 +118,19 @@ if (process.platform === 'darwin') {
 
 // IPC EVENTS
 
-ipcMain.on(NOTIFY_START_TASK(StoreType.FootlockerCA), (event, uuid, storeName, taskData) => {
-    console.log('starting task !', uuid, storeName);
-    const task = taskManager.getTask(uuid);
-    if (task) {
-        task.updateProxy(taskData.proxyData);
-        task.execute();
-    } else {
-        const newTask = TaskFactory.createFootlockerTask(
-            storeName,
-            uuid,
-            taskData.productSKU,
-            taskData.sizes,
-            taskData.deviceId,
-            taskData.profileData,
-            taskData.retryDelay,
-            taskData.proxyData,
-        );
+const flCAEvents = new FootLockerEvents(StoreType.FootlockerCA);
+flCAEvents.initEvents();
 
-        newTask.on(TASK_STATUS, (message: any) => {
-            event.reply(NOTIFY_TASK_STATUS(storeName), uuid, message); //this event is for retrieving status message even for components that are not rendered
-            event.reply(uuid, message); // this one is unique to each component task (update local state)
-        });
+const flUSEvents = new FootLockerEvents(StoreType.FootlockerUS);
+flUSEvents.initEvents();
 
-        newTask.on(TASK_STOPPED, () => {
-            event.reply(uuid + TASK_STOPPED, uuid);
-        });
-
-        newTask.on(NOTIFY_CAPTCHA, (captcha: any) => {
-            const capWin = captchaWindowManager.getWindow(storeName);
-            event.reply(storeName + NOTIFY_CAPTCHA, captcha);
-            if (capWin) capWin.webContents.send(storeName + NOTIFY_CAPTCHA, captcha);
-        });
-
-        newTask.on(TASK_SUCCESS, () => {
-            event.reply(uuid + TASK_SUCCESS);
-        });
-
-        newTask.execute();
-    }
-});
-
-ipcMain.on(NOTIFY_STOP_TASK(StoreType.FootlockerCA), async (event, uuid) => {
-    try {
-        const currentTask = taskManager.getTask(uuid);
-        console.log('stopping task', uuid);
-        if (currentTask) {
-            currentTask.emit(TASK_STOP);
-        }
-    } catch (error) {
-        console.log('err', error);
-    }
-});
-
-ipcMain.handle(GET_DATADOME, async (event, token, captcha) => {
-    try {
-        const url = new URL('https://geo.captcha-delivery.com/captcha/check');
-        for (const param in captcha.params) {
-            console.log(param, ':', captcha.params[param]);
-            url.searchParams.append(param, captcha.params[param]);
-        }
-
-        console.log(token);
-        url.searchParams.append('g-recaptcha-response', token);
-
-        console.log('GEO URL CHECK', url.toString());
-        const response = await axios.get(url.toString(), { headers: COMMONG_HEADERS });
-
-        console.log(response.data['cookie']);
-
-        return response.data['cookie'];
-    } catch (error) {
-        console.log('GEO CAPTCAH ERROR');
-    }
-});
-
-ipcMain.on(NOTIFY_CAPTCHA_SOLVED, async (event, uuid, datadome) => {
-    try {
-        const currentTask = taskManager.getTask(uuid);
-        if (currentTask) {
-            currentTask.emit(NOTIFY_CAPTCHA_SOLVED, datadome);
-        }
-    } catch (error) {
-        console.log('err', error);
-    }
-});
+const wUSEvents = new WalmartEvents(StoreType.WalmartUS);
+wUSEvents.initEvents();
 
 ipcMain.handle('GET-SYSTEM-ID', async (event) => {
     try {
         const ID = await getSystemUniqueID();
         return ID;
-    } catch (error) {
-        console.log('err', error);
-    }
-});
-
-ipcMain.on(NOTIFY_EDIT_TASK, async (event, uuid) => {
-    try {
-        //remove the task so it would be recreated with the new data, hack solution
-        taskManager.remove(uuid);
     } catch (error) {
         console.log('err', error);
     }

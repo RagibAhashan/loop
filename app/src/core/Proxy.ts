@@ -1,6 +1,6 @@
 import { HttpsProxyAgent } from 'https-proxy-agent';
 
-export class Proxy {
+export class ProxyAgent {
     private proxy: string;
     private httpsAgent: HttpsProxyAgent;
     constructor(proxyString: string, credentials?: string) {

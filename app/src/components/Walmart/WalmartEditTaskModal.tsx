@@ -2,18 +2,17 @@ import { Col, Form, Input, InputNumber, Modal, Row, Select } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { FLTaskData } from '../../interfaces/TaskInterfaces';
+import { WalmartTaskData } from '../../interfaces/TaskInterfaces';
 import { getProfiles } from '../../services/Profile/ProfileService';
 import { getProxySets } from '../../services/Proxy/ProxyService';
-import { getSizes } from '../../services/task/TaskUtils';
 
 const validateMessages = {
     required: 'Required!',
 };
 const GUTTER: [number, number] = [16, 0];
 
-export const FLEditTaskModal = (props: any) => {
-    const { visible, onClose, onEdit, task }: { visible: boolean; onClose: () => {}; onEdit: (newVal: any) => {}; task: FLTaskData } = props;
+export const WalmartEditTaskModal = (props: any) => {
+    const { visible, onClose, onEdit, task }: { visible: boolean; onClose: () => {}; onEdit: (newVal: any) => {}; task: WalmartTaskData } = props;
     const [form] = useForm();
 
     const profiles = useSelector(getProfiles);
@@ -22,10 +21,9 @@ export const FLEditTaskModal = (props: any) => {
     });
 
     const proxies = useSelector(getProxySets);
-    let proxiesOptions: any = Object.keys(proxies).map((proxySetName) => {
+    const proxiesOptions = Object.keys(proxies).map((proxySetName) => {
         return { label: proxySetName, value: proxySetName };
     });
-    proxiesOptions = [...proxiesOptions, { label: 'No Proxies', value: null }];
 
     useEffect(() => {
         form.resetFields();
@@ -68,8 +66,8 @@ export const FLEditTaskModal = (props: any) => {
                 <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
                     <Row gutter={GUTTER}>
                         <Col span={24}>
-                            <Form.Item name="productSKU" rules={[{ required: true }]}>
-                                <Input placeholder="Product SKU"></Input>
+                            <Form.Item name="productURL" rules={[{ required: true }]}>
+                                <Input placeholder="Product URL"></Input>
                             </Form.Item>
                         </Col>
                     </Row>
@@ -88,14 +86,6 @@ export const FLEditTaskModal = (props: any) => {
 
                     <Row gutter={GUTTER}>
                         <Col span={12}>
-                            <Form.Item name="sizes" rules={[{ required: true }]}>
-                                <Select placeholder="Size" mode="multiple" allowClear>
-                                    {getSizes()}
-                                </Select>
-                            </Form.Item>
-                        </Col>
-
-                        <Col span={12}>
                             <Form.Item name="retryDelay" rules={[{ required: true }]}>
                                 <InputNumber style={{ width: '100%' }} placeholder="Retry delay (ms)" />
                             </Form.Item>
@@ -107,4 +97,4 @@ export const FLEditTaskModal = (props: any) => {
     );
 };
 
-export default FLEditTaskModal;
+export default WalmartEditTaskModal;

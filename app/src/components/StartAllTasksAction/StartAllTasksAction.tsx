@@ -21,7 +21,7 @@ const StartAllTasksAction = (props: any) => {
     const handleStartAllTasks = () => {
         dispatch(startAllTasks({ storeKey }));
         Object.values(tasks).forEach((task) => {
-            ipcRenderer.send(NOTIFY_START_TASK(storeKey), task.uuid, storeKey, task);
+            ipcRenderer.send(NOTIFY_START_TASK(storeKey), task);
         });
     };
 

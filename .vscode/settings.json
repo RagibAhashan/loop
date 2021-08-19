@@ -5,5 +5,6 @@
         "source.organizeImports": true,
         "source.fixAll.tslint": true
     },
-    "html.format.indentInnerHtml": true
+    "html.format.indentInnerHtml": true,
+    "terminal.integrated.scrollback": 999999999
 }

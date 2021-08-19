@@ -10,5 +10,5 @@
         "allowSyntheticDefaultImports": true
     },
     "include": ["src/**/*.ts"],
-    "exclude": ["src/main.prod.js", "release", "build", "node_modules"]
+    "exclude": ["src/main.prod.js", "release", "build", "node_modules", "src/global-store", "src/services"]
 }

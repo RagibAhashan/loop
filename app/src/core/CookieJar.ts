@@ -1,70 +1,107 @@
 import cookieParser from 'cookie';
+import puppeteer from 'puppeteer';
+import tough from 'tough-cookie';
 import { ua } from './constants/Constants';
 import { Cookie } from './constants/Cookies';
 
 export class CookieJar {
-    private cookies: Map<string, string>;
-    constructor() {
-        this.cookies = new Map();
+    private cookiesMap: Map<string, string>;
+    private CookieUtil = tough.Cookie;
+    private cookieJar: tough.CookieJar;
+    private url: string;
+
+    constructor(url: string) {
+        this.cookiesMap = new Map();
+        this.cookieJar = new tough.CookieJar();
+        this.url = url;
     }
 
-    // gather all set-cookie and store them in the cookies map
-    saveInSession(cookies: string[]): void {
-        for (let rawCookie of cookies) {
-            // set-cookie array from axios might have additional info we dont need, so preprocess to have only name=value
-            const nameValue = rawCookie.split(';')[0];
-            const parsed = cookieParser.parse(nameValue);
-
-            if (Object.keys(parsed).length === 0) continue;
-
-            this.cookies.set(Object.keys(parsed)[0], Object.values(parsed)[0]);
-        }
+    private current(): void {
+        console.log('Current Cookies in session map', this.cookiesMap);
+        console.log('Current Cookies in session', this.cookieJar.toJSON());
     }
 
-    // get all present cookies in the session map and pack them as a string
-    serialize(): string {
-        const cookieArr = [];
-        for (let [name, value] of this.cookies) {
-            const ser = cookieParser.serialize(name, value);
-            cookieArr.push(ser);
-        }
-
-        return cookieArr.join(';');
+    /**
+     * Gather all set-cookie header and store them in the cookies map
+     *
+     * @return {void}
+     *
+     */
+    async saveInSessionFromString(cookies: string[]): Promise<void> {
+        if (cookies.length === 0) return;
+        await this.saveInSession(cookies);
     }
 
-    private _getCookie(cookie: Cookie) {
-        if (!this.cookies.has(cookie)) return '';
-        const value = this.getValue(cookie);
-        return `${cookie}=${value};`;
-    }
+    /**
+     * Gather all set-cookie header from a puppeteer json object and store them in the cookies map
+     *
+     * @return {void}
+     *
+     */
+    async saveInSessionFromJSON(cookies: puppeteer.Protocol.Network.Cookie[]): Promise<void> {
+        if (cookies.length === 0) return;
 
-    getCookie(...cookie: Cookie[]) {
-        let cookieString = '';
-        cookie.forEach((cookie) => {
-            cookieString += this._getCookie(cookie);
+        let cookiesStrArr: string[] = [];
+
+        /*
+         *  because we are also using pupeteer to get some cookies, it only returns cookies in an object format
+         *  that is not accepted by tough-cookie, so we transform it in string first
+         */
+        cookiesStrArr = cookies.map((cookie) => {
+            return cookieParser.serialize(cookie.name, cookie.value, {
+                domain: cookie.domain,
+                expires: new Date(cookie.expires),
+                httpOnly: cookie.httpOnly,
+                path: cookie.path,
+            });
         });
-        return cookieString;
+
+        await this.saveInSession(cookiesStrArr);
     }
 
-    getValue(cookie: Cookie): string | undefined {
-        if (!this.cookies.has(cookie)) return undefined;
-        return this.cookies.get(cookie);
-    }
+    private async saveInSession(cookies: string[]): Promise<void> {
+        const toughCookieArr = cookies.map((cookie) => this.CookieUtil.parse(cookie));
 
-    setFromRaw(rawString: string, name: Cookie): void {
-        const value = this.extract(rawString, name);
+        // array of tough cookie object
+        for (let cookie of toughCookieArr) {
+            if (!cookie) continue;
 
-        if (value) {
-            this.cookies.set(name, value);
+            // if cookie does not match domain for some reason, returns undefined
+            const isValidCookie = await this.cookieJar.setCookie(cookie, this.url, { ignoreError: true });
+
+            // For the moment we are keeping this map of cookie key value pair for the get cookie method
+            // but it might be useless
+            if (isValidCookie) this.cookiesMap.set(cookie.key, cookie.value);
         }
+
+        // TODO remove
+        const debug = true;
+        if (debug) this.current();
+    }
+
+    /**
+     * Get all present cookies in the session map and pack them as a string
+     * Cookie are serialized based on domain and path match.
+     *
+     * @return {string} parse cookie string to be used in http header
+     *
+     */
+    serializeSession(): string | undefined {
+        const cookies = this.cookieJar.getCookieStringSync(this.url);
+        return cookies === '' ? undefined : cookies;
     }
 
     set(cookie: Cookie, value: string) {
-        return this.cookies.set(cookie, value);
+        return this.cookiesMap.set(cookie, value);
     }
 
     has(cookie: Cookie) {
-        return this.cookies.has(cookie);
+        return this.cookiesMap.has(cookie);
+    }
+
+    getValue(key: Cookie): string | undefined {
+        if (!this.cookiesMap.has(key)) return undefined;
+        return this.cookiesMap.get(key);
     }
 
     /**

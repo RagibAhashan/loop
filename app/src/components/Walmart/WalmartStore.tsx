@@ -1,18 +1,18 @@
 import { Button, Col, Row, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { CAPTHA_WINDOW_CLOSED, NOTIFY_CAPTCHA } from '../../common/Constants';
-import { ICaptcha } from '../../components/Captcha/CaptchaFrame';
 import { buttonStyle } from '../../styles/Buttons';
 import AddTaskAction from '../AddTaskAction/AddTaskAction';
+import { ICaptcha } from '../Captcha/CaptchaFrame';
 import DeleteAllTaskAction from '../DeleteAllTaskAction/DeleteAllTaskAction';
 import EditAllTasksAction from '../EditAllTasksAction/EditAllTasksAction';
 import StartAllTasksAction from '../StartAllTasksAction/StartAllTasksAction';
 import StopAllTasksAction from '../StopAllTasksAction/StopAllTasksAction';
 import TaskListContainer from '../TaskListContainer/TaskListContainer';
-import FLEditTaskModal from './FLEditTaskModal';
-import FLHeaders from './FLHeaders';
-import FLNewTaskModal from './FLNewTaskModal';
-import FLTask from './FLTask';
+import WalmartEditTaskModal from './WalmartEditTaskModal';
+import WalmartHeaders from './WalmartHeaders';
+import WalmartNewTaskModal from './WalmartNewTaskModal';
+import WalmartTask from './WalmartTask';
 const { ipcRenderer } = window.require('electron');
 const { Option } = Select;
 
@@ -25,7 +25,7 @@ for (let i = 4; i < 14; i += 0.5) {
     );
 }
 
-const FootlockerStore = (props: any) => {
+const WalmartStore = (props: any) => {
     const { storeKey } = props;
     const [captchaWinOpened, setCaptchaWinOpened] = useState(false);
 
@@ -68,17 +68,17 @@ const FootlockerStore = (props: any) => {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'auto' }}>
-            <FLHeaders />
+            <WalmartHeaders />
 
-            <TaskListContainer storeKey={storeKey} TaskComponent={FLTask} />
+            <TaskListContainer storeKey={storeKey} TaskComponent={WalmartTask} />
 
             <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10, width: '100%' }}>
                 <Col span={3}>
-                    <AddTaskAction storeKey={storeKey} NewTaskModalComponent={FLNewTaskModal}></AddTaskAction>
+                    <AddTaskAction storeKey={storeKey} NewTaskModalComponent={WalmartNewTaskModal}></AddTaskAction>
                 </Col>
 
                 <Col span={3}>
-                    <EditAllTasksAction storeKey={storeKey} EditTaskModalComponent={FLEditTaskModal}></EditAllTasksAction>
+                    <EditAllTasksAction storeKey={storeKey} EditTaskModalComponent={WalmartEditTaskModal}></EditAllTasksAction>
                 </Col>
                 <Col span={3}></Col>
                 <Col span={3}>
@@ -101,4 +101,4 @@ const FootlockerStore = (props: any) => {
     );
 };
 
-export default FootlockerStore;
+export default WalmartStore;

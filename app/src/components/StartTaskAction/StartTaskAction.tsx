@@ -17,7 +17,7 @@ const StartTaskAction = (props: any) => {
 
     const handleStartTask = () => {
         dispatch(startTask({ storeKey, uuid }));
-        ipcRenderer.send(NOTIFY_START_TASK(storeKey), uuid, storeKey, task);
+        ipcRenderer.send(NOTIFY_START_TASK(storeKey), task);
     };
 
     return <Button onClick={handleStartTask} style={startButton} icon={<PlayCircleFilled />} size="small" />;

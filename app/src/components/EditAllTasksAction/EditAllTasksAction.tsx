@@ -28,6 +28,7 @@ const EditAllTasksAction = (props: any) => {
 
     const handleEditTask = (newValues: any) => {
         dispatch(editAllTasks({ storeKey, newValue: newValues }));
+
         setVisibleModal(false);
     };
 

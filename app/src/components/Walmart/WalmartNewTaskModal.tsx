@@ -1,11 +1,9 @@
-import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, TimePicker } from 'antd';
-import React, { Fragment, useState } from 'react';
+import { Button, Col, Form, Input, InputNumber, Modal, Row, Select } from 'antd';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { CreditCard, FLTaskData } from '../../interfaces/TaskInterfaces';
-import { FootlockerEncryption } from '../../services/Encryption/FootlockerEncryption';
+import { WalmartTaskData } from '../../interfaces/TaskInterfaces';
 import { getProfiles } from '../../services/Profile/ProfileService';
 import { getProxySets } from '../../services/Proxy/ProxyService';
-import { getSizes } from '../../services/task/TaskUtils';
 const validateMessages = {
     required: '',
 };
@@ -18,15 +16,12 @@ const buttonStyle: React.CSSProperties = {
     textOverflow: 'ellipsis',
 };
 
-const format = 'HH:mm';
+const WalmartNewTaskModal = (props: any) => {
+    const { visible, onClose, onAdd }: { visible: boolean; onClose: () => {}; onAdd: (data: WalmartTaskData, quantity: number) => {} } = props;
 
-const FLNewTaskModal = (props: any) => {
-    const { visible, onClose, onAdd }: { visible: boolean; onClose: () => {}; onAdd: (data: FLTaskData, quantity: number) => {} } = props;
-
-    const [manualTime, setManualTime] = useState(true);
     const [quantity, setQuantity] = useState(1);
 
-    const [form] = Form.useForm<FLTaskData>();
+    const [form] = Form.useForm<WalmartTaskData>();
 
     const profiles = useSelector(getProfiles);
     const optionsProfiles = Object.entries(profiles).map(([key, profile]) => {
@@ -41,45 +36,17 @@ const FLNewTaskModal = (props: any) => {
 
     const getProfileByname = (profName: string) => profiles[profName];
 
-    const onFinishForm = async (data: FLTaskData) => {
+    const onFinishForm = async (data: WalmartTaskData) => {
         const setData = await setTaskData(data);
         onAdd(setData, quantity);
     };
 
-    const setTaskData = async (data: FLTaskData) => {
-        const deviceId = localStorage.getItem('deviceId');
+    const setTaskData = async (data: WalmartTaskData) => {
         let currProf = getProfileByname(data.profileName);
 
-        const ccEncryptor = new FootlockerEncryption();
-        const encryptedPayment = await ccEncryptor.encrypt(currProf.payment as CreditCard);
-
-        currProf = { ...currProf, payment: encryptedPayment };
-        data = { ...data, deviceId: deviceId, profile: { ...currProf } };
+        data = { ...data, profile: { ...currProf } };
 
         return data;
-    };
-
-    const onManualTimeChange = (e: any) => {
-        setManualTime((prev) => (prev = e.target.checked));
-    };
-
-    const renderTime = () => {
-        return manualTime ? (
-            <Col span={8}></Col>
-        ) : (
-            <Fragment>
-                <Col span={4}>
-                    <Form.Item name="startDate" rules={[{ required: true }]}>
-                        <DatePicker disabled />
-                    </Form.Item>
-                </Col>
-                <Col span={4}>
-                    <Form.Item name="startTime" rules={[{ required: true }]}>
-                        <TimePicker disabled format={format} />
-                    </Form.Item>
-                </Col>
-            </Fragment>
-        );
     };
 
     return (
@@ -89,8 +56,8 @@ const FLNewTaskModal = (props: any) => {
                     <Form form={form} onFinish={onFinishForm} validateMessages={validateMessages}>
                         <Row gutter={GUTTER}>
                             <Col span={24}>
-                                <Form.Item name="productSKU" rules={[{ required: true }]}>
-                                    <Input placeholder="Product SKU"></Input>
+                                <Form.Item name="productURL" rules={[{ required: true }]}>
+                                    <Input placeholder="Product URL"></Input>
                                 </Form.Item>
                             </Col>
                         </Row>
@@ -109,29 +76,11 @@ const FLNewTaskModal = (props: any) => {
 
                         <Row gutter={GUTTER}>
                             <Col span={12}>
-                                <Form.Item name="sizes" rules={[{ required: true }]}>
-                                    <Select placeholder="Size" mode="multiple" allowClear>
-                                        {getSizes()}
-                                    </Select>
-                                </Form.Item>
-                            </Col>
-
-                            <Col span={12}>
                                 <Form.Item name="retryDelay" rules={[{ required: true }]}>
                                     <InputNumber style={{ width: '100%' }} placeholder="Retry delay" />
                                 </Form.Item>
                             </Col>
-                        </Row>
 
-                        <Row gutter={GUTTER}>
-                            <Col span={4}>
-                                <Form.Item name="manualTime">
-                                    <Checkbox onChange={onManualTimeChange} defaultChecked={manualTime}>
-                                        <span>Manual Start</span>
-                                    </Checkbox>
-                                </Form.Item>
-                            </Col>
-                            {renderTime()}
                             <Col span={12}>
                                 <Form.Item rules={[{ required: true }]}>
                                     <InputNumber
@@ -164,4 +113,4 @@ const FLNewTaskModal = (props: any) => {
     );
 };
 
-export default FLNewTaskModal;
+export default WalmartNewTaskModal;

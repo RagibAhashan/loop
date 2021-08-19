@@ -4,10 +4,21 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import AddStoreModal from '../../components/AddStoreModal/AddStoreModal';
 import FootlockerStore from '../../components/Footlocker/FootlockerStore';
+import WalmartStore from '../../components/Walmart/WalmartStore';
 import { StoreType } from '../../constants/Stores';
 import { deleteStore, getStores } from '../../services/Store/StoreService';
 const { TabPane } = Tabs;
 
+const RenderStore = (storeKey: StoreType) => {
+    switch (storeKey) {
+        case StoreType.FootlockerCA:
+        case StoreType.FootlockerUS:
+            return <FootlockerStore key={storeKey} storeKey={storeKey} />;
+        case StoreType.WalmartCA:
+        case StoreType.WalmartUS:
+            return <WalmartStore key={storeKey} storeKey={storeKey} />;
+    }
+};
 const TaskPage = () => {
     const dispatch = useDispatch();
     const currentStores = useSelector(getStores);
@@ -34,13 +45,7 @@ const TaskPage = () => {
                 {/* <div>test </div> */}
                 {Object.entries(currentStores).map(([storeKey, store]) => (
                     <TabPane tab={<span>{store.displayName}</span>} key={storeKey}>
-                        <FootlockerStore
-                            key={storeKey}
-                            storeKey={storeKey}
-                            // TaskComponent={STORES_COMPONENT[storeKey].TaskComponent}
-                            // NewTaskModalComponent={STORES_COMPONENT[pane.key].NewTaskModalComponent}
-                            // EditTaskModalComponent={STORES_COMPONENT[pane.key].EditTaskModalComponent}
-                        />
+                        {RenderStore(storeKey as StoreType)}
                     </TabPane>
                 ))}
             </Tabs>

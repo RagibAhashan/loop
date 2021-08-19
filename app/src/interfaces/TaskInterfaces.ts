@@ -15,7 +15,9 @@ export interface Billing {
     firstName: string;
     address: string;
     postalCode: string;
+    /** Region is the full name the state for USA or the province for Canada */
     region: string;
+    /** Town is synonym for city */
     town: string;
 }
 export interface UserProfile {
@@ -33,7 +35,7 @@ export interface Status {
     checkedSize?: string;
 }
 
-export interface Task {
+export interface TaskMap {
     [key: string]: TaskData; //a task have its uuid as key
 }
 export interface TaskData {
@@ -44,12 +46,12 @@ export interface TaskData {
     proxySet: string | null;
     profile: UserProfile;
     profileName: string;
+    retryDelay: number;
 }
 
 export interface FLTaskData extends TaskData {
     productSKU: string;
     deviceId: string | null;
-    retryDelay: number;
     startDate?: Moment;
     startTime?: Moment;
     sizes: string[];

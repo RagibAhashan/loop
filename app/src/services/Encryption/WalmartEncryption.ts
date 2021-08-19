@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { CreditCard, WalmartCreditCard } from './../../core/interface/UserProfile';
-import { EncryptionStrategy } from './EncryptionStrategy';
 require('../../core/walmart/scripts/WalmartEncryption');
 
 interface IPIE {
@@ -16,7 +15,7 @@ interface PIE extends IPIE {
 type EncryptFunction = (number: string, cvc: string, format: boolean, PIE: PIE) => string[];
 
 const KEY_URL = 'https://securedataweb.walmart.com/pie/v1/wmcom_us_vtg_pie/getkey.js?bust=';
-export class WalmartEncryption implements EncryptionStrategy {
+export class WalmartEncryption {
     private walmartEncrypt: EncryptFunction;
 
     constructor() {
@@ -35,7 +34,7 @@ export class WalmartEncryption implements EncryptionStrategy {
                 integrityCheck: integrityCheck,
                 keyId: PIE.key_id,
                 phase: PIE.phase.toString(),
-            } as WalmartCreditCard;
+            };
         } catch (e) {
             throw new Error('Failed to encrypt walmart');
         }

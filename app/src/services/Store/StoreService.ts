@@ -1,13 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { NOTIFY_EDIT_TASK, NOTIFY_STOP_TASK } from '../../common/Constants';
+import { NOTIFY_STOP_TASK } from '../../common/Constants';
 import { assignProxy, deleteAllProxiesFromSet, deleteProxyFromSet } from '../Proxy/ProxyService';
 import { StoreType } from './../../constants/Stores';
 import { AppState } from './../../global-store/GlobalStore';
-import { Status, Task, TaskData } from './../../interfaces/TaskInterfaces';
+import { Status, TaskData, TaskMap } from './../../interfaces/TaskInterfaces';
 const { ipcRenderer } = window.require('electron');
-
 export interface Store {
-    tasks: Task;
+    tasks: TaskMap;
     running: boolean;
     displayName: string;
 }
@@ -31,11 +30,11 @@ export interface AddTaskPayload extends StorePayload {
 }
 
 export interface EditAllTasksPayload extends StorePayload {
-    newValue: any;
+    newValue: Partial<TaskData>;
 }
 
 export interface EditTaskPayload extends TaskPayload {
-    newValue: any;
+    newValue: Partial<TaskData>;
 }
 
 export interface StatusTaskPayload extends TaskPayload {
@@ -69,16 +68,16 @@ export const storeSlice = createSlice({
         },
         editAllTasks: (state, action: PayloadAction<EditAllTasksPayload>) => {
             Object.entries(state[action.payload.storeKey].tasks).forEach(([uuid, task]) => {
-                state[action.payload.storeKey].tasks[uuid] = { ...task, ...action.payload.newValue };
-                ipcRenderer.send(NOTIFY_EDIT_TASK, uuid);
+                const updatedTask = { ...task, ...action.payload.newValue };
+                state[action.payload.storeKey].tasks[uuid] = updatedTask;
             });
         },
         editTask: (state, action: PayloadAction<EditTaskPayload>) => {
-            state[action.payload.storeKey].tasks[action.payload.uuid] = {
+            const updatedTask = {
                 ...state[action.payload.storeKey].tasks[action.payload.uuid],
                 ...action.payload.newValue,
             };
-            ipcRenderer.send(NOTIFY_EDIT_TASK, action.payload.uuid);
+            state[action.payload.storeKey].tasks[action.payload.uuid] = updatedTask;
         },
         startTask: (state, action: PayloadAction<TaskPayload>) => {
             state[action.payload.storeKey].tasks[action.payload.uuid].running = true;

@@ -1,11 +1,13 @@
 import { Button } from 'antd';
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { NOTIFY_ADD_TASK } from '../../common/Constants';
 import { StoreType } from '../../constants/Stores';
 import { StatusLevel, TaskData } from '../../interfaces/TaskInterfaces';
 import { assignRandomProxy } from '../../services/Proxy/ProxyService';
 import { addTask } from '../../services/Store/StoreService';
 import { buttonStyle } from '../../styles/Buttons';
+const { ipcRenderer } = window.require('electron');
 const { v4: uuid } = require('uuid');
 
 // This component will contain the add task button and task modal composition
@@ -34,6 +36,7 @@ const AddTaskAction = (props: any) => {
         }
 
         dispatch(addTask({ storeKey: storeKey, tasks: taskArr }));
+        ipcRenderer.send(NOTIFY_ADD_TASK(storeKey), storeKey, taskArr);
         if (task.proxySet) dispatch(assignRandomProxy(task.proxySet, storeKey, taskIDArr));
 
         setVisibleModal(false);
