@@ -1,10 +1,10 @@
-import { Request, Response } from 'express';
 import { Firestore } from '@google-cloud/firestore';
+import { Request, Response } from 'express';
 import { validationResult } from 'express-validator';
-import * as EmailService from '../services/email';
-import * as Errors from '../services/errors';
 import { v4 as uuidv4 } from 'uuid';
 import validator from 'validator';
+import * as EmailService from '../services/email';
+import * as Errors from '../services/errors';
 
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
