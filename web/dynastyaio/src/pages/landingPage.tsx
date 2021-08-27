@@ -4,7 +4,7 @@ import { Button, Layout, Menu, Row, Col } from 'antd';
 import { useHistory } from "react-router-dom";
 const { Header, Content, Footer, Sider } = Layout;
 
-
+const DISCORD_OAUTH2_URL = 'https://discord.com/oauth2/authorize?client_id=812912838925615144&redirect_uri=http%3A%2F%2Flocalhost%3A4000%2Fredirect&response_type=code&scope=identify%20email%20guilds.join';
 
 const LandingPage = () => {
     const history = useHistory();
@@ -17,11 +17,8 @@ const LandingPage = () => {
                     <Col span={3}> <div> Dynasty </div> </Col>
                     <Col span={18}> 
                         <div className="nav-buttons">
-                            <Button className="dashboard-button" type='primary' danger
-                                onClick={() => history.push('/dashboard')}
-                            >
-                                <a href="http://localhost:4000/oauth"> Dashboard </a>
-                            </Button> 
+                        <a href={DISCORD_OAUTH2_URL} target="_">
+                            <input type="button" value="Dashboard"/></a>
                         </div> 
                     </Col>
                 </Row>
