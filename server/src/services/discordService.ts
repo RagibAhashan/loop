@@ -4,7 +4,7 @@ const CLIENT_ID = process.env.CLIENT_ID as string;
 const CLIENT_SECRET = process.env.CLIENT_SECRET as string;
 const REDIRECT_URI = process.env.CLIENT_REDIRECT as string;
 const GUILD_ID: string = process.env.GUILD_ID as string;
-
+const BOT_TOKEN: string = process.env.BOT_TOKEN as string;
 
 /**
  * Makes a post request with the query code, it needs discord's client_id
@@ -54,7 +54,7 @@ export const GetDiscordUserInformation = async (token_type: string, access_token
  */
 export const AddUserToGuild = async (API_ENDPOINT: string, userID: string, access_token: string) => {
     const URL: string = `${API_ENDPOINT}/guilds/${GUILD_ID}/members/${userID}`;
-    const BOT_TOKEN: string = 'ODEyOTEyODM4OTI1NjE1MTQ0.YDHqEw.wNOPELEsFl6Hnqc3Um29st7o6Vo';
+    // const BOT_TOKEN: string = 'ODEyOTEyODM4OTI1NjE1MTQ0.YDHqEw.wNOPELEsFl6Hnqc3Um29st7o6Vo';
     const headers = {
         'Authorization': `Bot ${BOT_TOKEN}`,
         'Content-Type': 'application/json'
