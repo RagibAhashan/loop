@@ -17,7 +17,7 @@ const LandingPage = () => {
                     <Col span={3}> <div> Dynasty </div> </Col>
                     <Col span={18}> 
                         <div className="nav-buttons">
-                        <a href={DISCORD_OAUTH2_URL} target="_">
+                        <a href="/dashboard">
                             <input type="button" value="Dashboard"/></a>
                         </div> 
                     </Col>

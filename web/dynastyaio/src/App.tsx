@@ -1,12 +1,13 @@
 import './App.css';
-import OauthReact from './pages/oauthDiscord';
+import Dashboard from './pages/dashboard';
 import LandingPage from './pages/landingPage';
 
-import { Button } from 'antd';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+// import { Button } from 'antd';
+import { BrowserRouter, Route, Switch, useHistory } from 'react-router-dom';
 
 
 const App = () => {
+
 
   return (
     <div style={{height:'100%'}}>
@@ -14,7 +15,7 @@ const App = () => {
     <BrowserRouter>
         <Switch>
             <Route path="/" exact component={LandingPage} />
-            <Route path="/dashboard/" component={OauthReact} />
+            <Route path="/dashboard/" component={Dashboard} />
         </Switch>
     </BrowserRouter>
 
