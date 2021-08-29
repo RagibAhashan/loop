@@ -54,7 +54,6 @@ export const GetDiscordUserInformation = async (token_type: string, access_token
  */
 export const AddUserToGuild = async (API_ENDPOINT: string, userID: string, access_token: string) => {
     const URL: string = `${API_ENDPOINT}/guilds/${GUILD_ID}/members/${userID}`;
-    // const BOT_TOKEN: string = 'ODEyOTEyODM4OTI1NjE1MTQ0.YDHqEw.wNOPELEsFl6Hnqc3Um29st7o6Vo';
     const headers = {
         'Authorization': `Bot ${BOT_TOKEN}`,
         'Content-Type': 'application/json'
