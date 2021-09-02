@@ -19,6 +19,7 @@ router.post('/user/log/', jsonParser, User.AddLogActivity);
 router.post('/events/tasks/', jsonParser, Events.AddManyTaskEvents);
 
 // Discord
-router.get('/redirect', jsonParser, Discord.Authorize);
+// router.get('/redirect', jsonParser, Discord.Authorize);
+router.get('/oauth', jsonParser, Discord.GetDiscordUserInformation);
 
 export default router;

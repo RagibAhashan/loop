@@ -22,14 +22,10 @@ const Dashboard = (props: any) => {
     const [loading, setLoading] = useState(true);
     const [discordUsername, setDiscordUsername] = useState(null);
 
-    const DiscordAuthenticate = async () => {
-        const res = await axios.get('http://localhost:4000/redirect')
-    };
-
     useEffect(() => {
         const code = new URLSearchParams(window.location.search).get('code');
         if (code) {
-            axios.get(`http://localhost:4000/redirect?code=${code}`)
+            axios.get(`http://localhost:4000/oauth?code=${code}`)
             .then((res) => {
                 console.log(res);
                 setLoading(false);
@@ -39,7 +35,11 @@ const Dashboard = (props: any) => {
         } else {
             setLoading(false);
         }
-    }, [])
+    }, []);
+
+    const BindLicense = (key: string) => {
+        console.log('Firing license now: ', key)
+    }
 
 
     return (<div className='middleDiv'>
@@ -50,7 +50,6 @@ const Dashboard = (props: any) => {
             {loading ? <Spin /> : 
             
 
-            // {
                 !discordUsername ? 
                 <Button type='primary' danger
                 onClick={() => {window.location.href = DISCORD_OAUTH2_URL}}>
@@ -58,29 +57,21 @@ const Dashboard = (props: any) => {
                 </Button>
                 :
                 <div>
-                    {/* <Input placeholder='Enter your fucking license key' /> */}
                     <Search
                         style={{ width: '300%'}}
                         placeholder="License key"
                         enterButton="Search"
                         size="small"
-                        onSearch={(value) => console.log(value)}
-                        />
+                        onSearch={(value) => BindLicense(value)}
+                    />
                 </div>
-            // }
-                    }
+            }
             
 
             
 
         </div>
 
-        {/* <BrowserRouter>
-            <Switch>
-                <Route path="/" exact component={DiscordAuthenticate} />
-                <Route path="/dashboard/" component={Dashboard} />
-            </Switch>
-        </BrowserRouter> */}
 
     </div>);
 }
