@@ -37,8 +37,9 @@ const Dashboard = (props: any) => {
         }
     }, []);
 
-    const BindLicense = (key: string) => {
-        console.log('Firing license now: ', key)
+    const BindLicense = async (key: string) => {
+        console.log('Firing license now: ', key);
+        await axios.get(`http://localhost:4000/discordbind/${key}`);
     }
 
 

@@ -3,7 +3,7 @@ import { Router } from 'express';
 import * as Discord from './discord';
 import * as Events from './events';
 import * as User from './user';
-
+import * as License from './license';
 
 const router = Router();
 const jsonParser = json();
@@ -20,6 +20,8 @@ router.post('/events/tasks/', jsonParser, Events.AddManyTaskEvents);
 
 // Discord
 // router.get('/redirect', jsonParser, Discord.Authorize);
+router.post('/buyLicense', jsonParser, License.BuyLicense);
 router.get('/oauth', jsonParser, Discord.GetDiscordUserInformation);
+router.get('/discordbind/:License', jsonParser, Discord.LicenseBind);
 
 export default router;

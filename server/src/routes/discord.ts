@@ -25,6 +25,12 @@ export const Authorize = async (req: Request, res: Response) => {
     }
 }
 
+/**
+ * Takes the query code and authenticates the user.
+ * Returns Access Token along with more user information.
+ * @param req 
+ * @param res { access_token, refresh_token, id, username, avatar, discriminator, email }
+ */
 export const GetDiscordUserInformation = async (req: Request, res: Response) => {
   try {
       const { access_token, expires_in, refresh_token, scope, token_type } = await DiscordService.GetAccessToken(req.query.code as string);
@@ -44,4 +50,10 @@ export const GetDiscordUserInformation = async (req: Request, res: Response) => 
       message: 'Unauthorized'
     });    
   }
+}
+
+
+export const LicenseBind = async (req: Request, res: Response) => {
+  console.log(req.params.License)
+  res.send('ok')
 }
