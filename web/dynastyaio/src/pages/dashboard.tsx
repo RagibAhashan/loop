@@ -57,7 +57,7 @@ const Dashboard = (props: any) => {
                 "username": DiscordUserInformation.username,
                 "LICENSE_KEY": DiscordUserInformation.LICENSE_KEY
             });
-            window.location.href = "https://youtu.be/yBLdQ1a4-JI?t=14";
+            window.alert('Discord lock works');
 
         } catch (error) {
             console.log(error);
