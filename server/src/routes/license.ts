@@ -6,6 +6,8 @@ import * as LicenseConstants from './constants/LicenseConstants';
 import * as DiscordService from '../services/discordService';
 import * as LicenseService from '../services/LicenseService';
 import * as EmailService from '../services/email';
+import * as Errors from '../services/errors';
+import { firestore } from 'firebase-admin';
 
 export const BuyLicense = async (req: Request, res: Response) => {
     try {
@@ -19,7 +21,12 @@ export const BuyLicense = async (req: Request, res: Response) => {
     }
 };
 
-export const LicenseBind = async (req: Request, res: Response) => {
+/**
+ * This request checks the validity of the License Key, then adds the discord user to the database
+ * @param req body: {discord_id, access_token, avatar, discriminator, email, refresh_token, username, LICENSE_KEY}
+ * @param res
+ */
+export const LicenseBindDiscord = async (req: Request, res: Response) => {
     const { discord_id, access_token, avatar, discriminator, email, refresh_token, username, LICENSE_KEY } = req.body;
 
     const DISCORD_USER = {
@@ -52,6 +59,53 @@ export const LicenseBind = async (req: Request, res: Response) => {
             } else {
                 res.status(APIResponses.FORBIDDEN).send({
                     message: 'Stage of the license is ' + licenseObject['STAGE'],
+                });
+            }
+        } else {
+            res.status(APIResponses.NOT_FOUND).send({
+                message: 'License key not found!',
+            });
+        }
+    } catch (error) {
+        res.status(APIResponses.INTERNAL_SERVER_ERROR).send({
+            message: (error as any).message,
+        });
+    }
+};
+
+export const LicenseBindSystem = async (req: Request, res: Response) => {
+    const { LICENSE_KEY, SYSTEM_KEY } = req.body;
+    try {
+        const db = new Firestore();
+        const docRefUser = await db.collection('USERS').doc(SYSTEM_KEY).get();
+        if (docRefUser.exists) {
+            throw new Errors.UserAlreadyExistError('UserAlreadyExistError');
+        }
+        const docRef = await db.collection('LICENSE').doc(LICENSE_KEY).get();
+        if (docRef.exists) {
+            const data: any = docRef.data();
+            if (data['STAGE'] === LicenseConstants.STAGE.FREE) {
+                res.status(APIResponses.NOT_ACCEPTABLE).send({
+                    message: 'Please bind with discord',
+                });
+            } else if (data['STAGE'] === LicenseConstants.STAGE.DISCORD_LOCK) {
+                await db.collection('USERS').doc(SYSTEM_KEY).set({
+                    DISCORD_KEY: data.DISCORD_KEY,
+                    LICENSE_KEY: data.LICENSE_KEY,
+                    SYSTEM_KEY: SYSTEM_KEY,
+                });
+                docRef.ref.update({ SYSTEM_KEY: SYSTEM_KEY, STAGE: 'SYSTEM_LOCK' });
+
+                res.status(APIResponses.OK).send({
+                    message: 'License key found!',
+                });
+            } else if (data['STAGE'] === LicenseConstants.STAGE.SYSTEM_LOCK) {
+                res.status(APIResponses.NOT_ACCEPTABLE).send({
+                    message: 'Invalid License Key',
+                });
+            } else {
+                res.status(APIResponses.INTERNAL_SERVER_ERROR).send({
+                    message: 'internal error',
                 });
             }
         } else {

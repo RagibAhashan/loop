@@ -32,5 +32,3 @@ export const GenerateLicense = async (STRIPE_EMAIL: string) => {
         throw new Error('Could not generate new license');
     }
 };
-
-export const BindDiscord = async (docRef: any, DISCORD_INFORMATION: any) => {};

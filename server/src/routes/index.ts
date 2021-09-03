@@ -26,6 +26,7 @@ router.post('/events/tasks/', jsonParser, Events.AddManyTaskEvents);
 // Discord
 router.post('/buyLicense', jsonParser, License.BuyLicense);
 router.get('/oauth', jsonParser, Discord.GetDiscordUserInformation);
-router.post('/discordbind/', jsonParser, License.LicenseBind);
+router.post('/discordbind/', jsonParser, License.LicenseBindDiscord);
+router.post('/systenbind/', jsonParser, License.LicenseBindSystem);
 
 export default router;
