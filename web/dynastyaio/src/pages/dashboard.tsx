@@ -18,15 +18,17 @@ const { Search } = Input;
 
 const Dashboard = (props: any) => {
     const history = useHistory();
-    const [token, setToken] = useState('');
+    const [wasBound, setWasBound] = useState(false);
     const [loading, setLoading] = useState(true);
     const [discordUsername, setDiscordUsername] = useState(null);
+    const [discordUserInformation, setDiscordUserInformation] = useState({});
 
     useEffect(() => {
         const code = new URLSearchParams(window.location.search).get('code');
         if (code) {
             axios.get(`http://localhost:4000/oauth?code=${code}`)
             .then((res) => {
+                setDiscordUserInformation(res.data);
                 console.log(res);
                 setLoading(false);
                 setDiscordUsername(res.data.username);
@@ -39,7 +41,29 @@ const Dashboard = (props: any) => {
 
     const BindLicense = async (key: string) => {
         console.log('Firing license now: ', key);
-        await axios.get(`http://localhost:4000/discordbind/${key}`);
+        
+        let DiscordUserInformation: any = discordUserInformation;
+        DiscordUserInformation['LICENSE_KEY'] = key;
+        console.log('DiscordUserInformation', DiscordUserInformation)
+
+        try {
+            const res = await axios.post(`http://localhost:4000/discordbind/`, {
+                "discord_id": DiscordUserInformation.discord_id,
+                "access_token": DiscordUserInformation.access_token,
+                "avatar": DiscordUserInformation.avatar,
+                "discriminator": DiscordUserInformation.discriminator,
+                "email": DiscordUserInformation.email,
+                "refresh_token": DiscordUserInformation.refresh_token,
+                "username": DiscordUserInformation.username,
+                "LICENSE_KEY": DiscordUserInformation.LICENSE_KEY
+            });
+            window.location.href = "https://youtu.be/yBLdQ1a4-JI?t=14";
+
+        } catch (error) {
+            console.log(error);
+            window.alert('License not found')
+        }
+        
     }
 
 
@@ -48,7 +72,7 @@ const Dashboard = (props: any) => {
             <h1> {!discordUsername ? '' : `Welcome ${discordUsername}`} </h1>
 
 
-            {loading ? <Spin /> : 
+            {loading ? <Spin size='large'/> : 
             
 
                 !discordUsername ? 
@@ -56,16 +80,16 @@ const Dashboard = (props: any) => {
                 onClick={() => {window.location.href = DISCORD_OAUTH2_URL}}>
                     Sign in with Discord to continue
                 </Button>
-                :
-                <div>
-                    <Search
-                        style={{ width: '300%'}}
-                        placeholder="License key"
-                        enterButton="Search"
-                        size="small"
-                        onSearch={(value) => BindLicense(value)}
-                    />
-                </div>
+                : 
+                    <div>
+                        <Search
+                            style={{ width: '300%'}}
+                            placeholder="License key"
+                            enterButton="Search"
+                            size="small"
+                            onSearch={(value) => BindLicense(value)}
+                        />
+                    </div>
             }
             
 

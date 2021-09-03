@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { Request, Response } from 'express';
 import * as APIResponses from './constants/responses';
+import * as LicenseConstants from './constants/LicenseConstants';
 import * as DiscordService from '../services/discordService';
+import { Firestore } from '@google-cloud/firestore';
 
 export const Authorize = async (req: Request, res: Response) => {
     try {
@@ -50,10 +52,4 @@ export const GetDiscordUserInformation = async (req: Request, res: Response) => 
       message: 'Unauthorized'
     });    
   }
-}
-
-
-export const LicenseBind = async (req: Request, res: Response) => {
-  console.log(req.params.License)
-  res.send('ok')
 }

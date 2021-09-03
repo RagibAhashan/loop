@@ -10,6 +10,12 @@ const jsonParser = json();
 
 
 // USER REQUESTS.
+router.get('/', jsonParser, (req, res) => {console.log(req.sessionID); res.send('ok')})
+
+
+
+
+
 router.post('/user/register/', jsonParser, User.RegisterUser);
 router.post('/user/validateSystem', jsonParser, User.ValidateSystemLicense);
 router.post('/user/activatekey/', jsonParser, User.ActivateUserLicense);
@@ -22,6 +28,7 @@ router.post('/events/tasks/', jsonParser, Events.AddManyTaskEvents);
 // router.get('/redirect', jsonParser, Discord.Authorize);
 router.post('/buyLicense', jsonParser, License.BuyLicense);
 router.get('/oauth', jsonParser, Discord.GetDiscordUserInformation);
-router.get('/discordbind/:License', jsonParser, Discord.LicenseBind);
+router.post('/discordbind/', jsonParser, License.LicenseBind);
+
 
 export default router;
