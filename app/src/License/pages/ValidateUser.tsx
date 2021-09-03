@@ -1,16 +1,11 @@
 import { Progress } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { PROFILE_ROUTE, ACTIVATE_LICENSE_ROUTE } from '../../common/Constants';
+import { PROFILE_ROUTE, ACTIVATE_LICENSE_ROUTE, SERVER_ENDPOINT } from '../../common/Constants';
 import { Button } from 'antd';
 import axios from 'axios';
 const { ipcRenderer } = window.require('electron');
 
 const smokey = 'https://cdn.dribbble.com/users/1106178/screenshots/4175222/orb.gif';
-// const pink = 'https://cdn.dribbble.com/users/1106178/screenshots/4211140/circle.gif';
-// const whitey = 'https://thumbs.gfycat.com/DearWellinformedDalmatian-size_restricted.gif';
-// const blackey = 'http://static.demilked.com/wp-content/uploads/2016/06/gif-animations-replace-loading-screen-2.gif';
-// const redey = 'https://cdn.dribbble.com/users/1417337/screenshots/5750630/bubble-loader.gif';
-// const spiraley = 'https://i.gifer.com/1etH.gif';
 
 const ValidateUserComponent = (props: any) => {
     const { history } = props;
@@ -23,7 +18,7 @@ const ValidateUserComponent = (props: any) => {
             ipcRenderer.invoke('GET-SYSTEM-ID').then((SYSTEM_KEY) => {
                 console.log('SYSTEM_KEY', SYSTEM_KEY);
                 axios
-                    .get('http://localhost:4000/botAuth/'+SYSTEM_KEY)
+                    .get(`${SERVER_ENDPOINT}/botAuth/${SYSTEM_KEY}`)
                     .then((res) => {
                         history.push(PROFILE_ROUTE)
                     })

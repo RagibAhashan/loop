@@ -6,7 +6,7 @@ export const PROFILE_ROUTE = '/app/profiles';
 export const PROXY_ROUTE = '/app/proxies';
 export const SETTINGS_ROUTE = '/app/settings';
 export const TASKS_ROUTE = '/app/tasks';
-
+export const SERVER_ENDPOINT = process.env.SERVER_ENDPOINT || 'http://localhost:4000';
 export const VALIDATE_USER_DATA_ROUTE = '/license/validate';
 export const ACTIVATE_LICENSE_ROUTE = '/license/activate';
 

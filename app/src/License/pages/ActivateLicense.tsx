@@ -1,7 +1,7 @@
 import { Button, Form, Input, Spin } from 'antd';
 import axios from 'axios';
 import React, { useState } from 'react';
-import { PROFILE_ROUTE } from '../../common/Constants';
+import { PROFILE_ROUTE, SERVER_ENDPOINT } from '../../common/Constants';
 const { ipcRenderer } = window.require('electron');
 
 const ActivateLicense = (props: any) => {
@@ -15,7 +15,7 @@ const ActivateLicense = (props: any) => {
         const SYSTEM_KEY = await ipcRenderer.invoke('GET-SYSTEM-ID');
         try {
             setLoading((prev) => (prev = true));
-            const post = await axios.post('http://localhost:4000/systenbind', {
+            const post = await axios.post(`${SERVER_ENDPOINT}/systenbind`, {
                 LICENSE_KEY: LICENSE_KEY,
                 SYSTEM_KEY: SYSTEM_KEY
             });
