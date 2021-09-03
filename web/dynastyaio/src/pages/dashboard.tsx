@@ -4,7 +4,7 @@ import './dashboard.css'
 import DiscordAuthenticate from './dashboard/discordAuthenticate';
 import axios from 'axios';
 import { BrowserRouter, Route, Switch, useHistory } from 'react-router-dom';
-
+const SERVER_ENDPOINT = process.env.SERVER_ENDPOINT || 'http://localhost:4000';
 const DISCORD_OAUTH2_URL = 'https://discord.com/api/oauth2/authorize?client_id=812912838925615144&redirect_uri=http%3A%2F%2Flocalhost%3A3000%2Fdashboard&response_type=code&scope=identify%20email%20guilds.join';
 
 const { Search } = Input;
@@ -26,7 +26,7 @@ const Dashboard = (props: any) => {
     useEffect(() => {
         const code = new URLSearchParams(window.location.search).get('code');
         if (code) {
-            axios.get(`http://localhost:4000/oauth?code=${code}`)
+            axios.get(`${SERVER_ENDPOINT}/oauth?code=${code}`)
             .then((res) => {
                 setDiscordUserInformation(res.data);
                 console.log(res);
@@ -47,7 +47,7 @@ const Dashboard = (props: any) => {
         console.log('DiscordUserInformation', DiscordUserInformation)
 
         try {
-            const res = await axios.post(`http://localhost:4000/discordbind/`, {
+            const res = await axios.post(`${SERVER_ENDPOINT}/discordbind/`, {
                 "discord_id": DiscordUserInformation.discord_id,
                 "access_token": DiscordUserInformation.access_token,
                 "avatar": DiscordUserInformation.avatar,
