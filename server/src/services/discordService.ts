@@ -20,46 +20,44 @@ export const GetAccessToken = async (query_code: string) => {
     params.append('grant_type', 'authorization_code');
     params.append('code', code);
     params.append('redirect_uri', REDIRECT_URI);
-    
+
     const headers = {
-        'Content-Type': 'application/x-www-form-urlencoded'
-    }
+        'Content-Type': 'application/x-www-form-urlencoded',
+    };
     const response: any = await axios.post(API_ENDPOINT + '/oauth2/token', params, { headers: headers });
     return response['data'];
-}
+};
 
 /**
  * It takes the access token and returns user data.
- * @param token_type 
- * @param access_token 
- * @returns 
+ * @param token_type
+ * @param access_token
+ * @returns
  */
 export const GetDiscordUserInformation = async (token_type: string, access_token: string) => {
     const result: any = await axios.get('https://discord.com/api/users/@me', {
         headers: {
-          'authorization': `${token_type} ${access_token}`
-        }
+            authorization: `${token_type} ${access_token}`,
+        },
     });
 
     console.log('result', result['data']);
     return result['data'];
-}
+};
 
 /**
  * Adds user to the guild (server).
- * @param API_ENDPOINT 
- * @param userID 
- * @param access_token 
- * @returns 
+ * @param API_ENDPOINT
+ * @param userID
+ * @param access_token
+ * @returns
  */
 export const AddUserToGuild = async (userID: string, access_token: string) => {
     const URL: string = `https://discord.com/api/v8/guilds/${GUILD_ID}/members/${userID}`;
     const headers = {
-        'Authorization': `Bot ${BOT_TOKEN}`,
-        'Content-Type': 'application/json'
-    }
-    const res = await axios.put(URL, {'access_token': access_token}, {headers: headers});
+        Authorization: `Bot ${BOT_TOKEN}`,
+        'Content-Type': 'application/json',
+    };
+    const res = await axios.put(URL, { access_token: access_token }, { headers: headers });
     return res;
-}
-
-
+};
