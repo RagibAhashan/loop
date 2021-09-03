@@ -28,5 +28,6 @@ router.post('/buyLicense', jsonParser, License.BuyLicense);
 router.get('/oauth', jsonParser, Discord.GetDiscordUserInformation);
 router.post('/discordbind/', jsonParser, License.LicenseBindDiscord);
 router.post('/systenbind/', jsonParser, License.LicenseBindSystem);
+router.get('/botAuth/:SYSTEM_KEY', jsonParser, License.AuthSystemElectron);
 
 export default router;

@@ -15,18 +15,18 @@ const ActivateLicense = (props: any) => {
         const SYSTEM_KEY = await ipcRenderer.invoke('GET-SYSTEM-ID');
         try {
             setLoading((prev) => (prev = true));
-            const post = await axios.post('http://localhost:4000/user/activatekey/', {
-                L_KEY: LICENSE_KEY,
-                SYSTEM_KEY: SYSTEM_KEY,
-                email: email,
+            const post = await axios.post('http://localhost:4000/systenbind', {
+                LICENSE_KEY: LICENSE_KEY,
+                SYSTEM_KEY: SYSTEM_KEY
             });
             console.log(post.status);
-            setCode((prev) => (prev = 201));
-            history.push(PROFILE_ROUTE);
+            setCode((prev) => (prev = 200));
+            // history.push(PROFILE_ROUTE);
+            setLoading((prev) => (prev = false));
         } catch (error) {
             setLoading((prev) => (prev = false));
 
-            switch (error.toString()) {
+            switch ((error as any).toString()) {
                 case 'Error: Request failed with status code 409': {
                     setCode((prev) => (prev = 409));
 
@@ -58,19 +58,7 @@ const ActivateLicense = (props: any) => {
                         </small>
 
                         <Form.Item>
-                            <Input
-                                placeholder="Email"
-                                name={'email'}
-                                onChange={(e) => {
-                                    setEmail(e.target.value);
-                                }}
-                                style={code !== 201 ? { color: 'red', borderColor: 'red' } : {}}
-                            />
-                        </Form.Item>
-                        <br />
-                        <br />
-                        <Form.Item>
-                            <Button type="primary" htmlType="submit" style={{ width: '100%' }} disabled={email === '' || LICENSE_KEY === ''}>
+                            <Button type="primary" htmlType="submit" style={{ width: '100%' }} disabled={LICENSE_KEY === ''}>
                                 Activate License Key
                             </Button>
                         </Form.Item>

@@ -5,7 +5,7 @@ import { ACTIVATE_LICENSE_ROUTE, PROFILE_ROUTE, VALIDATE_USER_DATA_ROUTE } from 
 import ActivateLicense from './ActivateLicense';
 import ValidateUserComponent from './ValidateUser';
 
-const { ipcRenderer } = window.require('electron');
+const { ipcRenderer } = window.require('electron'); 
 
 const License = withRouter(({ history }) => {
     const [LICENSE_KEY] = useState('');
@@ -14,15 +14,12 @@ const License = withRouter(({ history }) => {
     const [, setLoading] = useState(false);
 
     useEffect(() => {
-        console.log('heyyyyy !!');
         history.push(VALIDATE_USER_DATA_ROUTE);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    function useForceUpdate() {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const [value, setValue] = useState(0); // integer state
-        return () => setValue((value) => value + 1); // update the state to force render
+    const useForceUpdate = () => {
+        const [value, setValue] = useState(0);
+        return () => setValue((value) => value + 1);
     }
     const forceUpdate = useForceUpdate();
 
@@ -40,10 +37,10 @@ const License = withRouter(({ history }) => {
             setCode((prev) => (prev = 201));
             history.push(PROFILE_ROUTE);
         } catch (error) {
-            if (error.toString() === 'Error: Request failed with status code 409') {
+            if ((error as any).toString() === 'Error: Request failed with status code 409') {
             }
 
-            switch (error.toString()) {
+            switch ((error as any).toString()) {
                 case 'Error: Request failed with status code 409': {
                     setCode((prev) => (prev = 409));
 

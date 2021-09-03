@@ -119,3 +119,47 @@ export const LicenseBindSystem = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const AuthSystemElectron = async (req: Request, res: Response) => {
+    const SYSTEM_KEY = req.params.SYSTEM_KEY;
+
+    try {
+        const db = new Firestore();
+        const docRef = await db.collection('USERS').doc(SYSTEM_KEY).get();
+        if (docRef.exists) {
+            console.log('User found in USERS!');
+            const user_keys: any = docRef.data();
+            const docRefLicense = await db.collection('LICENSE').doc(user_keys['LICENSE_KEY']).get();
+            if (docRefLicense.exists) {
+                console.log('docRefLicense.exists');
+                const LicenseField: any = docRefLicense.data();
+                if (
+                    LicenseField.DISCORD_KEY === user_keys.DISCORD_KEY &&
+                    LicenseField.LICENSE_KEY === user_keys.LICENSE_KEY &&
+                    LicenseField.SYSTEM_KEY === user_keys.SYSTEM_KEY
+                ) {
+                    console.log('docRefLicense.exists!!!!');
+                    res.status(APIResponses.OK).send({
+                        message: 'works!',
+                    });
+                }
+            } else {
+                console.log('!docRefLicense.exists');
+                throw new Errors.UserNotFoundError('UserNotFoundError');
+            }
+        } else {
+            console.log('!!!!docRefLicense.exists');
+            throw new Errors.UserNotFoundError('UserNotFoundError');
+        }
+    } catch (error) {
+        if (error instanceof Errors.UserNotFoundError) {
+            res.status(APIResponses.NOT_FOUND).send({
+                message: (error as any).message,
+            });
+        } else {
+            res.status(APIResponses.INTERNAL_SERVER_ERROR).send({
+                message: 'INTERNAL_SERVER_ERROR',
+            });
+        }
+    }
+};
