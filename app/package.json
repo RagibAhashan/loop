@@ -1,8 +1,8 @@
 {
-    "name": "app",
-    "productName": "app",
+    "name": "dynastyaio",
+    "productName": "dynastyaio",
     "version": "1.0.0",
-    "description": "My Electron application description",
+    "description": "Dynasty AIO",
     "main": ".webpack/main",
     "scripts": {
         "start": "electron-forge start",
@@ -14,8 +14,8 @@
     },
     "keywords": [],
     "author": {
-        "name": "Wail Ayad",
-        "email": "wailay@hotmail.fr"
+        "name": "dynasty",
+        "email": "dynastyaio@gmail.com"
     },
     "license": "MIT",
     "config": {
@@ -83,6 +83,9 @@
         "@electron-forge/maker-squirrel": "^6.0.0-beta.60",
         "@electron-forge/maker-zip": "^6.0.0-beta.60",
         "@electron-forge/plugin-webpack": "6.0.0-beta.60",
+        "@types/cheerio": "^0.22.30",
+        "@types/cookie": "^0.4.1",
+        "@types/electron-devtools-installer": "^2.2.0",
         "@types/events": "^3.0.0",
         "@types/node": "^16.7.10",
         "@types/object-hash": "^2.1.1",
@@ -93,6 +96,8 @@
         "@types/react-redux": "^7.1.18",
         "@types/react-router-dom": "^5.1.8",
         "@types/react-window": "^1.8.5",
+        "@types/tough-cookie": "^4.0.1",
+        "@types/uuid": "^8.3.1",
         "@typescript-eslint/eslint-plugin": "^4.0.1",
         "@typescript-eslint/parser": "^4.0.1",
         "@vercel/webpack-asset-relocator-loader": "1.7.0",
@@ -103,8 +108,11 @@
         "eslint-plugin-import": "^2.20.0",
         "eslint-plugin-react": "^7.25.1",
         "eslint-plugin-react-hooks": "^4.2.0",
+        "file-loader": "^6.2.0",
         "fork-ts-checker-webpack-plugin": "^6.0.1",
         "husky": "^7.0.2",
+        "less": "^4.1.1",
+        "less-loader": "^10.0.1",
         "node-loader": "^2.0.0",
         "redux-devtools": "^3.7.0",
         "style-loader": "^3.0.0",
@@ -115,7 +123,9 @@
         "@reduxjs/toolkit": "^1.6.1",
         "antd": "^4.16.13",
         "axios": "^0.21.3",
+        "cheerio": "^1.0.0-rc.10",
         "cookie": "^0.4.1",
+        "crypto-browserify": "^3.12.0",
         "electron-squirrel-startup": "^1.0.0",
         "https-proxy-agent": "^5.0.0",
         "object-hash": "^2.2.0",
@@ -128,7 +138,9 @@
         "react-window": "^1.8.6",
         "redux-thunk": "^2.3.0",
         "rxjs": "^7.3.0",
+        "stream-browserify": "^3.0.0",
         "systeminformation": "^5.8.7",
+        "tough-cookie": "^4.0.0",
         "uuid": "^8.3.2",
         "virtualizedtableforantd4": "^1.1.2"
     }
