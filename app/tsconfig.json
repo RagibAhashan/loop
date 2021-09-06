@@ -1,22 +1,25 @@
 {
     "compilerOptions": {
-        "target": "es6",
-        "lib": ["dom", "dom.iterable", "esnext"],
+        "target": "ES2015",
         "allowJs": true,
+        "module": "commonjs",
+        "lib": ["dom", "dom.iterable", "esnext"],
         "skipLibCheck": true,
         "esModuleInterop": true,
-        "allowSyntheticDefaultImports": true,
-        "strict": true,
-        "forceConsistentCasingInFileNames": true,
-        "noFallthroughCasesInSwitch": true,
-        "module": "esnext",
+        "noImplicitAny": true,
+        "sourceMap": true,
+        "baseUrl": ".",
+        "outDir": "dist",
         "moduleResolution": "node",
         "resolveJsonModule": true,
-        "isolatedModules": true,
-        "noEmit": true,
-        "jsx": "react-jsx",
-        "checkJs": false
+        "paths": {
+            "*": ["node_modules/*"],
+            "@main_window/*": ["src/main_window/*"],
+            "@license_window/*": ["src/license_window/*"],
+            "@captcha_window/*": ["src/captcha_window/*"]
+        },
+        "jsx": "react",
+        "removeComments": true
     },
-    "include": ["src"],
-    "exclude": ["src/main.prod.js", "release", "build"]
+    "include": ["src/**/*"]
 }

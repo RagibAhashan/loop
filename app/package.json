@@ -1,109 +1,135 @@
 {
     "name": "app",
-    "version": "0.1.0",
-    "author": "Dynasty AIO",
-    "private": true,
-    "description": "A bot",
-    "homepage": "./",
-    "main": "./src/main.prod.js",
-    "dependencies": {
-        "@craco/craco": "^6.1.1",
-        "@reduxjs/toolkit": "^1.5.1",
-        "@testing-library/jest-dom": "^5.11.4",
-        "@testing-library/react": "^11.1.0",
-        "@testing-library/user-event": "^12.1.10",
-        "@types/cheerio": "^0.22.29",
-        "@types/events": "^3.0.0",
-        "@types/jest": "^26.0.15",
-        "@types/node": "^12.0.0",
-        "@types/object-hash": "^2.1.0",
-        "@types/react": "^16.9.53",
-        "@types/react-credit-cards": "^0.8.0",
-        "@types/react-dom": "^16.9.8",
-        "@types/react-google-recaptcha": "^2.1.0",
-        "@types/react-redux": "^7.1.16",
-        "@types/react-router-dom": "^5.1.7",
-        "@types/react-window": "^1.8.2",
-        "@types/tough-cookie": "^4.0.0",
-        "antd": "^4.12.3",
-        "axios": "^0.21.1",
-        "cheerio": "^1.0.0-rc.10",
-        "cookie": "^0.4.1",
-        "craco-less": "^1.17.1",
-        "https-proxy-agent": "^5.0.0",
-        "object-hash": "^2.1.1",
-        "puppeteer": "^10.1.0",
-        "puppeteer-extra": "^3.1.18",
-        "puppeteer-extra-plugin-stealth": "^2.7.8",
-        "react": "^17.0.1",
-        "react-credit-cards": "^0.8.3",
-        "react-dom": "^17.0.1",
-        "react-google-recaptcha": "^2.1.0",
-        "react-redux": "^7.2.4",
-        "react-router-dom": "^5.2.0",
-        "react-scripts": "4.0.1",
-        "react-window": "^1.8.6",
-        "redux-thunk": "^2.3.0",
-        "rxjs": "^6.6.3",
-        "systeminformation": "^5.2.5",
-        "tough-cookie": "^4.0.0",
-        "typescript": "^4.0.3",
-        "uuid": "^8.3.2",
-        "virtualizedtableforantd4": "^1.1.2"
-    },
+    "productName": "app",
+    "version": "1.0.0",
+    "description": "My Electron application description",
+    "main": ".webpack/main",
     "scripts": {
-        "start:react": "cross-env BROWSER=none craco start",
-        "build": "cross-env GENERATE_SOURCEMAP=false craco build",
-        "test": "craco test",
-        "eject": "craco eject",
-        "start:electron": "webpack --config webpack.config.dev.js && cross-env NODE_ENV=prod electron .",
-        "package": "yarn build && webpack --config webpack.config.prod.js && electron-builder build",
-        "lint:react": "eslint ./src --ext .tsx --max-warnings=0",
-        "lint:electron": "eslint ./src --ext .ts --max-warnings=0",
+        "start": "electron-forge start",
+        "package": "electron-forge package",
+        "make": "electron-forge make",
+        "publish": "electron-forge publish",
+        "lint": "eslint --ext .ts,.tsx . --max-warnings=0",
         "prepare": "cd .. && husky install ./app/.husky"
     },
-    "eslintConfig": {
-        "extends": [
-            "react-app"
-        ]
+    "keywords": [],
+    "author": {
+        "name": "Wail Ayad",
+        "email": "wailay@hotmail.fr"
     },
-    "browserslist": {
-        "production": [
-            ">0.2%",
-            "not dead",
-            "not op_mini all"
-        ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
-        ]
+    "license": "MIT",
+    "config": {
+        "forge": {
+            "packagerConfig": {},
+            "makers": [
+                {
+                    "name": "@electron-forge/maker-squirrel",
+                    "config": {
+                        "name": "app"
+                    }
+                },
+                {
+                    "name": "@electron-forge/maker-zip",
+                    "platforms": [
+                        "darwin"
+                    ]
+                },
+                {
+                    "name": "@electron-forge/maker-deb",
+                    "config": {}
+                },
+                {
+                    "name": "@electron-forge/maker-rpm",
+                    "config": {}
+                }
+            ],
+            "plugins": [
+                [
+                    "@electron-forge/plugin-webpack",
+                    {
+                        "mainConfig": "./webpack.main.config.js",
+                        "renderer": {
+                            "config": "./webpack.renderer.config.js",
+                            "entryPoints": [
+                                {
+                                    "html": "./src/main_window/index.html",
+                                    "js": "./src/main_window/renderer.ts",
+                                    "name": "main_window",
+                                    "preload": {
+                                        "js": "./src/preload.ts"
+                                    }
+                                },
+                                {
+                                    "html": "./src/license_window/index.html",
+                                    "js": "./src/license_window/renderer.ts",
+                                    "name": "license_window"
+                                },
+                                {
+                                    "html": "./src/captcha_window/index.html",
+                                    "js": "./src/captcha_window/renderer.ts",
+                                    "name": "captcha_window"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            ]
+        }
     },
     "devDependencies": {
-        "@types/cookie": "^0.4.0",
-        "concurrently": "^5.3.0",
-        "cross-env": "^7.0.3",
-        "electron": "^11.2.0",
-        "electron-builder": "^22.9.1",
+        "@electron-forge/cli": "^6.0.0-beta.60",
+        "@electron-forge/maker-deb": "^6.0.0-beta.60",
+        "@electron-forge/maker-rpm": "^6.0.0-beta.60",
+        "@electron-forge/maker-squirrel": "^6.0.0-beta.60",
+        "@electron-forge/maker-zip": "^6.0.0-beta.60",
+        "@electron-forge/plugin-webpack": "6.0.0-beta.60",
+        "@types/events": "^3.0.0",
+        "@types/node": "^16.7.10",
+        "@types/object-hash": "^2.1.1",
+        "@types/react": "^17.0.20",
+        "@types/react-credit-cards": "^0.8.1",
+        "@types/react-dom": "^17.0.9",
+        "@types/react-google-recaptcha": "^2.1.2",
+        "@types/react-redux": "^7.1.18",
+        "@types/react-router-dom": "^5.1.8",
+        "@types/react-window": "^1.8.5",
+        "@typescript-eslint/eslint-plugin": "^4.0.1",
+        "@typescript-eslint/parser": "^4.0.1",
+        "@vercel/webpack-asset-relocator-loader": "1.7.0",
+        "css-loader": "^6.0.0",
+        "electron": "14.0.0",
         "electron-devtools-installer": "^3.2.0",
-        "husky": "^6.0.0",
+        "eslint": "^7.6.0",
+        "eslint-plugin-import": "^2.20.0",
+        "eslint-plugin-react": "^7.25.1",
+        "eslint-plugin-react-hooks": "^4.2.0",
+        "fork-ts-checker-webpack-plugin": "^6.0.1",
+        "husky": "^7.0.2",
+        "node-loader": "^2.0.0",
         "redux-devtools": "^3.7.0",
-        "ts-loader": "^8.1.0",
-        "webpack-cli": "^4.4.0"
+        "style-loader": "^3.0.0",
+        "ts-loader": "^9.2.2",
+        "typescript": "^4.0.2"
     },
-    "build": {
-        "extends": null,
-        "files": [
-            "./build/**/*",
-            "./build/index.html",
-            "src/main.prod.js"
-        ],
-        "directories": {
-            "output": "release",
-            "buildResources": "./src/assets"
-        },
-        "productName": "Dynasty AIO",
-        "appId": "com.dynasty",
-        "copyright": "Copyright © 2021 ${author}"
+    "dependencies": {
+        "@reduxjs/toolkit": "^1.6.1",
+        "antd": "^4.16.13",
+        "axios": "^0.21.3",
+        "cookie": "^0.4.1",
+        "electron-squirrel-startup": "^1.0.0",
+        "https-proxy-agent": "^5.0.0",
+        "object-hash": "^2.2.0",
+        "react": "^17.0.2",
+        "react-credit-cards": "^0.8.3",
+        "react-dom": "^17.0.2",
+        "react-google-recaptcha": "^2.1.0",
+        "react-redux": "^7.2.5",
+        "react-router-dom": "^5.3.0",
+        "react-window": "^1.8.6",
+        "redux-thunk": "^2.3.0",
+        "rxjs": "^7.3.0",
+        "systeminformation": "^5.8.7",
+        "uuid": "^8.3.2",
+        "virtualizedtableforantd4": "^1.1.2"
     }
 }

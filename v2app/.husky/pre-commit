@@ -3,4 +3,5 @@
 
 echo "Linting...."
 cd app
-yarn lint
+yarn lint:react
+yarn lint:electron

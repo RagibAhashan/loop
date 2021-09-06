@@ -1,0 +1,109 @@
+{
+    "name": "app",
+    "version": "0.1.0",
+    "author": "Dynasty AIO",
+    "private": true,
+    "description": "A bot",
+    "homepage": "./",
+    "main": "./src/main.prod.js",
+    "dependencies": {
+        "@craco/craco": "^6.1.1",
+        "@reduxjs/toolkit": "^1.5.1",
+        "@testing-library/jest-dom": "^5.11.4",
+        "@testing-library/react": "^11.1.0",
+        "@testing-library/user-event": "^12.1.10",
+        "@types/cheerio": "^0.22.29",
+        "@types/events": "^3.0.0",
+        "@types/jest": "^26.0.15",
+        "@types/node": "^12.0.0",
+        "@types/object-hash": "^2.1.0",
+        "@types/react": "^16.9.53",
+        "@types/react-credit-cards": "^0.8.0",
+        "@types/react-dom": "^16.9.8",
+        "@types/react-google-recaptcha": "^2.1.0",
+        "@types/react-redux": "^7.1.16",
+        "@types/react-router-dom": "^5.1.7",
+        "@types/react-window": "^1.8.2",
+        "@types/tough-cookie": "^4.0.0",
+        "antd": "^4.12.3",
+        "axios": "^0.21.1",
+        "cheerio": "^1.0.0-rc.10",
+        "cookie": "^0.4.1",
+        "craco-less": "^1.17.1",
+        "https-proxy-agent": "^5.0.0",
+        "object-hash": "^2.1.1",
+        "puppeteer": "^10.1.0",
+        "puppeteer-extra": "^3.1.18",
+        "puppeteer-extra-plugin-stealth": "^2.7.8",
+        "react": "^17.0.1",
+        "react-credit-cards": "^0.8.3",
+        "react-dom": "^17.0.1",
+        "react-google-recaptcha": "^2.1.0",
+        "react-redux": "^7.2.4",
+        "react-router-dom": "^5.2.0",
+        "react-scripts": "4.0.1",
+        "react-window": "^1.8.6",
+        "redux-thunk": "^2.3.0",
+        "rxjs": "^6.6.3",
+        "systeminformation": "^5.2.5",
+        "tough-cookie": "^4.0.0",
+        "typescript": "^4.0.3",
+        "uuid": "^8.3.2",
+        "virtualizedtableforantd4": "^1.1.2"
+    },
+    "scripts": {
+        "start:react": "cross-env BROWSER=none craco start",
+        "build": "cross-env GENERATE_SOURCEMAP=false craco build",
+        "test": "craco test",
+        "eject": "craco eject",
+        "start:electron": "webpack --config webpack.config.dev.js && cross-env NODE_ENV=prod electron .",
+        "package": "yarn build && webpack --config webpack.config.prod.js && electron-builder build",
+        "lint:react": "eslint ./src --ext .tsx --max-warnings=0",
+        "lint:electron": "eslint ./src --ext .ts --max-warnings=0",
+        "prepare": "cd .. && husky install ./app/.husky"
+    },
+    "eslintConfig": {
+        "extends": [
+            "react-app"
+        ]
+    },
+    "browserslist": {
+        "production": [
+            ">0.2%",
+            "not dead",
+            "not op_mini all"
+        ],
+        "development": [
+            "last 1 chrome version",
+            "last 1 firefox version",
+            "last 1 safari version"
+        ]
+    },
+    "devDependencies": {
+        "@types/cookie": "^0.4.0",
+        "concurrently": "^5.3.0",
+        "cross-env": "^7.0.3",
+        "electron": "^11.2.0",
+        "electron-builder": "^22.9.1",
+        "electron-devtools-installer": "^3.2.0",
+        "husky": "^6.0.0",
+        "redux-devtools": "^3.7.0",
+        "ts-loader": "^8.1.0",
+        "webpack-cli": "^4.4.0"
+    },
+    "build": {
+        "extends": null,
+        "files": [
+            "./build/**/*",
+            "./build/index.html",
+            "src/main.prod.js"
+        ],
+        "directories": {
+            "output": "release",
+            "buildResources": "./src/assets"
+        },
+        "productName": "Dynasty AIO",
+        "appId": "com.dynasty",
+        "copyright": "Copyright © 2021 ${author}"
+    }
+}
