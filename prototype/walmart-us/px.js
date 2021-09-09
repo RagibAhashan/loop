@@ -1,24 +1,18 @@
-require('browser-env')()
+
+require('browser-env')({userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36'})
 
 // @license Copyright (C) 2014-2021 PerimeterX, Inc (www.perimeterx.com).  Content of this file can not be copied and/or distributed.
-const generatePxCookies = async () => {
+const generatePxCookies = async (i) => {
 try {
 
-    var timeouts = []
-
-    
-
-    function clearAllTimeouts() {
-        console.log('clearing all timeouts', timeouts);
-        for (let i = 0; i < timeouts.length; i++) {
-            clearTimeout(timeouts[i])
-        }
-
-        timeouts = []
+    function setInterval() {
+        // overwriting setInterval because it keep the script running forever
+        // not really needed in our case
     }
+
    promise = new Promise((res, reject) => {
-        _getPxCookies(res)
-        
+       res('test'+i)
+        // _getPxCookies(res)
     });
 
     window._pxAppId = "PXu6b0qd2S"
@@ -3327,7 +3321,7 @@ try {
         function gi() {
             qR = setInterval(function() {
                 zo() ? $R++ : JR ? mi() : Bi()
-            }, zR)
+            }, 1e3)
         }
         function yi(t, n, e, r) {
             Bi(),
@@ -3641,7 +3635,6 @@ try {
             return n
         }
         function sa() {
-            console.log('first success sa ???????')
             var t = e;
             if (Ba())
                 try {
@@ -3853,20 +3846,16 @@ try {
         }
         function trigger_xhrFailure_event(t) {
             var n = e;
-            console.log('TRIGGERING FAILURE EVENT')
             t && ((t.J || t.I) && t.K++,
             t.J && t[n("FRBT")] || (t.I ? (sp++,
             qa(t)) : (lp++,
             _a(null),
-            console.log(t.testDefaultPath),
             t.testDefaultPath ? (t.testDefaultPath = !1,
             setTimeout(function() {
-                console.log('setting timeout 1')
                 send_post_collector_request(t)
             }, Hv)) : tp + 1 < vp.routes.length ? (tp++,
             fp++,
             setTimeout(function() {
-                console.log('setting timeout 2')
 
                 send_post_collector_request(t)
             }, Hv)) : (tp = Dv,
@@ -4810,7 +4799,7 @@ try {
             et(function() {
                 try {
                     eh = jc("hash"),
-                    rh = jc("pathname"),
+                    rh = jc("pathname")
                     oh = setInterval(Hc, 1e3)
                 } catch (t) {}
             })
@@ -5577,7 +5566,6 @@ try {
             } catch (t) {}
         }
         function hf(t) {
-            console.log('got response !!!!', t)
             Ci(t) && (dm ? df() : (ae(Os.T) && Io(t),
             Eo((new Date).getTime()),
             dm = !0,
@@ -5593,7 +5581,7 @@ try {
             ti(),
             ei(),
             vp.one("xhrSuccess", sa),
-            vp.on("xhrResponse", hf),
+            vp.on("xhrResponse", hf)
             vp.on("xhrSuccess", Ff),
             vp.on("xhrFailure", Ff)
         }
@@ -5625,7 +5613,6 @@ try {
             vp.sendActivities()
         }
         function retry_send_activities() {
-            console.log('checking retry logic condition', sR.length > 0 && vp.failures < vp.retries)
             // sR.length > 0 && vp.failures < vp.retries ? vp.sendActivities() : Ff()
             if (sR.length > 0 && vp.failures < vp.retries ) {
                 vp.sendActivities()
@@ -5636,19 +5623,13 @@ try {
                 #                           #
                 # ###########################
                 */
-                console.log('RESOLVING ', document.cookie)
-                console.log('clearing all')
-                // clearAllTimeouts();
                 resolve(document.cookie)
                 
                 
                 
             }
         }
-        function Ff() {
-            console.log('FAILURE AND SUCCESS :(')
-            
-            // instead of retrying send_act_onemoretime
+        function Ff() {            
             setTimeout(retry_send_activities, am)
             
         }
@@ -6563,9 +6544,7 @@ try {
           , pp = function() {
             var t = e
               , n = new RegExp(return_collector_api_endpoint(),"g");
-            console.log('GV NOT TRUE', Gv)
             if (Gv) {
-                console.log('Gv true', Gv)
                 return [new RegExp("/" + vp.appID.replace(t("FRA"), "") + "/init.js","g"), n]
             }
             return [Lv, n]
@@ -6845,8 +6824,8 @@ try {
         
     }
 } catch (t) {
-    console.log('error', t)
-    console.log('error', )
+    console.log('error px script', t)
+    reject('error px script')
     // (new Image).src = "https://collector-a.perimeterx.net/api/v2/collector/clientError?r=" + encodeURIComponent('{"appId":"' + (window._pxAppId || "") + '","tag":"v6.7.9","name":"' + t.name + '","line":"' + (t.lineNumber || t.line) + '","script":"' + (t.fileName || t.sourceURL || t.script) + '","stack":"' + (t.stackTrace || t.stack || "").replace(/"/g, '"') + '","message":"' + (t.message || "").replace(/"/g, '"') + '"}')
 }
 
@@ -6855,5 +6834,5 @@ return promise;
 
 
 module.exports = {
-    generatePxCookies
+    generatePxCookies,
 }

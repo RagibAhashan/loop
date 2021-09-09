@@ -1,11 +1,17 @@
 
-const {generatePxCookies} = require('./px');
+const {generatePxCookies, test} = require('./px');
 
 const main = async () => {
     try {
-    const cookies = await generatePxCookies();
 
-    console.log('cookies yoooo ', cookies)
+    for (let i = 0; i < 10; i++) {
+    const cookies = generatePxCookies(i).then(cookies => {
+        console.log('cookies yoooo ', i, ' ', cookies)
+
+    })
+
+    }
+    
 
 
     console.log('stop script')
