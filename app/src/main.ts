@@ -10,7 +10,7 @@ import {
     NOTIFY_START_PROXY_TEST,
     NOTIFY_STOP_PROXY_TEST,
     PROXY_TEST_REPLY,
-    PROXY_TEST_SUCCEEDED,
+    PROXY_TEST_SUCCEEDED
 } from './common/Constants';
 import { StoreType } from './constants/Stores';
 import { captchaWindowManager } from './core/captcha-window/CaptchaWindowManager';
@@ -110,7 +110,6 @@ app.whenReady().then(async () => {
 });
 
 app.on('window-all-closed', () => {
-    console.log('closing ');
     if (process.platform !== 'darwin') {
         app.quit();
     }
@@ -122,9 +121,9 @@ app.on('activate', () => {
     }
 });
 
-if (process.platform === 'darwin') {
-    app.dock.hide();
-}
+// if (process.platform === 'darwin') {
+//     app.dock.hide();
+// }
 
 // IPC EVENTS
 ipcMain.on(ACCESS_GRANTED, () => {

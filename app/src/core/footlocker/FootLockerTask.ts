@@ -415,7 +415,7 @@ export class FootLockerTask extends Task {
 
         const rawDatadome = await waitCap.promise;
 
-        this.cookieJar.saveInSessionFromString([rawDatadome]);
+        this.cookieJar.saveInSessionFromString(rawDatadome);
     }
 
     // Save new waiting_room cookie and set refresh and delay

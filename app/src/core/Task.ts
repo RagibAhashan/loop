@@ -36,7 +36,8 @@ export abstract class Task extends EventEmitter {
 
     protected handleCancel(): void {
         this.cancel = false;
-        this.once(TASK_STOP, async () => {
+        this.on(TASK_STOP, async () => {
+            console.log('CANCELLING TASK');
             this.cancel = true;
             this.emit(TASK_STATUS, { message: MESSAGES.CANCELED_MESSAGE, level: 'cancel' });
             this.requestInstance.cancel();

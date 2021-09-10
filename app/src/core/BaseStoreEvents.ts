@@ -104,7 +104,7 @@ export abstract class BaseStoreEvents {
         console.log('edit event create !', NOTIFY_EDIT_TASK(this.storeType));
         ipcMain.on(NOTIFY_EDIT_TASK(this.storeType), async (event, uuid: string, updatedTask) => {
             try {
-                console.log('recevied edit event from', uuid, 'with', updatedTask, this.storeType);
+                console.log('recevied edit event from', uuid);
                 const task = taskManager.getTask(uuid);
 
                 console.log('got task', task);

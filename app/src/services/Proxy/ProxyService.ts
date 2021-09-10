@@ -2,8 +2,8 @@ import { AnyAction, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { ThunkAction } from 'redux-thunk';
 import { AppState } from '../../global-store/GlobalStore';
 import { Proxy, ProxyState } from '../../interfaces/OtherInterfaces';
-import { ProxySet } from './../../../../v2app/src/interfaces/OtherInterfaces';
 import { StoreType } from './../../constants/Stores';
+import { ProxySet } from './../../interfaces/OtherInterfaces';
 
 export interface ProxyPayload {
     name: string;

@@ -17,6 +17,7 @@ import {
 import { CookieJar } from './../CookieJar';
 import { WalmartCreditCard } from './../interface/UserProfile';
 import { RequestInstance } from './../RequestInstance';
+import { generatePxCookies } from './scripts/px';
 
 export class WalmartUSTask extends Task {
     private htmlParser: HTMLParser;
@@ -84,18 +85,30 @@ export class WalmartUSTask extends Task {
                 });
 
                 const cookie = this.cookieJar.serializeSession();
-                if (cookie) headers = { ...headers, cookie: cookie };
-
-                console.log('launching pupeteer');
-
-                // const cookies = await page.cookies(this.parsedURL.toString());
+                console.log('GET SESSION FIRST COOKIES', cookie);
+                if (cookie) {
+                    headers = { ...headers, cookie: cookie };
+                } else {
+                    console.log('executing px script');
+                    // execute px script
+                    // eslint-disable-next-line @typescript-eslint/no-var-requires
+                    require('browser-env')({
+                        userAgent:
+                            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36',
+                    });
+                    const cookies = await generatePxCookies();
+                    console.log('saving cookies from px script');
+                    await this.cookieJar.saveInSessionFromString(cookies);
+                }
 
                 // http://walmart.com/ip/pname/pid -> /ip/pname/pid
                 const productURL = this.parsedURL.pathname;
                 const resp = await this.axiosSession.get(productURL, { headers: headers });
                 console.log('WALMART RESP', resp.headers);
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromString(resp.headers['set-cookie']);
-
+                if (resp.headers['set-cookie']) {
+                    console.log('SAVING COOKIES AFTER WALMART RESP');
+                    await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
+                }
                 offerId = this.getOfferId(resp.data) as string;
                 console.log('GOT OFFER ID IS', offerId);
 
@@ -163,7 +176,7 @@ export class WalmartUSTask extends Task {
 
                 console.log('atc body', body);
                 const resp = await this.axiosSession.post('/api/v3/cart/guest/:CID/items', body, { headers: headers });
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromString(resp.headers['set-cookie']);
+                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
 
                 await this.checkAddToCart();
             } catch (err) {
@@ -201,7 +214,7 @@ export class WalmartUSTask extends Task {
                 };
 
                 const resp = await this.axiosSession.post('/api/checkout/v3/contract?page=CHECKOUT_VIEW', body, { headers: headers });
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromString(resp.headers['set-cookie']);
+                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
             } catch (err) {
                 console.log('ERROR CHECKOUT CART', err);
                 throw new Error(err);
@@ -241,7 +254,7 @@ export class WalmartUSTask extends Task {
 
                 const resp = await this.axiosSession.post('/api/checkout/v3/contract/:PCID/shipping-address', body, { headers: headers });
 
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromString(resp.headers['set-cookie']);
+                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
             } catch (err) {
                 this.cancelTask();
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
@@ -290,7 +303,7 @@ export class WalmartUSTask extends Task {
                 };
 
                 const resp = await this.axiosSession.post('/api/checkout-customer/:CID/credit-card', body, { headers: headers });
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromString(resp.headers['set-cookie']);
+                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
 
                 await this.checkPayment(encryptedCard, {
                     cardType: resp.data['cardType'],
@@ -342,7 +355,7 @@ export class WalmartUSTask extends Task {
 
             const resp = await this.axiosSession.post('/api/checkout/v3/contract/:PCID/payment', body, { headers: headers });
 
-            if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromString(resp.headers['set-cookie']);
+            if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
         } catch (error) {
             console.log('CHECKING CREDIT CARD ERROR', error);
             throw new Error(error);
@@ -379,7 +392,7 @@ export class WalmartUSTask extends Task {
                 };
 
                 const resp = await this.axiosSession.put('/api/checkout/v3/contract/:PCID/order', body, { headers: headers });
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromString(resp.headers['set-cookie']);
+                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
             } catch (err) {
                 this.cancelTask();
                 await this.emitStatusWithDelay(MESSAGES.CHECKOUT_FAILED_MESSAGE, 'error');

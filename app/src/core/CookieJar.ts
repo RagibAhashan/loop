@@ -20,14 +20,24 @@ export class CookieJar {
     }
 
     /**
-     * Gather all set-cookie header and store them in the cookies map
+     * Gather all set-cookie header array and store them in the cookies map
      *
      * @return {void}
      *
      */
-    async saveInSessionFromString(cookies: string[]): Promise<void> {
+    async saveInSessionFromArray(cookies: string[]): Promise<void> {
         if (cookies.length === 0) return;
         await this.saveInSession(cookies);
+    }
+
+    /**
+     * Gather a cookie string 'abc=123;123=abc' and store them in the cookies map
+     *
+     * @return {void}
+     *
+     */
+    async saveInSessionFromString(cookies: string): Promise<void> {
+        await this.saveInSession(cookies.split(';'));
     }
 
     // /**
@@ -74,7 +84,10 @@ export class CookieJar {
 
         // TODO remove
         const debug = true;
-        if (debug) this.current();
+        if (debug) {
+            console.log('reached dbug');
+            this.current();
+        }
     }
 
     /**

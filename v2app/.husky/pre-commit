@@ -1,7 +1,0 @@
-#!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
-
-echo "Linting...."
-cd app
-yarn lint:react
-yarn lint:electron
