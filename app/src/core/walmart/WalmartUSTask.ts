@@ -1,4 +1,5 @@
 import { WalmartEncryption } from '../../services/Encryption/WalmartEncryption';
+import UserAgentProvider from '../../services/UserAgentProvider';
 import { MESSAGES } from '../constants/Constants';
 import { HTMLParser } from '../HTMLParser';
 import { Task } from '../Task';
@@ -93,9 +94,9 @@ export class WalmartUSTask extends Task {
                     // execute px script
                     // eslint-disable-next-line @typescript-eslint/no-var-requires
                     require('browser-env')({
-                        userAgent:
-                            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36',
+                        userAgent: UserAgentProvider.randomUserAgent(),
                     });
+
                     const cookies = await generatePxCookies();
                     console.log('saving cookies from px script');
                     await this.cookieJar.saveInSessionFromString(cookies);
@@ -133,7 +134,7 @@ export class WalmartUSTask extends Task {
             const itemDesc = this.htmlParser.parseJSONById('item');
 
             const product = itemDesc['item']['product']['buyBox']['products'][0];
-
+            console.log('BEFORE CHECKING IF SOLD BY WALMART', product['offerId']);
             if (!this.isSoldByWalmart(product)) return undefined;
 
             const offerId = product['offerId'] as string;
