@@ -147,7 +147,7 @@ export class WalmartUSTask extends Task {
 
     async addToCart(offerId: string): Promise<void> {
         let retry = false;
-        let headers: any = { ...WALMART_US_ATC_HEADERS };
+        let headers: any = { ...WALMART_US_ATC_HEADERS, referer: this.parsedURL.toString() };
         do {
             try {
                 retry = false;
@@ -302,7 +302,7 @@ export class WalmartUSTask extends Task {
                     integrityCheck: encryptedCard.integrityCheck,
                     keyId: encryptedCard.keyId,
                     phase: encryptedCard.phase,
-                    state: REGIONS[this.taskData.profile.billing.country][this.taskData.profile.billing.region],
+                    state: REGIONS[this.taskData.profile.billing.country][this.taskData.profile.billing.region].isocodeShort,
                     city: this.taskData.profile.billing.town,
                     addressType: 'RESIDENTIAL',
                     postalCode: this.taskData.profile.billing.postalCode,
@@ -328,7 +328,7 @@ export class WalmartUSTask extends Task {
             } catch (err) {
                 console.log('SETTING CREDIT CARD FAILED', err);
                 this.cancelTask();
-                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
+                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE + ' SCC', 'error');
                 retry = true;
             }
         } while (retry);
@@ -352,7 +352,7 @@ export class WalmartUSTask extends Task {
                         addressLineOne: this.taskData.profile.billing.address,
                         addressLineTwo: '',
                         city: this.taskData.profile.billing.town,
-                        state: REGIONS[this.taskData.profile.billing.country][this.taskData.profile.billing.region],
+                        state: REGIONS[this.taskData.profile.billing.country][this.taskData.profile.billing.region].isocodeShort,
                         postalCode: this.taskData.profile.billing.postalCode,
                         expiryMonth: card.expiryMonth,
                         expiryYear: card.expiryYear,
@@ -374,7 +374,7 @@ export class WalmartUSTask extends Task {
             if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
         } catch (error) {
             console.log('CHECKING CREDIT CARD ERROR', error);
-            throw new Error(error);
+            throw new Error('CHECKING CREDIT CARD FAILED');
         }
     }
 
@@ -410,6 +410,7 @@ export class WalmartUSTask extends Task {
                 const resp = await this.axiosSession.put('/api/checkout/v3/contract/:PCID/order', body, { headers: headers });
                 if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
             } catch (err) {
+                console.log('PAYMENT ERROR', err);
                 this.cancelTask();
                 await this.emitStatusWithDelay(MESSAGES.CHECKOUT_FAILED_MESSAGE, 'error');
             }

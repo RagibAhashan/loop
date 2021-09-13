@@ -19,8 +19,6 @@
 /* eslint-disable */
 /* tslint-disable */
 
-module.exports = EncryptWalmart;
-
 var EncryptWalmart = function (e, t, r, PIE) {
     var a = n.distill(e),
         i = n.distill(t);
@@ -415,3 +413,5 @@ var o = {
         return null == i ? '' : o.encryptWithCipher(e, t, i, r);
     },
 };
+
+module.exports = { EncryptWalmart };
