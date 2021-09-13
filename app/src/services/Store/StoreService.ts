@@ -76,6 +76,7 @@ export const storeSlice = createSlice({
                 ...state[action.payload.storeKey].tasks[action.payload.uuid],
                 ...action.payload.newValue,
             };
+
             state[action.payload.storeKey].tasks[action.payload.uuid] = updatedTask;
         },
         startTask: (state, action: PayloadAction<TaskPayload>) => {

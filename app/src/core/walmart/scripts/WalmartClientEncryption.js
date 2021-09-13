@@ -414,4 +414,4 @@ var o = {
     },
 };
 
-module.exports = EncryptWalmart;
+module.exports = { EncryptWalmart };

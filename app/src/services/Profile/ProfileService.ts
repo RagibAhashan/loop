@@ -28,7 +28,6 @@ export const profileSlice = createSlice({
 });
 
 // SELECTORS
-export const getProfileByName = (state: AppState, profileName: string) => state.profiles[profileName];
 export const getProfiles = (state: AppState) => state.profiles;
 
 // ACTIONS

@@ -1,10 +1,11 @@
 import { WalmartEncryption } from '../../services/Encryption/WalmartEncryption';
+import UserAgentProvider from '../../services/UserAgentProvider';
 import { MESSAGES } from '../constants/Constants';
 import { HTMLParser } from '../HTMLParser';
 import { Task } from '../Task';
 import { TASK_STATUS } from './../../common/Constants';
 import { COUNTRY, REGIONS } from './../../common/Regions';
-import { WalmartTaskData } from './../../interfaces/TaskInterfaces';
+import { TaskData, WalmartTaskData } from './../../interfaces/TaskInterfaces';
 import {
     WALMART_US_ATC_HEADERS,
     WALMART_US_CHECKOUT_CART_HEADERS,
@@ -17,6 +18,7 @@ import {
 import { CookieJar } from './../CookieJar';
 import { WalmartCreditCard } from './../interface/UserProfile';
 import { RequestInstance } from './../RequestInstance';
+import { generatePxCookies } from './scripts/px';
 
 export class WalmartUSTask extends Task {
     private htmlParser: HTMLParser;
@@ -31,7 +33,7 @@ export class WalmartUSTask extends Task {
         super(uuid, requestInstance, taskData);
         this.taskData = taskData;
         this.htmlParser = new HTMLParser();
-        this.parsedURL = new URL(this.taskData.productURL);
+        this.initParsedURL();
     }
 
     private isSoldByWalmart(product: any): boolean {
@@ -84,18 +86,30 @@ export class WalmartUSTask extends Task {
                 });
 
                 const cookie = this.cookieJar.serializeSession();
-                if (cookie) headers = { ...headers, cookie: cookie };
+                console.log('starting getting session', this.parsedURL);
+                if (cookie) {
+                    headers = { ...headers, cookie: cookie };
+                } else {
+                    console.log('executing px script');
+                    // execute px script
+                    // eslint-disable-next-line @typescript-eslint/no-var-requires
+                    require('browser-env')({
+                        userAgent: UserAgentProvider.randomUserAgent(),
+                    });
 
-                console.log('launching pupeteer');
-
-                // const cookies = await page.cookies(this.parsedURL.toString());
+                    const cookies = await generatePxCookies();
+                    console.log('saving cookies from px script');
+                    await this.cookieJar.saveInSessionFromString(cookies);
+                }
 
                 // http://walmart.com/ip/pname/pid -> /ip/pname/pid
                 const productURL = this.parsedURL.pathname;
                 const resp = await this.axiosSession.get(productURL, { headers: headers });
                 console.log('WALMART RESP', resp.headers);
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromString(resp.headers['set-cookie']);
-
+                if (resp.headers['set-cookie']) {
+                    console.log('SAVING COOKIES AFTER WALMART RESP');
+                    await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
+                }
                 offerId = this.getOfferId(resp.data) as string;
                 console.log('GOT OFFER ID IS', offerId);
 
@@ -104,10 +118,10 @@ export class WalmartUSTask extends Task {
                     await this.emitStatusWithDelay(MESSAGES.OOS_RETRY_MESSAGE, 'info');
                 }
             } catch (err) {
+                console.log('GET SESSION ERROR', err);
                 this.cancelTask();
                 retry = true;
                 await this.emitStatusWithDelay(MESSAGES.SESSION_ERROR_MESSAGE, 'error');
-                console.log('GET SESSION ERROR', err);
             }
         } while (retry);
 
@@ -120,7 +134,7 @@ export class WalmartUSTask extends Task {
             const itemDesc = this.htmlParser.parseJSONById('item');
 
             const product = itemDesc['item']['product']['buyBox']['products'][0];
-
+            console.log('BEFORE CHECKING IF SOLD BY WALMART', product['offerId']);
             if (!this.isSoldByWalmart(product)) return undefined;
 
             const offerId = product['offerId'] as string;
@@ -133,7 +147,7 @@ export class WalmartUSTask extends Task {
 
     async addToCart(offerId: string): Promise<void> {
         let retry = false;
-        let headers: any = { ...WALMART_US_ATC_HEADERS };
+        let headers: any = { ...WALMART_US_ATC_HEADERS, referer: this.parsedURL.toString() };
         do {
             try {
                 retry = false;
@@ -161,15 +175,26 @@ export class WalmartUSTask extends Task {
                     storeIds: [2648, 5434, 2031, 2280, 5426],
                 };
 
-                console.log('atc body', body);
+                console.log('atc body', body, headers);
                 const resp = await this.axiosSession.post('/api/v3/cart/guest/:CID/items', body, { headers: headers });
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromString(resp.headers['set-cookie']);
+                // const resp = await needle('post', 'https://walmart.com/api/v3/cart/guest/:CID/items', body, {
+                //     json: true,
+                //     follow_keep_method: true,
+                //     follow: 2,
+                //     headers: { cookie: 'test=1123;' },
+                //     follow_set_cookie: true,
+                // });
 
+                if (resp.headers['set-cookie']) {
+                    await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
+                }
+                console.log('AXIOS ATC RESPONSE ', resp.status, resp.statusText);
                 await this.checkAddToCart();
             } catch (err) {
                 this.cancelTask();
+                console.log('ATC ERROR', err);
                 if (err.response) {
-                    console.log('ADD TO CART CAPTCHA ERROR', err.response.status, err.response.data);
+                    console.log('ADD TO CART CAPTCHA ERROR', err);
                 }
                 await this.emitStatusWithDelay(MESSAGES.ADD_CART_ERROR_MESSAGE, 'error');
                 retry = true;
@@ -201,7 +226,9 @@ export class WalmartUSTask extends Task {
                 };
 
                 const resp = await this.axiosSession.post('/api/checkout/v3/contract?page=CHECKOUT_VIEW', body, { headers: headers });
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromString(resp.headers['set-cookie']);
+                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
+
+                console.log('checkout cart response', resp.status, resp.statusText);
             } catch (err) {
                 console.log('ERROR CHECKOUT CART', err);
                 throw new Error(err);
@@ -233,7 +260,7 @@ export class WalmartUSTask extends Task {
                     email: this.taskData.profile.shipping.email,
                     marketingEmailPref: true,
                     postalCode: this.taskData.profile.shipping.postalCode,
-                    state: REGIONS[this.taskData.profile.shipping.country][this.taskData.profile.shipping.region],
+                    state: REGIONS[this.taskData.profile.shipping.country][this.taskData.profile.shipping.region].isocodeShort,
                     countryCode: COUNTRY[this.taskData.profile.shipping.country],
                     addressType: 'RESIDENTIAL',
                     changedFields: [] as any[],
@@ -241,8 +268,9 @@ export class WalmartUSTask extends Task {
 
                 const resp = await this.axiosSession.post('/api/checkout/v3/contract/:PCID/shipping-address', body, { headers: headers });
 
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromString(resp.headers['set-cookie']);
+                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
             } catch (err) {
+                console.log('BILLING FAILED', err);
                 this.cancelTask();
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
                 retry = true;
@@ -274,7 +302,7 @@ export class WalmartUSTask extends Task {
                     integrityCheck: encryptedCard.integrityCheck,
                     keyId: encryptedCard.keyId,
                     phase: encryptedCard.phase,
-                    state: REGIONS[this.taskData.profile.billing.country][this.taskData.profile.billing.region],
+                    state: REGIONS[this.taskData.profile.billing.country][this.taskData.profile.billing.region].isocodeShort,
                     city: this.taskData.profile.billing.town,
                     addressType: 'RESIDENTIAL',
                     postalCode: this.taskData.profile.billing.postalCode,
@@ -290,7 +318,7 @@ export class WalmartUSTask extends Task {
                 };
 
                 const resp = await this.axiosSession.post('/api/checkout-customer/:CID/credit-card', body, { headers: headers });
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromString(resp.headers['set-cookie']);
+                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
 
                 await this.checkPayment(encryptedCard, {
                     cardType: resp.data['cardType'],
@@ -298,8 +326,9 @@ export class WalmartUSTask extends Task {
                     piHash: resp.data['piHash'],
                 });
             } catch (err) {
+                console.log('SETTING CREDIT CARD FAILED', err);
                 this.cancelTask();
-                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
+                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE + ' SCC', 'error');
                 retry = true;
             }
         } while (retry);
@@ -323,7 +352,7 @@ export class WalmartUSTask extends Task {
                         addressLineOne: this.taskData.profile.billing.address,
                         addressLineTwo: '',
                         city: this.taskData.profile.billing.town,
-                        state: REGIONS[this.taskData.profile.billing.country][this.taskData.profile.billing.region],
+                        state: REGIONS[this.taskData.profile.billing.country][this.taskData.profile.billing.region].isocodeShort,
                         postalCode: this.taskData.profile.billing.postalCode,
                         expiryMonth: card.expiryMonth,
                         expiryYear: card.expiryYear,
@@ -342,10 +371,10 @@ export class WalmartUSTask extends Task {
 
             const resp = await this.axiosSession.post('/api/checkout/v3/contract/:PCID/payment', body, { headers: headers });
 
-            if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromString(resp.headers['set-cookie']);
+            if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
         } catch (error) {
             console.log('CHECKING CREDIT CARD ERROR', error);
-            throw new Error(error);
+            throw new Error('CHECKING CREDIT CARD FAILED');
         }
     }
 
@@ -379,8 +408,9 @@ export class WalmartUSTask extends Task {
                 };
 
                 const resp = await this.axiosSession.put('/api/checkout/v3/contract/:PCID/order', body, { headers: headers });
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromString(resp.headers['set-cookie']);
+                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
             } catch (err) {
+                console.log('PAYMENT ERROR', err);
                 this.cancelTask();
                 await this.emitStatusWithDelay(MESSAGES.CHECKOUT_FAILED_MESSAGE, 'error');
             }
@@ -393,5 +423,21 @@ export class WalmartUSTask extends Task {
         const encCard = await ccEncryptor.encrypt(this.taskData.profile.payment);
 
         return encCard;
+    }
+
+    // create an object URL from the product URL
+    private initParsedURL(): void {
+        try {
+            this.parsedURL = new URL(this.taskData.productURL);
+        } catch (error) {
+            this.parsedURL = undefined;
+        }
+    }
+
+    // TODO : change the way we update tasks, dont update parsedURL here
+    // functions are not pure
+    updateData(taskData: TaskData): void {
+        super.updateData(taskData);
+        this.initParsedURL();
     }
 }

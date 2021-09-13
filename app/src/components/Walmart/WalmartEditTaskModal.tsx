@@ -12,13 +12,20 @@ const validateMessages = {
 const GUTTER: [number, number] = [16, 0];
 
 export const WalmartEditTaskModal = (props: any) => {
-    const { visible, onClose, onEdit, task }: { visible: boolean; onClose: () => void; onEdit: (newVal: any) => void; task: WalmartTaskData } = props;
-    const [form] = useForm();
+    const {
+        visible,
+        onClose,
+        onEdit,
+        task,
+    }: { visible: boolean; onClose: () => void; onEdit: (newVal: WalmartTaskData) => void; task: WalmartTaskData } = props;
+    const [form] = useForm<WalmartTaskData>();
 
     const profiles = useSelector(getProfiles);
     const optionProfiles = Object.entries(profiles).map(([key, profile]) => {
         return { label: profile.name, value: profile.name };
     });
+
+    const profileByName = (profileName: string) => profiles[profileName];
 
     const proxies = useSelector(getProxySets);
     const proxiesOptions = Object.keys(proxies).map((proxySetName) => {
@@ -41,6 +48,14 @@ export const WalmartEditTaskModal = (props: any) => {
         return values;
     };
 
+    const handleOnEdit = (newTaskValues: WalmartTaskData) => {
+        if (newTaskValues.profileName !== task.profileName) {
+            newTaskValues.profile = profileByName(newTaskValues.profileName);
+        }
+
+        onEdit(newTaskValues);
+    };
+
     return (
         <Modal
             title={title()}
@@ -52,10 +67,10 @@ export const WalmartEditTaskModal = (props: any) => {
                           .validateFields()
                           .then((values) => {
                               //   form.resetFields();
-                              onEdit(values);
+                              handleOnEdit(values);
                           })
                           .catch((err) => {})
-                    : onEdit(removeUndefined());
+                    : handleOnEdit(removeUndefined());
             }}
             onCancel={onClose}
             okText="Edit"

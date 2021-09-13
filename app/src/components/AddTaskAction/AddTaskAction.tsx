@@ -27,7 +27,6 @@ const AddTaskAction = (props: any) => {
 
         for (let i = 0; i < quantity; i++) {
             let newTask = { ...task, uuid: uuid(), running: false, status: { level: 'idle' as StatusLevel, message: 'Idle' } };
-
             if (!task.proxySet) newTask = { ...newTask, proxy: null };
 
             taskArr.push(newTask);
@@ -35,7 +34,7 @@ const AddTaskAction = (props: any) => {
         }
 
         dispatch(addTask({ storeKey: storeKey, tasks: taskArr }));
-        window.ElectronBridge.send(NOTIFY_ADD_TASK(storeKey), storeKey, taskArr);
+        window.ElectronBridge.send(NOTIFY_ADD_TASK(storeKey), taskArr);
         if (task.proxySet) dispatch(assignRandomProxy(task.proxySet, storeKey, taskIDArr));
 
         setVisibleModal(false);

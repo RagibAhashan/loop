@@ -1,22 +1,3 @@
-// import React, { Fragment } from 'react';
-
-// const App = () => {
-//     return (
-//         <Fragment>
-//             <button
-//                 onClick={() => {
-//                     window.ElectronBridge.send('test-channel', 'test string', 123, []);
-//                 }}
-//             >
-//                 click
-//             </button>
-//             <div style={{ color: 'white' }}> Test font 123 hi how are you doing I am doing pretty fine thanks </div>
-//         </Fragment>
-//     );
-// };
-
-// export default App;
-
 import { Layout } from 'antd';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
@@ -41,6 +22,7 @@ const generateFingerPrint = () => {
 
 // On startup send event to main to intialise task manager struct
 const initTasksStatus = (stores: StoreState) => {
+    console.log('INITING TASK STATUS');
     Object.entries(stores).forEach(([storeName, store]) => {
         if (Object.keys(store.tasks).length) {
             window.ElectronBridge.send(NOTIFY_ON_START_INIT_TASK(storeName as StoreType), Object.values(store.tasks));
@@ -51,10 +33,13 @@ const initTasksStatus = (stores: StoreState) => {
 const App = () => {
     const stores = useSelector(getStores);
 
+    // Important : This useEffect needs to only be executed once at startup
     useEffect(() => {
+        console.log('app refresh wtf');
         initTasksStatus(stores);
         generateFingerPrint();
-    }, [stores]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <Layout>
