@@ -5,7 +5,7 @@
     "description": "Dynasty AIO",
     "main": ".webpack/main",
     "scripts": {
-        "start": "cross-env DEBUG='electron-forge:*,WalmartEncryption' electron-forge start",
+        "start": "cross-env DEBUG='electron-forge:*,dynasty:*' electron-forge start",
         "package": "electron-forge package",
         "make": "electron-forge make",
         "publish": "electron-forge publish",

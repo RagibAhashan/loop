@@ -1,8 +1,8 @@
 import axios from 'axios';
-import Debug from 'debug';
+import { debug } from '../../core/Log';
 import { EncryptWalmart } from '../../core/walmart/scripts/WalmartClientEncryption';
 import { CreditCard, WalmartCreditCard } from './../../core/interface/UserProfile';
-const log = Debug('WalmartEncryption');
+const log = debug.extend('walmart-encryption-service');
 
 interface IPIE {
     [key: string]: string | number;
