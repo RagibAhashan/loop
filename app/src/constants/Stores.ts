@@ -37,7 +37,7 @@ export const STORES: StoresMap = {
     },
     WalmartUS: {
         name: 'Walmart US',
-        baseURL: 'https://walmart.com',
+        baseURL: 'https://www.walmart.com',
         key: StoreType.WalmartUS,
         headers: COMMONG_HEADERS,
         url: 'https://www.walmart.com',

@@ -83,9 +83,8 @@ export class CookieJar {
         }
 
         // TODO remove
-        const debug = true;
+        const debug = false;
         if (debug) {
-            console.log('reached dbug');
             this.current();
         }
     }
