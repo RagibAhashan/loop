@@ -70,9 +70,9 @@ export abstract class BaseStoreEvents {
     }
 
     protected addTaskEvent(): void {
-        ipcMain.on(NOTIFY_ADD_TASK(this.storeType), (event, taskData: TaskData) => {
-            console.log('adding task !', taskData.uuid);
-            this.createTask(event, taskData);
+        ipcMain.on(NOTIFY_ADD_TASK(this.storeType), (event, taskDatas: TaskData[]) => {
+            console.log('adding task !', taskDatas);
+            taskDatas.map((taskData) => this.createTask(event, taskData));
         });
     }
 
@@ -101,13 +101,12 @@ export abstract class BaseStoreEvents {
     }
 
     protected editTaskEvent() {
-        console.log('edit event create !', NOTIFY_EDIT_TASK(this.storeType));
         ipcMain.on(NOTIFY_EDIT_TASK(this.storeType), async (event, uuid: string, updatedTask) => {
             try {
-                console.log('recevied edit event from', uuid);
+                console.log('recevied edit event from', uuid, 'task manager', taskManager);
                 const task = taskManager.getTask(uuid);
 
-                console.log('got task', task);
+                console.log('got task', task, 'with updated data', updatedTask);
                 if (task) task.updateData(updatedTask);
             } catch (error) {
                 console.log('Error editing task', error);
