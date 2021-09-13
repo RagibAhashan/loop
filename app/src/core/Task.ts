@@ -84,7 +84,7 @@ export abstract class Task extends EventEmitter {
         console.log('updated old', this.taskData);
         if (this.taskData.proxy?.host !== taskData.proxy?.host) this.updateProxy(taskData.proxy);
         this.taskData = taskData;
-        console.log('updated new', this.taskData);
+        console.log('updated new', this.taskData, taskData);
     }
 
     async execute(): Promise<void> {
