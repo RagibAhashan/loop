@@ -19,7 +19,9 @@ class AboutTwo extends Component{
                                     <div className="row">
                                         <div className="col-lg-6 col-md-12 col-sm-12 col-12">
                                             <div className="about-us-list">
-                                                <h5 className="title">Out of Stock</h5>
+                                                <div className="button-group mt--50">
+                                                    <a className="btn-default btn-border size-sm" href="link.html" style={{pointerEvents: 'none', cursor:'default'}}>Out of Stock</a>
+                                                </div>
                                             </div>
                                         </div>
                                         <div className="col-lg-6 col-md-12 col-sm-12 col-12">
@@ -29,7 +31,7 @@ class AboutTwo extends Component{
                                         </div>
                                     </div>
                                     <div className="purchase-btn mt--50">
-                                        <Link to="Show" spy={true} smooth={true} href="#Show"><a className="btn-transparent" href="/about">TAKE A PEEK</a></Link>
+                                        <Link className="btn-transparent" to="Show" spy={true} smooth={true} href="#Show">TAKE A PEEK</Link>
                                     </div>
                                     
                                 </div>
