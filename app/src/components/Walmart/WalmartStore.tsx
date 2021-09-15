@@ -1,6 +1,6 @@
 import { Button, Col, Row, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { CAPTHA_WINDOW_CLOSED, NOTIFY_CAPTCHA } from '../../common/Constants';
+import { CAPTHA_WINDOW_CLOSED, CAPTHA_WINDOW_OPEN, NOTIFY_CAPTCHA } from '../../common/Constants';
 import { buttonStyle } from '../../styles/Buttons';
 import AddTaskAction from '../AddTaskAction/AddTaskAction';
 import { ICaptcha } from '../Captcha/CaptchaFrame';
@@ -59,7 +59,7 @@ const WalmartStore = (props: any) => {
     };
 
     const openCaptcha = async () => {
-        window.ElectronBridge.send('new-window', storeKey);
+        window.ElectronBridge.send(CAPTHA_WINDOW_OPEN, storeKey);
         setCaptchaWinOpened(true);
     };
 

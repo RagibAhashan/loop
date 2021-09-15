@@ -216,7 +216,7 @@ export class WalmartUSTask extends Task {
                     'customerType:type': '',
                     'affiliateInfo:com.wm.reflector': '',
                 };
-
+                log('Checking add to cart contract');
                 const resp = await this.axiosSession.post('/api/checkout/v3/contract?page=CHECKOUT_VIEW', body, { headers: headers });
                 if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
             } catch (err) {
@@ -248,14 +248,16 @@ export class WalmartUSTask extends Task {
                     lastName: this.taskData.profile.shipping.lastName,
                     phone: this.taskData.profile.shipping.phone,
                     email: this.taskData.profile.shipping.email,
-                    marketingEmailPref: true,
+                    marketingEmailPref: false,
                     postalCode: this.taskData.profile.shipping.postalCode,
                     state: REGIONS[this.taskData.profile.shipping.country][this.taskData.profile.shipping.region].isocodeShort,
                     countryCode: COUNTRY[this.taskData.profile.shipping.country],
                     addressType: 'RESIDENTIAL',
                     changedFields: [] as any[],
+                    storeList: [] as any[],
                 };
 
+                log('Setting shipping and billing');
                 const resp = await this.axiosSession.post('/api/checkout/v3/contract/:PCID/shipping-address', body, { headers: headers });
 
                 if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
@@ -307,6 +309,7 @@ export class WalmartUSTask extends Task {
                     isGuest: true,
                 };
 
+                log('Setting Credit Card');
                 const resp = await this.axiosSession.post('/api/checkout-customer/:CID/credit-card', body, { headers: headers });
                 if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
 
@@ -358,8 +361,9 @@ export class WalmartUSTask extends Task {
                 ],
                 cvvInSession: true,
             };
-
+            log('Setting payment contract');
             const resp = await this.axiosSession.post('/api/checkout/v3/contract/:PCID/payment', body, { headers: headers });
+            log('Payment contract response %O', resp);
 
             if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
         } catch (error) {
@@ -396,11 +400,11 @@ export class WalmartUSTask extends Task {
                         },
                     ],
                 };
-
+                log('Placing payment');
                 const resp = await this.axiosSession.put('/api/checkout/v3/contract/:PCID/order', body, { headers: headers });
                 if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
             } catch (err) {
-                log('Payment Failed', err);
+                log('Payment Failed %O', err);
                 this.cancelTask();
                 await this.emitStatusWithDelay(MESSAGES.CHECKOUT_FAILED_MESSAGE, 'error');
             }

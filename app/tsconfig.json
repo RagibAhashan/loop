@@ -16,7 +16,8 @@
             "*": ["node_modules/*"],
             "@main_window/*": ["src/main_window/*"],
             "@license_window/*": ["src/license_window/*"],
-            "@captcha_window/*": ["src/captcha_window/*"]
+            "@google_captcha_window/*": ["src/google_captcha_window/*"],
+            "@px_captcha_window/*": ["src/px_captcha_window/*"]
         },
         "jsx": "react",
         "removeComments": true

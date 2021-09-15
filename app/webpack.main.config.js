@@ -14,7 +14,14 @@ module.exports = {
         alias: {
             '@main_window': path.resolve(__dirname, 'src/main_window/'),
             '@license_window': path.resolve(__dirname, 'src/license_window/'),
-            '@captcha_window': path.resolve(__dirname, 'src/captcha_window/'),
+            '@google_captcha_window': path.resolve(__dirname, 'src/google_captcha_window/'),
+            '@px_captcha_window': path.resolve(__dirname, 'src/px_captcha_window/'),
         },
+    },
+    externals: {
+        bufferutil: 'bufferutil',
+        'utf-8-validate': 'utf-8-validate',
+        canvas: 'canvas',
+        'osx-temperature-sensor': 'osx-temperature-sensor',
     },
 };

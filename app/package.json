@@ -65,9 +65,14 @@
                                     "name": "license_window"
                                 },
                                 {
-                                    "html": "./src/captcha_window/index.html",
-                                    "js": "./src/captcha_window/renderer.ts",
-                                    "name": "captcha_window"
+                                    "html": "./src/google_captcha_window/index.html",
+                                    "js": "./src/google_captcha_window/renderer.ts",
+                                    "name": "google_captcha_window"
+                                },
+                                {
+                                    "html": "./src/px_captcha_window/index.html",
+                                    "js": "./src/px_captcha_window/renderer.ts",
+                                    "name": "px_captcha_window"
                                 }
                             ]
                         }

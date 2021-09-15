@@ -7,6 +7,11 @@ export enum StoreType {
     WalmartCA = 'WalmartCA',
 }
 
+export enum CaptchaType {
+    Google,
+    Px,
+}
+
 export interface StoreInfo {
     name: string;
     baseURL: string;
@@ -14,6 +19,7 @@ export interface StoreInfo {
     headers: any;
     url: string;
     siteKey: string;
+    captchaType: CaptchaType;
 }
 
 export type StoresMap = { readonly [key in StoreType]: StoreInfo };
@@ -26,6 +32,7 @@ export const STORES: StoresMap = {
         headers: COMMONG_HEADERS,
         url: 'https://www.footlocker.com',
         siteKey: '6LccSjEUAAAAANCPhaM2c-WiRxCZ5CzsjR_vd8uX',
+        captchaType: CaptchaType.Google,
     },
     FootlockerCA: {
         name: 'Footlocker CA',
@@ -33,7 +40,8 @@ export const STORES: StoresMap = {
         key: StoreType.FootlockerCA,
         headers: COMMONG_HEADERS,
         url: 'https://www.footlocker.ca',
-        siteKey: '6LccSjEUAAAAANCPhaM2c-WiRxCZ5CzsjR_vd8uX', //captcha key
+        siteKey: '6LccSjEUAAAAANCPhaM2c-WiRxCZ5CzsjR_vd8uX', //captcha key,
+        captchaType: CaptchaType.Google,
     },
     WalmartUS: {
         name: 'Walmart US',
@@ -41,7 +49,8 @@ export const STORES: StoresMap = {
         key: StoreType.WalmartUS,
         headers: COMMONG_HEADERS,
         url: 'https://www.walmart.com',
-        siteKey: '6Lc8-RIaAAAAAPWSm2FVTyBg-Zkz2UjsWWfrkgYN',
+        siteKey: '',
+        captchaType: CaptchaType.Px,
     },
     WalmartCA: {
         name: 'Walmart CA',
@@ -49,6 +58,7 @@ export const STORES: StoresMap = {
         key: StoreType.WalmartCA,
         headers: COMMONG_HEADERS,
         url: 'https://www.walmart.com',
-        siteKey: '6LdC-hIaAAAAALLCgO92mcNONQ-7MGIxmJd82kw5',
+        siteKey: '',
+        captchaType: CaptchaType.Px,
     },
 };
