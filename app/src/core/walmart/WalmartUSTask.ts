@@ -1,24 +1,29 @@
+import { TASK_STATUS } from '../../common/Constants';
+import { REGIONS } from '../../common/Regions';
+import { TaskData, WalmartTaskData } from '../../interfaces/TaskInterfaces';
 import { WalmartEncryption } from '../../services/Encryption/WalmartEncryption';
 import UserAgentProvider from '../../services/UserAgentProvider';
 import { MESSAGES } from '../constants/Constants';
-import { HTMLParser } from '../HTMLParser';
-import { debug } from '../Log';
-import { Task } from '../Task';
-import { TASK_STATUS } from './../../common/Constants';
-import { COUNTRY, REGIONS } from './../../common/Regions';
-import { TaskData, WalmartTaskData } from './../../interfaces/TaskInterfaces';
 import {
     WALMART_US_ATC_HEADERS,
-    WALMART_US_CHECKOUT_CART_HEADERS,
-    WALMART_US_CHECKOUT_HEADERS,
-    WALMART_US_CONFIRM_PAYMENT_HEADERS,
-    WALMART_US_CREDIT_CARD_HEADERS,
+    WALMART_US_CREATE_CONTRACT_HEADERS,
+    WALMART_US_CREATE_CREDIT_CARD_HEADERS,
+    WALMART_US_CREATE_DELIVERY_ADDRESS,
+    WALMART_US_GET_ITEM_HEADERS,
+    WALMART_US_GET_TENDER_PLAN_HEADERS,
+    WALMART_US_MERGE_GET_CART_HEADERS,
+    WALMART_US_PLACE_ORDER_HEADERS,
     WALMART_US_PRODUCT_PAGE_HEADERS,
-    WALMART_US_SHIPPING_HEADERS,
-} from './../constants/Walmart';
-import { CookieJar } from './../CookieJar';
-import { WalmartCreditCard } from './../interface/UserProfile';
-import { RequestInstance } from './../RequestInstance';
+    WALMART_US_SAVE_TENDER_PC_HEADERS,
+    WALMART_US_SET_FULFILLMENT_HEADERS,
+    WALMART_US_UPDATE_TENDER_PLAN_HEADERS,
+} from '../constants/Walmart';
+import { CookieJar } from '../CookieJar';
+import { HTMLParser } from '../HTMLParser';
+import { WalmartCreditCard } from '../interface/UserProfile';
+import { debug } from '../Log';
+import { RequestInstance } from '../RequestInstance';
+import { Task } from '../Task';
 import { generatePxCookies } from './scripts/px';
 const log = debug.extend('WalmartUSTask');
 
@@ -26,16 +31,20 @@ export class WalmartUSTask extends Task {
     private htmlParser: HTMLParser;
     protected taskData: WalmartTaskData;
     protected parsedURL!: URL;
+    protected itemId: string;
 
     private static readonly WALMART_SELLER_ID = 'F55CDC31AB754BB68FE0B39041159D63';
     private static readonly WALMART_CATALOG_SELLER_ID = '0';
     private static readonly WALMART_SELLER_DISPLAY_NAME = 'Walmart.com';
+
+    private readonly ITEM_ID_REGEX = /(?<=\/)[0-9].*/;
 
     constructor(uuid: string, requestInstance: RequestInstance, taskData: WalmartTaskData) {
         super(uuid, requestInstance, taskData);
         this.taskData = taskData;
         this.htmlParser = new HTMLParser();
         this.initParsedURL();
+        this.createErrorInterceptor();
     }
 
     private isSoldByWalmart(product: any): boolean {
@@ -58,25 +67,40 @@ export class WalmartUSTask extends Task {
         try {
             this.cookieJar = new CookieJar(this.requestInstance.baseURL);
 
-            const offerId = await this.getSession();
+            await this.getSession();
 
-            await this.addToCart(offerId);
+            const [offerId, lineItemId] = await this.getOfferId();
 
-            await this.setShipping();
+            const cartId = await this.getCartId();
 
-            const encCard = await this.setCreditCard();
+            await this.addToCart(cartId, offerId, lineItemId);
 
-            await this.placeOrder(encCard);
+            const addressId = await this.createDeliveryAddress();
+
+            await this.setFulFillment(cartId, addressId);
+
+            const contractId = await this.createContract(cartId);
+
+            const tenderPlanId = await this.getTenderPlan(contractId);
+
+            const [creditCardId, encCard] = await this.createCreditCard();
+
+            await this.updateTenderPlan(contractId, tenderPlanId, creditCardId);
+
+            await this.saveTenderPlanPC(contractId, tenderPlanId);
+
+            await this.placeOrder(contractId, creditCardId, encCard);
+
+            await this.purchaseContract(contractId);
         } catch (error) {
             log('doTask Error %o', error);
             throw new Error();
         }
     }
 
-    async getSession(): Promise<string> {
+    async getSession() {
         let retry = false;
         let headers: any = { ...WALMART_US_PRODUCT_PAGE_HEADERS };
-        let offerId = '';
 
         do {
             try {
@@ -108,17 +132,10 @@ export class WalmartUSTask extends Task {
                 // http://walmart.com/ip/pname/pid -> /ip/pname/pid
                 const productURL = this.parsedURL.pathname;
                 const resp = await this.axiosSession.get(productURL, { headers: headers });
+                log('Getting session resp %O', resp.status);
 
                 if (resp.headers['set-cookie']) {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
-                }
-
-                offerId = this.getOfferId(resp.data) as string;
-                log('Got product offer id : %s', offerId);
-
-                if (!offerId) {
-                    retry = true;
-                    await this.emitStatusWithDelay(MESSAGES.OOS_RETRY_MESSAGE, 'info');
                 }
             } catch (err) {
                 log('Get Session Error %O', err);
@@ -127,30 +144,170 @@ export class WalmartUSTask extends Task {
                 await this.emitStatusWithDelay(MESSAGES.SESSION_ERROR_MESSAGE, 'error');
             }
         } while (retry);
-
-        return offerId;
     }
 
-    getOfferId(html: string): string | undefined {
-        try {
-            this.htmlParser.loadHTML(html);
-            const itemDesc = this.htmlParser.parseJSONById('item');
+    async getOfferId(): Promise<string[]> {
+        let retry = false;
+        let headers: any = { ...WALMART_US_GET_ITEM_HEADERS, referer: this.parsedURL.toString() };
 
-            const product = itemDesc['item']['product']['buyBox']['products'][0];
-            if (!this.isSoldByWalmart(product)) {
-                log('This product is not sold by walmart');
-                return undefined;
+        do {
+            try {
+                retry = false;
+                this.cancelTask();
+                this.emit(TASK_STATUS, {
+                    message: MESSAGES.CHECKING_STOCK_INFO_MESSAGE,
+                    level: 'info',
+                });
+
+                const cookie = this.cookieJar.serializeSession();
+
+                if (cookie) headers = { ...headers, cookie: cookie };
+
+                const body = {
+                    query: 'query ItemById( $itemId:String! $selected:Boolean $variantFieldId:String $postalAddress:PostalAddress $storeFrontIds:[StoreFrontId]$page:Int $sort:String $limit:Int $filters:[String]$channel:String! $pageType:String! $tenant:String! $version:String! $p13N:P13NRequest $p13nCls:JSON $layout:[String]$tempo:JSON $semStoreId:Int $catalogSellerId:String $fetchBuyBoxAd:Boolean! $fetchMarquee:Boolean! $fetchSkyline:Boolean! $fetchSpCarousel:Boolean! $fulfillmentIntent:String ){contentLayout( channel:$channel pageType:$pageType tenant:$tenant version:$version ){modules(p13n:$p13nCls tempo:$tempo){configs{...on EnricherModuleConfigsV1{zoneV1}...on TempoWM_GLASSWWWItemCarouselConfigsV1{products{...ContentLayoutProduct}subTitle tileOptions{addToCart averageRatings displayAveragePriceCondition displayPricePerUnit displayStandardPrice displayWasPrice fulfillmentBadging mediaRatings productFlags productLabels productPrice productTitle}title type spBeaconInfo{adUuid moduleInfo pageViewUUID placement max}viewAllLink{linkText title uid}}...on TempoWM_GLASSWWWItemFitmentModuleConfigs{fitment{partTypeID partTypeIDs result{status notes position formId quantityTitle resultSubTitle suggestions{id position loadIndex speedRating searchQueryParam labels{...FitmentLabel}fitmentSuggestionParams{id value}cat_id}extendedAttributes{...FitmentFieldFragment}labels{...FitmentLabel}}labels{...FitmentLabel}savedVehicle{...FitmentVehicleFragment}}}...on TempoWM_GLASSWWWItemRelatedShelvesConfigs{seoItemRelmData(id:$itemId){relm{id url name}}}...on TempoWM_GLASSWWWCapitalOneBannerConfigsV1{bannerBackgroundColor primaryImage{alt src}bannerCta{ctaLink{linkText title clickThrough{value}uid}textColor}bannerText{text isBold isUnderlined underlinedColor textColor}}...on TempoWM_GLASSWWWProductWarrantyPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWGeneralWarningsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductIndicationsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductDescriptionPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductDirectionsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductSpecificationsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWNutritionValuePlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWReviewsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductDescriptionPlaceholderConfigs{expandedOnPageLoad}...BuyBoxAdConfigsFragment @include(if:$fetchBuyBoxAd)...MarqueeDisplayAdConfigsFragment @include(if:$fetchMarquee)...SkylineDisplayAdConfigsFragment @include(if:$fetchSkyline)...SponsoredProductCarouselConfigsFragment @include(if:$fetchSpCarousel)}moduleId matchedTrigger{pageType pageId zone inheritable}name type version status publishedDate}layouts(layout:$layout){id layout}pageMetadata{location{postalCode stateOrProvinceCode city storeId}pageContext}}product( catalogSellerId:$catalogSellerId itemId:$itemId postalAddress:$postalAddress storeFrontIds:$storeFrontIds selected:$selected semStoreId:$semStoreId p13N:$p13N variantFieldId:$variantFieldId fulfillmentIntent:$fulfillmentIntent ){...FullProductFragment}idml(itemId:$itemId html:true){...IDMLFragment}reviews( itemId:$itemId page:$page limit:$limit sort:$sort filters:$filters ){...FullReviewsFragment}}fragment FullProductFragment on Product{showFulfillmentLink additionalOfferCount shippingRestriction availabilityStatus averageRating brand badges{...BadgesFragment}rhPath partTerminologyId aaiaBrandId manufacturerProductId productTypeId tireSize tireLoadIndex tireSpeedRating viscosity model buyNowEligible preOrder{...PreorderFragment}canonicalUrl catalogSellerId sellerReviewCount sellerAverageRating category{...ProductCategoryFragment}classType classId fulfillmentTitle shortDescription fulfillmentType fulfillmentBadge fulfillmentLabel{wPlusFulfillmentText message shippingText fulfillmentText locationText fulfillmentMethod addressEligibility fulfillmentType postalCode}hasSellerBadge itemType id imageInfo{...ProductImageInfoFragment}location{postalCode stateOrProvinceCode city storeIds}manufacturerName name numberOfReviews orderMinLimit orderLimit offerId priceInfo{priceDisplayCodes{...PriceDisplayCodesFragment}currentPrice{...ProductPriceFragment}wasPrice{...ProductPriceFragment}unitPrice{...ProductPriceFragment}subscriptionPrice{price priceString intervalFrequency duration percentageRate subscriptionString}priceRange{minPrice maxPrice priceString currencyUnit unitOfMeasure denominations{price priceString selected}}}returnPolicy{returnable freeReturns returnWindow{value unitType}}fsaEligibleInd sellerId sellerName sellerDisplayName secondaryOfferPrice{currentPrice{priceType priceString price}}semStoreData{pickupStoreId deliveryStoreId isSemLocationDifferent}shippingOption{...ShippingOptionFragment}type pickupOption{slaTier accessTypes availabilityStatus storeName storeId}salesUnit usItemId variantCriteria{id categoryTypeAllValues name type variantList{availabilityStatus id images name products swatchImageUrl selected}}variants{...MinimalProductFragment}groupMetaData{groupType groupSubType numberOfComponents groupComponents{quantity offerId componentType}}upc wfsEnabled sellerType ironbankCategory snapEligible promoData{id description terms type templateData{priceString imageUrl}}showAddOnServices addOnServices{serviceType serviceTitle serviceSubTitle groups{groupType groupTitle assetUrl shortDescription services{displayName offerId selectedDisplayName currentPrice{price priceString}}}}productLocation{displayValue}}fragment BadgesFragment on UnifiedBadge{flags{__typename...on BaseBadge{id text key query}...on PreviouslyPurchasedBadge{id text key lastBoughtOn numBought criteria{name value}}}labels{__typename...on BaseBadge{id text key}...on PreviouslyPurchasedBadge{id text key lastBoughtOn numBought}}tags{__typename...on BaseBadge{id text key}}}fragment ShippingOptionFragment on ShippingOption{accessTypes availabilityStatus slaTier deliveryDate maxDeliveryDate shipMethod shipPrice{...ProductPriceFragment}}fragment ProductCategoryFragment on ProductCategory{categoryPathId path{name url}}fragment PreorderFragment on PreOrder{streetDate streetDateDisplayable streetDateType isPreOrder preOrderMessage preOrderStreetDateMessage}fragment MinimalProductFragment on Variant{availabilityStatus imageInfo{...ProductImageInfoFragment}priceInfo{priceDisplayCodes{...PriceDisplayCodesFragment}currentPrice{...ProductPriceFragment}wasPrice{...ProductPriceFragment}unitPrice{...ProductPriceFragment}}productUrl usItemId id:productId fulfillmentBadge}fragment ProductImageInfoFragment on ProductImageInfo{allImages{id url zoomable}thumbnailUrl}fragment PriceDisplayCodesFragment on PriceDisplayCodes{clearance eligibleForAssociateDiscount finalCostByWeight hidePriceForSOI priceDisplayCondition pricePerUnitUom reducedPrice rollback strikethrough submapType unitOfMeasure unitPriceDisplayCondition}fragment ProductPriceFragment on ProductPrice{price priceString variantPriceString priceType currencyUnit}fragment NutrientFragment on Nutrient{name amount dvp childNutrients{name amount dvp}}fragment NutritionAttributeFragment on NutritionAttribute{name mainNutrient{...NutrientFragment}childNutrients{...NutrientFragment childNutrients{...NutrientFragment}}}fragment IdmlAttributeFragment on IdmlAttribute{name value attribute}fragment ServingAttributeFragment on ServingAttribute{name values{...IdmlAttributeFragment values{...IdmlAttributeFragment}}}fragment IDMLFragment on Idml{chokingHazards{...LegalContentFragment}directions{name value}indications{name value}ingredients{activeIngredientName{name value}activeIngredients{name value}inactiveIngredients{name value}ingredients{name value}}longDescription shortDescription interactiveProductVideo specifications{name value}warnings{name value}warranty{information length}esrbRating mpaaRating nutritionFacts{calorieInfo{...NutritionAttributeFragment}keyNutrients{name values{...NutritionAttributeFragment}}vitaminMinerals{...NutritionAttributeFragment}servingInfo{...ServingAttributeFragment}additionalDisclaimer{...IdmlAttributeFragment values{...IdmlAttributeFragment values{...IdmlAttributeFragment}}}staticContent{...IdmlAttributeFragment values{...IdmlAttributeFragment values{...IdmlAttributeFragment}}}}}fragment FullReviewsFragment on ProductReviews{averageOverallRating customerReviews{...CustomerReviewsFragment}ratingValueFiveCount ratingValueFourCount ratingValueOneCount ratingValueThreeCount ratingValueTwoCount roundedAverageOverallRating topNegativeReview{rating reviewSubmissionTime negativeFeedback positiveFeedback reviewText reviewTitle}topPositiveReview{rating reviewSubmissionTime negativeFeedback positiveFeedback reviewText reviewTitle}totalReviewCount}fragment LegalContentFragment on LegalContent{ageRestriction headline headline image mature message}fragment CustomerReviewsFragment on CustomerReview{rating reviewSubmissionTime reviewText reviewTitle userNickname}fragment ContentLayoutProduct on Product{name badges{...BadgesFragment}canonicalUrl classType availabilityStatus showAtc averageRating fulfillmentBadge fulfillmentSpeed fulfillmentTitle fulfillmentType imageInfo{thumbnailUrl}numberOfReviews offerId orderMinLimit orderLimit p13nDataV1{predictedQuantity flags{PREVIOUSLY_PURCHASED{text}CUSTOMERS_PICK{text}}}previouslyPurchased{label}preOrder{...PreorderFragment}priceInfo{currentPrice{...ProductPriceFragment}listPrice{...ProductPriceFragment}subscriptionPrice{priceString}priceDisplayCodes{clearance eligibleForAssociateDiscount finalCostByWeight hidePriceForSOI priceDisplayCondition pricePerUnitUom reducedPrice rollback strikethrough submapType unitOfMeasure unitPriceDisplayCondition}priceRange{minPrice maxPrice priceString}unitPrice{...ProductPriceFragment}wasPrice{...ProductPriceFragment}}rhPath salesUnit sellerId sellerName hasSellerBadge seller{name sellerId}shippingOption{slaTier shipMethod}showOptions snapEligible sponsoredProduct{spQs clickBeacon spTags}usItemId variantCount variantCriteria{name id variantList{name swatchImageUrl selectedProduct{usItemId canonicalUrl}}}}fragment FitmentLabel on FitmentLabels{links{...FitmentLabelEntity}messages{...FitmentLabelEntity}ctas{...FitmentLabelEntity}images{...FitmentLabelEntity}}fragment FitmentVehicleFragment on FitmentVehicle{vehicleYear{...FitmentVehicleFieldFragment}vehicleMake{...FitmentVehicleFieldFragment}vehicleModel{...FitmentVehicleFieldFragment}additionalAttributes{...FitmentVehicleFieldFragment}}fragment FitmentVehicleFieldFragment on FitmentVehicleField{id value label}fragment FitmentFieldFragment on FitmentField{id value displayName data{value label}extended dependsOn}fragment FitmentLabelEntity on FitmentLabelEntity{id label}fragment BuyBoxAdConfigsFragment on TempoWM_GLASSWWWBuyBoxAdConfigs{_rawConfigs moduleLocation lazy ad{...SponsoredProductsAdFragment}}fragment MarqueeDisplayAdConfigsFragment on TempoWM_GLASSWWWMarqueeDisplayAdConfigs{_rawConfigs ad{...DisplayAdFragment}}fragment DisplayAdFragment on Ad{...AdFragment adContent{type data{__typename...AdDataDisplayAdFragment}}}fragment AdFragment on Ad{status moduleType platform pageId pageType storeId stateCode zipCode pageContext moduleConfigs adsContext adRequestComposite}fragment AdDataDisplayAdFragment on AdData{...on DisplayAd{json status}}fragment SkylineDisplayAdConfigsFragment on TempoWM_GLASSWWWSkylineDisplayAdConfigs{_rawConfigs ad{...SkylineDisplayAdFragment}}fragment SkylineDisplayAdFragment on Ad{...SkylineAdFragment adContent{type data{__typename...SkylineAdDataDisplayAdFragment}}}fragment SkylineAdFragment on Ad{status moduleType platform pageId pageType storeId stateCode zipCode pageContext moduleConfigs adsContext adRequestComposite}fragment SkylineAdDataDisplayAdFragment on AdData{...on DisplayAd{json status}}fragment SponsoredProductCarouselConfigsFragment on TempoWM_GLASSWWWSponsoredProductCarouselConfigs{_rawConfigs moduleType ad{...SponsoredProductsAdFragment}}fragment SponsoredProductsAdFragment on Ad{...AdFragment adContent{type data{__typename...AdDataSponsoredProductsFragment}}}fragment AdDataSponsoredProductsFragment on AdData{...on SponsoredProducts{adUuid adExpInfo moduleInfo products{...ProductFragment}}}fragment ProductFragment on Product{usItemId offerId badges{flags{key text}labels{key text}tags{key text}}priceInfo{priceDisplayCodes{rollback reducedPrice eligibleForAssociateDiscount clearance strikethrough submapType priceDisplayCondition unitOfMeasure pricePerUnitUom}currentPrice{price priceString}wasPrice{price priceString}priceRange{minPrice maxPrice priceString}unitPrice{price priceString}}showOptions sponsoredProduct{spQs clickBeacon spTags}canonicalUrl numberOfReviews averageRating availabilityStatus imageInfo{thumbnailUrl allImages{id url}}name fulfillmentBadge classType type p13nData{predictedQuantity flags{PREVIOUSLY_PURCHASED{text}CUSTOMERS_PICK{text}}labels{PREVIOUSLY_PURCHASED{text}CUSTOMERS_PICK{text}}}}',
+                    variables: {
+                        itemId: this.itemId,
+                        semStoreId: null,
+                        selected: true,
+                        channel: 'WWW',
+                        pageType: 'ItemPageGlobal',
+                        tenant: 'WM_GLASS',
+                        version: 'v1',
+                        layout: ['itemDesktop'],
+                        tempo: {
+                            targeting: '%7B%22userState%22%3A%22loggedIn%22%7D',
+                            params: [
+                                {
+                                    key: 'expoVars',
+                                    value: 'expoVariationValue',
+                                },
+                                {
+                                    key: 'expoVars',
+                                    value: 'expoVariationValue2',
+                                },
+                            ],
+                        },
+                        page: 1,
+                        limit: 10,
+                        sort: 'relevancy',
+                        filters: [],
+                        p13N: {
+                            reqId: '',
+                            pageId: this.itemId,
+                            modules: [
+                                {
+                                    moduleType: 'PersonalizedLabels',
+                                    moduleId: '234-sdfsfvns-sdfdskvl',
+                                },
+                            ],
+                            userClientInfo: {
+                                ipAddress: 'IP=0:0:0:0:0:0:0:1-0:0:0:0:0:0:0:1',
+                                isZipLocated: true,
+                                callType: 'CLIENT',
+                                deviceType: 'desktop',
+                            },
+                            userReqInfo: {
+                                refererContext: {
+                                    source: 'itempage',
+                                    catId: '',
+                                    facet: '',
+                                    query: '',
+                                },
+                                pageUrl: '',
+                            },
+                        },
+                        p13nCls: {
+                            pageId: this.itemId,
+                            userClientInfo: {
+                                ipAddress: 'IP=0:0:0:0:0:0:0:1-0:0:0:0:0:0:0:1',
+                                isZipLocated: true,
+                                callType: 'CLIENT',
+                                deviceType: 'desktop',
+                            },
+                        },
+                        fetchBuyBoxAd: true,
+                        fetchMarquee: true,
+                        fetchSkyline: true,
+                        fetchSpCarousel: true,
+                    },
+                };
+
+                const resp = await this.axiosSession.post(`/orchestra/home/graphql/ip/${this.itemId}`, body, { headers: headers });
+
+                const itemDesc = resp.data['data'];
+
+                const product = itemDesc['product'];
+                if (!this.isSoldByWalmart(product)) {
+                    log('This product is not sold by walmart');
+                    retry = true;
+                    await this.emitStatusWithDelay(MESSAGES.OOS_RETRY_MESSAGE, 'info');
+                    continue;
+                }
+
+                const offerId = product['offerId'] as string;
+                const lineItemId = product['id'] as string;
+
+                log('Offer Id %s and lineItemId %s', offerId, lineItemId);
+
+                if (resp.headers['set-cookie']) {
+                    await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
+                }
+                return [offerId, lineItemId];
+            } catch (err) {
+                this.cancelTask();
+                retry = true;
+                log('Get OfferId Error', err);
+                await this.emitStatusWithDelay(MESSAGES.OOS_RETRY_MESSAGE, 'info');
             }
-
-            const offerId = product['offerId'] as string;
-            return offerId;
-        } catch (err) {
-            log('Get OfferId Error', err);
-            return undefined;
-        }
+        } while (retry);
     }
 
-    async addToCart(offerId: string): Promise<void> {
+    async getCartId(): Promise<string> {
+        let retry = false;
+        let headers: any = { ...WALMART_US_MERGE_GET_CART_HEADERS, referer: this.parsedURL.toString() };
+
+        do {
+            try {
+                retry = false;
+                this.cancelTask();
+
+                const cookie = this.cookieJar.serializeSession();
+
+                if (cookie) headers = { ...headers, cookie: cookie };
+
+                const body = {
+                    query: 'mutation MergeAndGetCart( $input:MergeAndGetCartInput! $detailed:Boolean! $includePartialFulfillmentSwitching:Boolean! = false ){mergeAndGetCart(input:$input){id checkoutable customer{id isGuest}addressMode lineItems{id quantity quantityString quantityLabel createdDateTime displayAddOnServices selectedAddOnServices{offerId quantity groupType error{code upstreamErrorCode errorMsg}}isPreOrder @include(if:$detailed) bundleComponents @include(if:$detailed){offerId quantity}selectedVariants @include(if:$detailed){name value}registryId registryInfo{registryId registryType}fulfillmentPreference priceInfo{priceDisplayCodes{showItemPrice priceDisplayCondition finalCostByWeight}itemPrice{...merge_lineItemPriceInfoFragment}wasPrice{...merge_lineItemPriceInfoFragment}unitPrice{...merge_lineItemPriceInfoFragment}linePrice{...merge_lineItemPriceInfoFragment}}product{itemType offerId isAlcohol name @include(if:$detailed) sellerType usItemId addOnServices{serviceType serviceTitle serviceSubTitle groups{groupType groupTitle assetUrl shortDescription services{displayName selectedDisplayName offerId currentPrice{priceString price}serviceMetaData}}}imageInfo @include(if:$detailed){thumbnailUrl}sellerId @include(if:$detailed) sellerName @include(if:$detailed) hasSellerBadge @include(if:$detailed) orderLimit @include(if:$detailed) orderMinLimit @include(if:$detailed) weightUnit @include(if:$detailed) weightIncrement @include(if:$detailed) salesUnit salesUnitType fulfillmentType @include(if:$detailed) fulfillmentSpeed @include(if:$detailed) fulfillmentTitle @include(if:$detailed) classType @include(if:$detailed) rhPath @include(if:$detailed) availabilityStatus @include(if:$detailed) brand @include(if:$detailed) category @include(if:$detailed){categoryPath}departmentName @include(if:$detailed) configuration @include(if:$detailed) snapEligible @include(if:$detailed) preOrder @include(if:$detailed){isPreOrder}}wirelessPlan @include(if:$detailed){planId mobileNumber postPaidPlan{...merge_postpaidPlanDetailsFragment}}fulfillmentSourcingDetails @include(if:$detailed){currentSelection requestedSelection fulfillmentBadge}}fulfillment{intent accessPoint{...merge_accessPointFragment}reservation{...merge_reservationFragment}storeId displayStoreSnackBarMessage homepageBookslotDetails{title subTitle expiryText expiryTime slotExpiryText}deliveryAddress{addressLineOne addressLineTwo city state postalCode firstName lastName id}fulfillmentItemGroups @include(if:$detailed){...on FCGroup{__typename defaultMode collapsedItemIds startDate endDate checkoutable checkoutableErrors{code shouldDisableCheckout itemIds upstreamErrors{offerId upstreamErrorCode}}priceDetails{subTotal{...merge_priceTotalFields}}fulfillmentSwitchInfo{fulfillmentType benefit{type price itemCount date isWalmartPlusProgram @include(if:$detailed)}partialItemIds @include(if:$includePartialFulfillmentSwitching)}shippingOptions{__typename itemIds availableShippingOptions{__typename id shippingMethod deliveryDate price{__typename displayValue value}label{prefix suffix}isSelected isDefault slaTier}}hasMadeShippingChanges slaGroups{__typename label sellerGroups{__typename id name isProSeller type catalogSellerId shipOptionGroup{__typename deliveryPrice{__typename displayValue value}itemIds shipMethod @include(if:$detailed)}}warningLabel}}...on SCGroup{__typename defaultMode collapsedItemIds checkoutable checkoutableErrors{code shouldDisableCheckout itemIds upstreamErrors{offerId upstreamErrorCode}}priceDetails{subTotal{...merge_priceTotalFields}}fulfillmentSwitchInfo{fulfillmentType benefit{type price itemCount date isWalmartPlusProgram @include(if:$detailed)}partialItemIds @include(if:$includePartialFulfillmentSwitching)}itemGroups{__typename label itemIds}accessPoint{...merge_accessPointFragment}reservation{...merge_reservationFragment}}...on DigitalDeliveryGroup{__typename defaultMode collapsedItemIds checkoutable checkoutableErrors{code shouldDisableCheckout itemIds upstreamErrors{offerId upstreamErrorCode}}priceDetails{subTotal{...merge_priceTotalFields}}itemGroups{__typename label itemIds}}...on Unscheduled{__typename defaultMode collapsedItemIds checkoutable checkoutableErrors{code shouldDisableCheckout itemIds upstreamErrors{offerId upstreamErrorCode}}priceDetails{subTotal{...merge_priceTotalFields}}itemGroups{__typename label itemIds}accessPoint{...merge_accessPointFragment}reservation{...merge_reservationFragment}fulfillmentSwitchInfo{fulfillmentType benefit{type price itemCount date isWalmartPlusProgram @include(if:$detailed)}partialItemIds @include(if:$includePartialFulfillmentSwitching)}}...on AutoCareCenter{__typename defaultMode collapsedItemIds startDate endDate accBasketType checkoutable checkoutableErrors{code shouldDisableCheckout itemIds upstreamErrors{offerId upstreamErrorCode}}priceDetails{subTotal{...merge_priceTotalFields}}itemGroups{__typename label itemIds}accessPoint{...merge_accessPointFragment}reservation{...merge_reservationFragment}fulfillmentSwitchInfo{fulfillmentType benefit{type price itemCount date isWalmartPlusProgram @include(if:$detailed)}partialItemIds @include(if:$includePartialFulfillmentSwitching)}}}suggestedSlotAvailability @include(if:$detailed){isPickupAvailable isDeliveryAvailable nextPickupSlot{startTime endTime slaInMins}nextDeliverySlot{startTime endTime slaInMins}nextUnscheduledPickupSlot{startTime endTime slaInMins}nextSlot{__typename...on RegularSlot{fulfillmentOption fulfillmentType startTime}...on DynamicExpressSlot{fulfillmentOption fulfillmentType startTime slaInMins}...on UnscheduledSlot{fulfillmentOption fulfillmentType startTime unscheduledHoldInDays}...on InHomeSlot{fulfillmentOption fulfillmentType startTime}}}}priceDetails{subTotal{value displayValue label @include(if:$detailed) key @include(if:$detailed) strikeOutDisplayValue @include(if:$detailed) strikeOutValue @include(if:$detailed)}fees @include(if:$detailed){...merge_priceTotalFields}taxTotal @include(if:$detailed){...merge_priceTotalFields}grandTotal @include(if:$detailed){...merge_priceTotalFields}belowMinimumFee @include(if:$detailed){...merge_priceTotalFields}minimumThreshold @include(if:$detailed){value displayValue}ebtSnapMaxEligible @include(if:$detailed){displayValue value}}affirm @include(if:$detailed){isMixedPromotionCart message{description termsUrl imageUrl monthlyPayment termLength isZeroAPR}nonAffirmGroup{...nonAffirmGroupFields}affirmGroups{...on AffirmItemGroup{__typename message{description termsUrl imageUrl monthlyPayment termLength isZeroAPR}flags{type displayLabel}name label itemCount itemIds defaultMode}}}migrationLineItems @include(if:$detailed){quantity quantityLabel quantityString accessibilityQuantityLabel offerId usItemId productName thumbnailUrl addOnService priceInfo{linePrice{value displayValue}}selectedVariants{name value}}checkoutableErrors{code shouldDisableCheckout itemIds}checkoutableWarnings @include(if:$detailed){code itemIds}operationalErrors{offerId itemId requestedQuantity adjustedQuantity code upstreamErrorCode}cartCustomerContext{...cartCustomerContextFragment}}}fragment merge_lineItemPriceInfoFragment on Price{displayValue value}fragment merge_postpaidPlanDetailsFragment on PostPaidPlan{espOrderSummaryId espOrderId espOrderLineId warpOrderId warpSessionId devicePayment{...merge_postpaidPlanPriceFragment}devicePlan{price{...merge_postpaidPlanPriceFragment}frequency duration annualPercentageRate}deviceDataPlan{...merge_deviceDataPlanFragment}}fragment merge_deviceDataPlanFragment on DeviceDataPlan{carrierName planType expiryTime activationFee{...merge_postpaidPlanPriceFragment}planDetails{price{...merge_postpaidPlanPriceFragment}frequency name}agreements{...merge_agreementFragment}}fragment merge_postpaidPlanPriceFragment on PriceDetailRow{key label displayValue value strikeOutDisplayValue strikeOutValue info{title message}}fragment merge_agreementFragment on CarrierAgreement{name type format value docTitle label}fragment merge_priceTotalFields on PriceDetailRow{label displayValue value key strikeOutDisplayValue strikeOutValue}fragment merge_accessPointFragment on AccessPoint{id assortmentStoreId name nodeAccessType fulfillmentType fulfillmentOption displayName timeZone address{addressLineOne addressLineTwo city postalCode state phone}}fragment merge_reservationFragment on Reservation{expiryTime isUnscheduled expired showSlotExpiredError reservedSlot{__typename...on RegularSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata endTime available supportedTimeZone isAlcoholRestricted}...on DynamicExpressSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata available slaInMins maxItemAllowed supportedTimeZone isAlcoholRestricted}...on UnscheduledSlot{price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata unscheduledHoldInDays supportedTimeZone}...on InHomeSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata endTime available supportedTimeZone isAlcoholRestricted}}}fragment nonAffirmGroupFields on NonAffirmGroup{label itemCount itemIds collapsedItemIds}fragment cartCustomerContextFragment on CartCustomerContext{isMembershipOptedIn isEligibleForFreeTrial membershipData{isActiveMember}paymentData{hasCreditCard hasCapOne hasDSCard hasEBT isCapOneLinked showCapOneBanner}}',
+                    variables: {
+                        input: {
+                            cartId: null,
+                            strategy: 'MERGE',
+                        },
+                        detailed: false,
+                    },
+                };
+
+                const resp = await this.axiosSession.post(`/orchestra/cartxo/graphql`, body, { headers: headers });
+
+                if (resp.headers['set-cookie']) {
+                    await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
+                }
+
+                const cartId = resp.data['data']['mergeAndGetCart']['id'];
+
+                log('Get Cart Id resp %O %s', resp.status, cartId);
+
+                return cartId;
+            } catch (error) {
+                this.cancelTask();
+                retry = true;
+                // TODO Change this error message
+                log('Get Card Id error %O', error);
+                await this.emitStatusWithDelay('Getting Cart Id Failed', 'error');
+            }
+        } while (retry);
+    }
+
+    async addToCart(cartId: string, offerId: string, lineItemId: string): Promise<void> {
         let retry = false;
         let headers: any = { ...WALMART_US_ATC_HEADERS, referer: this.parsedURL.toString() };
         do {
@@ -167,68 +324,45 @@ export class WalmartUSTask extends Task {
                 if (cookie) headers = { ...headers, cookie: cookie };
 
                 const body = {
-                    offerId: offerId,
-                    quantity: 1,
-                    location: {
-                        postalCode: '94066',
-                        city: 'San Bruno',
-                        state: 'CA',
-                        isZipLocated: false,
+                    query: 'mutation updateItems( $input:UpdateItemsInput! $detailed:Boolean! = false $includePartialFulfillmentSwitching:Boolean! = false ){updateItems(input:$input){id checkoutable customer @include(if:$detailed){id isGuest}addressMode migrationLineItems @include(if:$detailed){quantity quantityLabel quantityString accessibilityQuantityLabel offerId usItemId productName thumbnailUrl addOnService priceInfo{linePrice{value displayValue}}selectedVariants{name value}}lineItems{id quantity quantityString quantityLabel createdDateTime displayAddOnServices selectedAddOnServices{offerId quantity groupType error{code upstreamErrorCode errorMsg}}isPreOrder @include(if:$detailed) bundleComponents{offerId quantity}registryId registryInfo{registryId registryType}fulfillmentPreference selectedVariants @include(if:$detailed){name value}priceInfo{priceDisplayCodes{showItemPrice priceDisplayCondition finalCostByWeight}itemPrice{...merge_lineItemPriceInfoFragment}wasPrice{...merge_lineItemPriceInfoFragment}unitPrice{...merge_lineItemPriceInfoFragment}linePrice{...merge_lineItemPriceInfoFragment}}product{name @include(if:$detailed) usItemId addOnServices{serviceType serviceTitle serviceSubTitle groups{groupType groupTitle assetUrl shortDescription services{displayName selectedDisplayName offerId currentPrice{priceString price}serviceMetaData}}}imageInfo @include(if:$detailed){thumbnailUrl}itemType offerId sellerId @include(if:$detailed) sellerName @include(if:$detailed) hasSellerBadge @include(if:$detailed) orderLimit orderMinLimit weightUnit @include(if:$detailed) weightIncrement @include(if:$detailed) salesUnit salesUnitType sellerType isAlcohol fulfillmentType @include(if:$detailed) fulfillmentSpeed @include(if:$detailed) fulfillmentTitle @include(if:$detailed) classType @include(if:$detailed) rhPath @include(if:$detailed) availabilityStatus @include(if:$detailed) brand @include(if:$detailed) category @include(if:$detailed){categoryPath}departmentName @include(if:$detailed) configuration @include(if:$detailed) snapEligible @include(if:$detailed) preOrder @include(if:$detailed){isPreOrder}}wirelessPlan @include(if:$detailed){planId mobileNumber postPaidPlan{...merge_postpaidPlanDetailsFragment}}fulfillmentSourcingDetails @include(if:$detailed){currentSelection requestedSelection fulfillmentBadge}}fulfillment{intent @include(if:$detailed) accessPoint @include(if:$detailed){...merge_accessPointFragment}reservation @include(if:$detailed){...merge_reservationFragment}storeId @include(if:$detailed) displayStoreSnackBarMessage homepageBookslotDetails @include(if:$detailed){title subTitle expiryText expiryTime slotExpiryText}deliveryAddress @include(if:$detailed){addressLineOne addressLineTwo city state postalCode firstName lastName id}fulfillmentItemGroups @include(if:$detailed){...on FCGroup{__typename defaultMode collapsedItemIds startDate endDate checkoutable priceDetails{subTotal{...merge_priceTotalFields}}fulfillmentSwitchInfo{fulfillmentType benefit{type price itemCount date isWalmartPlusProgram}partialItemIds @include(if:$includePartialFulfillmentSwitching)}shippingOptions{__typename itemIds availableShippingOptions{__typename id shippingMethod deliveryDate price{__typename displayValue value}label{prefix suffix}isSelected isDefault slaTier}}hasMadeShippingChanges slaGroups{__typename label sellerGroups{__typename id name isProSeller type catalogSellerId shipOptionGroup{__typename deliveryPrice{__typename displayValue value}itemIds shipMethod @include(if:$detailed)}}warningLabel}}...on SCGroup{__typename defaultMode collapsedItemIds checkoutable priceDetails{subTotal{...merge_priceTotalFields}}fulfillmentSwitchInfo{fulfillmentType benefit{type price itemCount date isWalmartPlusProgram}partialItemIds @include(if:$includePartialFulfillmentSwitching)}itemGroups{__typename label itemIds}accessPoint{...merge_accessPointFragment}reservation{...merge_reservationFragment}}...on DigitalDeliveryGroup{__typename defaultMode collapsedItemIds checkoutable priceDetails{subTotal{...merge_priceTotalFields}}itemGroups{__typename label itemIds}}...on Unscheduled{__typename defaultMode collapsedItemIds checkoutable priceDetails{subTotal{...merge_priceTotalFields}}itemGroups{__typename label itemIds}accessPoint{...merge_accessPointFragment}reservation{...merge_reservationFragment}fulfillmentSwitchInfo{fulfillmentType benefit{type price itemCount date isWalmartPlusProgram}partialItemIds @include(if:$includePartialFulfillmentSwitching)}}...on AutoCareCenter{__typename defaultMode collapsedItemIds startDate endDate accBasketType checkoutable priceDetails{subTotal{...merge_priceTotalFields}}itemGroups{__typename label itemIds}accessPoint{...merge_accessPointFragment}reservation{...merge_reservationFragment}fulfillmentSwitchInfo{fulfillmentType benefit{type price itemCount date isWalmartPlusProgram}partialItemIds @include(if:$includePartialFulfillmentSwitching)}}}suggestedSlotAvailability @include(if:$detailed){isPickupAvailable isDeliveryAvailable nextPickupSlot{startTime endTime slaInMins}nextDeliverySlot{startTime endTime slaInMins}nextUnscheduledPickupSlot{startTime endTime slaInMins}nextSlot{__typename...on RegularSlot{fulfillmentOption fulfillmentType startTime}...on DynamicExpressSlot{fulfillmentOption fulfillmentType startTime slaInMins}...on UnscheduledSlot{fulfillmentOption fulfillmentType startTime unscheduledHoldInDays}...on InHomeSlot{fulfillmentOption fulfillmentType startTime}}}}priceDetails{subTotal{value displayValue label @include(if:$detailed) key @include(if:$detailed) strikeOutDisplayValue @include(if:$detailed) strikeOutValue @include(if:$detailed)}fees @include(if:$detailed){...merge_priceTotalFields}taxTotal @include(if:$detailed){...merge_priceTotalFields}grandTotal @include(if:$detailed){...merge_priceTotalFields}belowMinimumFee @include(if:$detailed){...merge_priceTotalFields}minimumThreshold @include(if:$detailed){value displayValue}ebtSnapMaxEligible @include(if:$detailed){displayValue value}balanceToMinimumThreshold @include(if:$detailed){value displayValue}}affirm @include(if:$detailed){isMixedPromotionCart message{description termsUrl imageUrl monthlyPayment termLength isZeroAPR}nonAffirmGroup{...nonAffirmGroupFields}affirmGroups{...on AffirmItemGroup{__typename message{description termsUrl imageUrl monthlyPayment termLength isZeroAPR}flags{type displayLabel}name label itemCount itemIds defaultMode}}}checkoutableErrors{code shouldDisableCheckout itemIds}checkoutableWarnings @include(if:$detailed){code itemIds}operationalErrors{offerId itemId requestedQuantity adjustedQuantity code upstreamErrorCode}cartCustomerContext{...cartCustomerContextFragment}}}fragment merge_postpaidPlanDetailsFragment on PostPaidPlan{espOrderSummaryId espOrderId espOrderLineId warpOrderId warpSessionId devicePayment{...merge_postpaidPlanPriceFragment}devicePlan{price{...merge_postpaidPlanPriceFragment}frequency duration annualPercentageRate}deviceDataPlan{...merge_deviceDataPlanFragment}}fragment merge_deviceDataPlanFragment on DeviceDataPlan{carrierName planType expiryTime activationFee{...merge_postpaidPlanPriceFragment}planDetails{price{...merge_postpaidPlanPriceFragment}frequency name}agreements{...merge_agreementFragment}}fragment merge_postpaidPlanPriceFragment on PriceDetailRow{key label displayValue value strikeOutDisplayValue strikeOutValue info{title message}}fragment merge_agreementFragment on CarrierAgreement{name type format value docTitle label}fragment merge_priceTotalFields on PriceDetailRow{label displayValue value key strikeOutDisplayValue strikeOutValue}fragment merge_lineItemPriceInfoFragment on Price{displayValue value}fragment merge_accessPointFragment on AccessPoint{id assortmentStoreId name nodeAccessType fulfillmentType fulfillmentOption displayName timeZone address{addressLineOne addressLineTwo city postalCode state phone}}fragment merge_reservationFragment on Reservation{expiryTime isUnscheduled expired showSlotExpiredError reservedSlot{__typename...on RegularSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata endTime available supportedTimeZone isAlcoholRestricted}...on DynamicExpressSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata available slaInMins maxItemAllowed supportedTimeZone isAlcoholRestricted}...on UnscheduledSlot{price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata unscheduledHoldInDays supportedTimeZone}...on InHomeSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata endTime available supportedTimeZone isAlcoholRestricted}}}fragment nonAffirmGroupFields on NonAffirmGroup{label itemCount itemIds collapsedItemIds}fragment cartCustomerContextFragment on CartCustomerContext{isMembershipOptedIn isEligibleForFreeTrial membershipData{isActiveMember}paymentData{hasCreditCard hasCapOne hasDSCard hasEBT isCapOneLinked showCapOneBanner}}',
+                    variables: {
+                        input: {
+                            cartId: cartId,
+                            items: [
+                                {
+                                    offerId: offerId,
+                                    quantity: 1,
+                                    lineItemId: lineItemId,
+                                },
+                            ],
+                            semStoreId: '',
+                            semPostalCode: '',
+                            isGiftOrder: null,
+                        },
+                        detailed: false,
+                        includePartialFulfillmentSwitching: true,
                     },
-                    shipMethodDefaultRule: 'SHIP_RULE_1',
-                    storeIds: [2648, 5434, 2031, 2280, 5426],
                 };
 
-                const resp = await this.axiosSession.post('/api/v3/cart/guest/:CID/items', body, { headers: headers });
+                const resp = await this.axiosSession.post('/orchestra/home/graphql', body, { headers: headers });
+
+                log('Add to Cart response %O', resp.status);
 
                 if (resp.headers['set-cookie']) {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 }
-                await this.checkAddToCart();
-            } catch (err) {
+            } catch (error) {
                 this.cancelTask();
-                log('Add To Cart Error %O', err);
+                retry = true;
+                log('Add To Cart Error %O', error);
                 await this.emitStatusWithDelay(MESSAGES.ADD_CART_ERROR_MESSAGE, 'error');
-                retry = true;
             }
         } while (retry);
     }
 
-    async checkAddToCart(): Promise<void> {
+    async createDeliveryAddress(): Promise<string> {
         let retry = false;
-        let headers: any = { ...WALMART_US_CHECKOUT_CART_HEADERS };
-        do {
-            try {
-                retry = false;
-                this.cancelTask();
-
-                const cookie = this.cookieJar.serializeSession();
-                if (cookie) headers = { ...headers, cookie: cookie };
-
-                const body = {
-                    storeList: [] as any[],
-                    postalCode: '94066',
-                    city: 'San Bruno',
-                    state: 'CA',
-                    isZipLocated: false,
-                    'crt:CRT': '',
-                    'customerId:CID': '',
-                    'customerType:type': '',
-                    'affiliateInfo:com.wm.reflector': '',
-                };
-                log('Checking add to cart contract');
-                const resp = await this.axiosSession.post('/api/checkout/v3/contract?page=CHECKOUT_VIEW', body, { headers: headers });
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
-            } catch (err) {
-                log('Checkout Cart Error %O', err);
-                throw new Error(err);
-            }
-        } while (retry);
-    }
-
-    async setShipping(): Promise<void> {
-        let retry = false;
-        let headers: any = { ...WALMART_US_SHIPPING_HEADERS };
+        let headers: any = { ...WALMART_US_CREATE_DELIVERY_ADDRESS, referer: this.parsedURL.toString() };
         do {
             try {
                 retry = false;
@@ -239,142 +373,415 @@ export class WalmartUSTask extends Task {
                 });
 
                 const cookie = this.cookieJar.serializeSession();
+
                 if (cookie) headers = { ...headers, cookie: cookie };
 
                 const body = {
-                    addressLineOne: this.taskData.profile.shipping.address,
-                    city: this.taskData.profile.shipping.town,
-                    firstName: this.taskData.profile.shipping.firstName,
-                    lastName: this.taskData.profile.shipping.lastName,
-                    phone: this.taskData.profile.shipping.phone,
-                    email: this.taskData.profile.shipping.email,
-                    marketingEmailPref: false,
-                    postalCode: this.taskData.profile.shipping.postalCode,
-                    state: REGIONS[this.taskData.profile.shipping.country][this.taskData.profile.shipping.region].isocodeShort,
-                    countryCode: COUNTRY[this.taskData.profile.shipping.country],
-                    addressType: 'RESIDENTIAL',
-                    changedFields: [] as any[],
-                    storeList: [] as any[],
-                };
-
-                log('Setting shipping and billing');
-                const resp = await this.axiosSession.post('/api/checkout/v3/contract/:PCID/shipping-address', body, { headers: headers });
-
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
-            } catch (err) {
-                log('Billing Failed %O', err);
-                this.cancelTask();
-                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
-                retry = true;
-            }
-        } while (retry);
-    }
-
-    async setCreditCard(): Promise<WalmartCreditCard> {
-        let retry = false;
-        let headers: any = { ...WALMART_US_CREDIT_CARD_HEADERS };
-        let encryptedCard = {} as WalmartCreditCard;
-        do {
-            try {
-                retry = false;
-                this.cancelTask();
-                this.emit(TASK_STATUS, {
-                    message: MESSAGES.BILLING_INFO_MESSAGE,
-                    level: 'info',
-                });
-
-                const cookie = this.cookieJar.serializeSession();
-                if (cookie) headers = { ...headers, cookie: cookie };
-
-                encryptedCard = await this.encryptCard();
-
-                const body = {
-                    encryptedPan: encryptedCard.number,
-                    encryptedCvv: encryptedCard.cvc,
-                    integrityCheck: encryptedCard.integrityCheck,
-                    keyId: encryptedCard.keyId,
-                    phase: encryptedCard.phase,
-                    state: REGIONS[this.taskData.profile.billing.country][this.taskData.profile.billing.region].isocodeShort,
-                    city: this.taskData.profile.billing.town,
-                    addressType: 'RESIDENTIAL',
-                    postalCode: this.taskData.profile.billing.postalCode,
-                    addressLineOne: this.taskData.profile.billing.address,
-                    addressLineTwo: '',
-                    firstName: this.taskData.profile.billing.firstName,
-                    lastName: this.taskData.profile.billing.lastName,
-                    expiryMonth: encryptedCard.expiryMonth,
-                    expiryYear: encryptedCard.expiryYear,
-                    phone: this.taskData.profile.billing.phone,
-                    cardType: 'VISA', // by default can be visa for everything i think
-                    isGuest: true,
-                };
-
-                log('Setting Credit Card');
-                const resp = await this.axiosSession.post('/api/checkout-customer/:CID/credit-card', body, { headers: headers });
-                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
-
-                await this.checkPayment(encryptedCard, {
-                    cardType: resp.data['cardType'],
-                    paymentType: resp.data['paymentType'],
-                    piHash: resp.data['piHash'],
-                });
-            } catch (err) {
-                log('Setting Credit Card Failed %O', err);
-                this.cancelTask();
-                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE + ' SCC', 'error');
-                retry = true;
-            }
-        } while (retry);
-
-        return encryptedCard;
-    }
-
-    private async checkPayment(card: WalmartCreditCard, cardValidation: { piHash: string; cardType: string; paymentType: string }): Promise<void> {
-        let headers: any = { ...WALMART_US_CONFIRM_PAYMENT_HEADERS };
-        try {
-            const cookie = this.cookieJar.serializeSession();
-            if (cookie) headers = { ...headers, cookie: cookie };
-
-            const body = {
-                payments: [
-                    {
-                        paymentType: cardValidation.paymentType,
-                        cardType: cardValidation.cardType,
-                        firstName: this.taskData.profile.billing.firstName,
-                        lastName: this.taskData.profile.billing.lastName,
-                        addressLineOne: this.taskData.profile.billing.address,
-                        addressLineTwo: '',
-                        city: this.taskData.profile.billing.town,
-                        state: REGIONS[this.taskData.profile.billing.country][this.taskData.profile.billing.region].isocodeShort,
-                        postalCode: this.taskData.profile.billing.postalCode,
-                        expiryMonth: card.expiryMonth,
-                        expiryYear: card.expiryYear,
-                        email: this.taskData.profile.billing.email,
-                        phone: this.taskData.profile.billing.phone,
-                        encryptedPan: card.number,
-                        encryptedCvv: card.cvc,
-                        integrityCheck: card.integrityCheck,
-                        keyId: card.keyId,
-                        phase: card.phase,
-                        piHash: cardValidation.piHash,
+                    query: 'mutation CreateDeliveryAddress($input:AccountAddressesInput!){createAccountAddress(input:$input){...DeliveryAddressMutationResponse}}fragment DeliveryAddressMutationResponse on MutateAccountAddressResponse{...AddressMutationResponse newAddress{id accessPoint{...AccessPoint}...BaseAddressResponse}}fragment AccessPoint on AccessPointRovr{id assortmentStoreId fulfillmentType accountFulfillmentOption accountAccessType}fragment AddressMutationResponse on MutateAccountAddressResponse{errors{code}enteredAddress{...BasicAddress}suggestedAddresses{...BasicAddress sealedAddress}newAddress{id...BaseAddressResponse}allowAvsOverride}fragment BasicAddress on AccountAddressBase{addressLineOne addressLineTwo city state postalCode}fragment BaseAddressResponse on AccountAddress{...BasicAddress firstName lastName phone isDefault deliveryInstructions serviceStatus capabilities allowEditOrRemove}',
+                    variables: {
+                        input: {
+                            address: {
+                                addressLineOne: this.taskData.profile.shipping.address,
+                                addressLineTwo: '',
+                                city: this.taskData.profile.shipping.town,
+                                postalCode: this.taskData.profile.shipping.postalCode,
+                                state: REGIONS[this.taskData.profile.shipping.country][this.taskData.profile.shipping.region].isocodeShort,
+                                addressType: null,
+                                businessName: null,
+                                isApoFpo: null,
+                                isLoadingDockAvailable: null,
+                                isPoBox: null,
+                                sealedAddress: null,
+                            },
+                            firstName: this.taskData.profile.shipping.firstName,
+                            lastName: this.taskData.profile.shipping.lastName,
+                            deliveryInstructions: null,
+                            displayLabel: null,
+                            isDefault: false,
+                            phone: this.taskData.profile.shipping.phone,
+                            overrideAvs: false,
+                        },
                     },
-                ],
-                cvvInSession: true,
-            };
-            log('Setting payment contract');
-            const resp = await this.axiosSession.post('/api/checkout/v3/contract/:PCID/payment', body, { headers: headers });
-            log('Payment contract response %O', resp);
+                };
 
-            if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
-        } catch (error) {
-            log('Checking Credit Card Failed', error);
-            throw new Error('CHECKING CREDIT CARD FAILED');
-        }
+                const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
+
+                const addressId = resp.data['data']['createAccountAddress']['newAddress']['id'];
+
+                log('Create delivery address response %s', addressId);
+
+                if (resp.headers['set-cookie']) {
+                    await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
+                }
+
+                return addressId;
+            } catch (error) {
+                this.cancelTask();
+                retry = true;
+                log('Create delivery address Error %O', error);
+                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
+            }
+        } while (retry);
     }
 
-    async placeOrder(encCard: WalmartCreditCard): Promise<void> {
+    async setFulFillment(cartId: string, addressId: string): Promise<void> {
         let retry = false;
-        let headers: any = { ...WALMART_US_CHECKOUT_HEADERS };
+        let headers: any = { ...WALMART_US_SET_FULFILLMENT_HEADERS, referer: this.parsedURL.toString() };
+        do {
+            try {
+                retry = false;
+                this.cancelTask();
+
+                const cookie = this.cookieJar.serializeSession();
+
+                if (cookie) headers = { ...headers, cookie: cookie };
+                const body = {
+                    query: 'mutation setFulfillment( $input:SetFulfillmentInput! $includePartialFulfillmentSwitching:Boolean! = false ){setFulfillment(input:$input){...CartFragment}}fragment CartFragment on Cart{id checkoutable customer{id isGuest}cartGiftingDetails{isGiftOrder hasGiftEligibleItem isAddOnServiceAdjustmentNeeded isWalmartProtectionPlanPresent isAppleCarePresent}addressMode migrationLineItems{quantity quantityLabel quantityString accessibilityQuantityLabel offerId usItemId productName thumbnailUrl addOnService priceInfo{linePrice{value displayValue}}selectedVariants{name value}}lineItems{id quantity quantityString quantityLabel isPreOrder isGiftEligible displayAddOnServices createdDateTime selectedAddOnServices{offerId quantity groupType isGiftEligible error{code upstreamErrorCode errorMsg}}bundleComponents{offerId quantity}registryId fulfillmentPreference selectedVariants{name value}priceInfo{priceDisplayCodes{showItemPrice priceDisplayCondition finalCostByWeight}itemPrice{...lineItemPriceInfoFragment}wasPrice{...lineItemPriceInfoFragment}unitPrice{...lineItemPriceInfoFragment}linePrice{...lineItemPriceInfoFragment}}product{name usItemId imageInfo{thumbnailUrl}addOnServices{serviceType serviceTitle serviceSubTitle groups{groupType groupTitle assetUrl shortDescription services{displayName selectedDisplayName offerId currentPrice{priceString price}serviceMetaData}}}itemType offerId sellerId sellerName hasSellerBadge orderLimit orderMinLimit weightUnit weightIncrement salesUnit salesUnitType sellerType isAlcohol fulfillmentType fulfillmentSpeed fulfillmentTitle classType rhPath availabilityStatus brand category{categoryPath}departmentName configuration snapEligible preOrder{isPreOrder}}registryInfo{registryId registryType}wirelessPlan{planId mobileNumber postPaidPlan{...postpaidPlanDetailsFragment}}fulfillmentSourcingDetails{currentSelection requestedSelection fulfillmentBadge}availableQty}fulfillment{intent accessPoint{...accessPointFragment}reservation{...reservationFragment}storeId displayStoreSnackBarMessage homepageBookslotDetails{title subTitle expiryText expiryTime slotExpiryText}deliveryAddress{addressLineOne addressLineTwo city state postalCode firstName lastName id}fulfillmentItemGroups{...on FCGroup{__typename defaultMode collapsedItemIds startDate endDate checkoutable checkoutableErrors{code shouldDisableCheckout itemIds upstreamErrors{offerId upstreamErrorCode}}priceDetails{subTotal{...priceTotalFields}}fulfillmentSwitchInfo{fulfillmentType benefit{type price itemCount date isWalmartPlusProgram}partialItemIds @include(if:$includePartialFulfillmentSwitching)}shippingOptions{__typename itemIds availableShippingOptions{__typename id shippingMethod deliveryDate price{__typename displayValue value}label{prefix suffix}isSelected isDefault slaTier}}hasMadeShippingChanges slaGroups{__typename label deliveryDate sellerGroups{__typename id name isProSeller type catalogSellerId shipOptionGroup{__typename deliveryPrice{__typename displayValue value}itemIds shipMethod}}warningLabel}}...on SCGroup{__typename defaultMode collapsedItemIds checkoutable checkoutableErrors{code shouldDisableCheckout itemIds upstreamErrors{offerId upstreamErrorCode}}priceDetails{subTotal{...priceTotalFields}}fulfillmentSwitchInfo{fulfillmentType benefit{type price itemCount date isWalmartPlusProgram}partialItemIds @include(if:$includePartialFulfillmentSwitching)}itemGroups{__typename label itemIds}accessPoint{...accessPointFragment}reservation{...reservationFragment}}...on DigitalDeliveryGroup{__typename defaultMode collapsedItemIds checkoutable checkoutableErrors{code shouldDisableCheckout itemIds upstreamErrors{offerId upstreamErrorCode}}priceDetails{subTotal{...priceTotalFields}}itemGroups{__typename label itemIds}}...on Unscheduled{__typename defaultMode collapsedItemIds checkoutable checkoutableErrors{code shouldDisableCheckout itemIds upstreamErrors{offerId upstreamErrorCode}}priceDetails{subTotal{...priceTotalFields}}itemGroups{__typename label itemIds}accessPoint{...accessPointFragment}reservation{...reservationFragment}fulfillmentSwitchInfo{fulfillmentType benefit{type price itemCount date isWalmartPlusProgram}partialItemIds @include(if:$includePartialFulfillmentSwitching)}}...on AutoCareCenter{__typename defaultMode collapsedItemIds startDate endDate accBasketType checkoutable checkoutableErrors{code shouldDisableCheckout itemIds upstreamErrors{offerId upstreamErrorCode}}priceDetails{subTotal{...priceTotalFields}}itemGroups{__typename label itemIds}accessPoint{...accessPointFragment}reservation{...reservationFragment}fulfillmentSwitchInfo{fulfillmentType benefit{type price itemCount date isWalmartPlusProgram}partialItemIds @include(if:$includePartialFulfillmentSwitching)}}}suggestedSlotAvailability{isPickupAvailable isDeliveryAvailable nextPickupSlot{startTime endTime slaInMins}nextDeliverySlot{startTime endTime slaInMins}nextUnscheduledPickupSlot{startTime endTime slaInMins}nextSlot{__typename...on RegularSlot{fulfillmentOption fulfillmentType startTime}...on DynamicExpressSlot{fulfillmentOption fulfillmentType startTime slaInMins}...on UnscheduledSlot{fulfillmentOption fulfillmentType startTime unscheduledHoldInDays}...on InHomeSlot{fulfillmentOption fulfillmentType startTime}}}}priceDetails{subTotal{...priceTotalFields}fees{...priceTotalFields}taxTotal{...priceTotalFields}grandTotal{...priceTotalFields}belowMinimumFee{...priceTotalFields}minimumThreshold{value displayValue}ebtSnapMaxEligible{displayValue value}balanceToMinimumThreshold{value displayValue}}affirm{isMixedPromotionCart message{description termsUrl imageUrl monthlyPayment termLength isZeroAPR}nonAffirmGroup{...nonAffirmGroupFields}affirmGroups{...on AffirmItemGroup{__typename message{description termsUrl imageUrl monthlyPayment termLength isZeroAPR}flags{type displayLabel}name label itemCount itemIds defaultMode}}}checkoutableErrors{code shouldDisableCheckout itemIds upstreamErrors{offerId upstreamErrorCode}}checkoutableWarnings{code itemIds}operationalErrors{offerId itemId requestedQuantity adjustedQuantity code upstreamErrorCode}cartCustomerContext{...cartCustomerContextFragment}}fragment postpaidPlanDetailsFragment on PostPaidPlan{espOrderSummaryId espOrderId espOrderLineId warpOrderId warpSessionId devicePayment{...postpaidPlanPriceFragment}devicePlan{price{...postpaidPlanPriceFragment}frequency duration annualPercentageRate}deviceDataPlan{...deviceDataPlanFragment}}fragment deviceDataPlanFragment on DeviceDataPlan{carrierName planType expiryTime activationFee{...postpaidPlanPriceFragment}planDetails{price{...postpaidPlanPriceFragment}frequency name}agreements{...agreementFragment}}fragment postpaidPlanPriceFragment on PriceDetailRow{key label displayValue value strikeOutDisplayValue strikeOutValue info{title message}}fragment agreementFragment on CarrierAgreement{name type format value docTitle label}fragment priceTotalFields on PriceDetailRow{label displayValue value key strikeOutDisplayValue strikeOutValue}fragment lineItemPriceInfoFragment on Price{displayValue value}fragment accessPointFragment on AccessPoint{id assortmentStoreId name nodeAccessType fulfillmentType fulfillmentOption displayName timeZone address{addressLineOne addressLineTwo city postalCode state phone}}fragment reservationFragment on Reservation{expiryTime isUnscheduled expired showSlotExpiredError reservedSlot{__typename...on RegularSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}nodeAccessType accessPointId fulfillmentOption startTime fulfillmentType slotMetadata endTime available supportedTimeZone isAlcoholRestricted}...on DynamicExpressSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata available slaInMins maxItemAllowed supportedTimeZone isAlcoholRestricted}...on UnscheduledSlot{price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata unscheduledHoldInDays supportedTimeZone}...on InHomeSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata endTime available supportedTimeZone isAlcoholRestricted}}}fragment nonAffirmGroupFields on NonAffirmGroup{label itemCount itemIds collapsedItemIds}fragment cartCustomerContextFragment on CartCustomerContext{isMembershipOptedIn isEligibleForFreeTrial membershipData{isActiveMember}paymentData{hasCreditCard hasCapOne hasDSCard hasEBT isCapOneLinked showCapOneBanner}}',
+                    variables: {
+                        input: {
+                            addressId: addressId,
+                            cartId: cartId,
+                            registry: null,
+                            fulfillmentOption: 'SHIPPING', // TODO check if this field is always constant or else get it from CreateDeliveryAddress
+                            postalCode: null,
+                            storeId: null,
+                            isGiftAddress: null,
+                        },
+                        includePartialFulfillmentSwitching: true,
+                    },
+                };
+
+                const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
+
+                log('Set Fulfillment response %O', resp.status);
+
+                if (resp.headers['set-cookie']) {
+                    await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
+                }
+            } catch (error) {
+                this.cancelTask();
+                retry = true;
+
+                log('Set Fulfillment Error %O', error);
+                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
+            }
+        } while (retry);
+    }
+
+    async createContract(cartId: string): Promise<string> {
+        let retry = false;
+        let headers: any = { ...WALMART_US_CREATE_CONTRACT_HEADERS, referer: this.parsedURL.toString() };
+        do {
+            try {
+                retry = false;
+                this.cancelTask();
+
+                const cookie = this.cookieJar.serializeSession();
+
+                if (cookie) headers = { ...headers, cookie: cookie };
+
+                const body = {
+                    query: 'mutation CreateContract( $createContractInput:CreatePurchaseContractInput! $promosEnable:Boolean! $wplusEnabled:Boolean! ){createPurchaseContract(input:$createContractInput){...ContractFragment}}fragment ContractFragment on PurchaseContract{id associateDiscountStatus addressMode tenderPlanId papEbtAllowed allowedPaymentGroupTypes cartCustomerContext @include(if:$wplusEnabled){isMembershipOptedIn isEligibleForFreeTrial paymentData{hasCreditCard}}checkoutError{code errorData{__typename...on OutOfStock{offerId}__typename...on UnavailableOffer{offerId}__typename...on ItemExpired{offerId}__typename...on ItemQuantityAdjusted{offerId requestedQuantity adjustedQuantity}}operationalErrorCode message}checkoutableWarnings{code itemIds}allocationStatus payments{id paymentType cardType lastFour isDefault cvvRequired preferenceId paymentPreferenceId paymentHandle expiryMonth expiryYear firstName lastName email amountPaid cardImage cardImageAlt isLinkedCard capOneReward{credentialId redemptionUrl redemptionRate redemptionMethod rewardPointsBalance rewardPointsSelected rewardAmountSelected}remainingBalance{displayValue value}}order{id status orderVersion mobileNumber}terms{alcoholAccepted bagFeeAccepted smsOptInAccepted marketingEmailPrefOptIn}donationDetails{charityEIN charityName amount{displayValue value}acceptDonation}lineItems{...LineItemFields}tippingDetails{suggestedAmounts{value displayValue}maxAmount{value displayValue}selectedTippingAmount{value displayValue}}customer{id firstName lastName isGuest email phone}fulfillment{deliveryDetails{deliveryInstructions deliveryOption}pickupChoices{isSelected fulfillmentType accessType accessMode accessPointId}deliveryAddress{...AddressFields}alternatePickupPerson{...PickupPersonFields}primaryPickupPerson{...PickupPersonFields}fulfillmentItemGroups{...FulfillmentItemGroupsFields}accessPoint{...AccessPointFields}reservation{...ReservationFields}}priceDetails{subTotal{...PriceDetailRowFields}totalItemQuantity fees{...PriceDetailRowFields}taxTotal{...PriceDetailRowFields}grandTotal{...PriceDetailRowFields}belowMinimumFee{...PriceDetailRowFields}authorizationAmount{...PriceDetailRowFields}weightDebitTotal{...PriceDetailRowFields}discounts{...PriceDetailRowFields}otcDeliveryBenefit{...PriceDetailRowFields}ebtSnapMaxEligible{...PriceDetailRowFields}ebtCashMaxEligible{...PriceDetailRowFields}hasAmountUnallocated affirm{__typename message{...AffirmMessageFields}}}checkoutGiftingDetails{isCheckoutGiftingOptin isWalmartProtectionPlanPresent isAppleCarePresent isRestrictedPaymentPresent giftMessageDetails{giftingMessage recipientEmail recipientName senderName}}promotions @include(if:$promosEnable){displayValue promoId terms}showPromotions @include(if:$promosEnable) errors{code message lineItems{...LineItemFields}}}fragment LineItemFields on LineItem{id quantity quantityString quantityLabel accessibilityQuantityLabel isPreOrder fulfillmentSourcingDetails{currentSelection requestedSelection}packageQuantity priceInfo{priceDisplayCodes{showItemPrice priceDisplayCondition finalCostByWeight}itemPrice{displayValue value}linePrice{displayValue value}preDiscountedLinePrice{displayValue value}wasPrice{displayValue value}unitPrice{displayValue value}}isSubstitutionSelected isGiftEligible selectedVariants{name value}product{id name usItemId itemType imageInfo{thumbnailUrl}offerId orderLimit orderMinLimit weightIncrement weightUnit averageWeight salesUnitType availabilityStatus isSubstitutionEligible isAlcohol configuration hasSellerBadge sellerId sellerName sellerType preOrder{...preOrderFragment}addOnServices{serviceType groups{groupType services{selectedDisplayName offerId currentPrice{priceString}}}}}discounts{key label displayValue @include(if:$promosEnable) displayLabel @include(if:$promosEnable)}wirelessPlan{planId mobileNumber __typename postPaidPlan{...postpaidPlanDetailsFragment}}selectedAddOnServices{offerId quantity groupType}registryInfo{registryId registryType}}fragment postpaidPlanDetailsFragment on PostPaidPlan{__typename espOrderSummaryId espOrderId espOrderLineId warpOrderId warpSessionId devicePayment{...postpaidPlanPriceFragment}devicePlan{__typename price{...postpaidPlanPriceFragment}frequency duration annualPercentageRate}deviceDataPlan{...deviceDataPlanFragment}}fragment deviceDataPlanFragment on DeviceDataPlan{__typename carrierName planType expiryTime activationFee{...postpaidPlanPriceFragment}planDetails{__typename price{...postpaidPlanPriceFragment}frequency name}agreements{...agreementFragment}}fragment postpaidPlanPriceFragment on PriceDetailRow{__typename key label displayValue value strikeOutDisplayValue strikeOutValue info{__typename title message}}fragment agreementFragment on CarrierAgreement{__typename name type format value docTitle label}fragment preOrderFragment on PreOrder{streetDate streetDateDisplayable streetDateType isPreOrder preOrderMessage preOrderStreetDateMessage}fragment AddressFields on Address{id addressLineOne addressLineTwo city state postalCode firstName lastName phone}fragment PickupPersonFields on PickupPerson{id firstName lastName email}fragment PriceDetailRowFields on PriceDetailRow{__typename key label displayValue value strikeOutValue strikeOutDisplayValue info{__typename title message}}fragment AccessPointFields on AccessPoint{id name assortmentStoreId displayName timeZone address{id addressLineOne addressLineTwo city state postalCode firstName lastName phone}isTest allowBagFee bagFeeValue isExpressEligible fulfillmentOption instructions nodeAccessType}fragment ReservationFields on Reservation{id expiryTime isUnscheduled expired showSlotExpiredError reservedSlot{__typename...on RegularSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata slotExpiryTime endTime available supportedTimeZone}...on DynamicExpressSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime endTime fulfillmentType slotMetadata slotExpiryTime available slaInMins maxItemAllowed supportedTimeZone}...on UnscheduledSlot{price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata unscheduledHoldInDays supportedTimeZone}...on InHomeSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata slotExpiryTime endTime available supportedTimeZone}}}fragment AffirmMessageFields on AffirmMessage{__typename description termsUrl imageUrl monthlyPayment termLength isZeroAPR}fragment FulfillmentItemGroupsFields on FulfillmentItemGroup{...on SCGroup{__typename defaultMode collapsedItemIds itemGroups{__typename label itemIds}accessPoint{...AccessPointFields}reservation{...ReservationFields}}...on DigitalDeliveryGroup{__typename defaultMode collapsedItemIds itemGroups{__typename label itemIds}}...on Unscheduled{__typename defaultMode collapsedItemIds itemGroups{__typename label itemIds}accessPoint{...AccessPointFields}reservation{...ReservationFields}}...on FCGroup{__typename defaultMode collapsedItemIds startDate endDate isUnscheduledDeliveryEligible shippingOptions{__typename itemIds availableShippingOptions{__typename id shippingMethod deliveryDate price{__typename displayValue value}label{prefix suffix}isSelected isDefault}}hasMadeShippingChanges slaGroups{__typename label deliveryDate warningLabel sellerGroups{__typename id name isProSeller type shipOptionGroup{__typename deliveryPrice{__typename displayValue value}itemIds shipMethod}}}}...on AutoCareCenter{__typename defaultMode startDate endDate accBasketType collapsedItemIds itemGroups{__typename label itemIds}accessPoint{...AccessPointFields}reservation{...ReservationFields}}}',
+                    variables: {
+                        createContractInput: {
+                            cartId: cartId,
+                        },
+                        promosEnable: true,
+                        wplusEnabled: true,
+                    },
+                };
+
+                const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
+
+                const contractId = resp.data['data']['createPurchaseContract']['id'];
+
+                log('Create Contract response %O', resp.status);
+
+                if (resp.headers['set-cookie']) {
+                    await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
+                }
+
+                return contractId;
+            } catch (error) {
+                this.cancelTask();
+                retry = true;
+
+                log('Create contract Error %O', error);
+                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
+            }
+        } while (retry);
+    }
+
+    async getTenderPlan(contractId: string): Promise<string> {
+        let retry = false;
+        let headers: any = { ...WALMART_US_GET_TENDER_PLAN_HEADERS };
+        do {
+            try {
+                retry = false;
+                this.cancelTask();
+
+                const cookie = this.cookieJar.serializeSession();
+
+                if (cookie) headers = { ...headers, cookie: cookie };
+
+                const body = {
+                    query: 'query getTenderPlan($tenderPlanInput:TenderPlanInput!){tenderPlan(input:$tenderPlanInput){__typename tenderPlan{...TenderPlanFields}errors{...ErrorFields}}}fragment TenderPlanFields on TenderPlan{__typename id contractId grandTotal{...PriceDetailRowFields}authorizationAmount{...PriceDetailRowFields}allocationStatus paymentGroups{...PaymentGroupFields}otcDeliveryBenefit{...PriceDetailRowFields}otherAllowedPayments{type status}addPaymentType hasAmountUnallocated weightDebitTotal{...PriceDetailRowFields}}fragment PriceDetailRowFields on PriceDetailRow{__typename key label displayValue value info{__typename title message}}fragment PaymentGroupFields on TenderPlanPaymentGroup{__typename type subTotal{__typename key label displayValue value info{__typename title message}}selectedCount allocations{...CreditCardAllocationFragment...GiftCardAllocationFragment...EbtCardAllocationFragment...DsCardAllocationFragment...PayPalAllocationFragment...AffirmAllocationFragment}coversOrderTotal statusMessage}fragment CreditCardAllocationFragment on CreditCardAllocation{__typename card{...CreditCardFragment}canEditOrDelete canDeselect isEligible isSelected allocationAmount{__typename displayValue value}capOneReward{...CapOneFields}statusMessage{__typename messageStatus messageType}paymentType}fragment CapOneFields on CapOneReward{credentialId redemptionRate redemptionUrl redemptionMethod rewardPointsBalance rewardPointsSelected rewardAmountSelected}fragment CreditCardFragment on CreditCard{__typename id isDefault cardAccountLinked needVerifyCVV cardType expiryMonth expiryYear isExpired firstName lastName lastFour isEditable phone}fragment GiftCardAllocationFragment on GiftCardAllocation{__typename card{...GiftCardFields}canEditOrDelete canDeselect isEligible isSelected allocationAmount{__typename displayValue value}statusMessage{__typename messageStatus messageType}paymentType remainingBalance{__typename displayValue value}}fragment GiftCardFields on GiftCard{__typename id balance{cardBalance}lastFour displayLabel}fragment EbtCardAllocationFragment on EbtCardAllocation{__typename card{__typename id lastFour firstName lastName}canEditOrDelete canDeselect isEligible isSelected allocationAmount{__typename displayValue value}statusMessage{__typename messageStatus messageType}paymentType ebtMaxEligibleAmount{__typename displayValue value}cardBalance{__typename displayValue value}}fragment DsCardAllocationFragment on DsCardAllocation{__typename card{...DsCardFields}canEditOrDelete canDeselect isEligible isSelected allocationAmount{__typename displayValue value}statusMessage{__typename messageStatus messageType}paymentType canApplyAmount{__typename displayValue value}remainingBalance{__typename displayValue value}paymentPromotions{__typename programName canApplyAmount{__typename displayValue value}allocationAmount{__typename displayValue value}remainingBalance{__typename displayValue value}balance{__typename displayValue value}termsLink isInvalid}otcShippingBenefit termsLink}fragment DsCardFields on DsCard{__typename id displayLabel lastFour fundingProgram balance{cardBalance}dsCardType cardName}fragment PayPalAllocationFragment on PayPalAllocation{__typename allocationAmount{__typename displayValue value}paymentHandle paymentType email}fragment AffirmAllocationFragment on AffirmAllocation{__typename allocationAmount{__typename displayValue value}paymentHandle paymentType cardType firstName lastName}fragment ErrorFields on TenderPlanError{__typename code message}',
+                    variables: {
+                        tenderPlanInput: {
+                            contractId: contractId,
+                            isAmendFlow: false,
+                        },
+                    },
+                };
+
+                const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
+
+                const tenderPlanId = resp.data['data']['tenderPlan']['tenderPlan']['id'];
+
+                log('Get Tender Plan response %O %s', resp.status, tenderPlanId);
+
+                if (resp.headers['set-cookie']) {
+                    await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
+                }
+
+                return tenderPlanId;
+            } catch (error) {
+                this.cancelTask();
+                retry = true;
+
+                log('get tender plan Error %O', error);
+                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
+            }
+        } while (retry);
+    }
+
+    async createCreditCard(): Promise<[string, WalmartCreditCard]> {
+        let retry = false;
+        let headers: any = { ...WALMART_US_CREATE_CREDIT_CARD_HEADERS };
+        do {
+            try {
+                retry = false;
+                this.cancelTask();
+
+                const cookie = this.cookieJar.serializeSession();
+
+                if (cookie) headers = { ...headers, cookie: cookie };
+
+                const encryptedCard = await this.encryptCard();
+
+                const body = {
+                    query: 'mutation CreateCreditCard($input:AccountCreditCardInput!){createAccountCreditCard(input:$input){errors{code message}creditCard{...CreditCardFragment}}}fragment CreditCardFragment on CreditCard{__typename firstName lastName phone addressLineOne addressLineTwo city state postalCode cardType expiryYear expiryMonth lastFour id isDefault isExpired needVerifyCVV isEditable capOneProperties{shouldPromptForLink}linkedCard{availableCredit currentCreditBalance currentMinimumAmountDue minimumPaymentDueDate statementBalance statementDate rewards{rewardsBalance rewardsCurrency cashValue cashDisplayValue canRedeem}links{linkMethod linkHref linkType}}}',
+                    variables: {
+                        input: {
+                            firstName: this.taskData.profile.billing.lastName,
+                            lastName: this.taskData.profile.billing.lastName,
+                            phone: this.taskData.profile.billing.phone,
+                            address: {
+                                addressLineOne: this.taskData.profile.billing.address,
+                                addressLineTwo: null,
+                                postalCode: this.taskData.profile.billing.postalCode,
+                                city: this.taskData.profile.billing.town,
+                                state: REGIONS[this.taskData.profile.billing.country][this.taskData.profile.billing.region].isocodeShort,
+                                isApoFpo: null,
+                                isLoadingDockAvailable: null,
+                                isPoBox: null,
+                                businessName: null,
+                                addressType: null,
+                                sealedAddress: null,
+                            },
+                            expiryYear: 2022,
+                            expiryMonth: 4,
+                            isDefault: false,
+                            cardType: 'VISA',
+                            integrityCheck: encryptedCard.integrityCheck,
+                            keyId: encryptedCard.keyId,
+                            phase: encryptedCard.phase,
+                            encryptedPan: encryptedCard.number,
+                            encryptedCVV: encryptedCard.cvc,
+                            sourceFeature: 'ACCOUNT_PAGE',
+                            cartId: null,
+                            checkoutSessionId: null,
+                        },
+                    },
+                };
+
+                const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
+
+                const creditCardId = resp.data['data']['createAccountCreditCard']['creditCard']['id'];
+
+                log('Create credit card response %O %s', resp.status, creditCardId);
+
+                if (resp.headers['set-cookie']) {
+                    await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
+                }
+
+                return [creditCardId, encryptedCard];
+            } catch (error) {
+                this.cancelTask();
+                retry = true;
+
+                log('create credit card Error %O', error);
+                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
+            }
+        } while (retry);
+    }
+
+    async updateTenderPlan(contractId: string, tenderPlanId: string, creditCardId: string): Promise<string> {
+        let retry = false;
+        let headers: any = { ...WALMART_US_UPDATE_TENDER_PLAN_HEADERS };
+        do {
+            try {
+                retry = false;
+                this.cancelTask();
+
+                const cookie = this.cookieJar.serializeSession();
+
+                if (cookie) headers = { ...headers, cookie: cookie };
+
+                const body = {
+                    query: 'mutation updateTenderPlan($input:UpdateTenderPlanInput!){updateTenderPlan(input:$input){__typename tenderPlan{...TenderPlanFields}errors{...ErrorFields}}}fragment TenderPlanFields on TenderPlan{__typename id contractId grandTotal{...PriceDetailRowFields}authorizationAmount{...PriceDetailRowFields}allocationStatus paymentGroups{...PaymentGroupFields}otcDeliveryBenefit{...PriceDetailRowFields}otherAllowedPayments{type status}addPaymentType hasAmountUnallocated weightDebitTotal{...PriceDetailRowFields}}fragment PriceDetailRowFields on PriceDetailRow{__typename key label displayValue value info{__typename title message}}fragment PaymentGroupFields on TenderPlanPaymentGroup{__typename type subTotal{__typename key label displayValue value info{__typename title message}}selectedCount allocations{...CreditCardAllocationFragment...GiftCardAllocationFragment...EbtCardAllocationFragment...DsCardAllocationFragment...PayPalAllocationFragment...AffirmAllocationFragment}coversOrderTotal statusMessage}fragment CreditCardAllocationFragment on CreditCardAllocation{__typename card{...CreditCardFragment}canEditOrDelete canDeselect isEligible isSelected allocationAmount{__typename displayValue value}capOneReward{...CapOneFields}statusMessage{__typename messageStatus messageType}paymentType}fragment CapOneFields on CapOneReward{credentialId redemptionRate redemptionUrl redemptionMethod rewardPointsBalance rewardPointsSelected rewardAmountSelected}fragment CreditCardFragment on CreditCard{__typename id isDefault cardAccountLinked needVerifyCVV cardType expiryMonth expiryYear isExpired firstName lastName lastFour isEditable phone}fragment GiftCardAllocationFragment on GiftCardAllocation{__typename card{...GiftCardFields}canEditOrDelete canDeselect isEligible isSelected allocationAmount{__typename displayValue value}statusMessage{__typename messageStatus messageType}paymentType remainingBalance{__typename displayValue value}}fragment GiftCardFields on GiftCard{__typename id balance{cardBalance}lastFour displayLabel}fragment EbtCardAllocationFragment on EbtCardAllocation{__typename card{__typename id lastFour firstName lastName}canEditOrDelete canDeselect isEligible isSelected allocationAmount{__typename displayValue value}statusMessage{__typename messageStatus messageType}paymentType ebtMaxEligibleAmount{__typename displayValue value}cardBalance{__typename displayValue value}}fragment DsCardAllocationFragment on DsCardAllocation{__typename card{...DsCardFields}canEditOrDelete canDeselect isEligible isSelected allocationAmount{__typename displayValue value}statusMessage{__typename messageStatus messageType}paymentType canApplyAmount{__typename displayValue value}remainingBalance{__typename displayValue value}paymentPromotions{__typename programName canApplyAmount{__typename displayValue value}allocationAmount{__typename displayValue value}remainingBalance{__typename displayValue value}balance{__typename displayValue value}termsLink isInvalid}otcShippingBenefit termsLink}fragment DsCardFields on DsCard{__typename id displayLabel lastFour fundingProgram balance{cardBalance}dsCardType cardName}fragment PayPalAllocationFragment on PayPalAllocation{__typename allocationAmount{__typename displayValue value}paymentHandle paymentType email}fragment AffirmAllocationFragment on AffirmAllocation{__typename allocationAmount{__typename displayValue value}paymentHandle paymentType cardType firstName lastName}fragment ErrorFields on TenderPlanError{__typename code message}',
+                    variables: {
+                        input: {
+                            contractId: contractId,
+                            tenderPlanId: tenderPlanId,
+                            payments: [
+                                {
+                                    paymentType: 'CREDITCARD',
+                                    preferenceId: creditCardId,
+                                    amount: null,
+                                    capOneReward: null,
+                                    cardType: null,
+                                    paymentHandle: null,
+                                },
+                            ],
+                            accountRefresh: true,
+                            isAmendFlow: false,
+                        },
+                    },
+                };
+
+                const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
+
+                log('Update tender plan response %O', resp.status);
+
+                if (resp.headers['set-cookie']) {
+                    await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
+                }
+
+                return creditCardId;
+            } catch (error) {
+                this.cancelTask();
+                retry = true;
+                log('Update tender plan Error %O', error);
+                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
+            }
+        } while (retry);
+    }
+
+    async saveTenderPlanPC(contractId: string, tenderPlanId: string): Promise<void> {
+        let retry = false;
+        let headers: any = { ...WALMART_US_SAVE_TENDER_PC_HEADERS };
+        do {
+            try {
+                retry = false;
+                this.cancelTask();
+
+                const cookie = this.cookieJar.serializeSession();
+
+                if (cookie) headers = { ...headers, cookie: cookie };
+
+                const body = {
+                    query: 'mutation saveTenderPlanToPC( $input:SaveTenderPlanToPCInput! $promosEnable:Boolean! $wplusEnabled:Boolean! ){saveTenderPlanToPC(input:$input){...ContractFragment}}fragment ContractFragment on PurchaseContract{id associateDiscountStatus addressMode tenderPlanId papEbtAllowed allowedPaymentGroupTypes cartCustomerContext @include(if:$wplusEnabled){isMembershipOptedIn isEligibleForFreeTrial paymentData{hasCreditCard}}checkoutError{code errorData{__typename...on OutOfStock{offerId}__typename...on UnavailableOffer{offerId}__typename...on ItemExpired{offerId}__typename...on ItemQuantityAdjusted{offerId requestedQuantity adjustedQuantity}}operationalErrorCode message}checkoutableWarnings{code itemIds}allocationStatus payments{id paymentType cardType lastFour isDefault cvvRequired preferenceId paymentPreferenceId paymentHandle expiryMonth expiryYear firstName lastName email amountPaid cardImage cardImageAlt isLinkedCard capOneReward{credentialId redemptionUrl redemptionRate redemptionMethod rewardPointsBalance rewardPointsSelected rewardAmountSelected}remainingBalance{displayValue value}}order{id status orderVersion mobileNumber}terms{alcoholAccepted bagFeeAccepted smsOptInAccepted marketingEmailPrefOptIn}donationDetails{charityEIN charityName amount{displayValue value}acceptDonation}lineItems{...LineItemFields}tippingDetails{suggestedAmounts{value displayValue}maxAmount{value displayValue}selectedTippingAmount{value displayValue}}customer{id firstName lastName isGuest email phone}fulfillment{deliveryDetails{deliveryInstructions deliveryOption}pickupChoices{isSelected fulfillmentType accessType accessMode accessPointId}deliveryAddress{...AddressFields}alternatePickupPerson{...PickupPersonFields}primaryPickupPerson{...PickupPersonFields}fulfillmentItemGroups{...FulfillmentItemGroupsFields}accessPoint{...AccessPointFields}reservation{...ReservationFields}}priceDetails{subTotal{...PriceDetailRowFields}totalItemQuantity fees{...PriceDetailRowFields}taxTotal{...PriceDetailRowFields}grandTotal{...PriceDetailRowFields}belowMinimumFee{...PriceDetailRowFields}authorizationAmount{...PriceDetailRowFields}weightDebitTotal{...PriceDetailRowFields}discounts{...PriceDetailRowFields}otcDeliveryBenefit{...PriceDetailRowFields}ebtSnapMaxEligible{...PriceDetailRowFields}ebtCashMaxEligible{...PriceDetailRowFields}hasAmountUnallocated affirm{__typename message{...AffirmMessageFields}}}checkoutGiftingDetails{isCheckoutGiftingOptin isWalmartProtectionPlanPresent isAppleCarePresent isRestrictedPaymentPresent giftMessageDetails{giftingMessage recipientEmail recipientName senderName}}promotions @include(if:$promosEnable){displayValue promoId terms}showPromotions @include(if:$promosEnable) errors{code message lineItems{...LineItemFields}}}fragment LineItemFields on LineItem{id quantity quantityString quantityLabel accessibilityQuantityLabel isPreOrder fulfillmentSourcingDetails{currentSelection requestedSelection}packageQuantity priceInfo{priceDisplayCodes{showItemPrice priceDisplayCondition finalCostByWeight}itemPrice{displayValue value}linePrice{displayValue value}preDiscountedLinePrice{displayValue value}wasPrice{displayValue value}unitPrice{displayValue value}}isSubstitutionSelected isGiftEligible selectedVariants{name value}product{id name usItemId itemType imageInfo{thumbnailUrl}offerId orderLimit orderMinLimit weightIncrement weightUnit averageWeight salesUnitType availabilityStatus isSubstitutionEligible isAlcohol configuration hasSellerBadge sellerId sellerName sellerType preOrder{...preOrderFragment}addOnServices{serviceType groups{groupType services{selectedDisplayName offerId currentPrice{priceString}}}}}discounts{key label displayValue @include(if:$promosEnable) displayLabel @include(if:$promosEnable)}wirelessPlan{planId mobileNumber __typename postPaidPlan{...postpaidPlanDetailsFragment}}selectedAddOnServices{offerId quantity groupType}registryInfo{registryId registryType}}fragment postpaidPlanDetailsFragment on PostPaidPlan{__typename espOrderSummaryId espOrderId espOrderLineId warpOrderId warpSessionId devicePayment{...postpaidPlanPriceFragment}devicePlan{__typename price{...postpaidPlanPriceFragment}frequency duration annualPercentageRate}deviceDataPlan{...deviceDataPlanFragment}}fragment deviceDataPlanFragment on DeviceDataPlan{__typename carrierName planType expiryTime activationFee{...postpaidPlanPriceFragment}planDetails{__typename price{...postpaidPlanPriceFragment}frequency name}agreements{...agreementFragment}}fragment postpaidPlanPriceFragment on PriceDetailRow{__typename key label displayValue value strikeOutDisplayValue strikeOutValue info{__typename title message}}fragment agreementFragment on CarrierAgreement{__typename name type format value docTitle label}fragment preOrderFragment on PreOrder{streetDate streetDateDisplayable streetDateType isPreOrder preOrderMessage preOrderStreetDateMessage}fragment AddressFields on Address{id addressLineOne addressLineTwo city state postalCode firstName lastName phone}fragment PickupPersonFields on PickupPerson{id firstName lastName email}fragment PriceDetailRowFields on PriceDetailRow{__typename key label displayValue value strikeOutValue strikeOutDisplayValue info{__typename title message}}fragment AccessPointFields on AccessPoint{id name assortmentStoreId displayName timeZone address{id addressLineOne addressLineTwo city state postalCode firstName lastName phone}isTest allowBagFee bagFeeValue isExpressEligible fulfillmentOption instructions nodeAccessType}fragment ReservationFields on Reservation{id expiryTime isUnscheduled expired showSlotExpiredError reservedSlot{__typename...on RegularSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata slotExpiryTime endTime available supportedTimeZone}...on DynamicExpressSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime endTime fulfillmentType slotMetadata slotExpiryTime available slaInMins maxItemAllowed supportedTimeZone}...on UnscheduledSlot{price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata unscheduledHoldInDays supportedTimeZone}...on InHomeSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata slotExpiryTime endTime available supportedTimeZone}}}fragment AffirmMessageFields on AffirmMessage{__typename description termsUrl imageUrl monthlyPayment termLength isZeroAPR}fragment FulfillmentItemGroupsFields on FulfillmentItemGroup{...on SCGroup{__typename defaultMode collapsedItemIds itemGroups{__typename label itemIds}accessPoint{...AccessPointFields}reservation{...ReservationFields}}...on DigitalDeliveryGroup{__typename defaultMode collapsedItemIds itemGroups{__typename label itemIds}}...on Unscheduled{__typename defaultMode collapsedItemIds itemGroups{__typename label itemIds}accessPoint{...AccessPointFields}reservation{...ReservationFields}}...on FCGroup{__typename defaultMode collapsedItemIds startDate endDate isUnscheduledDeliveryEligible shippingOptions{__typename itemIds availableShippingOptions{__typename id shippingMethod deliveryDate price{__typename displayValue value}label{prefix suffix}isSelected isDefault}}hasMadeShippingChanges slaGroups{__typename label deliveryDate warningLabel sellerGroups{__typename id name isProSeller type shipOptionGroup{__typename deliveryPrice{__typename displayValue value}itemIds shipMethod}}}}...on AutoCareCenter{__typename defaultMode startDate endDate accBasketType collapsedItemIds itemGroups{__typename label itemIds}accessPoint{...AccessPointFields}reservation{...ReservationFields}}}',
+                    variables: {
+                        input: {
+                            contractId: contractId,
+                            tenderPlanId: tenderPlanId,
+                        },
+                        promosEnable: true,
+                        wplusEnabled: true,
+                    },
+                };
+
+                const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
+
+                log('Save tender plan response %O', resp.status);
+
+                if (resp.headers['set-cookie']) {
+                    await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
+                }
+            } catch (error) {
+                this.cancelTask();
+                retry = true;
+                log('Save tender plan Error %O', error);
+                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
+            }
+        } while (retry);
+    }
+
+    async placeOrder(contractId: string, creditCardId, encCard: WalmartCreditCard): Promise<void> {
+        let retry = false;
+        let headers: any = { ...WALMART_US_PLACE_ORDER_HEADERS };
+        do {
+            try {
+                retry = false;
+                this.cancelTask();
+
+                const cookie = this.cookieJar.serializeSession();
+                if (cookie) headers = { ...headers, cookie: cookie };
+
+                const body = {
+                    query: 'mutation PlaceOrder( $placeOrderInput:PlaceOrderInput! $promosEnable:Boolean! $wplusEnabled:Boolean! ){placeOrder(input:$placeOrderInput){...ContractFragment}}fragment ContractFragment on PurchaseContract{id associateDiscountStatus addressMode tenderPlanId papEbtAllowed allowedPaymentGroupTypes cartCustomerContext @include(if:$wplusEnabled){isMembershipOptedIn isEligibleForFreeTrial paymentData{hasCreditCard}}checkoutError{code errorData{__typename...on OutOfStock{offerId}__typename...on UnavailableOffer{offerId}__typename...on ItemExpired{offerId}__typename...on ItemQuantityAdjusted{offerId requestedQuantity adjustedQuantity}}operationalErrorCode message}checkoutableWarnings{code itemIds}allocationStatus payments{id paymentType cardType lastFour isDefault cvvRequired preferenceId paymentPreferenceId paymentHandle expiryMonth expiryYear firstName lastName email amountPaid cardImage cardImageAlt isLinkedCard capOneReward{credentialId redemptionUrl redemptionRate redemptionMethod rewardPointsBalance rewardPointsSelected rewardAmountSelected}remainingBalance{displayValue value}}order{id status orderVersion mobileNumber}terms{alcoholAccepted bagFeeAccepted smsOptInAccepted marketingEmailPrefOptIn}donationDetails{charityEIN charityName amount{displayValue value}acceptDonation}lineItems{...LineItemFields}tippingDetails{suggestedAmounts{value displayValue}maxAmount{value displayValue}selectedTippingAmount{value displayValue}}customer{id firstName lastName isGuest email phone}fulfillment{deliveryDetails{deliveryInstructions deliveryOption}pickupChoices{isSelected fulfillmentType accessType accessMode accessPointId}deliveryAddress{...AddressFields}alternatePickupPerson{...PickupPersonFields}primaryPickupPerson{...PickupPersonFields}fulfillmentItemGroups{...FulfillmentItemGroupsFields}accessPoint{...AccessPointFields}reservation{...ReservationFields}}priceDetails{subTotal{...PriceDetailRowFields}totalItemQuantity fees{...PriceDetailRowFields}taxTotal{...PriceDetailRowFields}grandTotal{...PriceDetailRowFields}belowMinimumFee{...PriceDetailRowFields}authorizationAmount{...PriceDetailRowFields}weightDebitTotal{...PriceDetailRowFields}discounts{...PriceDetailRowFields}otcDeliveryBenefit{...PriceDetailRowFields}ebtSnapMaxEligible{...PriceDetailRowFields}ebtCashMaxEligible{...PriceDetailRowFields}hasAmountUnallocated affirm{__typename message{...AffirmMessageFields}}}checkoutGiftingDetails{isCheckoutGiftingOptin isWalmartProtectionPlanPresent isAppleCarePresent isRestrictedPaymentPresent giftMessageDetails{giftingMessage recipientEmail recipientName senderName}}promotions @include(if:$promosEnable){displayValue promoId terms}showPromotions @include(if:$promosEnable) errors{code message lineItems{...LineItemFields}}}fragment LineItemFields on LineItem{id quantity quantityString quantityLabel accessibilityQuantityLabel isPreOrder fulfillmentSourcingDetails{currentSelection requestedSelection}packageQuantity priceInfo{priceDisplayCodes{showItemPrice priceDisplayCondition finalCostByWeight}itemPrice{displayValue value}linePrice{displayValue value}preDiscountedLinePrice{displayValue value}wasPrice{displayValue value}unitPrice{displayValue value}}isSubstitutionSelected isGiftEligible selectedVariants{name value}product{id name usItemId itemType imageInfo{thumbnailUrl}offerId orderLimit orderMinLimit weightIncrement weightUnit averageWeight salesUnitType availabilityStatus isSubstitutionEligible isAlcohol configuration hasSellerBadge sellerId sellerName sellerType preOrder{...preOrderFragment}addOnServices{serviceType groups{groupType services{selectedDisplayName offerId currentPrice{priceString}}}}}discounts{key label displayValue @include(if:$promosEnable) displayLabel @include(if:$promosEnable)}wirelessPlan{planId mobileNumber __typename postPaidPlan{...postpaidPlanDetailsFragment}}selectedAddOnServices{offerId quantity groupType}registryInfo{registryId registryType}}fragment postpaidPlanDetailsFragment on PostPaidPlan{__typename espOrderSummaryId espOrderId espOrderLineId warpOrderId warpSessionId devicePayment{...postpaidPlanPriceFragment}devicePlan{__typename price{...postpaidPlanPriceFragment}frequency duration annualPercentageRate}deviceDataPlan{...deviceDataPlanFragment}}fragment deviceDataPlanFragment on DeviceDataPlan{__typename carrierName planType expiryTime activationFee{...postpaidPlanPriceFragment}planDetails{__typename price{...postpaidPlanPriceFragment}frequency name}agreements{...agreementFragment}}fragment postpaidPlanPriceFragment on PriceDetailRow{__typename key label displayValue value strikeOutDisplayValue strikeOutValue info{__typename title message}}fragment agreementFragment on CarrierAgreement{__typename name type format value docTitle label}fragment preOrderFragment on PreOrder{streetDate streetDateDisplayable streetDateType isPreOrder preOrderMessage preOrderStreetDateMessage}fragment AddressFields on Address{id addressLineOne addressLineTwo city state postalCode firstName lastName phone}fragment PickupPersonFields on PickupPerson{id firstName lastName email}fragment PriceDetailRowFields on PriceDetailRow{__typename key label displayValue value strikeOutValue strikeOutDisplayValue info{__typename title message}}fragment AccessPointFields on AccessPoint{id name assortmentStoreId displayName timeZone address{id addressLineOne addressLineTwo city state postalCode firstName lastName phone}isTest allowBagFee bagFeeValue isExpressEligible fulfillmentOption instructions nodeAccessType}fragment ReservationFields on Reservation{id expiryTime isUnscheduled expired showSlotExpiredError reservedSlot{__typename...on RegularSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata slotExpiryTime endTime available supportedTimeZone}...on DynamicExpressSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime endTime fulfillmentType slotMetadata slotExpiryTime available slaInMins maxItemAllowed supportedTimeZone}...on UnscheduledSlot{price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata unscheduledHoldInDays supportedTimeZone}...on InHomeSlot{id price{total{displayValue}expressFee{displayValue}baseFee{displayValue}memberBaseFee{displayValue}}accessPointId fulfillmentOption startTime fulfillmentType slotMetadata slotExpiryTime endTime available supportedTimeZone}}}fragment AffirmMessageFields on AffirmMessage{__typename description termsUrl imageUrl monthlyPayment termLength isZeroAPR}fragment FulfillmentItemGroupsFields on FulfillmentItemGroup{...on SCGroup{__typename defaultMode collapsedItemIds itemGroups{__typename label itemIds}accessPoint{...AccessPointFields}reservation{...ReservationFields}}...on DigitalDeliveryGroup{__typename defaultMode collapsedItemIds itemGroups{__typename label itemIds}}...on Unscheduled{__typename defaultMode collapsedItemIds itemGroups{__typename label itemIds}accessPoint{...AccessPointFields}reservation{...ReservationFields}}...on FCGroup{__typename defaultMode collapsedItemIds startDate endDate isUnscheduledDeliveryEligible shippingOptions{__typename itemIds availableShippingOptions{__typename id shippingMethod deliveryDate price{__typename displayValue value}label{prefix suffix}isSelected isDefault}}hasMadeShippingChanges slaGroups{__typename label deliveryDate warningLabel sellerGroups{__typename id name isProSeller type shipOptionGroup{__typename deliveryPrice{__typename displayValue value}itemIds shipMethod}}}}...on AutoCareCenter{__typename defaultMode startDate endDate accBasketType collapsedItemIds itemGroups{__typename label itemIds}accessPoint{...AccessPointFields}reservation{...ReservationFields}}}',
+                    variables: {
+                        placeOrderInput: {
+                            contractId: contractId,
+                            substitutions: [],
+                            acceptBagFee: null,
+                            acceptAlcoholDisclosure: null,
+                            acceptSMSOptInDisclosure: null,
+                            marketingEmailPref: null,
+                            deliveryDetails: {
+                                deliveryInstructions: null,
+                                deliveryOption: 'LEAVE_AT_DOOR',
+                            },
+                            mobileNumber: this.taskData.profile.billing.phone,
+                            paymentCvvInfos: [
+                                {
+                                    preferenceId: creditCardId,
+                                    paymentType: 'CREDITCARD',
+                                    integrityCheck: encCard.integrityCheck,
+                                    keyId: encCard.keyId,
+                                    phase: encCard.phase,
+                                    encryptedPan: encCard.number,
+                                    encryptedCvv: encCard.cvc,
+                                },
+                            ],
+                            paymentHandle: null,
+                            acceptDonation: false,
+                            emailAddress: this.taskData.profile.billing.email,
+                            fulfillmentOptions: null,
+                            acceptedAgreements: [],
+                        },
+                        promosEnable: true,
+                        wplusEnabled: true,
+                    },
+                };
+                log('Placing payment');
+                const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
+
+                if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
+                log('Payment resp %O', resp.status);
+            } catch (error) {
+                log('Payment Failed %O', error.data, error.response);
+                this.cancelTask();
+                retry = true;
+                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
+            }
+        } while (retry);
+    }
+
+    async purchaseContract(contractId: string): Promise<void> {
+        let retry = false;
+        let headers: any = { ...WALMART_US_PLACE_ORDER_HEADERS };
         do {
             try {
                 retry = false;
@@ -388,25 +795,24 @@ export class WalmartUSTask extends Task {
                 if (cookie) headers = { ...headers, cookie: cookie };
 
                 const body = {
-                    cvvInSession: true,
-                    voltagePayments: [
-                        {
-                            paymentType: 'CREDITCARD',
-                            encryptedCvv: encCard.cvc,
-                            encryptedPan: encCard.number,
-                            integrityCheck: encCard.integrityCheck,
-                            keyId: encCard.keyId,
-                            phase: encCard.phase,
+                    query: 'query PurchaseContract( $input:PurchaseContractInput! $shouldFetchMembershipData:Boolean! ){membership @include(if:$shouldFetchMembershipData){status savings{money}plan{benefits{code}}}membershipTrialExtension @include(if:$shouldFetchMembershipData){daysEligible}purchaseContract(input:$input){id checkoutGiftingDetails{isCheckoutGiftingOptin giftMessageDetails{giftingMessage recipientEmail recipientName senderName}}payments{id paymentType cardType lastFour isDefault cvvRequired preferenceId expiryMonth expiryYear}order{id status orderVersion mobileNumber ebtSnapBalance{displayValue}ebtCashBalance{displayValue}}terms{alcoholAccepted bagFeeAccepted smsOptInAccepted}lineItems{...LineItemFields}addressMode customer{id firstName lastName email isGuest isEmailRegistered}fulfillment{storeId pickupChoices{isSelected accessType}deliveryDetails{deliveryInstructions deliveryOption}deliveryAddress{...AddressFields}alternatePickupPerson{...PickupPersonFields}primaryPickupPerson{...PickupPersonFields}fulfillmentItemGroups{...on SCGroup{__typename defaultMode collapsedItemIds itemGroups{__typename label itemIds}accessPoint{...AccessPointFields}reservation{...ReservationFields}}...on AutoCareCenter{__typename defaultMode startDate endDate accBasketType collapsedItemIds itemGroups{__typename label itemIds}accessPoint{...AccessPointFields}reservation{...ReservationFields}}...on Unscheduled{__typename defaultMode collapsedItemIds itemGroups{__typename label itemIds}accessPoint{...AccessPointFields}reservation{...ReservationFields}}...on DigitalDeliveryGroup{__typename defaultMode collapsedItemIds itemGroups{__typename label itemIds}}...on FCGroup{__typename defaultMode collapsedItemIds startDate endDate isUnscheduledDeliveryEligible shippingOptions{__typename itemIds availableShippingOptions{__typename id shippingMethod deliveryDate price{__typename displayValue value}label{prefix suffix}isSelected isDefault}}hasMadeShippingChanges slaGroups{__typename label deliveryDate sellerGroups{__typename id name isProSeller type shipOptionGroup{__typename deliveryPrice{__typename displayValue value}itemIds shipMethod}}}}}}priceDetails{subTotal{...PriceDetailRowFields}totalItemQuantity fees{...PriceDetailRowFields}taxTotal{...PriceDetailRowFields}grandTotal{...PriceDetailRowFields}authorizationAmount{value}discounts{...PriceDetailRowFields}}checkoutError{code message operationalErrorCode}errors{code message lineItems{...LineItemFields}}}}fragment AddressFields on Address{id addressLineOne addressLineTwo city state postalCode firstName lastName phone}fragment PickupPersonFields on PickupPerson{id firstName lastName email}fragment LineItemFields on LineItem{id quantity quantityString quantityLabel accessibilityQuantityLabel priceInfo{priceDisplayCodes{showItemPrice priceDisplayCondition finalCostByWeight}itemPrice{displayValue value}linePrice{displayValue value}wasPrice{displayValue value}unitPrice{displayValue value}}selectedAddOnServices{offerId quantity groupType}discounts{key value displayLabel displayValue}isSubstitutionSelected selectedVariants{name value}registryInfo{registryId registryType}product{id name usItemId imageInfo{thumbnailUrl}addOnServices{serviceType groups{groupType services{manufacturerName}}}offerId orderLimit orderMinLimit weightIncrement weightUnit averageWeight salesUnitType availabilityStatus isSubstitutionEligible isAlcohol hasSellerBadge sellerId sellerName sellerType}}fragment PriceDetailRowFields on PriceDetailRow{label displayValue value key}fragment AccessPointFields on AccessPoint{id name timeZone address{...AddressFields}isTest allowBagFee bagFeeValue isExpressEligible fulfillmentOption fulfillmentType nodeAccessType displayName assortmentStoreId instructions}fragment ReservationFields on Reservation{id expired expiryTime isUnscheduled reservedSlot{...on RegularSlot{id endTime fulfillmentOption fulfillmentType slotExpiryTime startTime supportedTimeZone allowedAmendTime __typename}...on DynamicExpressSlot{id endTime fulfillmentOption fulfillmentType slaInMins slotExpiryTime startTime supportedTimeZone allowedAmendTime __typename}...on UnscheduledSlot{fulfillmentOption fulfillmentType startTime supportedTimeZone __typename unscheduledHoldInDays}...on InHomeSlot{id endTime fulfillmentOption fulfillmentType slotExpiryTime startTime supportedTimeZone allowedAmendTime __typename}}}',
+                    variables: {
+                        input: {
+                            purchaseContractId: contractId,
+                            orderId: null,
                         },
-                    ],
+                        shouldFetchMembershipData: true,
+                    },
                 };
-                log('Placing payment');
-                const resp = await this.axiosSession.put('/api/checkout/v3/contract/:PCID/order', body, { headers: headers });
+                log('Purchasing item !!');
+                const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
+
                 if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
-            } catch (err) {
-                log('Payment Failed %O', err);
+                log('Purchase resp %O', resp.status);
+            } catch (error) {
+                log('Purchase Failed %O', error);
                 this.cancelTask();
-                await this.emitStatusWithDelay(MESSAGES.CHECKOUT_FAILED_MESSAGE, 'error');
+                await this.emitStatusWithDelay(MESSAGES.PLACING_ORDER_INFO_MESSAGE, 'error');
             }
         } while (retry);
     }
@@ -419,13 +825,25 @@ export class WalmartUSTask extends Task {
         return encCard;
     }
 
-    // create an object URL from the product URL
+    // create an object URL from the product URL and at the same time parses the itemid from the url
     private initParsedURL(): void {
         try {
             this.parsedURL = new URL(this.taskData.productURL);
+            const match = this.parsedURL.pathname.match(this.ITEM_ID_REGEX);
+            if (match) this.itemId = match.shift();
         } catch (error) {
             this.parsedURL = undefined;
         }
+    }
+
+    private createErrorInterceptor(): void {
+        this.axiosSession.interceptors.response.use(
+            (response) => {
+                if (response.data['errors']) return Promise.reject(response);
+                return response;
+            },
+            (error) => Promise.reject(error),
+        );
     }
 
     // TODO : change the way we update tasks, dont update parsedURL here

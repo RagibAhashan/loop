@@ -7,9 +7,11 @@ export class HTMLParser {
         this.$ = cheerio.load(html);
     }
 
-    parseJSONById(id: string): any {
-        const innerHTML = this.$(`#${id}`).html();
-        if (!innerHTML) return {};
-        return JSON.parse(innerHTML);
+    parseJSONById(...ids: string[]): any {
+        for (const id of ids) {
+            const innerHTML = this.$(`#${id}`).html();
+            if (innerHTML) return JSON.parse(innerHTML);
+        }
+        return {};
     }
 }

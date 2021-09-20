@@ -1,4 +1,4 @@
-import { COMMONG_HEADERS } from './../core/constants/Constants';
+import { COMMON_HEADERS } from './../core/constants/Constants';
 
 export enum StoreType {
     FootlockerUS = 'FootlockerUS',
@@ -29,7 +29,7 @@ export const STORES: StoresMap = {
         name: 'Footlocker US',
         baseURL: 'https://www.footlocker.com/api',
         key: StoreType.FootlockerUS,
-        headers: COMMONG_HEADERS,
+        headers: COMMON_HEADERS,
         url: 'https://www.footlocker.com',
         siteKey: '6LccSjEUAAAAANCPhaM2c-WiRxCZ5CzsjR_vd8uX',
         captchaType: CaptchaType.Google,
@@ -38,7 +38,7 @@ export const STORES: StoresMap = {
         name: 'Footlocker CA',
         baseURL: 'http://localhost:3200/api',
         key: StoreType.FootlockerCA,
-        headers: COMMONG_HEADERS,
+        headers: COMMON_HEADERS,
         url: 'https://www.footlocker.ca',
         siteKey: '6LccSjEUAAAAANCPhaM2c-WiRxCZ5CzsjR_vd8uX', //captcha key,
         captchaType: CaptchaType.Google,
@@ -47,7 +47,7 @@ export const STORES: StoresMap = {
         name: 'Walmart US',
         baseURL: 'https://www.walmart.com',
         key: StoreType.WalmartUS,
-        headers: COMMONG_HEADERS,
+        headers: COMMON_HEADERS,
         url: 'https://www.walmart.com',
         siteKey: '',
         captchaType: CaptchaType.Px,
@@ -56,7 +56,7 @@ export const STORES: StoresMap = {
         name: 'Walmart CA',
         baseURL: 'https://walmart.ca',
         key: StoreType.WalmartCA,
-        headers: COMMONG_HEADERS,
+        headers: COMMON_HEADERS,
         url: 'https://www.walmart.com',
         siteKey: '',
         captchaType: CaptchaType.Px,

@@ -4,9 +4,9 @@ export enum MESSAGES {
     SESSION_INFO_MESSAGE = 'Getting Session',
     SESSION_QUEUE_MESSAGE = 'Getting Session (In Queue)',
     SESSION_ERROR_MESSAGE = 'Getting Session Failed',
-    CHECKING_SIZE_INFO_MESSAGE = 'Checking Stock',
-    CHECKING_SIZE_QUEUE_MESSAGE = 'Checking Stock (In Queue)',
-    CHECKING_SIZE_ERROR_MESSAGE = 'Checking Stock Failed',
+    CHECKING_STOCK_INFO_MESSAGE = 'Checking Stock',
+    CHECKING_STOCK_QUEUE_MESSAGE = 'Checking Stock (In Queue)',
+    CHECKING_STOCK_ERROR_MESSAGE = 'Checking Stock Failed',
     OOS_RETRY_MESSAGE = 'Out of Stock, retrying',
     ADD_CART_INFO_MESSAGE = 'Adding to Cart',
     ADD_CART_ERROR_MESSAGE = 'Adding to Cart Failed',
@@ -23,6 +23,6 @@ export enum MESSAGES {
 
 export const ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.106 Safari/537.36';
 
-export const COMMONG_HEADERS = {
+export const COMMON_HEADERS = {
     'user-agent': ua,
 };

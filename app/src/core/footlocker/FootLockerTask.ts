@@ -113,7 +113,7 @@ export class FootLockerTask extends Task {
         do {
             try {
                 this.cancelTask();
-                this.emit(TASK_STATUS, { message: MESSAGES.CHECKING_SIZE_INFO_MESSAGE, level: 'info' });
+                this.emit(TASK_STATUS, { message: MESSAGES.CHECKING_STOCK_INFO_MESSAGE, level: 'info' });
 
                 headers = {
                     cookie: this.cookieJar.serializeSession(),
@@ -122,7 +122,7 @@ export class FootLockerTask extends Task {
 
                 if (this.waitingRoom.refresh) {
                     console.log('waiting queue for checkout');
-                    await this.emitStatusWithDelay(MESSAGES.CHECKING_SIZE_INFO_MESSAGE + ' (In Queue)', 'info', this.waitingRoom.delay);
+                    await this.emitStatusWithDelay(MESSAGES.CHECKING_STOCK_INFO_MESSAGE + ' (In Queue)', 'info', this.waitingRoom.delay);
                     console.log('finish waiting refresh queue for checkout');
                 }
 
@@ -137,7 +137,7 @@ export class FootLockerTask extends Task {
                 const sellableUnits = response.data['sellableUnits'];
                 const variantAttributes = response.data['variantAttributes'];
                 if (!sellableUnits || !variantAttributes) {
-                    await this.emitStatusWithDelay(MESSAGES.CHECKING_SIZE_ERROR_MESSAGE, 'error');
+                    await this.emitStatusWithDelay(MESSAGES.CHECKING_STOCK_ERROR_MESSAGE, 'error');
                     continue;
                 }
                 const { code: styleCode } = variantAttributes.find((attr: any) => attr.sku === (this.taskData as FLTaskData).productSKU);
@@ -180,15 +180,15 @@ export class FootLockerTask extends Task {
                         console.log('got hit with queue for checkout');
                         this.dispatchQueue(response);
                     } else {
-                        await this.handleStatusError(response.status, MESSAGES.CHECKING_SIZE_ERROR_MESSAGE);
+                        await this.handleStatusError(response.status, MESSAGES.CHECKING_STOCK_ERROR_MESSAGE);
                     }
                 } else if (error.request) {
                     console.log('checking stock without response', error.request);
                     // here means server did not respond, so lets just not log anything an keep saying checking stock
-                    await this.emitStatusWithDelay(MESSAGES.CHECKING_SIZE_ERROR_MESSAGE, 'error');
+                    await this.emitStatusWithDelay(MESSAGES.CHECKING_STOCK_ERROR_MESSAGE, 'error');
                 } else {
                     console.log('chceking other error', error);
-                    await this.emitStatusWithDelay(MESSAGES.CHECKING_SIZE_ERROR_MESSAGE, 'error');
+                    await this.emitStatusWithDelay(MESSAGES.CHECKING_STOCK_ERROR_MESSAGE, 'error');
                 }
                 retry = true;
             }
