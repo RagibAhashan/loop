@@ -1,4 +1,4 @@
-import { TASK_STATUS } from '../../common/Constants';
+import { TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
 import { REGIONS } from '../../common/Regions';
 import { TaskData, WalmartTaskData } from '../../interfaces/TaskInterfaces';
 import { WalmartEncryption } from '../../services/Encryption/WalmartEncryption';
@@ -14,12 +14,12 @@ import {
     WALMART_US_MERGE_GET_CART_HEADERS,
     WALMART_US_PLACE_ORDER_HEADERS,
     WALMART_US_PRODUCT_PAGE_HEADERS,
+    WALMART_US_PURCHASE_CONTRACT_HEADERS,
     WALMART_US_SAVE_TENDER_PC_HEADERS,
     WALMART_US_SET_FULFILLMENT_HEADERS,
     WALMART_US_UPDATE_TENDER_PLAN_HEADERS,
 } from '../constants/Walmart';
 import { CookieJar } from '../CookieJar';
-import { HTMLParser } from '../HTMLParser';
 import { WalmartCreditCard } from '../interface/UserProfile';
 import { debug } from '../Log';
 import { RequestInstance } from '../RequestInstance';
@@ -28,7 +28,6 @@ import { generatePxCookies } from './scripts/px';
 const log = debug.extend('WalmartUSTask');
 
 export class WalmartUSTask extends Task {
-    private htmlParser: HTMLParser;
     protected taskData: WalmartTaskData;
     protected parsedURL!: URL;
     protected itemId: string;
@@ -36,21 +35,22 @@ export class WalmartUSTask extends Task {
     private static readonly WALMART_SELLER_ID = 'F55CDC31AB754BB68FE0B39041159D63';
     private static readonly WALMART_CATALOG_SELLER_ID = '0';
     private static readonly WALMART_SELLER_DISPLAY_NAME = 'Walmart.com';
+    private static readonly IN_STOCK = 'IN_STOCK';
 
     private readonly ITEM_ID_REGEX = /(?<=\/)[0-9].*/;
 
     constructor(uuid: string, requestInstance: RequestInstance, taskData: WalmartTaskData) {
         super(uuid, requestInstance, taskData);
         this.taskData = taskData;
-        this.htmlParser = new HTMLParser();
         this.initParsedURL();
         this.createErrorInterceptor();
     }
 
-    private isSoldByWalmart(product: any): boolean {
+    private isSoldByWalmartAndInStock(product: any): boolean {
         let catalog = false,
             displayName = false,
-            seller = false;
+            seller = false,
+            inStock = false;
 
         if (typeof product['catalogSellerId'] === 'string') catalog = product['catalogSellerId'] === WalmartUSTask.WALMART_CATALOG_SELLER_ID;
 
@@ -60,7 +60,11 @@ export class WalmartUSTask extends Task {
 
         displayName = product['sellerDisplayName'].toLowerCase() === WalmartUSTask.WALMART_SELLER_DISPLAY_NAME.toLowerCase();
 
-        return catalog || displayName || seller;
+        if (product['availabilityStatus'] === WalmartUSTask.IN_STOCK) inStock = true;
+
+        log('Product info status %O', product['availabilityStatus']);
+
+        return (catalog || displayName || seller) && inStock;
     }
 
     async doTask(): Promise<void> {
@@ -85,9 +89,9 @@ export class WalmartUSTask extends Task {
 
             const [creditCardId, encCard] = await this.createCreditCard();
 
-            await this.updateTenderPlan(contractId, tenderPlanId, creditCardId);
+            const newTenderPlanId = await this.updateTenderPlan(contractId, tenderPlanId, creditCardId);
 
-            await this.saveTenderPlanPC(contractId, tenderPlanId);
+            await this.saveTenderPlanPC(contractId, newTenderPlanId);
 
             await this.placeOrder(contractId, creditCardId, encCard);
 
@@ -237,7 +241,10 @@ export class WalmartUSTask extends Task {
                 const itemDesc = resp.data['data'];
 
                 const product = itemDesc['product'];
-                if (!this.isSoldByWalmart(product)) {
+
+                log('Checking product desc %O', product);
+
+                if (!this.isSoldByWalmartAndInStock(product)) {
                     log('This product is not sold by walmart');
                     retry = true;
                     await this.emitStatusWithDelay(MESSAGES.OOS_RETRY_MESSAGE, 'info');
@@ -419,7 +426,7 @@ export class WalmartUSTask extends Task {
                 this.cancelTask();
                 retry = true;
                 log('Create delivery address Error %O', error);
-                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
+                await this.emitStatusWithDelay(MESSAGES.ADDRESS_ERROR_MESSAGE, 'error');
             }
         } while (retry);
     }
@@ -506,7 +513,8 @@ export class WalmartUSTask extends Task {
                 this.cancelTask();
                 retry = true;
 
-                log('Create contract Error %O', error);
+                // log('Create contract Error %O', JSON.stringify(error, null, 4));
+                console.log('Create contract Error', JSON.stringify(error.data));
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
             }
         } while (retry);
@@ -607,6 +615,8 @@ export class WalmartUSTask extends Task {
 
                 const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
 
+                log('Create credit card response %O', resp.data['data']);
+
                 const creditCardId = resp.data['data']['createAccountCreditCard']['creditCard']['id'];
 
                 log('Create credit card response %O %s', resp.status, creditCardId);
@@ -662,13 +672,15 @@ export class WalmartUSTask extends Task {
 
                 const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
 
+                const newTenderPlanId = resp.data['data']['updateTenderPlan']['tenderPlan']['id'];
+
                 log('Update tender plan response %O', resp.status);
 
                 if (resp.headers['set-cookie']) {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 }
 
-                return creditCardId;
+                return newTenderPlanId;
             } catch (error) {
                 this.cancelTask();
                 retry = true;
@@ -781,7 +793,7 @@ export class WalmartUSTask extends Task {
 
     async purchaseContract(contractId: string): Promise<void> {
         let retry = false;
-        let headers: any = { ...WALMART_US_PLACE_ORDER_HEADERS };
+        let headers: any = { ...WALMART_US_PURCHASE_CONTRACT_HEADERS };
         do {
             try {
                 retry = false;
@@ -801,18 +813,23 @@ export class WalmartUSTask extends Task {
                             purchaseContractId: contractId,
                             orderId: null,
                         },
-                        shouldFetchMembershipData: true,
+                        shouldFetchMembershipData: false,
                     },
                 };
                 log('Purchasing item !!');
                 const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
 
                 if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
-                log('Purchase resp %O', resp.status);
+                log('Purchase resp %O', resp);
+
+                this.emit(TASK_SUCCESS, {
+                    message: MESSAGES.CHECKOUT_SUCCESS_MESSAGE,
+                    level: 'success',
+                });
             } catch (error) {
                 log('Purchase Failed %O', error);
                 this.cancelTask();
-                await this.emitStatusWithDelay(MESSAGES.PLACING_ORDER_INFO_MESSAGE, 'error');
+                await this.emitStatusWithDelay(MESSAGES.CHECKOUT_FAILED_MESSAGE, 'fail');
             }
         } while (retry);
     }
@@ -836,6 +853,8 @@ export class WalmartUSTask extends Task {
         }
     }
 
+    // Walmart graphQL api returns a successful response inside an object with the `data` key
+    // An error response is returned inside an array with the `errors` key
     private createErrorInterceptor(): void {
         this.axiosSession.interceptors.response.use(
             (response) => {

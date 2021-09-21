@@ -13,6 +13,7 @@ export enum MESSAGES {
     WAIT_CAPTCHA_MESSAGE = 'Waiting on Captcha',
     BILLING_INFO_MESSAGE = 'Setting Shipping and Billing',
     BILLING_ERROR_MESSAGE = 'Setting Billing Failed',
+    ADDRESS_ERROR_MESSAGE = 'Setting Delivery Address Failed',
     PLACING_ORDER_INFO_MESSAGE = 'Placing Order',
     CHECKOUT_FAILED_MESSAGE = 'Payment Failed',
     CHECKOUT_SUCCESS_MESSAGE = 'Checkout ! 🚀',
