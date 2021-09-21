@@ -28,7 +28,7 @@ export interface UserProfile {
     name: string;
 }
 
-export type StatusLevel = 'error' | 'status' | 'info' | 'idle' | 'cancel' | 'success';
+export type StatusLevel = 'error' | 'status' | 'info' | 'idle' | 'cancel' | 'success' | 'fail';
 export interface Status {
     message: string;
     level: StatusLevel;

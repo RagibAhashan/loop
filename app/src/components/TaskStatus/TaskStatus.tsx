@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Status } from '../../interfaces/TaskInterfaces';
+import { useDispatch } from 'react-redux';
+import { StoreType } from '../../constants/Stores';
+import { Status, StatusLevel } from '../../interfaces/TaskInterfaces';
+import { stopTask } from '../../services/Store/StoreService';
 
-const statusColor = (level: string) => {
+const statusColor = (level: StatusLevel) => {
     switch (level) {
         case 'idle':
             return '#faa61a';
@@ -12,6 +15,7 @@ const statusColor = (level: string) => {
         case 'error':
             return '#ff001e';
         case 'cancel':
+        case 'fail':
             return '#f7331e';
         default:
             return 'white';
@@ -20,23 +24,32 @@ const statusColor = (level: string) => {
 
 const readStatus = (uuid: string): Status => {
     const status = localStorage.getItem(uuid) ?? JSON.stringify({ message: 'Idle', level: 'idle' });
+
     return JSON.parse(status);
 };
 
 const TaskStatus = (props: any) => {
-    const { uuid }: { uuid: string } = props;
+    const { uuid, storeKey }: { uuid: string; storeKey: StoreType } = props;
 
     const [status, setStatus] = useState<Status>(readStatus(uuid));
 
+    const dispatch = useDispatch();
+
     useEffect(() => {
+        console.log('Task status init');
         window.ElectronBridge.on(uuid, (event, status: Status) => {
             setStatus(status);
+
+            if (status.level === 'fail') {
+                dispatch(stopTask({ storeKey: storeKey, uuid: uuid }));
+            }
         });
 
         return () => {
+            console.log('task status destroy');
             window.ElectronBridge.removeAllListeners(uuid);
         };
-    }, [uuid]);
+    }, []);
 
     return (
         <div style={{ display: 'flex', alignItems: 'center' }}>

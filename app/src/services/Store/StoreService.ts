@@ -86,8 +86,8 @@ export const storeSlice = createSlice({
         stopTask: (state, action: PayloadAction<TaskPayload>) => {
             state[action.payload.storeKey].tasks[action.payload.uuid].running = false;
 
-            const anyTaskRunning = Object.values(state[action.payload.storeKey].tasks).some((task) => task.running);
-            state[action.payload.storeKey].running = anyTaskRunning;
+            const isAnyTaskRunning = Object.values(state[action.payload.storeKey].tasks).some((task) => task.running);
+            state[action.payload.storeKey].running = isAnyTaskRunning;
         },
         updateTaskStatus: (state, action: PayloadAction<StatusTaskPayload>) => {
             state[action.payload.storeKey].tasks[action.payload.uuid].status = action.payload.status;
