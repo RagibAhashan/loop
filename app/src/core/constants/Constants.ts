@@ -15,11 +15,13 @@ export enum MESSAGES {
     BILLING_ERROR_MESSAGE = 'Setting Billing Failed',
     ADDRESS_ERROR_MESSAGE = 'Setting Delivery Address Failed',
     PLACING_ORDER_INFO_MESSAGE = 'Placing Order',
+    PLACING_ORDER_ERROR_MESSAGE = 'Placing Order Failed (Retrying)',
     CHECKOUT_FAILED_MESSAGE = 'Payment Failed',
     CHECKOUT_SUCCESS_MESSAGE = 'Checkout ! 🚀',
     CANCELED_MESSAGE = 'Task Canceled 💔',
     CANCELING_MESSAGE = 'Canceling Task',
     GETTING_PRODUCT_INFO_MESSAGE = 'Getting Product',
+    CREDIT_CARD_REJECTED = 'Credit Card Rejected 💳',
 }
 
 export const ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.106 Safari/537.36';

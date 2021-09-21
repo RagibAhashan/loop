@@ -49,6 +49,7 @@ const TaskStatus = (props: any) => {
             console.log('task status destroy');
             window.ElectronBridge.removeAllListeners(uuid);
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

@@ -62,8 +62,6 @@ export class WalmartUSTask extends Task {
 
         if (product['availabilityStatus'] === WalmartUSTask.IN_STOCK) inStock = true;
 
-        log('Product info status %O', product['availabilityStatus']);
-
         return (catalog || displayName || seller) && inStock;
     }
 
@@ -241,8 +239,6 @@ export class WalmartUSTask extends Task {
                 const itemDesc = resp.data['data'];
 
                 const product = itemDesc['product'];
-
-                log('Checking product desc %O', product);
 
                 if (!this.isSoldByWalmartAndInStock(product)) {
                     log('This product is not sold by walmart');
@@ -597,8 +593,8 @@ export class WalmartUSTask extends Task {
                                 addressType: null,
                                 sealedAddress: null,
                             },
-                            expiryYear: 2022,
-                            expiryMonth: 4,
+                            expiryYear: parseInt(encryptedCard.expiryYear),
+                            expiryMonth: parseInt(encryptedCard.expiryMonth),
                             isDefault: false,
                             cardType: 'VISA',
                             integrityCheck: encryptedCard.integrityCheck,
@@ -615,7 +611,7 @@ export class WalmartUSTask extends Task {
 
                 const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
 
-                log('Create credit card response %O', resp.data['data']);
+                log('Create credit card response %s', JSON.stringify(resp.data['data'], null, 4));
 
                 const creditCardId = resp.data['data']['createAccountCreditCard']['creditCard']['id'];
 
@@ -631,7 +627,7 @@ export class WalmartUSTask extends Task {
                 retry = true;
 
                 log('create credit card Error %O', error);
-                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
+                await this.emitStatusWithDelay(MESSAGES.CREDIT_CARD_REJECTED, 'error');
             }
         } while (retry);
     }
@@ -724,7 +720,7 @@ export class WalmartUSTask extends Task {
             } catch (error) {
                 this.cancelTask();
                 retry = true;
-                log('Save tender plan Error %O', error);
+                log('Save tender plan Error %O', error['data']['errors']);
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
             }
         } while (retry);
@@ -737,6 +733,10 @@ export class WalmartUSTask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
+                this.emit(TASK_STATUS, {
+                    message: MESSAGES.PLACING_ORDER_INFO_MESSAGE,
+                    level: 'info',
+                });
 
                 const cookie = this.cookieJar.serializeSession();
                 if (cookie) headers = { ...headers, cookie: cookie };
@@ -786,7 +786,7 @@ export class WalmartUSTask extends Task {
                 log('Payment Failed %O', error.data, error.response);
                 this.cancelTask();
                 retry = true;
-                await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
+                await this.emitStatusWithDelay(MESSAGES.PLACING_ORDER_ERROR_MESSAGE, 'error');
             }
         } while (retry);
     }
@@ -798,10 +798,6 @@ export class WalmartUSTask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
-                this.emit(TASK_STATUS, {
-                    message: MESSAGES.PLACING_ORDER_INFO_MESSAGE,
-                    level: 'info',
-                });
 
                 const cookie = this.cookieJar.serializeSession();
                 if (cookie) headers = { ...headers, cookie: cookie };
@@ -861,7 +857,15 @@ export class WalmartUSTask extends Task {
                 if (response.data['errors']) return Promise.reject(response);
                 return response;
             },
-            (error) => Promise.reject(error),
+            (error) => {
+                if (error.response) {
+                    // Captcha
+                    if (error.response.status === 412) {
+                        console.log('handle captcha');
+                    }
+                }
+                return Promise.reject(error);
+            },
         );
     }
 
