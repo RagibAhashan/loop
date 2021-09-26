@@ -123,6 +123,7 @@
         "less": "^4.1.1",
         "less-loader": "^10.0.1",
         "node-loader": "^2.0.0",
+        "prop-types": "^15.7.2",
         "redux-devtools": "^3.7.0",
         "style-loader": "^3.0.0",
         "ts-loader": "^9.2.2",

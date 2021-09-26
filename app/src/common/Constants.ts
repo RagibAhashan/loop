@@ -18,13 +18,15 @@ export const NOTIFY_TASK_STATUS = (store: StoreType) => `task-status-${store}`;
 export const GET_DATADOME = (store: StoreType) => `get-datadome-${store}`;
 export const NOTIFY_EDIT_TASK = (store: StoreType) => `edit-task-${store}`;
 export const NOTIFY_ON_START_INIT_TASK = (store: StoreType) => `on-start-init-tasks-${store}`;
-export const NOTIFY_CAPTCHA = 'task-notify-captcha';
+export const NOTIFY_CAPTCHA_TASK = 'task-notify-captcha';
+export const NOTIFY_CAPTCHA_STORE = (store: StoreType) => `notify-captcha-${store}`;
 export const NOTIFY_CAPTCHA_SOLVED = 'captcha-solved';
 export const TASK_STOPPED = 'task-stopped';
 export const TASK_STOP = 'task-stop';
 export const TASK_STATUS = 'status';
 export const TASK_SUCCESS = 'checkout';
 
+// Channels for communication between renderer and main process to open or close captcha window
 export const CAPTHA_WINDOW_CLOSED = 'captcha-window-closed';
 export const CAPTHA_WINDOW_OPEN = 'open-captcha-window';
 

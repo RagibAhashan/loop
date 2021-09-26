@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
-import { NOTIFY_ADD_TASK, NOTIFY_EDIT_TASK, NOTIFY_START_TASK } from '../common/Constants';
+import { NOTIFY_ADD_TASK, NOTIFY_CAPTCHA_TASK, NOTIFY_EDIT_TASK, NOTIFY_START_TASK } from '../common/Constants';
 import {
-    NOTIFY_CAPTCHA,
+    NOTIFY_CAPTCHA_STORE,
     NOTIFY_ON_START_INIT_TASK,
     NOTIFY_STOP_TASK,
     NOTIFY_TASK_STATUS,
@@ -11,8 +11,7 @@ import {
     TASK_SUCCESS,
 } from './../common/Constants';
 import { StoreType } from './../constants/Stores';
-import { TaskData } from './../interfaces/TaskInterfaces';
-import { captchaWindowManager } from './captcha-window/CaptchaWindowManager';
+import { Captcha, TaskData } from './../interfaces/TaskInterfaces';
 import { Task } from './Task';
 import { taskManager } from './TaskManager';
 
@@ -47,12 +46,13 @@ export abstract class BaseStoreEvents {
             event.reply(uuid + TASK_STOPPED, uuid);
         });
 
-        newTask.on(NOTIFY_CAPTCHA, (captcha: any) => {
-            const capWin = captchaWindowManager.getWindow(this.storeType);
-            event.reply(this.storeType + NOTIFY_CAPTCHA, captcha);
-            if (capWin) {
-                capWin.webContents.send(this.storeType + NOTIFY_CAPTCHA, captcha);
-            }
+        newTask.on(NOTIFY_CAPTCHA_TASK, (captcha: Captcha) => {
+            // const capWin = captchaWindowManager.getWindow(this.storeType);
+            console.log('task got captcha sending to renderer');
+            event.reply(NOTIFY_CAPTCHA_STORE(this.storeType), captcha);
+            // if (capWin) {
+            //     capWin.webContents.send(NOTIFY_CAPTCHA_STORE(this.storeType), captcha);
+            // }
         });
 
         newTask.on(TASK_SUCCESS, () => {

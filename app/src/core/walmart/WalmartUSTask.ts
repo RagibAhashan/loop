@@ -1,4 +1,4 @@
-import { NOTIFY_CAPTCHA, NOTIFY_CAPTCHA_SOLVED, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
+import { NOTIFY_CAPTCHA_SOLVED, NOTIFY_CAPTCHA_TASK, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
 import { REGIONS } from '../../common/Regions';
 import { TaskData, WalmartTaskData } from '../../interfaces/TaskInterfaces';
 import { WalmartEncryption } from '../../services/Encryption/WalmartEncryption';
@@ -868,7 +868,7 @@ export class WalmartUSTask extends Task {
     private async dispatchCaptcha(captchaResponse: any): Promise<void> {
         this.emit(TASK_STATUS, { message: MESSAGES.WAIT_CAPTCHA_MESSAGE, level: 'captcha' });
 
-        this.emit(NOTIFY_CAPTCHA, {
+        this.emit(NOTIFY_CAPTCHA_TASK, {
             uuid: this.uuid,
             params: captchaResponse,
         });
@@ -907,6 +907,7 @@ export class WalmartUSTask extends Task {
                 if (error.response) {
                     // Captcha
                     if (error.response.status === 412) {
+                        log('Dispatching Captcha');
                         await this.dispatchCaptcha(error.response.data);
                         return Promise.reject(new CaptchaException('Walmart US Captcha Exception', error));
                     }

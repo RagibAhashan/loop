@@ -174,6 +174,8 @@ export const {
     updateTaskStatus,
     startAllTasks,
     stopAllTasks,
+    addCaptchaToQueue,
+    updateCaptchaQueue,
 } = storeSlice.actions;
 
 // REDUCER

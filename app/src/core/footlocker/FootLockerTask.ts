@@ -1,5 +1,5 @@
 import { AxiosResponse } from 'axios';
-import { NOTIFY_CAPTCHA, NOTIFY_CAPTCHA_SOLVED, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
+import { NOTIFY_CAPTCHA_SOLVED, NOTIFY_CAPTCHA_TASK, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
 import { Cookie, Headers } from '../constants/Cookies';
 import { ERRORS_CART, ERRORS_CHECKOUT, ERRORS_PAYMENT, ERRORS_SHIPPING, STATUS_ERROR } from '../constants/FootLocker';
 import { CANCEL_ERROR, Task } from '../Task';
@@ -405,7 +405,7 @@ export class FootLockerTask extends Task {
         const capDatadome = this.cookieJar.extract(cookies, Cookie.DATADOME);
         const captcha_url = `${response.data['url']}&cid=${capDatadome}`;
 
-        this.emit(NOTIFY_CAPTCHA, {
+        this.emit(NOTIFY_CAPTCHA_TASK, {
             uuid: this.uuid,
             params: this.cookieJar.extractQueryParams(captcha_url),
         });

@@ -51,6 +51,8 @@ export interface PxCaptcha {
 export interface GoogleCaptcha {
     siteKey: string;
 }
+
+// Used with the NOTIFY_CAPTCHA task event
 export interface Captcha {
     taskUUID: string;
     params: PxCaptcha | GoogleCaptcha;

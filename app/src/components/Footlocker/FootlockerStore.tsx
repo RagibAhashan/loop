@@ -1,9 +1,6 @@
-import { Button, Col, Row, Select } from 'antd';
-import React, { useEffect, useState } from 'react';
-import { CAPTHA_WINDOW_CLOSED, CAPTHA_WINDOW_OPEN, NOTIFY_CAPTCHA } from '../../common/Constants';
-import { buttonStyle } from '../../styles/Buttons';
+import { Col, Row, Select } from 'antd';
+import React from 'react';
 import AddTaskAction from '../AddTaskAction/AddTaskAction';
-import { ICaptcha } from '../Captcha/CaptchaFrame';
 import DeleteAllTaskAction from '../DeleteAllTaskAction/DeleteAllTaskAction';
 import EditAllTasksAction from '../EditAllTasksAction/EditAllTasksAction';
 import StartAllTasksAction from '../StartAllTasksAction/StartAllTasksAction';
@@ -13,6 +10,7 @@ import FLEditTaskModal from './FLEditTaskModal';
 import FLHeaders from './FLHeaders';
 import FLNewTaskModal from './FLNewTaskModal';
 import FLTask from './FLTask';
+import FootlockerCaptcha from './FootlockerCaptcha';
 const { Option } = Select;
 
 const allSizes: any[] = [];
@@ -26,42 +24,6 @@ for (let i = 4; i < 14; i += 0.5) {
 
 const FootlockerStore = (props: any) => {
     const { storeKey } = props;
-    const [captchaWinOpened, setCaptchaWinOpened] = useState(false);
-
-    // TODO change captcha logic
-    useEffect(() => {
-        window.ElectronBridge.on(CAPTHA_WINDOW_CLOSED, () => {
-            setCaptchaWinOpened(false);
-        });
-        listenCaptcha();
-        return () => {
-            window.ElectronBridge.removeAllListeners(CAPTHA_WINDOW_CLOSED);
-            window.ElectronBridge.removeAllListeners(storeKey + NOTIFY_CAPTCHA);
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const listenCaptcha = () => {
-        window.ElectronBridge.on(storeKey + NOTIFY_CAPTCHA, (event, captcha: ICaptcha) => {
-            // store tasks with captcha in localstorage
-            let curr = JSON.parse(localStorage.getItem(storeKey + NOTIFY_CAPTCHA) as string) as ICaptcha[];
-            curr = curr ? [...curr, captcha] : [captcha];
-
-            console.log('storing captcahs in local', curr);
-            localStorage.setItem(storeKey + NOTIFY_CAPTCHA, JSON.stringify(curr));
-
-            // and then open window
-            if (!captchaWinOpened) {
-                console.log('got captcha');
-                openCaptcha();
-            }
-        });
-    };
-
-    const openCaptcha = async () => {
-        window.ElectronBridge.send(CAPTHA_WINDOW_OPEN, storeKey);
-        setCaptchaWinOpened(true);
-    };
 
     const ROW_GUTTER: [number, number] = [24, 0];
 
@@ -91,9 +53,7 @@ const FootlockerStore = (props: any) => {
                     <DeleteAllTaskAction storeKey={storeKey}></DeleteAllTaskAction>
                 </Col>
                 <Col span={3}>
-                    <Button style={buttonStyle} type="primary" onClick={() => openCaptcha()} disabled={captchaWinOpened}>
-                        Captcha
-                    </Button>
+                    <FootlockerCaptcha storeKey={storeKey}></FootlockerCaptcha>
                 </Col>
             </Row>
         </div>
