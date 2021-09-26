@@ -18,7 +18,7 @@ export const NOTIFY_TASK_STATUS = (store: StoreType) => `task-status-${store}`;
 export const GET_DATADOME = (store: StoreType) => `get-datadome-${store}`;
 export const NOTIFY_EDIT_TASK = (store: StoreType) => `edit-task-${store}`;
 export const NOTIFY_ON_START_INIT_TASK = (store: StoreType) => `on-start-init-tasks-${store}`;
-export const NOTIFY_CAPTCHA = 'captcha';
+export const NOTIFY_CAPTCHA = 'task-notify-captcha';
 export const NOTIFY_CAPTCHA_SOLVED = 'captcha-solved';
 export const TASK_STOPPED = 'task-stopped';
 export const TASK_STOP = 'task-stop';

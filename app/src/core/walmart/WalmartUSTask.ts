@@ -1,4 +1,4 @@
-import { TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
+import { NOTIFY_CAPTCHA, NOTIFY_CAPTCHA_SOLVED, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
 import { REGIONS } from '../../common/Regions';
 import { TaskData, WalmartTaskData } from '../../interfaces/TaskInterfaces';
 import { WalmartEncryption } from '../../services/Encryption/WalmartEncryption';
@@ -23,7 +23,8 @@ import { CookieJar } from '../CookieJar';
 import { WalmartCreditCard } from '../interface/UserProfile';
 import { debug } from '../Log';
 import { RequestInstance } from '../RequestInstance';
-import { Task } from '../Task';
+import { CANCEL_ERROR, Task } from '../Task';
+import { CaptchaException } from './../exceptions/CaptchaException';
 import { generatePxCookies } from './scripts/px';
 const log = debug.extend('WalmartUSTask');
 
@@ -849,6 +850,51 @@ export class WalmartUSTask extends Task {
         }
     }
 
+    /*
+    Walmart prompts a captcha with a 412 HTTP status code and a json object containing information to render the captcha
+    captchaResponse should be in this format : 
+    {
+        "redirectUrl": "",
+        "appId": "",
+        "jsClientSrc": "",
+        "firstPartyEnabled": true,
+        "vid": "",
+        "uuid": "",
+        "hostUrl": "",
+        "blockScript": ""
+    }
+    This function will wait for the user to solve the captcha
+    */
+    private async dispatchCaptcha(captchaResponse: any): Promise<void> {
+        this.emit(TASK_STATUS, { message: MESSAGES.WAIT_CAPTCHA_MESSAGE, level: 'captcha' });
+
+        this.emit(NOTIFY_CAPTCHA, {
+            uuid: this.uuid,
+            params: captchaResponse,
+        });
+
+        const waitCap = this.waitForCaptcha();
+        this.cancelTimeout = waitCap.cancel;
+        await waitCap.promise;
+    }
+
+    private waitForCaptcha(): { promise: any; cancel: any } {
+        let cancel;
+
+        const promise = new Promise((resolve, reject) => {
+            this.once(NOTIFY_CAPTCHA_SOLVED, () => {
+                resolve('Walmart US captcha solved by user');
+            });
+
+            cancel = () => {
+                this.cancelTimeout = () => {};
+                reject(CANCEL_ERROR);
+            };
+        });
+
+        return { promise: promise, cancel: cancel };
+    }
+
     // Walmart graphQL api returns a successful response inside an object with the `data` key
     // An error response is returned inside an array with the `errors` key
     private createErrorInterceptor(): void {
@@ -857,11 +903,12 @@ export class WalmartUSTask extends Task {
                 if (response.data['errors']) return Promise.reject(response);
                 return response;
             },
-            (error) => {
+            async (error) => {
                 if (error.response) {
                     // Captcha
                     if (error.response.status === 412) {
-                        console.log('handle captcha');
+                        await this.dispatchCaptcha(error.response.data);
+                        return Promise.reject(new CaptchaException('Walmart US Captcha Exception', error));
                     }
                 }
                 return Promise.reject(error);

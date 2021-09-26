@@ -66,10 +66,10 @@ const createWindow = () => {
         captchaWindowManager.closeAll();
     });
 
-    ipcMain.on(CAPTHA_WINDOW_OPEN, (event, store: StoreType, captcha) => {
+    ipcMain.on(CAPTHA_WINDOW_OPEN, (event, store: StoreType) => {
         const currentStore = STORES[store];
 
-        log('New captcha window open %o', store, currentStore);
+        log('New captcha window open %o', store);
 
         const capWin = captchaWindowManager.getWindow(store);
         if (capWin) {

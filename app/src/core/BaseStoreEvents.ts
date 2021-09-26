@@ -50,7 +50,9 @@ export abstract class BaseStoreEvents {
         newTask.on(NOTIFY_CAPTCHA, (captcha: any) => {
             const capWin = captchaWindowManager.getWindow(this.storeType);
             event.reply(this.storeType + NOTIFY_CAPTCHA, captcha);
-            if (capWin) capWin.webContents.send(this.storeType + NOTIFY_CAPTCHA, captcha);
+            if (capWin) {
+                capWin.webContents.send(this.storeType + NOTIFY_CAPTCHA, captcha);
+            }
         });
 
         newTask.on(TASK_SUCCESS, () => {

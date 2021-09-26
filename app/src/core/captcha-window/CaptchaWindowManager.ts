@@ -1,4 +1,8 @@
 import { BrowserWindow } from 'electron';
+
+/*
+Map that stores captcha windows
+*/
 class CaptchaWindowManager {
     windows: Map<string, BrowserWindow>;
     constructor() {

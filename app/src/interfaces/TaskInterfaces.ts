@@ -35,6 +35,27 @@ export interface Status {
     checkedSize?: string;
 }
 
+// Interfaces that define different captcha provider properties
+// Subject to change
+export interface PxCaptcha {
+    redirectUrl: string;
+    appId: string;
+    jsClientSrc: string;
+    firstPartyEnabled: boolean;
+    vid: string;
+    uuid: string;
+    hostUrl: string;
+    blockScript: string;
+}
+
+export interface GoogleCaptcha {
+    siteKey: string;
+}
+export interface Captcha {
+    taskUUID: string;
+    params: PxCaptcha | GoogleCaptcha;
+}
+
 export interface TaskMap {
     [key: string]: TaskData; //a task have its uuid as key
 }

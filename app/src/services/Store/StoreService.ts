@@ -3,9 +3,10 @@ import { NOTIFY_STOP_TASK } from '../../common/Constants';
 import { assignProxy, deleteAllProxiesFromSet, deleteProxyFromSet } from '../Proxy/ProxyService';
 import { StoreType } from './../../constants/Stores';
 import { AppState } from './../../global-store/GlobalStore';
-import { Status, TaskData, TaskMap } from './../../interfaces/TaskInterfaces';
+import { Captcha, Status, TaskData, TaskMap } from './../../interfaces/TaskInterfaces';
 export interface Store {
     tasks: TaskMap;
+    captchas: Captcha[]; //Queue of captchas
     running: boolean;
     displayName: string;
 }
@@ -40,6 +41,14 @@ export interface StatusTaskPayload extends TaskPayload {
     status: Status;
 }
 
+export interface CaptchaPayload extends StorePayload {
+    captcha: Captcha;
+}
+
+export interface CaptchaQueuePayload extends StorePayload {
+    captchaQueue: Captcha[];
+}
+
 const initialState = {} as StoreState;
 
 export const storeSlice = createSlice({
@@ -47,7 +56,7 @@ export const storeSlice = createSlice({
     initialState: initialState,
     reducers: {
         addStore: (state, action: PayloadAction<AddStorePayload>) => {
-            state[action.payload.storeKey] = { tasks: {}, running: false, displayName: action.payload.storeName };
+            state[action.payload.storeKey] = { tasks: {}, running: false, displayName: action.payload.storeName, captchas: [] };
         },
         deleteStore: (state, action: PayloadAction<StorePayload>) => {
             delete state[action.payload.storeKey];
@@ -104,6 +113,12 @@ export const storeSlice = createSlice({
             });
             state[action.payload.storeKey].running = false;
         },
+        addCaptchaToQueue: (state, action: PayloadAction<CaptchaPayload>) => {
+            state[action.payload.storeKey].captchas.push(action.payload.captcha);
+        },
+        updateCaptchaQueue: (state, action: PayloadAction<CaptchaQueuePayload>) => {
+            state[action.payload.storeKey].captchas = action.payload.captchaQueue;
+        },
     },
     extraReducers: (builder) => {
         builder
@@ -142,6 +157,8 @@ export const getTaskById = (state: AppState, storeKey: StoreType, uuid: string) 
 export const isStoreCreated = (state: AppState, storeKey: StoreType) => {
     return state.stores[storeKey] ? true : false;
 };
+
+export const getCaptchaQueueFromStore = (state: AppState, storeKey: StoreType): Captcha[] => state.stores[storeKey].captchas;
 
 // ACTIONS
 export const {
