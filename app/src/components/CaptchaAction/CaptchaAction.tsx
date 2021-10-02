@@ -7,9 +7,9 @@ import { Captcha } from '../../interfaces/TaskInterfaces';
 import { addCaptchaToQueue } from '../../services/Store/StoreService';
 import { buttonStyle } from '../../styles/Buttons';
 /*
-This component renders the captcha button for the walmart store and manages the captcha queue
+This component renders the captcha button for a store and manages the captcha queue
 */
-const WalmartCaptcha = (props: any) => {
+const CaptchaAction = (props: any) => {
     const { storeKey } = props;
     const dispatch = useDispatch();
     const [captchaWinOpened, setCaptchaWinOpened] = useState(false);
@@ -51,8 +51,8 @@ const WalmartCaptcha = (props: any) => {
     );
 };
 
-WalmartCaptcha.propTypes = {
+CaptchaAction.propTypes = {
     storeKey: PropTypes.string.isRequired,
 };
 
-export default WalmartCaptcha;
+export default CaptchaAction;

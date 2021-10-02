@@ -1,6 +1,7 @@
 import { Col, Row, Select } from 'antd';
 import React from 'react';
 import AddTaskAction from '../AddTaskAction/AddTaskAction';
+import CaptchaAction from '../CaptchaAction/CaptchaAction';
 import DeleteAllTaskAction from '../DeleteAllTaskAction/DeleteAllTaskAction';
 import EditAllTasksAction from '../EditAllTasksAction/EditAllTasksAction';
 import StartAllTasksAction from '../StartAllTasksAction/StartAllTasksAction';
@@ -10,7 +11,6 @@ import FLEditTaskModal from './FLEditTaskModal';
 import FLHeaders from './FLHeaders';
 import FLNewTaskModal from './FLNewTaskModal';
 import FLTask from './FLTask';
-import FootlockerCaptcha from './FootlockerCaptcha';
 const { Option } = Select;
 
 const allSizes: any[] = [];
@@ -53,7 +53,7 @@ const FootlockerStore = (props: any) => {
                     <DeleteAllTaskAction storeKey={storeKey}></DeleteAllTaskAction>
                 </Col>
                 <Col span={3}>
-                    <FootlockerCaptcha storeKey={storeKey}></FootlockerCaptcha>
+                    <CaptchaAction storeKey={storeKey}></CaptchaAction>
                 </Col>
             </Row>
         </div>

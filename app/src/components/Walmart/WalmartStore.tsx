@@ -1,12 +1,12 @@
 import { Col, Row, Select } from 'antd';
 import React from 'react';
 import AddTaskAction from '../AddTaskAction/AddTaskAction';
+import CaptchaAction from '../CaptchaAction/CaptchaAction';
 import DeleteAllTaskAction from '../DeleteAllTaskAction/DeleteAllTaskAction';
 import EditAllTasksAction from '../EditAllTasksAction/EditAllTasksAction';
 import StartAllTasksAction from '../StartAllTasksAction/StartAllTasksAction';
 import StopAllTasksAction from '../StopAllTasksAction/StopAllTasksAction';
 import TaskListContainer from '../TaskListContainer/TaskListContainer';
-import WalmartCaptcha from './WalmartCaptcha';
 import WalmartEditTaskModal from './WalmartEditTaskModal';
 import WalmartHeaders from './WalmartHeaders';
 import WalmartNewTaskModal from './WalmartNewTaskModal';
@@ -53,7 +53,7 @@ const WalmartStore = (props: any) => {
                     <DeleteAllTaskAction storeKey={storeKey}></DeleteAllTaskAction>
                 </Col>
                 <Col span={3}>
-                    <WalmartCaptcha storeKey={storeKey}></WalmartCaptcha>
+                    <CaptchaAction storeKey={storeKey}></CaptchaAction>
                 </Col>
             </Row>
         </div>
