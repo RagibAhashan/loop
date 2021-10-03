@@ -1,8 +1,12 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { STORE_KEY } from '../common/Constants';
 import { StoreType } from '../constants/Stores';
+import { debug } from '../core/Log';
 import { AppState } from '../global-store/GlobalStore';
 import { getCaptchaQueueFromStore, getTasksByStore } from '../services/Store/StoreService';
+
+const log = debug.extend('PXCaptcha');
 
 export interface ICaptcha {
     params: { [key: string]: string };
@@ -77,18 +81,23 @@ const CaptchaFrame = () => {
     // };
 
     const captchaQueue = useSelector((state: AppState) => getCaptchaQueueFromStore(state, StoreType.WalmartUS));
-
+    const dispatch = useDispatch();
     const nextCaptcha = () => {
-        
         captchaQueue.shift();
-    }
+        // dispatch(updateCaptchaQueue({storeKey: }))
+    };
 
     const tasks = useSelector((state: AppState) => getTasksByStore(state, StoreType.WalmartUS));
 
+    useEffect(() => {
+        log('Savinfg this shit');
+        window.ElectronBridge.on(STORE_KEY, (event, storeKey: StoreType) => {
+            console.log('got store key', storeKey);
+        });
+    }, []);
+
     return (
-        <div>
-            PX FRAME
-        </div>
+        <div>PX FRAME</div>
         // <div key={store} style={containerStyle}>
         //     <div style={captchaContainer}>{renderCaptcha()}</div>
         // </div>

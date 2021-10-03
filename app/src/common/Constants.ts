@@ -29,6 +29,7 @@ export const TASK_SUCCESS = 'checkout';
 // Channels for communication between renderer and main process to open or close captcha window
 export const CAPTHA_WINDOW_CLOSED = 'captcha-window-closed';
 export const CAPTHA_WINDOW_OPEN = 'open-captcha-window';
+export const STORE_KEY = 'store-key';
 
 export const GET_SYSTEM_ID = 'get-system-id';
 export const ACCESS_GRANTED = 'access-granted';

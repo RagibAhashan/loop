@@ -11,6 +11,7 @@ import {
     NOTIFY_STOP_PROXY_TEST,
     PROXY_TEST_REPLY,
     PROXY_TEST_SUCCEEDED,
+    STORE_KEY,
 } from './common/Constants';
 import { CaptchaType, STORES, StoreType } from './constants/Stores';
 import { captchaWindowManager } from './core/captcha-window/CaptchaWindowManager';
@@ -65,48 +66,6 @@ const createWindow = () => {
     mainWindow.on('close', () => {
         captchaWindowManager.closeAll();
     });
-
-    ipcMain.on(CAPTHA_WINDOW_OPEN, (event, store: StoreType) => {
-        const currentStore = STORES[store];
-
-        log('New captcha window open %o', store);
-
-        const capWin = captchaWindowManager.getWindow(store);
-        if (capWin) {
-            // on open send the captcha
-            capWin.show();
-            return;
-        }
-
-        const newWin = new BrowserWindow({
-            // parent: win, //dont set parent or else it will not be visible in taskbar
-            width: 465,
-            height: 630,
-            fullscreenable: false,
-            webPreferences: {
-                preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
-            },
-        });
-
-        newWin.setMenuBarVisibility(false);
-        newWin.setAutoHideMenuBar(true);
-        captchaWindowManager.register(store, newWin);
-
-        switch (currentStore.captchaType) {
-            case CaptchaType.Google:
-                newWin.loadURL(GOOGLE_CAPTCHA_WINDOW_WEBPACK_ENTRY);
-                break;
-            case CaptchaType.Px:
-                newWin.loadURL(PX_CAPTCHA_WINDOW_WEBPACK_ENTRY);
-                break;
-        }
-        newWin.on('close', (e) => {
-            log('cap got closed');
-            e.preventDefault();
-            event.reply(CAPTHA_WINDOW_CLOSED);
-            newWin.hide();
-        });
-    });
 };
 
 app.whenReady().then(async () => {
@@ -149,6 +108,54 @@ flUSEvents.initEvents();
 
 const wUSEvents = new WalmartEvents(StoreType.WalmartUS);
 wUSEvents.initEvents();
+
+ipcMain.on(CAPTHA_WINDOW_OPEN, (event, store: StoreType) => {
+    const currentStore = STORES[store];
+
+    log('New captcha window open %o', store);
+
+    const capWin = captchaWindowManager.getWindow(store);
+    if (capWin) {
+        // on open send the captcha
+        capWin.show();
+        return;
+    }
+
+    const newWin = new BrowserWindow({
+        // parent: win, //dont set parent or else it will not be visible in taskbar
+        width: 465,
+        height: 630,
+        fullscreenable: false,
+        webPreferences: {
+            preload: MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY,
+        },
+    });
+
+    newWin.setMenuBarVisibility(false);
+    newWin.setAutoHideMenuBar(true);
+    captchaWindowManager.register(store, newWin);
+
+    switch (currentStore.captchaType) {
+        case CaptchaType.Google:
+            newWin.loadURL(GOOGLE_CAPTCHA_WINDOW_WEBPACK_ENTRY);
+            break;
+        case CaptchaType.Px:
+            newWin.loadURL(PX_CAPTCHA_WINDOW_WEBPACK_ENTRY);
+            break;
+    }
+    newWin.on('close', (e) => {
+        log('cap got closed');
+        e.preventDefault();
+        event.reply(CAPTHA_WINDOW_CLOSED);
+        newWin.hide();
+    });
+
+    // when the captcha windows is opened, send it the storeKey
+    newWin.on('show', () => {
+        log('showing this fkn window');
+        newWin.webContents.send(STORE_KEY, currentStore.siteKey);
+    });
+});
 
 ipcMain.handle(GET_SYSTEM_ID, async (event) => {
     try {
