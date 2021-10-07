@@ -82,7 +82,8 @@ export interface FLTaskData extends TaskData {
 }
 
 export interface WalmartTaskData extends TaskData {
-    productURL: string;
+    productSKU: string;
+    offerId: string;
 }
 
 export interface StartTaskData {

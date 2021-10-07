@@ -1,5 +1,6 @@
 import { STORES } from '../constants/Stores';
 import { Proxy } from '../interfaces/OtherInterfaces';
+import UserAgentProvider from '../services/UserAgentProvider';
 import { StoreInfo, StoreType } from './../constants/Stores';
 import { FLTaskData, WalmartTaskData } from './../interfaces/TaskInterfaces';
 import { FootLockerTask } from './footlocker/FootLockerTask';
@@ -45,7 +46,10 @@ export class TaskFactory {
     }
 
     private static createRequestInstance(store: StoreInfo, proxy: Proxy | null, params?: any): RequestInstance {
-        const axios = new RequestInstance(store.baseURL, params, store.headers, proxy ? new ProxyAgent(proxy.host, proxy.credential) : undefined);
+        const commonHeader = {
+            'user-agent': UserAgentProvider.randomUserAgent(),
+        };
+        const axios = new RequestInstance(store.baseURL, params, commonHeader, proxy ? new ProxyAgent(proxy.host, proxy.credential) : undefined);
 
         return axios;
     }

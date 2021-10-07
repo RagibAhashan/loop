@@ -1,8 +1,6 @@
-import { COMMON_HEADERS } from './Constants';
-
 // Headers used to request https://walmart.com/ip/productname/productid
+// TODO currently homepage used and product page, will check later what works best.
 export const WALMART_US_PRODUCT_PAGE_HEADERS = {
-    ...COMMON_HEADERS,
     accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
@@ -18,8 +16,23 @@ export const WALMART_US_PRODUCT_PAGE_HEADERS = {
     'upgrade-insecure-requests': '1',
 };
 
+export const WALMART_US_HOMEPAGE_HEADERS = {
+    accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+    'accept-encoding': 'gzip, deflate, br',
+    'accept-language': 'en-US,en;q=0.9',
+    'cache-control': 'max-age=0',
+    'sec-ch-ua': '"Chromium";v="94", "Microsoft Edge";v="94", ";Not A Brand";v="99"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'document',
+    'sec-fetch-mode': 'navigate',
+    'sec-fetch-site': 'same-origin',
+    'sec-fetch-user': '?1',
+    'service-worker-navigation-preload': 'true',
+    'upgrade-insecure-requests': '1',
+};
+
 export const WALMART_US_GET_ITEM_HEADERS = {
-    ...COMMON_HEADERS,
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
@@ -45,7 +58,6 @@ export const WALMART_US_GET_ITEM_HEADERS = {
 };
 
 export const WALMART_US_MERGE_GET_CART_HEADERS = {
-    ...COMMON_HEADERS,
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
@@ -68,7 +80,6 @@ export const WALMART_US_MERGE_GET_CART_HEADERS = {
 };
 
 export const WALMART_US_ATC_HEADERS = {
-    ...COMMON_HEADERS,
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
@@ -94,7 +105,6 @@ export const WALMART_US_ATC_HEADERS = {
 };
 
 export const WALMART_US_CREATE_DELIVERY_ADDRESS = {
-    ...COMMON_HEADERS,
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
@@ -117,7 +127,6 @@ export const WALMART_US_CREATE_DELIVERY_ADDRESS = {
 };
 
 export const WALMART_US_SET_FULFILLMENT_HEADERS = {
-    ...COMMON_HEADERS,
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
@@ -139,7 +148,6 @@ export const WALMART_US_SET_FULFILLMENT_HEADERS = {
     'x-o-segment': 'oaoh',
 };
 export const WALMART_US_CREATE_CONTRACT_HEADERS = {
-    ...COMMON_HEADERS,
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
@@ -163,7 +171,6 @@ export const WALMART_US_CREATE_CONTRACT_HEADERS = {
 };
 
 export const WALMART_US_GET_TENDER_PLAN_HEADERS = {
-    ...COMMON_HEADERS,
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
@@ -188,7 +195,6 @@ export const WALMART_US_GET_TENDER_PLAN_HEADERS = {
 };
 
 export const WALMART_US_CREATE_CREDIT_CARD_HEADERS = {
-    ...COMMON_HEADERS,
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
@@ -211,7 +217,6 @@ export const WALMART_US_CREATE_CREDIT_CARD_HEADERS = {
     'x-o-segment': 'oaoh',
 };
 export const WALMART_US_UPDATE_TENDER_PLAN_HEADERS = {
-    ...COMMON_HEADERS,
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
@@ -235,7 +240,6 @@ export const WALMART_US_UPDATE_TENDER_PLAN_HEADERS = {
     'x-o-tp-phase': 'tp5',
 };
 export const WALMART_US_SAVE_TENDER_PC_HEADERS = {
-    ...COMMON_HEADERS,
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
@@ -259,7 +263,6 @@ export const WALMART_US_SAVE_TENDER_PC_HEADERS = {
     'x-o-tp-phase': 'tp5',
 };
 export const WALMART_US_PLACE_ORDER_HEADERS = {
-    ...COMMON_HEADERS,
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
@@ -285,7 +288,6 @@ export const WALMART_US_PLACE_ORDER_HEADERS = {
     'x-o-tp-phase': 'tp5',
 };
 export const WALMART_US_PURCHASE_CONTRACT_HEADERS = {
-    ...COMMON_HEADERS,
     accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
     'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
@@ -306,51 +308,134 @@ export const WALMART_US_PURCHASE_CONTRACT_HEADERS = {
     'x-o-segment': 'oaoh',
     'x-o-tp-phase': 'tp5',
 };
-export const WALMART_US_CHECKOUT_CART_HEADERS = {
-    ...COMMON_HEADERS,
-    Accept: 'application/json, text/javascript, */*; q=0.01',
-    'Content-Type': 'application/json',
-    Referer: 'https://www.walmart.com/checkout/',
-    'sec-ch-ua': '" Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"',
+
+export const WALMART_CA_SESSION_HEADERS = {
+    accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+    'accept-encoding': 'gzip, deflate, br',
+    'accept-language': 'en-US,en;q=0.9',
+    'sec-ch-ua': '"Chromium";v="94", "Microsoft Edge";v="94", ";Not A Brand";v="99"',
     'sec-ch-ua-mobile': '?0',
-    WM_CVV_IN_SESSION: 'true',
-    WM_VERTICAL_ID: '0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'document',
+    'sec-fetch-mode': 'navigate',
+    'sec-fetch-site': 'none',
+    'sec-fetch-user': '?1',
+    'upgrade-insecure-requests': '1',
 };
 
-export const WALMART_US_SHIPPING_HEADERS = {
-    ...COMMON_HEADERS,
-    accept: 'application/json, text/javascript, */*; q=0.01',
+export const WALMART_CA_ADD_CART_HEADERS = {
+    accept: 'application/json',
     'accept-encoding': 'gzip, deflate, br',
-    'accept-language': 'en-CA,en;q=0.9',
+    'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
     'cache-control': 'no-cache',
     'content-type': 'application/json',
-    inkiru_precedence: 'false',
-    origin: 'https://www.walmart.com',
+    origin: 'https://www.walmart.ca',
     pragma: 'no-cache',
-    referer: 'https://www.walmart.com/checkout/',
-    'sec-ch-ua': '" Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"',
+    referer: 'https://www.walmart.ca/en/ip/',
+    'sec-ch-ua': '"Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"',
     'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
     'sec-fetch-dest': 'empty',
     'sec-fetch-mode': 'cors',
     'sec-fetch-site': 'same-origin',
-    wm_cvv_in_session: 'true',
-    wm_vertical_id: '0',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36',
+    'wm_qos.correlation_id': '37443bb2-026-17c5404b17cb2e,37443bb2-026-17c5404b17cbe6,37443bb2-026-17c5404b17cbe6',
 };
 
-export const WALMART_US_CREDIT_CARD_HEADERS = { ...WALMART_US_SHIPPING_HEADERS };
-
-export const WALMART_US_CONFIRM_PAYMENT_HEADERS = {
-    ...COMMON_HEADERS,
-    accept: 'application/json, text/javascript, */*; q=0.01',
-    'content-type': 'application/json',
-    inkiru_precedence: 'false',
-    Referer: 'https://www.walmart.com/checkout/',
-    'sec-ch-ua': '" Not;A Brand";v="99", "Google Chrome";v="91", "Chromium";v="91"',
+export const WALMART_CA_CHECKOUT_GUEST_HEADERS = {
+    accept: 'application/json',
+    'accept-encoding': 'gzip, deflate, br',
+    'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
+    'cache-control': 'no-cache',
+    origin: 'https://www.walmart.ca',
+    pragma: 'no-cache',
+    referer: 'https://www.walmart.ca/checkout',
+    'sec-ch-ua': '"Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"',
     'sec-ch-ua-mobile': '?0',
-    wm_cvv_in_session: 'true',
-    wm_vertical_id: '0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-origin',
 };
 
-export const WALMART_US_CHECKOUT_HEADERS = {
-    ...WALMART_US_CONFIRM_PAYMENT_HEADERS,
+export const WALMART_CA_SHIPPING_ADDRESS_HEADERS = {
+    accept: 'application/json',
+    'accept-encoding': 'gzip, deflate, br',
+    'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
+    'cache-control': 'no-cache',
+    origin: 'https://www.walmart.ca',
+    pragma: 'no-cache',
+    referer: 'https://www.walmart.ca/checkout',
+    'sec-ch-ua': '"Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-origin',
+};
+
+export const WALMART_CA_SHIPPING_METHOD_HEADERS = {
+    accept: 'application/json',
+    'accept-encoding': 'gzip, deflate, br',
+    'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
+    'cache-control': 'no-cache',
+    origin: 'https://www.walmart.ca',
+    pragma: 'no-cache',
+    referer: 'https://www.walmart.ca/checkout',
+    'sec-ch-ua': '"Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-origin',
+};
+
+export const WALMART_CA_CC_SUMMARY_HEADERS = {
+    accept: 'application/json',
+    'accept-encoding': 'gzip, deflate, br',
+    'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
+    'cache-control': 'no-cache',
+    'content-type': 'application/json',
+    origin: 'https://www.walmart.ca',
+    pragma: 'no-cache',
+    referer: 'https://www.walmart.ca/checkout',
+    'sec-ch-ua': '"Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-origin',
+    'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.71 Safari/537.36',
+};
+
+export const WALMART_CA_CREDIT_CARD_HEADERS = {
+    accept: 'application/json',
+    'accept-encoding': 'gzip, deflate, br',
+    'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
+    'cache-control': 'no-cache',
+    origin: 'https://www.walmart.ca',
+    pragma: 'no-cache',
+    referer: 'https://www.walmart.ca/checkout',
+    'sec-ch-ua': '"Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-origin',
+};
+
+export const WALMART_CA_PLACE_ORDER_HEADERS = {
+    accept: 'application/json',
+    'accept-encoding': 'gzip, deflate, br',
+    'accept-language': 'en-CA,en-US;q=0.9,en;q=0.8,fr;q=0.7',
+    'cache-control': 'no-cache',
+    origin: 'https://www.walmart.ca',
+    pragma: 'no-cache',
+    referer: 'https://www.walmart.ca/checkout',
+    'sec-ch-ua': '"Chromium";v="94", "Google Chrome";v="94", ";Not A Brand";v="99"',
+    'sec-ch-ua-mobile': '?0',
+    'sec-ch-ua-platform': '"Windows"',
+    'sec-fetch-dest': 'empty',
+    'sec-fetch-mode': 'cors',
+    'sec-fetch-site': 'same-origin',
 };

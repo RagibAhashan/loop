@@ -5,7 +5,7 @@
     "description": "Dynasty AIO",
     "main": ".webpack/main",
     "scripts": {
-        "start": "cross-env DEBUG='electron-forge:*,dynasty:*' electron-forge start",
+        "start": "cross-env electron-forge start",
         "package": "electron-forge package",
         "make": "electron-forge make",
         "publish": "electron-forge publish",
@@ -47,6 +47,7 @@
                 [
                     "@electron-forge/plugin-webpack",
                     {
+                        "devContentSecurityPolicy": "default-src 'unsafe-eval' 'unsafe-inline' 'self' data: *; frame-src 'self' 'unsafe-eval' 'unsafe-inline' data: *;frame-ancestors 'self' data: *",
                         "mainConfig": "./webpack.main.config.js",
                         "renderer": {
                             "config": "./webpack.renderer.config.js",
@@ -93,6 +94,7 @@
         "@types/debug": "^4.1.7",
         "@types/electron-devtools-installer": "^2.2.0",
         "@types/events": "^3.0.0",
+        "@types/lodash": "^4.14.175",
         "@types/needle": "^2.5.2",
         "@types/node": "^16.7.10",
         "@types/object-hash": "^2.1.1",
@@ -140,6 +142,7 @@
         "electron-squirrel-startup": "^1.0.0",
         "got": "^11.8.2",
         "https-proxy-agent": "^5.0.0",
+        "lodash": "^4.17.21",
         "needle": "^3.0.0",
         "object-hash": "^2.2.0",
         "react": "^17.0.2",

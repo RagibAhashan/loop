@@ -9,6 +9,7 @@ export interface Store {
     captchas: Captcha[]; //Queue of captchas
     running: boolean;
     displayName: string;
+    isCaptchaWindowOpen: boolean;
 }
 
 export type StoreState = { [key in StoreType]: Store };
@@ -56,7 +57,13 @@ export const storeSlice = createSlice({
     initialState: initialState,
     reducers: {
         addStore: (state, action: PayloadAction<AddStorePayload>) => {
-            state[action.payload.storeKey] = { tasks: {}, running: false, displayName: action.payload.storeName, captchas: [] };
+            state[action.payload.storeKey] = {
+                tasks: {},
+                running: false,
+                displayName: action.payload.storeName,
+                captchas: [],
+                isCaptchaWindowOpen: false,
+            };
         },
         deleteStore: (state, action: PayloadAction<StorePayload>) => {
             delete state[action.payload.storeKey];
@@ -68,10 +75,15 @@ export const storeSlice = createSlice({
         },
         deleteAllTasks: (state, action: PayloadAction<StorePayload>) => {
             state[action.payload.storeKey].tasks = {};
+
+            // delete all captchas
+            state[action.payload.storeKey].captchas = [];
         },
         deleteTask: (state, action: PayloadAction<TaskPayload>) => {
             window.ElectronBridge.send(NOTIFY_STOP_TASK(action.payload.storeKey), action.payload.uuid);
             localStorage.removeItem(action.payload.uuid);
+            // remove captcha if task was in captcha queue
+            state[action.payload.storeKey].captchas = state[action.payload.storeKey].captchas.filter((cap) => cap.taskUUID !== action.payload.uuid);
             delete state[action.payload.storeKey].tasks[action.payload.uuid];
         },
         editAllTasks: (state, action: PayloadAction<EditAllTasksPayload>) => {
@@ -97,6 +109,9 @@ export const storeSlice = createSlice({
 
             const isAnyTaskRunning = Object.values(state[action.payload.storeKey].tasks).some((task) => task.running);
             state[action.payload.storeKey].running = isAnyTaskRunning;
+
+            // remove captcha if task was in captcha queue
+            state[action.payload.storeKey].captchas = state[action.payload.storeKey].captchas.filter((cap) => cap.taskUUID !== action.payload.uuid);
         },
         updateTaskStatus: (state, action: PayloadAction<StatusTaskPayload>) => {
             state[action.payload.storeKey].tasks[action.payload.uuid].status = action.payload.status;
@@ -112,6 +127,8 @@ export const storeSlice = createSlice({
                 task.running = false;
             });
             state[action.payload.storeKey].running = false;
+            // delete all captchas
+            state[action.payload.storeKey].captchas = [];
         },
         addCaptchaToQueue: (state, action: PayloadAction<CaptchaPayload>) => {
             state[action.payload.storeKey].captchas.push(action.payload.captcha);
@@ -119,10 +136,19 @@ export const storeSlice = createSlice({
         updateCaptchaQueue: (state, action: PayloadAction<CaptchaQueuePayload>) => {
             state[action.payload.storeKey].captchas = action.payload.captchaQueue;
         },
+        openCaptchaWindow: (state, action: PayloadAction<StorePayload>) => {
+            state[action.payload.storeKey].isCaptchaWindowOpen = true;
+        },
+        closeCaptchaWindow: (state, action: PayloadAction<StorePayload>) => {
+            state[action.payload.storeKey].isCaptchaWindowOpen = false;
+        },
     },
+    // These extra reducers will run whenever an action from an external reducer will run
+    // i.e whenever assignProxy is called from the Proxy reducer, it will execute some logic here
     extraReducers: (builder) => {
         builder
             .addCase(assignProxy, (state, action) => {
+                console.log('assigning proxy to tasks');
                 for (let i = 0; i < action.payload.proxiesToTask.length; ++i) {
                     state[action.payload.storeKey].tasks[action.payload.proxiesToTask[i].taskUUID].proxy = action.payload.proxiesToTask[i].proxy;
                 }
@@ -148,6 +174,8 @@ export const storeSlice = createSlice({
 export const getStores = (state: AppState) => state.stores;
 
 export const getStoreById = (state: AppState, storeKey: StoreType) => state.stores[storeKey];
+
+export const isCaptchaWindowOpen = (state: AppState, storeKey: StoreType) => state.stores[storeKey].isCaptchaWindowOpen;
 
 // TODO validate that stores contains storeKey
 export const getTasksByStore = (state: AppState, storeKey: StoreType) => state.stores[storeKey].tasks;
@@ -176,6 +204,8 @@ export const {
     stopAllTasks,
     addCaptchaToQueue,
     updateCaptchaQueue,
+    openCaptchaWindow,
+    closeCaptchaWindow,
 } = storeSlice.actions;
 
 // REDUCER

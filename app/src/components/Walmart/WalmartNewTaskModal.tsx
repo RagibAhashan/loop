@@ -55,9 +55,14 @@ const WalmartNewTaskModal = (props: any) => {
                 <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
                     <Form form={form} onFinish={onFinishForm} validateMessages={validateMessages}>
                         <Row gutter={GUTTER}>
-                            <Col span={24}>
-                                <Form.Item name="productURL" rules={[{ required: true }]}>
-                                    <Input placeholder="Product URL"></Input>
+                            <Col span={12}>
+                                <Form.Item name="productSKU" rules={[{ required: true }]}>
+                                    <Input placeholder="Product SKU"></Input>
+                                </Form.Item>
+                            </Col>
+                            <Col span={12}>
+                                <Form.Item name="offerId" rules={[{ required: true }]}>
+                                    <Input placeholder="Offer ID"></Input>
                                 </Form.Item>
                             </Col>
                         </Row>

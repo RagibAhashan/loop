@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { ipcMain } from 'electron';
+import UserAgentProvider from '../../services/UserAgentProvider';
 import { Task } from '../Task';
 import { GET_DATADOME, NOTIFY_CAPTCHA_SOLVED } from './../../common/Constants';
 import { FLTaskData, TaskData } from './../../interfaces/TaskInterfaces';
 import { BaseStoreEvents } from './../BaseStoreEvents';
-import { COMMON_HEADERS } from './../constants/Constants';
 import { TaskFactory } from './../TaskFactory';
 import { taskManager } from './../TaskManager';
 export class FootLockerEvents extends BaseStoreEvents {
@@ -29,7 +29,7 @@ export class FootLockerEvents extends BaseStoreEvents {
                 url.searchParams.append('g-recaptcha-response', token);
 
                 console.log('GEO URL CHECK', url.toString());
-                const response = await axios.get(url.toString(), { headers: COMMON_HEADERS });
+                const response = await axios.get(url.toString(), { headers: { 'user-agent': UserAgentProvider.randomUserAgent() } });
 
                 console.log(response.data['cookie']);
 

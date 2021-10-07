@@ -27,7 +27,10 @@ const EditAllTasksAction = (props: any) => {
     };
 
     const handleEditTask = (newValues: any) => {
+        // the dispatch is located in the editAllTasks reducer
         dispatch(editAllTasks({ storeKey, newValue: newValues }));
+
+        // TODO editall proxy reassignment
 
         setVisibleModal(false);
     };

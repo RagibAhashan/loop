@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { STORE_KEY } from '../common/Constants';
-import { StoreType } from '../constants/Stores';
+import { STORES, StoreType } from '../constants/Stores';
 import { debug } from '../core/Log';
 import { AppState } from '../global-store/GlobalStore';
-import { getCaptchaQueueFromStore, getTasksByStore } from '../services/Store/StoreService';
+import { Captcha } from '../interfaces/TaskInterfaces';
+import { getCaptchaQueueFromStore } from '../services/Store/StoreService';
 
 const log = debug.extend('PXCaptcha');
 
@@ -29,78 +30,74 @@ const captchaContainer = {
 } as React.CSSProperties;
 
 const CaptchaFrame = () => {
-    // const { store } = useParams() as any;
-
-    // const dispatchCaptcha = (): undefined | ICaptcha => {
-    //     const captchas = JSON.parse(localStorage.getItem(store + NOTIFY_CAPTCHA) as string) as ICaptcha[];
-    //     if (!captchas) return undefined;
-
-    //     console.log('dispatching', captchas[0]);
-    //     return captchas[0];
-    // };
-
-    // const [solvingCaptcha, setSolvingCaptcha] = useState<undefined | ICaptcha>(() => dispatchCaptcha());
-    // const siteKey = STORES[store as StoreType].siteKey;
-
-    // useEffect(() => {
-    //     console.log('init use effect', siteKey);
-    //     window.ElectronBridge.on(store + NOTIFY_CAPTCHA, (_, captcha) => {
-    //         console.log('got captcha in window', solvingCaptcha, captcha);
-    //         if (!solvingCaptcha) {
-    //             setSolvingCaptcha(captcha);
-    //         }
-    //     });
-
-    //     return () => {
-    //         window.ElectronBridge.removeAllListeners(store + NOTIFY_CAPTCHA);
-    //     };
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, []);
-
-    // const solved = (datadome: string) => {
-    //     // for the moment just clear the queue, we are assuming all captchas are solved from only one
-    //     const captchas = JSON.parse(localStorage.getItem(store + NOTIFY_CAPTCHA) as string) as ICaptcha[];
-    //     console.log('solved that bitch', captchas);
-    //     captchas?.forEach((captcha) => {
-    //         console.log('sending to ', captcha.uuid);
-    //         window.ElectronBridge.send(NOTIFY_CAPTCHA_SOLVED, captcha.uuid, datadome);
-    //     });
-    //     localStorage.removeItem(store + NOTIFY_CAPTCHA);
-    //     setSolvingCaptcha(undefined);
-    // };
-
-    // const renderCaptcha = () => {
-    //     console.log('rendering', solvingCaptcha);
-    //     return solvingCaptcha ? (
-    //         <Captcha siteKey={siteKey} solved={solved} captcha={solvingCaptcha}></Captcha>
-    //     ) : (
-    //         <div>
-    //             <Spin />
-    //         </div>
-    //     );
-    // };
-
     const captchaQueue = useSelector((state: AppState) => getCaptchaQueueFromStore(state, StoreType.WalmartUS));
+
     const dispatch = useDispatch();
-    const nextCaptcha = () => {
-        captchaQueue.shift();
-        // dispatch(updateCaptchaQueue({storeKey: }))
+
+    const [storeKey, setStoreKey] = useState<StoreType>();
+
+    // const nextCaptcha = (): Captcha => {
+    //     console.log('catcpa queue before', captchaQueue);
+    //     const captcha = captchaQueue.shift();
+    //     console.log('catcpa queue after pop', captchaQueue);
+    //     dispatch(updateCaptchaQueue({ storeKey: storeKey, captchaQueue: captchaQueue }));
+    //     return captcha;
+    // };
+
+    const nextCaptcha = (): Captcha => {
+        return {
+            params: {
+                redirectUrl: '/blocked?url=L2NoZWNrb3V0L3Jldmlldy1vcmRlcg==&uuid=187eda63-2637-11ec-bede-55485a596946&vid=&g=b',
+                appId: 'PXu6b0qd2S',
+                jsClientSrc: '/px/PXu6b0qd2S/init.js',
+                firstPartyEnabled: true,
+                vid: '',
+                uuid: '187eda63-2637-11ec-bede-55485a596946',
+                hostUrl: '/px/PXu6b0qd2S/xhr',
+                blockScript: '/px/PXu6b0qd2S/captcha/captcha.js?a=c&m=0&u=187eda63-2637-11ec-bede-55485a596946&v=&g=b',
+            },
+            taskUUID: '123',
+        };
     };
 
-    const tasks = useSelector((state: AppState) => getTasksByStore(state, StoreType.WalmartUS));
+    const _pxOnCaptchaSuccess = (isValid: boolean) => {
+        console.log('captcha is valid ?', isValid);
+    };
 
     useEffect(() => {
-        log('Savinfg this shit');
+        console.log('render frame');
         window.ElectronBridge.on(STORE_KEY, (event, storeKey: StoreType) => {
-            console.log('got store key', storeKey);
+            console.log('got storekey', storeKey);
+            setStoreKey(storeKey);
+            const store = STORES[storeKey];
+            console.log(storeKey, store.url);
+            // (window as any).origin = store.url;
+            // (window as any).location.origin = store.url;
+            // Object.assign(window.location, {});
+
+            // window.location.assign('https://www.walmart.com/px/PXu6b0qd2S/captcha/captcha.js?a=c&m=0&u=abc004ee-24aa-11ec-944e-684f6c767753&v=&g=b');
+
+            // Object.defineProperty(window, 'location', { value: { origin: store.url }, writable: true, configurable: true });
+            // Object.assign(window.location, { origin: store.url });
         });
+
+        (window as any)._pxOnCaptchaSuccess = _pxOnCaptchaSuccess;
+
+        return () => {
+            window.ElectronBridge.removeAllListeners(STORE_KEY);
+        };
     }, []);
 
     return (
-        <div>PX FRAME</div>
-        // <div key={store} style={containerStyle}>
-        //     <div style={captchaContainer}>{renderCaptcha()}</div>
-        // </div>
+        <div>
+            <iframe
+                src="https://www.walmart.com/blocked?url=L2lwL0dyZWF0LVZhbHVlLUFsbW9uZC1Td2VldC1TYWx0eS1DaGV3eS1HcmFub2xhLUJhcnMtMS0yMy1vei02LWNvdW50LzEwODk4NzU0&uuid=da284d40-2656-11ec-a5da-abb6076cdffe&vid=da9aef1b-2656-11ec-97f6-5062704f4d79&g=b"
+                height="600"
+                sandbox="allow-same-origin allow-scripts"
+                referrerPolicy="no-referrer"
+            ></iframe>
+            {/* <PXCaptcha storeKey={storeKey} captcha={nextCaptcha()}></PXCaptcha> */}
+        </div>
     );
 };
 

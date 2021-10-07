@@ -33,9 +33,10 @@ const AddTaskAction = (props: any) => {
             taskIDArr.push(newTask.uuid);
         }
 
+        if (task.proxySet) dispatch(assignRandomProxy(task.proxySet, storeKey, taskIDArr));
+
         dispatch(addTask({ storeKey: storeKey, tasks: taskArr }));
         window.ElectronBridge.send(NOTIFY_ADD_TASK(storeKey), taskArr);
-        if (task.proxySet) dispatch(assignRandomProxy(task.proxySet, storeKey, taskIDArr));
 
         setVisibleModal(false);
     };

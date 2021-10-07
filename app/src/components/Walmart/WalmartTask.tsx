@@ -72,7 +72,7 @@ const WalmartTask = (props: any) => {
             >
                 <Tooltip placement="bottomLeft" title={`Retry Delay : ${task.retryDelay} ms`}>
                     <Col span={4} style={{ paddingLeft: 15, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.productURL}</div>
+                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.productSKU}</div>
                     </Col>
                 </Tooltip>
 

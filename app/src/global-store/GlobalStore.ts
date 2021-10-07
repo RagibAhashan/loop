@@ -11,7 +11,7 @@ export const store = configureStore({
         proxies: proxySlice,
     },
     preloadedState: JSON.parse(localStorage.getItem('state') ?? '{}'),
-    devTools: process.env.NODE_ENV === 'development',
+    devTools: true,
 });
 
 // Rudimentary persist logic, persist state on every change

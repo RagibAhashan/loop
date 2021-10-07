@@ -28,9 +28,10 @@ export const WalmartEditTaskModal = (props: any) => {
     const profileByName = (profileName: string) => profiles[profileName];
 
     const proxies = useSelector(getProxySets);
-    const proxiesOptions = Object.keys(proxies).map((proxySetName) => {
+    let proxiesOptions = Object.keys(proxies).map((proxySetName) => {
         return { label: proxySetName, value: proxySetName };
     });
+    proxiesOptions = [...proxiesOptions, { label: 'No Proxies', value: null }];
 
     useEffect(() => {
         form.resetFields();

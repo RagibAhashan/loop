@@ -1,6 +1,6 @@
 import { NOTIFY_CAPTCHA_SOLVED, NOTIFY_CAPTCHA_TASK, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
 import { REGIONS } from '../../common/Regions';
-import { TaskData, WalmartTaskData } from '../../interfaces/TaskInterfaces';
+import { TaskData } from '../../interfaces/TaskInterfaces';
 import { WalmartEncryption } from '../../services/Encryption/WalmartEncryption';
 import UserAgentProvider from '../../services/UserAgentProvider';
 import { MESSAGES } from '../constants/Constants';
@@ -24,6 +24,7 @@ import { WalmartCreditCard } from '../interface/UserProfile';
 import { debug } from '../Log';
 import { RequestInstance } from '../RequestInstance';
 import { CANCEL_ERROR, Task } from '../Task';
+import { WalmartTaskData } from './../../interfaces/TaskInterfaces';
 import { CaptchaException } from './../exceptions/CaptchaException';
 import { generatePxCookies } from './scripts/px';
 const log = debug.extend('WalmartUSTask');
@@ -31,19 +32,15 @@ const log = debug.extend('WalmartUSTask');
 export class WalmartUSTask extends Task {
     protected taskData: WalmartTaskData;
     protected parsedURL!: URL;
-    protected itemId: string;
 
     private static readonly WALMART_SELLER_ID = 'F55CDC31AB754BB68FE0B39041159D63';
     private static readonly WALMART_CATALOG_SELLER_ID = '0';
     private static readonly WALMART_SELLER_DISPLAY_NAME = 'Walmart.com';
     private static readonly IN_STOCK = 'IN_STOCK';
 
-    private readonly ITEM_ID_REGEX = /(?<=\/)[0-9].*/;
-
     constructor(uuid: string, requestInstance: RequestInstance, taskData: WalmartTaskData) {
         super(uuid, requestInstance, taskData);
         this.taskData = taskData;
-        this.initParsedURL();
         this.createErrorInterceptor();
     }
 
@@ -68,15 +65,16 @@ export class WalmartUSTask extends Task {
 
     async doTask(): Promise<void> {
         try {
+            log('Starting task with proxy %O', this.taskData.proxy);
             this.cookieJar = new CookieJar(this.requestInstance.baseURL);
 
             await this.getSession();
 
-            const [offerId, lineItemId] = await this.getOfferId();
+            const lineItemId = await this.getLineItemId();
 
             const cartId = await this.getCartId();
 
-            await this.addToCart(cartId, offerId, lineItemId);
+            await this.addToCart(cartId, this.taskData.offerId, lineItemId);
 
             const addressId = await this.createDeliveryAddress();
 
@@ -115,7 +113,7 @@ export class WalmartUSTask extends Task {
                 });
 
                 const cookie = this.cookieJar.serializeSession();
-                log('Getting session with %s url', this.parsedURL);
+                log('Getting session with %s url and cookies %s', this.parsedURL, cookie);
 
                 if (cookie) {
                     headers = { ...headers, cookie: cookie };
@@ -140,6 +138,8 @@ export class WalmartUSTask extends Task {
                 if (resp.headers['set-cookie']) {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 }
+
+                log('Cookies %s', this.cookieJar.serializeSession());
             } catch (err) {
                 log('Get Session Error %O', err);
                 this.cancelTask();
@@ -149,7 +149,7 @@ export class WalmartUSTask extends Task {
         } while (retry);
     }
 
-    async getOfferId(): Promise<string[]> {
+    async getLineItemId(): Promise<string> {
         let retry = false;
         let headers: any = { ...WALMART_US_GET_ITEM_HEADERS, referer: this.parsedURL.toString() };
 
@@ -169,7 +169,7 @@ export class WalmartUSTask extends Task {
                 const body = {
                     query: 'query ItemById( $itemId:String! $selected:Boolean $variantFieldId:String $postalAddress:PostalAddress $storeFrontIds:[StoreFrontId]$page:Int $sort:String $limit:Int $filters:[String]$channel:String! $pageType:String! $tenant:String! $version:String! $p13N:P13NRequest $p13nCls:JSON $layout:[String]$tempo:JSON $semStoreId:Int $catalogSellerId:String $fetchBuyBoxAd:Boolean! $fetchMarquee:Boolean! $fetchSkyline:Boolean! $fetchSpCarousel:Boolean! $fulfillmentIntent:String ){contentLayout( channel:$channel pageType:$pageType tenant:$tenant version:$version ){modules(p13n:$p13nCls tempo:$tempo){configs{...on EnricherModuleConfigsV1{zoneV1}...on TempoWM_GLASSWWWItemCarouselConfigsV1{products{...ContentLayoutProduct}subTitle tileOptions{addToCart averageRatings displayAveragePriceCondition displayPricePerUnit displayStandardPrice displayWasPrice fulfillmentBadging mediaRatings productFlags productLabels productPrice productTitle}title type spBeaconInfo{adUuid moduleInfo pageViewUUID placement max}viewAllLink{linkText title uid}}...on TempoWM_GLASSWWWItemFitmentModuleConfigs{fitment{partTypeID partTypeIDs result{status notes position formId quantityTitle resultSubTitle suggestions{id position loadIndex speedRating searchQueryParam labels{...FitmentLabel}fitmentSuggestionParams{id value}cat_id}extendedAttributes{...FitmentFieldFragment}labels{...FitmentLabel}}labels{...FitmentLabel}savedVehicle{...FitmentVehicleFragment}}}...on TempoWM_GLASSWWWItemRelatedShelvesConfigs{seoItemRelmData(id:$itemId){relm{id url name}}}...on TempoWM_GLASSWWWCapitalOneBannerConfigsV1{bannerBackgroundColor primaryImage{alt src}bannerCta{ctaLink{linkText title clickThrough{value}uid}textColor}bannerText{text isBold isUnderlined underlinedColor textColor}}...on TempoWM_GLASSWWWProductWarrantyPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWGeneralWarningsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductIndicationsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductDescriptionPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductDirectionsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductSpecificationsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWNutritionValuePlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWReviewsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductDescriptionPlaceholderConfigs{expandedOnPageLoad}...BuyBoxAdConfigsFragment @include(if:$fetchBuyBoxAd)...MarqueeDisplayAdConfigsFragment @include(if:$fetchMarquee)...SkylineDisplayAdConfigsFragment @include(if:$fetchSkyline)...SponsoredProductCarouselConfigsFragment @include(if:$fetchSpCarousel)}moduleId matchedTrigger{pageType pageId zone inheritable}name type version status publishedDate}layouts(layout:$layout){id layout}pageMetadata{location{postalCode stateOrProvinceCode city storeId}pageContext}}product( catalogSellerId:$catalogSellerId itemId:$itemId postalAddress:$postalAddress storeFrontIds:$storeFrontIds selected:$selected semStoreId:$semStoreId p13N:$p13N variantFieldId:$variantFieldId fulfillmentIntent:$fulfillmentIntent ){...FullProductFragment}idml(itemId:$itemId html:true){...IDMLFragment}reviews( itemId:$itemId page:$page limit:$limit sort:$sort filters:$filters ){...FullReviewsFragment}}fragment FullProductFragment on Product{showFulfillmentLink additionalOfferCount shippingRestriction availabilityStatus averageRating brand badges{...BadgesFragment}rhPath partTerminologyId aaiaBrandId manufacturerProductId productTypeId tireSize tireLoadIndex tireSpeedRating viscosity model buyNowEligible preOrder{...PreorderFragment}canonicalUrl catalogSellerId sellerReviewCount sellerAverageRating category{...ProductCategoryFragment}classType classId fulfillmentTitle shortDescription fulfillmentType fulfillmentBadge fulfillmentLabel{wPlusFulfillmentText message shippingText fulfillmentText locationText fulfillmentMethod addressEligibility fulfillmentType postalCode}hasSellerBadge itemType id imageInfo{...ProductImageInfoFragment}location{postalCode stateOrProvinceCode city storeIds}manufacturerName name numberOfReviews orderMinLimit orderLimit offerId priceInfo{priceDisplayCodes{...PriceDisplayCodesFragment}currentPrice{...ProductPriceFragment}wasPrice{...ProductPriceFragment}unitPrice{...ProductPriceFragment}subscriptionPrice{price priceString intervalFrequency duration percentageRate subscriptionString}priceRange{minPrice maxPrice priceString currencyUnit unitOfMeasure denominations{price priceString selected}}}returnPolicy{returnable freeReturns returnWindow{value unitType}}fsaEligibleInd sellerId sellerName sellerDisplayName secondaryOfferPrice{currentPrice{priceType priceString price}}semStoreData{pickupStoreId deliveryStoreId isSemLocationDifferent}shippingOption{...ShippingOptionFragment}type pickupOption{slaTier accessTypes availabilityStatus storeName storeId}salesUnit usItemId variantCriteria{id categoryTypeAllValues name type variantList{availabilityStatus id images name products swatchImageUrl selected}}variants{...MinimalProductFragment}groupMetaData{groupType groupSubType numberOfComponents groupComponents{quantity offerId componentType}}upc wfsEnabled sellerType ironbankCategory snapEligible promoData{id description terms type templateData{priceString imageUrl}}showAddOnServices addOnServices{serviceType serviceTitle serviceSubTitle groups{groupType groupTitle assetUrl shortDescription services{displayName offerId selectedDisplayName currentPrice{price priceString}}}}productLocation{displayValue}}fragment BadgesFragment on UnifiedBadge{flags{__typename...on BaseBadge{id text key query}...on PreviouslyPurchasedBadge{id text key lastBoughtOn numBought criteria{name value}}}labels{__typename...on BaseBadge{id text key}...on PreviouslyPurchasedBadge{id text key lastBoughtOn numBought}}tags{__typename...on BaseBadge{id text key}}}fragment ShippingOptionFragment on ShippingOption{accessTypes availabilityStatus slaTier deliveryDate maxDeliveryDate shipMethod shipPrice{...ProductPriceFragment}}fragment ProductCategoryFragment on ProductCategory{categoryPathId path{name url}}fragment PreorderFragment on PreOrder{streetDate streetDateDisplayable streetDateType isPreOrder preOrderMessage preOrderStreetDateMessage}fragment MinimalProductFragment on Variant{availabilityStatus imageInfo{...ProductImageInfoFragment}priceInfo{priceDisplayCodes{...PriceDisplayCodesFragment}currentPrice{...ProductPriceFragment}wasPrice{...ProductPriceFragment}unitPrice{...ProductPriceFragment}}productUrl usItemId id:productId fulfillmentBadge}fragment ProductImageInfoFragment on ProductImageInfo{allImages{id url zoomable}thumbnailUrl}fragment PriceDisplayCodesFragment on PriceDisplayCodes{clearance eligibleForAssociateDiscount finalCostByWeight hidePriceForSOI priceDisplayCondition pricePerUnitUom reducedPrice rollback strikethrough submapType unitOfMeasure unitPriceDisplayCondition}fragment ProductPriceFragment on ProductPrice{price priceString variantPriceString priceType currencyUnit}fragment NutrientFragment on Nutrient{name amount dvp childNutrients{name amount dvp}}fragment NutritionAttributeFragment on NutritionAttribute{name mainNutrient{...NutrientFragment}childNutrients{...NutrientFragment childNutrients{...NutrientFragment}}}fragment IdmlAttributeFragment on IdmlAttribute{name value attribute}fragment ServingAttributeFragment on ServingAttribute{name values{...IdmlAttributeFragment values{...IdmlAttributeFragment}}}fragment IDMLFragment on Idml{chokingHazards{...LegalContentFragment}directions{name value}indications{name value}ingredients{activeIngredientName{name value}activeIngredients{name value}inactiveIngredients{name value}ingredients{name value}}longDescription shortDescription interactiveProductVideo specifications{name value}warnings{name value}warranty{information length}esrbRating mpaaRating nutritionFacts{calorieInfo{...NutritionAttributeFragment}keyNutrients{name values{...NutritionAttributeFragment}}vitaminMinerals{...NutritionAttributeFragment}servingInfo{...ServingAttributeFragment}additionalDisclaimer{...IdmlAttributeFragment values{...IdmlAttributeFragment values{...IdmlAttributeFragment}}}staticContent{...IdmlAttributeFragment values{...IdmlAttributeFragment values{...IdmlAttributeFragment}}}}}fragment FullReviewsFragment on ProductReviews{averageOverallRating customerReviews{...CustomerReviewsFragment}ratingValueFiveCount ratingValueFourCount ratingValueOneCount ratingValueThreeCount ratingValueTwoCount roundedAverageOverallRating topNegativeReview{rating reviewSubmissionTime negativeFeedback positiveFeedback reviewText reviewTitle}topPositiveReview{rating reviewSubmissionTime negativeFeedback positiveFeedback reviewText reviewTitle}totalReviewCount}fragment LegalContentFragment on LegalContent{ageRestriction headline headline image mature message}fragment CustomerReviewsFragment on CustomerReview{rating reviewSubmissionTime reviewText reviewTitle userNickname}fragment ContentLayoutProduct on Product{name badges{...BadgesFragment}canonicalUrl classType availabilityStatus showAtc averageRating fulfillmentBadge fulfillmentSpeed fulfillmentTitle fulfillmentType imageInfo{thumbnailUrl}numberOfReviews offerId orderMinLimit orderLimit p13nDataV1{predictedQuantity flags{PREVIOUSLY_PURCHASED{text}CUSTOMERS_PICK{text}}}previouslyPurchased{label}preOrder{...PreorderFragment}priceInfo{currentPrice{...ProductPriceFragment}listPrice{...ProductPriceFragment}subscriptionPrice{priceString}priceDisplayCodes{clearance eligibleForAssociateDiscount finalCostByWeight hidePriceForSOI priceDisplayCondition pricePerUnitUom reducedPrice rollback strikethrough submapType unitOfMeasure unitPriceDisplayCondition}priceRange{minPrice maxPrice priceString}unitPrice{...ProductPriceFragment}wasPrice{...ProductPriceFragment}}rhPath salesUnit sellerId sellerName hasSellerBadge seller{name sellerId}shippingOption{slaTier shipMethod}showOptions snapEligible sponsoredProduct{spQs clickBeacon spTags}usItemId variantCount variantCriteria{name id variantList{name swatchImageUrl selectedProduct{usItemId canonicalUrl}}}}fragment FitmentLabel on FitmentLabels{links{...FitmentLabelEntity}messages{...FitmentLabelEntity}ctas{...FitmentLabelEntity}images{...FitmentLabelEntity}}fragment FitmentVehicleFragment on FitmentVehicle{vehicleYear{...FitmentVehicleFieldFragment}vehicleMake{...FitmentVehicleFieldFragment}vehicleModel{...FitmentVehicleFieldFragment}additionalAttributes{...FitmentVehicleFieldFragment}}fragment FitmentVehicleFieldFragment on FitmentVehicleField{id value label}fragment FitmentFieldFragment on FitmentField{id value displayName data{value label}extended dependsOn}fragment FitmentLabelEntity on FitmentLabelEntity{id label}fragment BuyBoxAdConfigsFragment on TempoWM_GLASSWWWBuyBoxAdConfigs{_rawConfigs moduleLocation lazy ad{...SponsoredProductsAdFragment}}fragment MarqueeDisplayAdConfigsFragment on TempoWM_GLASSWWWMarqueeDisplayAdConfigs{_rawConfigs ad{...DisplayAdFragment}}fragment DisplayAdFragment on Ad{...AdFragment adContent{type data{__typename...AdDataDisplayAdFragment}}}fragment AdFragment on Ad{status moduleType platform pageId pageType storeId stateCode zipCode pageContext moduleConfigs adsContext adRequestComposite}fragment AdDataDisplayAdFragment on AdData{...on DisplayAd{json status}}fragment SkylineDisplayAdConfigsFragment on TempoWM_GLASSWWWSkylineDisplayAdConfigs{_rawConfigs ad{...SkylineDisplayAdFragment}}fragment SkylineDisplayAdFragment on Ad{...SkylineAdFragment adContent{type data{__typename...SkylineAdDataDisplayAdFragment}}}fragment SkylineAdFragment on Ad{status moduleType platform pageId pageType storeId stateCode zipCode pageContext moduleConfigs adsContext adRequestComposite}fragment SkylineAdDataDisplayAdFragment on AdData{...on DisplayAd{json status}}fragment SponsoredProductCarouselConfigsFragment on TempoWM_GLASSWWWSponsoredProductCarouselConfigs{_rawConfigs moduleType ad{...SponsoredProductsAdFragment}}fragment SponsoredProductsAdFragment on Ad{...AdFragment adContent{type data{__typename...AdDataSponsoredProductsFragment}}}fragment AdDataSponsoredProductsFragment on AdData{...on SponsoredProducts{adUuid adExpInfo moduleInfo products{...ProductFragment}}}fragment ProductFragment on Product{usItemId offerId badges{flags{key text}labels{key text}tags{key text}}priceInfo{priceDisplayCodes{rollback reducedPrice eligibleForAssociateDiscount clearance strikethrough submapType priceDisplayCondition unitOfMeasure pricePerUnitUom}currentPrice{price priceString}wasPrice{price priceString}priceRange{minPrice maxPrice priceString}unitPrice{price priceString}}showOptions sponsoredProduct{spQs clickBeacon spTags}canonicalUrl numberOfReviews averageRating availabilityStatus imageInfo{thumbnailUrl allImages{id url}}name fulfillmentBadge classType type p13nData{predictedQuantity flags{PREVIOUSLY_PURCHASED{text}CUSTOMERS_PICK{text}}labels{PREVIOUSLY_PURCHASED{text}CUSTOMERS_PICK{text}}}}',
                     variables: {
-                        itemId: this.itemId,
+                        itemId: this.taskData.productSKU,
                         semStoreId: null,
                         selected: true,
                         channel: 'WWW',
@@ -196,7 +196,7 @@ export class WalmartUSTask extends Task {
                         filters: [],
                         p13N: {
                             reqId: '',
-                            pageId: this.itemId,
+                            pageId: this.taskData.productSKU,
                             modules: [
                                 {
                                     moduleType: 'PersonalizedLabels',
@@ -220,7 +220,7 @@ export class WalmartUSTask extends Task {
                             },
                         },
                         p13nCls: {
-                            pageId: this.itemId,
+                            pageId: this.taskData.productSKU,
                             userClientInfo: {
                                 ipAddress: 'IP=0:0:0:0:0:0:0:1-0:0:0:0:0:0:0:1',
                                 isZipLocated: true,
@@ -235,7 +235,7 @@ export class WalmartUSTask extends Task {
                     },
                 };
 
-                const resp = await this.axiosSession.post(`/orchestra/home/graphql/ip/${this.itemId}`, body, { headers: headers });
+                const resp = await this.axiosSession.post(`/orchestra/home/graphql/ip/${this.taskData.productSKU}`, body, { headers: headers });
 
                 const itemDesc = resp.data['data'];
 
@@ -248,19 +248,18 @@ export class WalmartUSTask extends Task {
                     continue;
                 }
 
-                const offerId = product['offerId'] as string;
                 const lineItemId = product['id'] as string;
 
-                log('Offer Id %s and lineItemId %s', offerId, lineItemId);
+                log('Got lineItemId %s', lineItemId);
 
                 if (resp.headers['set-cookie']) {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 }
-                return [offerId, lineItemId];
+                return lineItemId;
             } catch (err) {
                 this.cancelTask();
                 retry = true;
-                log('Get OfferId Error', err);
+                log('Get OfferId Error %O', err.response.data);
                 await this.emitStatusWithDelay(MESSAGES.OOS_RETRY_MESSAGE, 'info');
             }
         } while (retry);
@@ -840,15 +839,15 @@ export class WalmartUSTask extends Task {
     }
 
     // create an object URL from the product URL and at the same time parses the itemid from the url
-    private initParsedURL(): void {
-        try {
-            this.parsedURL = new URL(this.taskData.productURL);
-            const match = this.parsedURL.pathname.match(this.ITEM_ID_REGEX);
-            if (match) this.itemId = match.shift();
-        } catch (error) {
-            this.parsedURL = undefined;
-        }
-    }
+    // private initParsedURL(): void {
+    //     try {
+    //         this.parsedURL = new URL(this.taskData.productURL);
+    //         const match = this.parsedURL.pathname.match(this.ITEM_ID_REGEX);
+    //         if (match) this.itemId = match.shift();
+    //     } catch (error) {
+    //         this.parsedURL = undefined;
+    //     }
+    // }
 
     /*
     Walmart prompts a captcha with a 412 HTTP status code and a json object containing information to render the captcha
@@ -908,8 +907,8 @@ export class WalmartUSTask extends Task {
                     // Captcha
                     if (error.response.status === 412) {
                         log('Dispatching Captcha');
-                        await this.dispatchCaptcha(error.response.data);
-                        return Promise.reject(new CaptchaException('Walmart US Captcha Exception', error));
+                        // await this.dispatchCaptcha(error.response.data);
+                        return Promise.reject(new CaptchaException('Walmart US Captcha Exception', error.response));
                     }
                 }
                 return Promise.reject(error);
@@ -921,6 +920,5 @@ export class WalmartUSTask extends Task {
     // functions are not pure
     updateData(taskData: TaskData): void {
         super.updateData(taskData);
-        this.initParsedURL();
     }
 }

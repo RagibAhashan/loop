@@ -1,4 +1,5 @@
 import { BrowserWindow } from 'electron';
+import { StoreType } from './../../constants/Stores';
 
 /*
 Map that stores captcha windows
@@ -10,11 +11,11 @@ class CaptchaWindowManager {
         this.windows = new Map();
     }
 
-    getWindow(storeName: string): BrowserWindow | undefined {
+    getWindow(storeName: StoreType): BrowserWindow | undefined {
         return this.windows.get(storeName);
     }
 
-    register(storeName: string, window: BrowserWindow): void {
+    register(storeName: StoreType, window: BrowserWindow): void {
         this.windows.set(storeName, window);
     }
 

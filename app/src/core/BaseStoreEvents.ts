@@ -47,12 +47,8 @@ export abstract class BaseStoreEvents {
         });
 
         newTask.on(NOTIFY_CAPTCHA_TASK, (captcha: Captcha) => {
-            // const capWin = captchaWindowManager.getWindow(this.storeType);
             console.log('task got captcha sending to renderer');
             event.reply(NOTIFY_CAPTCHA_STORE(this.storeType), captcha);
-            // if (capWin) {
-            //     capWin.webContents.send(NOTIFY_CAPTCHA_STORE(this.storeType), captcha);
-            // }
         });
 
         newTask.on(TASK_SUCCESS, () => {
@@ -73,15 +69,12 @@ export abstract class BaseStoreEvents {
 
     protected addTaskEvent(): void {
         ipcMain.on(NOTIFY_ADD_TASK(this.storeType), (event, taskDatas: TaskData[]) => {
-            console.log('adding task !', taskDatas);
             taskDatas.map((taskData) => this.createTask(event, taskData));
         });
     }
 
     protected startTaskEvent(): void {
         ipcMain.on(NOTIFY_START_TASK(this.storeType), (event, taskData: TaskData) => {
-            console.log('starting task ! for store', this.storeType, taskData);
-
             let task = taskManager.getTask(taskData.uuid);
 
             if (!task) task = this.createTask(event, taskData);

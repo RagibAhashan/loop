@@ -18,8 +18,8 @@ export interface ProxySet {
     notUsed: { [proxyHost: string]: Proxy };
 }
 export interface Proxy {
-    host: string;
-    credential: string;
+    host: string; // ip:port
+    credential: string; // user:pass
     testStatus: Stores;
     usedBy: string[];
 }
