@@ -1,21 +1,30 @@
+import { StoreType } from '../constants/Stores';
 import { Task } from './Task';
+
+export type TaskMap = Map<string, Task>;
 class TaskManager {
-    public tasks: Map<string, Task>;
+    public taskGroupMap: Map<string, TaskMap>;
     constructor() {
-        this.tasks = new Map();
+        this.taskGroupMap = new Map();
     }
 
-    getTask(uuid: string): Task | undefined {
-        return this.tasks.get(uuid);
+    getTask(storeType: StoreType, uuid: string): Task | undefined {
+        return this.taskMap.get(storeType).get(uuid);
     }
 
     register(uuid: string, task: Task): void {
-        this.tasks.set(uuid, task);
+        this.taskMap.set(uuid, task);
     }
 
-    remove(uuid: string): void {
-        this.tasks.delete(uuid);
+    registerStore(storeType: StoreType): void {
+        this.taskMap.set(storeType, new Map());
     }
+
+    removeStore(uuid: string): void {
+        this.taskMap.delete(uuid);
+    }
+
+    removeTask(): void {}
 }
 
 export const taskManager = new TaskManager();

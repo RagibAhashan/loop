@@ -42,8 +42,7 @@ const EditTaskAction = (props: any) => {
 
         setVisibleModal(false);
     };
-    return (
-        <div>
+    return (        <div>
             <Button onClick={onEditClick} style={editButton} size="small" icon={<EditFilled />} disabled={isTaskRunning} />
 
             <EditTaskModalComponent visible={visibleModal} onClose={onModalClose} onEdit={handleEditTask} task={currentTask} />

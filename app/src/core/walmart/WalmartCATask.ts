@@ -202,7 +202,7 @@ export class WalmartCATask extends Task {
                     email: this.taskData.profile.shipping.email,
                 };
 
-                log('Setting shipping address');
+                log('Setting shipping address %O', body);
                 const resp = await this.axiosSession.post('/api/checkout-page/checkout/address?lang=en&availStore=1061&slotBooked=false', body, {
                     headers: headers,
                 });
@@ -252,7 +252,10 @@ export class WalmartCATask extends Task {
 
                 if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
             } catch (err) {
-                log('Set Shipping Method Failed %O', err);
+                // log('Set Shipping Method Failed %O', err);
+                if (err.response) {
+                    log('Set Shipping Method Failed %O', err.response.data['errors']);
+                }
                 this.cancelTask();
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
                 retry = true;
@@ -420,7 +423,7 @@ export class WalmartCATask extends Task {
                 if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 log('Payment resp %O', resp.statusText);
             } catch (err) {
-                log('Payment Failed %O', err.response.data ?? err);
+                log('Payment Failed %s %O', err.response.status ?? err, err.response.data ?? err);
                 this.cancelTask();
                 await this.emitStatusWithDelay(MESSAGES.CHECKOUT_FAILED_MESSAGE, 'error');
             }

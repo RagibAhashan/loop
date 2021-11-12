@@ -1,0 +1,9 @@
+# TODOs
+
+1. Stop doing too much work on UI/React side and move logic to backend, i.e :
+
+-   Assigning proxies to task, no need to track
+
+General note : The UI state does not need to store and manage information that is related to business logic,
+for example, at the moment we are storing proxies and doing proxies assignement logic in the redux state. This slows the app, we would rather
+assign proxies in a structure that is stored in the backend only, and if we want to check what proxy a task is using we could just fetch it from the backend.
