@@ -5,7 +5,7 @@ import { Route } from 'react-router-dom';
 import { NOTIFY_ON_START_INIT_TASK, PROFILE_ROUTE, PROXY_ROUTE, SETTINGS_ROUTE, TASKS_ROUTE } from '../common/Constants';
 import SideBar from '../components/sidebar';
 import { StoreType } from '../constants/Stores';
-import ProfilePage from '../pages/Profile/profiles';
+import ProfilePage from '../pages/Profile/ProfilePage';
 import ProxyPage from '../pages/Proxies/ProxyPage';
 import SettingsPage from '../pages/settingsPage';
 import TaskPage from '../pages/Task/TaskPage';

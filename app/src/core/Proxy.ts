@@ -1,9 +1,15 @@
 import { HttpsProxyAgent } from 'https-proxy-agent';
 
-export class Proxy {
+export interface IProxy {
+    host: string; // hostname@port
+    credentials: string; // user:pass
+    httpsAgent: HttpsProxyAgent;
+}
+export class Proxy implements IProxy {
     host: string; // hostname:port
     credentials: string; // user:pass
-    private httpsAgent: HttpsProxyAgent;
+    httpsAgent: HttpsProxyAgent;
+
     constructor(host: string, credentials?: string) {
         this.host = host;
         this.credentials = credentials;

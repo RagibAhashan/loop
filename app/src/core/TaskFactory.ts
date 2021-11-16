@@ -3,7 +3,7 @@ import UserAgentProvider from '../services/UserAgentProvider';
 import { StoreInfo, StoreType } from './../constants/Stores';
 import { FLTaskData, TaskData, WalmartTaskData } from './../interfaces/TaskInterfaces';
 import { FootLockerTask } from './footlocker/FootLockerTask';
-import { Proxy } from './Proxy';
+import { IProxy, Proxy } from './Proxy';
 import { RequestInstance } from './RequestInstance';
 import { Task } from './Task';
 import { taskManager } from './TaskManager';
@@ -57,11 +57,11 @@ export class TaskFactory {
         return wTask;
     }
 
-    private static createRequestInstance(store: StoreInfo, proxy: Proxy | null, params?: any): RequestInstance {
+    private static createRequestInstance(store: StoreInfo, proxy: IProxy | null, params?: any): RequestInstance {
         const commonHeader = {
             'user-agent': UserAgentProvider.randomUserAgent(),
         };
-        const axios = new RequestInstance(store.baseURL, params, commonHeader, proxy ? new Proxy(proxy.host, proxy.credential) : undefined);
+        const axios = new RequestInstance(store.baseURL, params, commonHeader, proxy ? new Proxy(proxy.host, proxy.credentials) : undefined);
 
         return axios;
     }

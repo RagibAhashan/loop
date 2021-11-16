@@ -149,9 +149,9 @@ export const storeSlice = createSlice({
         builder
             .addCase(assignProxy, (state, action) => {
                 console.log('assigning proxy to tasks');
-                for (let i = 0; i < action.payload.proxiesToTask.length; ++i) {
-                    state[action.payload.storeKey].tasks[action.payload.proxiesToTask[i].taskUUID].proxy = action.payload.proxiesToTask[i].proxy;
-                }
+                // for (let i = 0; i < action.payload.proxiesToTask.length; ++i) {
+                //     state[action.payload.storeKey].tasks[action.payload.proxiesToTask[i].taskUUID].proxy = action.payload.proxiesToTask[i].proxy;
+                // }
             })
             .addCase(deleteAllProxiesFromSet, (state, action) => {
                 Object.values(state).forEach((store) => {

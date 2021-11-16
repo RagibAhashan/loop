@@ -6,7 +6,6 @@ import { CANCEL_ERROR, Task } from '../Task';
 import { CreditCard, FLTaskData } from './../../interfaces/TaskInterfaces';
 import { MESSAGES } from './../constants/Constants';
 import { CookieJar } from './../CookieJar';
-import { FLCInfoForm, FLCOrderForm } from './../interface/FootLockerCA';
 import { RequestInstance } from './../RequestInstance';
 
 export class FootLockerTask extends Task {
@@ -370,19 +369,20 @@ export class FootLockerTask extends Task {
         } while (retry);
     }
 
-    getInfoForm(shipping: boolean): FLCInfoForm {
+    getInfoForm(shipping: boolean): any {
         const user = shipping ? this.taskData.profile.shipping : this.taskData.profile.billing;
-        return new FLCInfoForm(
-            user.lastName,
-            user.email,
-            user.phone,
-            user.country,
-            user.firstName,
-            user.address,
-            user.postalCode,
-            user.region,
-            user.town,
-        );
+        // return new FLCInfoForm(
+        //     user.lastName,
+        //     user.email,
+        //     user.phone,
+        //     user.country,
+        //     user.firstName,
+        //     user.address,
+        //     user.postalCode,
+        //     user.region,
+        //     user.town,
+        // );
+        return {};
     }
 
     setHeaders(): any {
@@ -394,8 +394,9 @@ export class FootLockerTask extends Task {
         return headers;
     }
 
-    getOrderForm(encCC: CreditCard): FLCOrderForm {
-        return new FLCOrderForm(encCC.number, encCC.expiryMonth, encCC.expiryYear, encCC.cvc, (this.taskData as FLTaskData).deviceId as string);
+    getOrderForm(encCC: CreditCard): any {
+        // return new FLCOrderForm(encCC.number, encCC.expiryMonth, encCC.expiryYear, encCC.cvc, (this.taskData as FLTaskData).deviceId as string);
+        return {};
     }
 
     async dispatchCaptcha(response: AxiosResponse): Promise<void> {

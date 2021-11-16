@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { NOTIFY_EDIT_TASK } from '../../common/Constants';
 import { AppState } from '../../global-store/GlobalStore';
-import { assignRandomProxy, unassignProxy } from '../../services/Proxy/ProxyService';
+import { assignRandomProxy } from '../../services/Proxy/ProxyService';
 import { editTask, getTaskById } from '../../services/Store/StoreService';
 import { editButton } from '../../styles/Buttons';
 
@@ -35,7 +35,7 @@ const EditTaskAction = (props: any) => {
             dispatch(assignRandomProxy(newValues.proxySet, storeKey, [uuid]));
         } else if (newValues.proxySet == null) {
             console.log('unassigning proxy after null');
-            dispatch(unassignProxy({ name: currentTask.proxySet, proxy: currentTask.proxy, taskID: currentTask.uuid }));
+            // dispatch(unassignProxy({ name: currentTask.proxySet, proxy: currentTask.proxy, taskID: currentTask.uuid }));
         }
 
         window.ElectronBridge.send(NOTIFY_EDIT_TASK(storeKey), uuid, { ...currentTask, ...newValues });

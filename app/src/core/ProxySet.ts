@@ -4,10 +4,15 @@ A proxy set regroups proxies
 
 import { Proxy } from './Proxy';
 
+export interface IProxySet {
+    name: string;
+    proxies: ProxyMap;
+}
+
 // Map of name (hostname:port) to proxy
 export type ProxyMap = Map<string, Proxy>;
 
-class ProxySet {
+export class ProxySet implements IProxySet {
     name: string;
     proxies: ProxyMap;
 
@@ -16,19 +21,27 @@ class ProxySet {
         this.proxies = new Map();
     }
 
-    removeProxy(proxyHosts: string[]) {
+    addProxy(proxies: Proxy[]): void {
+        for (const proxy of proxies) {
+            this.proxies.set(proxy.host, proxy);
+        }
+    }
+
+    removeProxy(proxyHosts: string[]): void {
         for (const host of proxyHosts) {
             this.proxies.delete(host);
         }
     }
 
-    editName(newName: string) {
+    getAllProxies(): Proxy[] {
+        return Array.from(this.proxies.values());
+    }
+
+    editName(newName: string): void {
         this.name = newName;
     }
 
-    addProxy(proxies: Proxy[]) {
-        for (const proxy of proxies) {
-            this.proxies.set(proxy.hos, proxy);
-        }
+    testProxies(proxyHosts: string[]) {
+        throw new Error('Method not implemented.');
     }
 }

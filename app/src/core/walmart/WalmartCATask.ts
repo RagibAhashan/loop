@@ -14,10 +14,9 @@ import { debug } from '../Log';
 import { Task } from '../Task';
 import { TASK_STATUS } from './../../common/Constants';
 import { COUNTRY, REGIONS } from './../../common/Regions';
-import { TaskData, WalmartTaskData } from './../../interfaces/TaskInterfaces';
+import { TaskData, WalmartCreditCard, WalmartTaskData } from './../../interfaces/TaskInterfaces';
 import { CookieJar } from './../CookieJar';
 import { CaptchaException } from './../exceptions/CaptchaException';
-import { WalmartCreditCard } from './../interface/UserProfile';
 import { RequestInstance } from './../RequestInstance';
 import { generatePxCookies } from './scripts/px';
 

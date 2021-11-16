@@ -2,10 +2,10 @@ import { AxiosInstance } from 'axios';
 import { EventEmitter } from 'events';
 import { TASK_STOPPED } from '../common/Constants';
 import { TASK_STATUS, TASK_STOP } from './../common/Constants';
-import { Proxy } from './../interfaces/OtherInterfaces';
 import { StatusLevel, TaskData } from './../interfaces/TaskInterfaces';
 import { MESSAGES } from './constants/Constants';
 import { CookieJar } from './CookieJar';
+import { IProxy } from './Proxy';
 import { RequestInstance } from './RequestInstance';
 
 export const CANCEL_ERROR = 'Cancel';
@@ -31,7 +31,7 @@ export abstract class Task extends EventEmitter {
 
     abstract doTask(): void;
 
-    protected updateProxy(proxyData: Proxy | null): void {
+    protected updateProxy(proxyData: IProxy | null): void {
         this.requestInstance.updateProxy(proxyData);
     }
 

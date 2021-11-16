@@ -1,6 +1,6 @@
-import { CreditCard, WalmartCreditCard } from '@core/interface/UserProfile';
 import { debug } from '@core/Log';
 import { EncryptWalmart } from '@core/walmart/scripts/WalmartClientEncryption';
+import { CreditCard, WalmartCreditCard } from '@interfaces/TaskInterfaces';
 import axios from 'axios';
 const log = debug.extend('walmart-encryption-service');
 

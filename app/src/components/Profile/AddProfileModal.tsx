@@ -1,10 +1,8 @@
+import { IProfile } from '@core/Profile';
 import { Button, Checkbox, Col, Divider, Form, Input, Modal, Row, Select, Tabs } from 'antd';
 import React, { useState } from 'react';
 import Cards from 'react-credit-cards';
-import { useDispatch } from 'react-redux';
 import { COUNTRY, REGIONS } from '../../common/Regions';
-import { UserProfile } from '../../interfaces/TaskInterfaces';
-import { createProfile } from '../../services/Profile/ProfileService';
 const { Option } = Select;
 const { TabPane } = Tabs;
 type IObj = {
@@ -53,14 +51,19 @@ const getMonths = (): any => {
     ];
 };
 
-const CreateNewProfileModal = (props: any) => {
-    const [form] = Form.useForm();
-    const dispatch = useDispatch();
+interface Props {
+    showModal: boolean;
+    setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const AddProfileModal: React.FunctionComponent<Props> = (props) => {
+    const [shippingForm] = Form.useForm();
+    const [billingForm] = Form.useForm();
 
     const [same, setSame] = useState(false);
     const [focused, setFocused] = useState<focus>(undefined);
 
-    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
+    const { showModal, setShowModal } = props;
 
     const [shipFirstName, setshipFirstName] = useState('');
     const [shipLastname, setshipLastName] = useState('');
@@ -75,12 +78,21 @@ const CreateNewProfileModal = (props: any) => {
 
     const [country, setCountry] = useState('default');
 
-    const handleOk = () => {
-        setIsEditModalVisible(false);
+    const checkIfBillingSame = (isSame: boolean) => {
+        if (isSame) {
+            const shippingValues = shippingForm.getFieldsValue();
+            billingForm.setFieldsValue(shippingValues);
+        } else {
+            billingForm.resetFields();
+        }
+    };
+    const handleSameShippingBilling = (e) => {
+        setSame(e.target.checked);
+        checkIfBillingSame(e.target.checked);
     };
 
-    const handleCancel = () => {
-        setIsEditModalVisible(false);
+    const onTabChange = (activeTab: 'shippingTab' | 'billingTab') => {
+        checkIfBillingSame(activeTab === 'billingTab' && same);
     };
 
     const changeMonth = (value: any) => {
@@ -93,41 +105,51 @@ const CreateNewProfileModal = (props: any) => {
 
     const onCountryChange = (iso: string) => {
         setCountry(iso);
-        form.resetFields([['shipping', 'region']]);
+        shippingForm.resetFields(['region']);
+        billingForm.resetFields(['region']);
     };
 
-    const onFinish = (profile: UserProfile) => {
-        if (same) profile.billing = profile.shipping;
-        dispatch(createProfile({ name: profile.name, profile: profile }));
+    const onAddProfile = () => {
+        console.log('adding profile');
+        const shippingProfile = shippingForm.getFieldsValue();
+        const billingProfile = billingForm.getFieldsValue();
+        const profile: IProfile = {
+            profileName: shippingProfile['profileName'],
+            profileData: {
+                shipping: {},
+                billing: {},
+                payment: {},
+            },
+        };
+
+        // window.ElectronBridge.send(ProfileChannel.addProfile, {});
+        setShowModal(false);
     };
     return (
         <div>
-            <Button type="primary" onClick={() => setIsEditModalVisible(true)}>
-                Create Profile
-            </Button>
             <Modal
                 centered
                 title="Create a new profile"
-                visible={isEditModalVisible}
-                onOk={handleOk}
-                onCancel={handleCancel}
+                visible={showModal}
+                onOk={() => setShowModal(false)}
+                onCancel={() => setShowModal(false)}
                 width={1000}
                 footer={false}
             >
-                <Form form={form} name="nest-messages" onFinish={onFinish} validateMessages={validateMessages}>
-                    <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
-                        <Tabs defaultActiveKey="1">
-                            <TabPane tab="Profile and Shipping" key="1">
+                <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
+                    <Tabs defaultActiveKey="shippingTab" onChange={onTabChange}>
+                        <TabPane tab="Profile and Shipping" key="shippingTab">
+                            <Form form={shippingForm} validateMessages={validateMessages}>
                                 <Row gutter={ROW_GUTTER}>
                                     <Col span={8}>
-                                        <Form.Item name="name" rules={[{ required: true }]}>
+                                        <Form.Item name="profileName" rules={[{ required: true }]}>
                                             <Input placeholder={'Profile name'} />
                                         </Form.Item>
                                     </Col>
                                 </Row>
                                 <Row gutter={ROW_GUTTER}>
                                     <Col span={8}>
-                                        <Form.Item name={['shipping', 'firstName']} rules={[{ required: true }]}>
+                                        <Form.Item name={'firstName'} rules={[{ required: true }]}>
                                             <Input
                                                 placeholder={'First name'}
                                                 onChange={(e) => {
@@ -138,7 +160,7 @@ const CreateNewProfileModal = (props: any) => {
                                     </Col>
 
                                     <Col span={8}>
-                                        <Form.Item name={['shipping', 'lastName']} rules={[{ required: true }]}>
+                                        <Form.Item name={'lastName'} rules={[{ required: true }]}>
                                             <Input
                                                 placeholder={'Last name'}
                                                 onChange={(e) => {
@@ -149,7 +171,7 @@ const CreateNewProfileModal = (props: any) => {
                                     </Col>
 
                                     <Col span={8}>
-                                        <Form.Item name={['shipping', 'phone']} rules={[{ required: true }]}>
+                                        <Form.Item name={'phone'} rules={[{ required: true }]}>
                                             <Input placeholder={'Phone'} type="number" />
                                         </Form.Item>
                                     </Col>
@@ -157,19 +179,19 @@ const CreateNewProfileModal = (props: any) => {
 
                                 <Row gutter={ROW_GUTTER}>
                                     <Col span={8}>
-                                        <Form.Item name={['shipping', 'email']} rules={[{ required: true }]}>
+                                        <Form.Item name={'email'} rules={[{ required: true }]}>
                                             <Input placeholder={'Email'} />
                                         </Form.Item>
                                     </Col>
 
                                     <Col span={8}>
-                                        <Form.Item name={['shipping', 'address']} rules={[{ required: true }]}>
+                                        <Form.Item name={'address'} rules={[{ required: true }]}>
                                             <Input placeholder={'Address'} />
                                         </Form.Item>
                                     </Col>
 
                                     <Col span={8}>
-                                        <Form.Item name={['shipping', 'country']} rules={[{ required: true }]}>
+                                        <Form.Item name={'country'} rules={[{ required: true }]}>
                                             <Select placeholder="Country" onChange={onCountryChange} allowClear>
                                                 {Object.keys(COUNTRY).map((name) => (
                                                     <Option key={name} value={name}>
@@ -183,7 +205,7 @@ const CreateNewProfileModal = (props: any) => {
 
                                 <Row gutter={ROW_GUTTER}>
                                     <Col span={8}>
-                                        <Form.Item name={['shipping', 'region']} rules={[{ required: true }]}>
+                                        <Form.Item name={'region'} rules={[{ required: true }]}>
                                             <Select placeholder="Province/State" allowClear>
                                                 {Object.entries(ALL_REGIONS[country]).map(([name, value]: [string, any]) => (
                                                     <Option key={name} value={name}>
@@ -194,23 +216,25 @@ const CreateNewProfileModal = (props: any) => {
                                         </Form.Item>
                                     </Col>
                                     <Col span={8}>
-                                        <Form.Item name={['shipping', 'town']} rules={[{ required: true }]}>
+                                        <Form.Item name={'town'} rules={[{ required: true }]}>
                                             <Input placeholder={'City'} />
                                         </Form.Item>
                                     </Col>
 
                                     <Col span={8}>
-                                        <Form.Item name={['shipping', 'postalCode']} rules={[{ required: true }]}>
+                                        <Form.Item name={'postalCode'} rules={[{ required: true }]}>
                                             <Input placeholder={'Postal Code/Zip Code'} />
                                         </Form.Item>
                                     </Col>
                                 </Row>
-                            </TabPane>
+                            </Form>
+                        </TabPane>
 
-                            <TabPane tab="Payment Information" key="2">
+                        <TabPane tab="Payment Information" key="billingTab">
+                            <Form form={billingForm} validateMessages={validateMessages}>
                                 <Row gutter={ROW_GUTTER}>
                                     <Col span={8}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'firstName']} rules={[{ required: true }]}>
+                                        <Form.Item name={'firstName'} rules={[{ required: true }]}>
                                             <Input
                                                 placeholder={'First name'}
                                                 onChange={(e) => {
@@ -221,18 +245,18 @@ const CreateNewProfileModal = (props: any) => {
                                     </Col>
 
                                     <Col span={8}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'lastName']} rules={[{ required: true }]}>
+                                        <Form.Item name={'lastName'} rules={[{ required: true }]}>
                                             <Input
                                                 placeholder={'Last name'}
                                                 onChange={(e) => {
-                                                    setLastName((prev) => (prev = e.target.value));
+                                                    setLastName(e.target.value);
                                                 }}
                                             />
                                         </Form.Item>
                                     </Col>
 
                                     <Col span={8}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'phone']} rules={[{ required: true }]}>
+                                        <Form.Item name={'phone'} rules={[{ required: true }]}>
                                             <Input placeholder={'Phone'} />
                                         </Form.Item>
                                     </Col>
@@ -240,19 +264,19 @@ const CreateNewProfileModal = (props: any) => {
 
                                 <Row gutter={ROW_GUTTER}>
                                     <Col span={8}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'email']} rules={[{ required: true, type: 'email' }]}>
+                                        <Form.Item name={'email'} rules={[{ required: true, type: 'email' }]}>
                                             <Input placeholder={'email'} />
                                         </Form.Item>
                                     </Col>
 
                                     <Col span={8}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'address']} rules={[{ required: true }]}>
+                                        <Form.Item name={'address'} rules={[{ required: true }]}>
                                             <Input placeholder={'Address'} />
                                         </Form.Item>
                                     </Col>
 
                                     <Col span={8}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'country']} rules={[{ required: true }]}>
+                                        <Form.Item name={'country'} rules={[{ required: true }]}>
                                             <Select placeholder="Country" onChange={onCountryChange} allowClear>
                                                 {Object.keys(COUNTRY).map((name) => (
                                                     <Option key={name} value={name}>
@@ -266,7 +290,7 @@ const CreateNewProfileModal = (props: any) => {
 
                                 <Row gutter={ROW_GUTTER}>
                                     <Col span={8}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'region']} rules={[{ required: true }]}>
+                                        <Form.Item name={'region'} rules={[{ required: true }]}>
                                             <Select placeholder="Province/State" allowClear>
                                                 {Object.entries(ALL_REGIONS[country]).map(([name, value]: [string, any]) => (
                                                     <Option key={name} value={name}>
@@ -277,27 +301,20 @@ const CreateNewProfileModal = (props: any) => {
                                         </Form.Item>
                                     </Col>
                                     <Col span={8}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'town']} rules={[{ required: true }]}>
+                                        <Form.Item name={'town'} rules={[{ required: true }]}>
                                             <Input placeholder={'City'} />
                                         </Form.Item>
                                     </Col>
                                     <Col span={8}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'postalCode']} rules={[{ required: true }]}>
+                                        <Form.Item name={'postalCode'} rules={[{ required: true }]}>
                                             <Input placeholder={'Postal Code/Zip Code'} />
                                         </Form.Item>
                                     </Col>
 
                                     <Col span={8}>
-                                        <Form.Item wrapperCol={{ ...layout.wrapperCol }} name="same" valuePropName="checked">
-                                            <Checkbox
-                                                checked={same}
-                                                onChange={(e) => {
-                                                    setSame(e.target.checked);
-                                                }}
-                                            >
-                                                Same as shipping
-                                            </Checkbox>
-                                        </Form.Item>
+                                        <Checkbox checked={same} onChange={handleSameShippingBilling}>
+                                            Same as shipping
+                                        </Checkbox>
                                     </Col>
                                 </Row>
                                 <Divider> Enter your card </Divider>
@@ -332,7 +349,7 @@ const CreateNewProfileModal = (props: any) => {
                                                         onFocus={() => setFocused('number')}
                                                         placeholder={'Credit Card'}
                                                         onChange={(e) => {
-                                                            setCreditCard((prev) => (prev = e.target.value));
+                                                            setCreditCard(e.target.value);
                                                         }}
                                                     />
                                                 </Form.Item>
@@ -346,7 +363,7 @@ const CreateNewProfileModal = (props: any) => {
                                                         name="cvc"
                                                         onFocus={() => setFocused('cvc')}
                                                         onChange={(e) => {
-                                                            setCvc((prev) => (prev = e.target.value));
+                                                            setCvc(e.target.value);
                                                         }}
                                                     />
                                                 </Form.Item>
@@ -380,22 +397,20 @@ const CreateNewProfileModal = (props: any) => {
                                         </Row>
                                         <Row gutter={ROW_GUTTER_CC}>
                                             <Col span={24}>
-                                                <Form.Item>
-                                                    <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
-                                                        Create Profile
-                                                    </Button>
-                                                </Form.Item>
+                                                <Button type="primary" htmlType="submit" style={{ width: '100%' }} onClick={onAddProfile}>
+                                                    Create Profile
+                                                </Button>
                                             </Col>
                                         </Row>
                                     </div>
                                 </div>
-                            </TabPane>
-                        </Tabs>
-                    </div>
-                </Form>
+                            </Form>
+                        </TabPane>
+                    </Tabs>
+                </div>
             </Modal>
         </div>
     );
 };
 
-export default CreateNewProfileModal;
+export default AddProfileModal;

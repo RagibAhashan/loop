@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, CancelTokenSource } from 'axios';
-import { Proxy } from './Proxy';
+import { IProxy, Proxy } from './Proxy';
 
 const CancelToken = axios.CancelToken;
 export class RequestInstance {
@@ -26,7 +26,7 @@ export class RequestInstance {
         this.axios.defaults.cancelToken = this.source.token;
     }
 
-    public updateProxy(proxyData: Proxy | null) {
+    public updateProxy(proxyData: IProxy | null) {
         console.log('updateing proxy with', proxyData);
         if (!proxyData) {
             this.axios.defaults.httpsAgent = undefined;

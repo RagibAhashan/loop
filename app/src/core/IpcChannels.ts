@@ -7,3 +7,23 @@ export enum TaskGroupChannel {
     taskLoaded = 'dynasty:taskLoaded',
     taskGroupError = 'dynasty:taskGroupError',
 }
+
+export enum ProxySetChannel {
+    getAllProxySets = 'dynasty:getAllProxySets',
+    getProxySetProxies = 'dynasty:getProxySetProxies',
+    addProxySet = 'dynasty:addProxySet',
+    removeProxySet = 'dynasty:removeProxySet',
+    proxySetUpdated = 'dynasty:proxySetUpdated',
+    proxiesLoaded = 'dynasty:proxiesLoaded',
+    proxySetError = 'dynasty:proxySetError',
+}
+
+export enum ProfileChannel {
+    getAllProfiles = 'dynasty:getAllProfiles',
+    getProfile = 'dynasty:getProfile',
+    addProfile = 'dynasty:addProfile',
+    removeProfile = 'dynasty:removeProfile',
+    profileUpdated = 'dynasty:profileUpdated',
+    profileLoaded = 'dynasty:profileLoaded',
+    profileError = 'dynasty:profileError',
+}

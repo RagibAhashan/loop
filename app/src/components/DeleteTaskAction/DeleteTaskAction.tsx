@@ -4,7 +4,6 @@ import { Button, Popconfirm } from 'antd';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AppState } from '../../global-store/GlobalStore';
-import { unassignProxy } from '../../services/Proxy/ProxyService';
 import { deleteTask, getTaskById } from '../../services/Store/StoreService';
 import { deleteButton } from '../../styles/Buttons';
 
@@ -17,7 +16,7 @@ const DeleteTaskAction = (props: any) => {
 
     const handleDelete = () => {
         dispatch(deleteTask({ storeKey: storeKey, uuid: uuid }));
-        if (task.proxySet && task.proxy) dispatch(unassignProxy({ name: task.proxySet, proxy: task.proxy, taskID: task.uuid }));
+        // if (task.proxySet && task.proxy) dispatch(unassignProxy({ name: task.proxySet, proxy: task.proxy, taskID: task.uuid }));
     };
 
     return (

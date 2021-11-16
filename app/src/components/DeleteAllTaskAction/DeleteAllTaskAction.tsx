@@ -5,7 +5,6 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { NOTIFY_STOP_TASK } from '../../common/Constants';
 import { AppState } from '../../global-store/GlobalStore';
-import { unassignProxy } from '../../services/Proxy/ProxyService';
 import { deleteAllTasks, getStoreById, getTasksByStore } from '../../services/Store/StoreService';
 import { buttonStyle } from '../../styles/Buttons';
 
@@ -28,7 +27,7 @@ const DeleteAllTaskAction = (props: any) => {
         Object.values(tasks).forEach((task) => {
             window.ElectronBridge.send(NOTIFY_STOP_TASK(storeKey), task.uuid);
             localStorage.removeItem(task.uuid);
-            if (task.proxySet && task.proxy) dispatch(unassignProxy({ name: task.proxySet, proxy: task.proxy, taskID: task.uuid }));
+            // if (task.proxySet && task.proxy) dispatch(unassignProxy({ name: task.proxySet, proxy: task.proxy, taskID: task.uuid }));
         });
     };
 

@@ -1,4 +1,5 @@
-import { CreditCard } from '@core/interface/UserProfile';
+import { CreditCard } from '@interfaces/TaskInterfaces';
+
 require('@core/footlocker/scripts/2615645779051917');
 
 export class FootlockerEncryption {

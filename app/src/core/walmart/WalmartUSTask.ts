@@ -1,6 +1,6 @@
 import { NOTIFY_CAPTCHA_SOLVED, NOTIFY_CAPTCHA_TASK, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
 import { REGIONS } from '../../common/Regions';
-import { TaskData } from '../../interfaces/TaskInterfaces';
+import { TaskData, WalmartCreditCard } from '../../interfaces/TaskInterfaces';
 import { WalmartEncryption } from '../../services/Encryption/WalmartEncryption';
 import UserAgentProvider from '../../services/UserAgentProvider';
 import { MESSAGES } from '../constants/Constants';
@@ -20,7 +20,6 @@ import {
     WALMART_US_UPDATE_TENDER_PLAN_HEADERS,
 } from '../constants/Walmart';
 import { CookieJar } from '../CookieJar';
-import { WalmartCreditCard } from '../interface/UserProfile';
 import { debug } from '../Log';
 import { RequestInstance } from '../RequestInstance';
 import { CANCEL_ERROR, Task } from '../Task';

@@ -5,10 +5,6 @@ import React, { useEffect, useState } from 'react';
 import AddTaskGroupModal from './AddTaskGroupModal';
 import TaskGroupList from './TaskGroupList';
 
-interface Props {
-    setCurrentTaskGroup: React.Dispatch<React.SetStateAction<string>>;
-}
-
 const TaskGroupContainer: React.FunctionComponent = () => {
     const [taskGroups, setTaskGroups] = useState<ITaskGroup[]>([]);
     const [showModal, setShowModal] = useState<boolean>(false);

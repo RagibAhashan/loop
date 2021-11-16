@@ -1,3 +1,4 @@
+import { IProxy } from '@core/Proxy';
 import { Moment } from 'moment';
 import { Proxy } from './OtherInterfaces';
 export interface CreditCard {
@@ -26,6 +27,17 @@ export interface UserProfile {
     shipping: Billing;
     same: boolean;
     name: string;
+}
+
+// TODO move this interface somewhere else
+export interface WalmartCreditCard {
+    integrityCheck: string;
+    number: string;
+    cvc: string;
+    keyId: string;
+    expiryMonth: string;
+    expiryYear: string;
+    phase: string;
 }
 
 export type StatusLevel = 'error' | 'status' | 'info' | 'idle' | 'cancel' | 'success' | 'fail';
@@ -65,7 +77,7 @@ export interface TaskData {
     uuid: string;
     running: boolean;
     status: Status;
-    proxy: Proxy | null;
+    proxy: IProxy | null;
     proxySet: string | null;
     profile: UserProfile;
     profileName: string;
