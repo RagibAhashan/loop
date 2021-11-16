@@ -7,6 +7,15 @@ export type Api = {
     on: (channel: string, listener: any) => void;
     once: (channel: string, listener: any) => void;
     removeAllListeners: (channel: string) => void;
+    removeListener: (channel: string, listener: (...args: any[]) => void) => void;
+};
+
+export type TaskGroupApi = {
+    getAllGroups: any;
+    getAllTasks: any;
+    createGroup: any;
+    removeGroup: any;
+    editGroup: any;
 };
 
 declare global {
@@ -21,4 +30,5 @@ contextBridge.exposeInMainWorld('ElectronBridge', {
     on: (channel: string, listener: any) => ipcRenderer.on(channel, listener),
     once: (channel: string, listener: any) => ipcRenderer.once(channel, listener),
     removeAllListeners: (channel: string) => ipcRenderer.removeAllListeners(channel),
+    removeListener: (channel: string, listener: (...args: any[]) => void) => ipcRenderer.removeListener(channel, listener),
 });

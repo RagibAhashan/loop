@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>PerimeterX</title>
+    </head>
+    <body>
+        <div id="challenge-div"></div>
+        <script type="application/javascript">
+            const challengeDiv = document.getElementById('challenge-div');
+            const abr = {
+                redirectUrl:
+                    '/blocked?url=L2lwL0Nhc2UtaVBob25lLTgtaVBob25lLTctQ3V0ZS1MaXF1aWQtR2xpdHRlci1CbGluZy1RdWlja3NhbmQtdy1UZW1wZXJlZC1HbGFzcy1TaG9jay1Qcm9vZi1QaG9uZS1HaXJscy1Xb21lbi1Db21wYXRpYmxlLUFwcGxlLTctOC1DbGVhci1UZWFsLzgyOTcxNDI3NQ==&uuid=88be62d0-d22a-11eb-842e-0533ff112c2d&vid=f4359bad-d222-11eb-b394-0242ac120019&g=b',
+                appId: 'PXu6b0qd2S',
+                jsClientSrc: '/px/PXu6b0qd2S/init.js',
+                firstPartyEnabled: true,
+                vid: 'f4359bad-d222-11eb-b394-0242ac120019',
+                uuid: '88be62d0-d22a-11eb-842e-0533ff112c2d',
+                hostUrl: '/px/PXu6b0qd2S/xhr',
+                blockScript:
+                    'https://walmart.com/px/PXu6b0qd2S/captcha/captcha.js?a=c&m=0&u=88be62d0-d22a-11eb-842e-0533ff112c2d&v=f4359bad-d222-11eb-b394-0242ac120019&g=b',
+            };
+            window._pxOnCaptchaSuccess = function (isValid) {
+                console.log('captcha completed', isValid);
+                if (isValid) {
+                    // challenge was solved successfully.
+                    // do something here.
+                }
+            };
+
+            window._pxAppId = abr.appId; // PerimeterX's application id
+            window._pxJsClientSrc = abr.jsClientSrc; // PerimeterX's JavaScript sensor url
+            window._pxFirstPartyEnabled = abr.firstPartyEnabled; // A boolean flag indicating whether first party is enabled or not
+            window._pxVid = abr.vid; // PerimeterX's visitor id
+            window._pxUuid = abr.uuid; // PerimeterX's unique user id
+            window._pxHostUrl = abr.hostUrl; // PerimeterX's cloud component URL
+
+            const pxDiv = document.createElement('div');
+            pxDiv.id = 'px-captcha';
+            challengeDiv.appendChild(pxDiv);
+
+            let script = document.createElement('script');
+            script.src = abr.blockScript; // use the blockScript property from the Advanced Blocking Response result.
+            document.getElementsByTagName('head')[0].appendChild(script);
+        </script>
+    </body>
+</html>

@@ -36,7 +36,7 @@ const App = () => {
     // Important : This useEffect needs to only be executed once at startup
     useEffect(() => {
         console.log('app refresh wtf');
-        initTasksStatus(stores);
+        // initTasksStatus(stores);
         generateFingerPrint();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

@@ -1,8 +1,8 @@
 import { DeleteFilled, QuestionCircleOutlined } from '@ant-design/icons';
+import { StoreType } from '@constants/Stores';
 import { Button, Popconfirm } from 'antd';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { StoreType } from '../../constants/Stores';
 import { AppState } from '../../global-store/GlobalStore';
 import { unassignProxy } from '../../services/Proxy/ProxyService';
 import { deleteTask, getTaskById } from '../../services/Store/StoreService';

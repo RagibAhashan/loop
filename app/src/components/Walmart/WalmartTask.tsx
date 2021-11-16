@@ -1,9 +1,9 @@
 // import styles from './sidebar.module.css';
+import { StoreType } from '@constants/Stores';
 import { Col, Row, Tooltip } from 'antd';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { TASK_SUCCESS } from '../../common/Constants';
-import { StoreType } from '../../constants/Stores';
 import { AppState } from '../../global-store/GlobalStore';
 import { WalmartTaskData } from '../../interfaces/TaskInterfaces';
 import { getTaskById } from '../../services/Store/StoreService';

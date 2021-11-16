@@ -4,6 +4,12 @@ import { useSelector } from 'react-redux';
 import { WalmartTaskData } from '../../interfaces/TaskInterfaces';
 import { getProfiles } from '../../services/Profile/ProfileService';
 import { getProxySets } from '../../services/Proxy/ProxyService';
+
+interface Props {
+    showModal: boolean;
+    setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+    onAdd: (data: WalmartTaskData, quantity: number) => void;
+}
 const validateMessages = {
     required: '',
 };
@@ -16,8 +22,8 @@ const buttonStyle: React.CSSProperties = {
     textOverflow: 'ellipsis',
 };
 
-const WalmartNewTaskModal = (props: any) => {
-    const { visible, onClose, onAdd }: { visible: boolean; onClose: () => void; onAdd: (data: WalmartTaskData, quantity: number) => void } = props;
+const WalmartNewTaskModal: React.FunctionComponent<Props> = (props) => {
+    const { showModal, setShowModal, onAdd } = props;
 
     const [quantity, setQuantity] = useState(1);
 
@@ -51,7 +57,15 @@ const WalmartNewTaskModal = (props: any) => {
 
     return (
         <>
-            <Modal title={'Add a New Task'} centered visible={visible} onCancel={onClose} okText="Create tasks" footer={false} width={900}>
+            <Modal
+                title={'Add a New Task'}
+                centered
+                visible={showModal}
+                onCancel={() => setShowModal(false)}
+                okText="Create tasks"
+                footer={false}
+                width={900}
+            >
                 <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
                     <Form form={form} onFinish={onFinishForm} validateMessages={validateMessages}>
                         <Row gutter={GUTTER}>

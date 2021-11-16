@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import { STORES } from '@constants/Stores';
 import { Layout, Select, Tabs } from 'antd';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { PROXY_TEST_REPLY } from '../../common/Constants';
-import { STORES } from '../../constants/Stores';
 import { deleteAllProxiesFromSet, getProxySets } from '../../services/Proxy/ProxyService';
 import CollectionFormCreate from './Collections/Create';
 import CollectionFormDelete from './Collections/Delete';

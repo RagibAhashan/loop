@@ -1,5 +1,5 @@
-import { CreditCard } from '../../core/interface/UserProfile';
-require('../../core/footlocker/scripts/2615645779051917');
+import { CreditCard } from '@core/interface/UserProfile';
+require('@core/footlocker/scripts/2615645779051917');
 
 export class FootlockerEncryption {
     private static ADYEN_KEY =

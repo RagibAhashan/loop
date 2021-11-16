@@ -1,7 +1,7 @@
+import ProfileCard from '@components/ProfileCard/ProfileCard';
 import { Divider } from 'antd';
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
-import ProfileCard from '../../components/ProfileCard/ProfileCard';
 import { UserProfile } from '../../interfaces/TaskInterfaces';
 import { getProfiles } from '../../services/Profile/ProfileService';
 import CreateNewProfileModal from './createNewProfile';

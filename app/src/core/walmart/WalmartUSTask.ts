@@ -30,7 +30,7 @@ import { generatePxCookies } from './scripts/px';
 const log = debug.extend('WalmartUSTask');
 
 export class WalmartUSTask extends Task {
-    protected taskData: WalmartTaskData;
+    public taskData: WalmartTaskData;
     protected parsedURL!: URL;
 
     private static readonly WALMART_SELLER_ID = 'F55CDC31AB754BB68FE0B39041159D63';

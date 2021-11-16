@@ -24,7 +24,7 @@ import { generatePxCookies } from './scripts/px';
 const log = debug.extend('WalmartCATask');
 
 export class WalmartCATask extends Task {
-    protected taskData: WalmartTaskData;
+    public taskData: WalmartTaskData;
 
     constructor(uuid: string, requestInstance: RequestInstance, taskData: WalmartTaskData) {
         super(uuid, requestInstance, taskData);

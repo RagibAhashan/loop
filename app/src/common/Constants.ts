@@ -1,4 +1,4 @@
-import { StoreType } from '../constants/Stores';
+import { StoreType } from '@constants/Stores';
 
 export const CAPTCHA_ROUTE = 'captcha';
 export const APP_ROUTE = '/app';

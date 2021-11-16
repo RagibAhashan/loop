@@ -1,5 +1,5 @@
+import { StoreType } from '@constants/Stores';
 import { BrowserWindow } from 'electron';
-import { StoreType } from './../../constants/Stores';
 
 /*
 Map that stores captcha windows

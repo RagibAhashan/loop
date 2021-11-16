@@ -1,10 +1,10 @@
+import { StoreType } from '@constants/Stores';
+import { debug } from '@core/Log';
 import { AnyAction, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { cloneDeep } from 'lodash';
 import { ThunkAction } from 'redux-thunk';
-import { debug } from '../../core/Log';
 import { AppState } from '../../global-store/GlobalStore';
 import { Proxy, ProxyState } from '../../interfaces/OtherInterfaces';
-import { StoreType } from './../../constants/Stores';
 import { ProxySet } from './../../interfaces/OtherInterfaces';
 
 const log = debug.extend('ProxyService');

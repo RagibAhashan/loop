@@ -1,10 +1,12 @@
 import { HttpsProxyAgent } from 'https-proxy-agent';
 
-export class ProxyAgent {
-    private proxy: string;
+export class Proxy {
+    host: string; // hostname:port
+    credentials: string; // user:pass
     private httpsAgent: HttpsProxyAgent;
-    constructor(proxyString: string, credentials?: string) {
-        this.proxy = proxyString;
+    constructor(host: string, credentials?: string) {
+        this.host = host;
+        this.credentials = credentials;
         this.httpsAgent = new HttpsProxyAgent({ hostname: this.hostname, port: this.port, auth: credentials });
     }
 
@@ -13,10 +15,10 @@ export class ProxyAgent {
     }
 
     get port(): string {
-        return this.proxy.split(':')[1];
+        return this.host.split(':')[1];
     }
 
     get hostname(): string {
-        return this.proxy.split(':')[0];
+        return this.host.split(':')[0];
     }
 }

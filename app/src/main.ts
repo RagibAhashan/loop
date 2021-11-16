@@ -16,10 +16,9 @@ import {
 } from './common/Constants';
 import { CaptchaType, STORES, StoreType } from './constants/Stores';
 import { captchaWindowManager } from './core/captcha-window/CaptchaWindowManager';
-import { FootLockerEvents } from './core/footlocker/FootLockerEvents';
 import { debug } from './core/Log';
 import { ProxyFactory } from './core/proxies/ProxyFactory';
-import { WalmartEvents } from './core/walmart/WalmartEvents';
+import { TaskGroupManager } from './core/TaskGroupManager';
 import { Proxy } from './interfaces/OtherInterfaces';
 import UserAgentProvider from './services/UserAgentProvider';
 const log = debug.extend('main');
@@ -104,17 +103,20 @@ ipcMain.on(ACCESS_GRANTED, () => {
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 });
 
-const flCAEvents = new FootLockerEvents(StoreType.FootlockerCA);
-flCAEvents.initEvents();
+const taskGroupManager = new TaskGroupManager();
+taskGroupManager.ready();
 
-const flUSEvents = new FootLockerEvents(StoreType.FootlockerUS);
-flUSEvents.initEvents();
+// const flCAEvents = new FootLockerEvents(StoreType.FootlockerCA);
+// flCAEvents.initEvents();
 
-const wUSEvents = new WalmartEvents(StoreType.WalmartUS);
-wUSEvents.initEvents();
+// const flUSEvents = new FootLockerEvents(StoreType.FootlockerUS);
+// flUSEvents.initEvents();
 
-const wCAEvents = new WalmartEvents(StoreType.WalmartCA);
-wCAEvents.initEvents();
+// const wUSEvents = new WalmartEvents(StoreType.WalmartUS);
+// wUSEvents.initEvents();
+
+// const wCAEvents = new WalmartEvents(StoreType.WalmartCA);
+// wCAEvents.initEvents();
 
 ipcMain.on(CAPTHA_WINDOW_OPEN, (event, store: StoreType, proxyHost: string) => {
     const currentStore = STORES[store];

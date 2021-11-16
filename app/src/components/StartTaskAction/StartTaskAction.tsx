@@ -1,9 +1,9 @@
 import { PlayCircleFilled } from '@ant-design/icons';
+import { StoreType } from '@constants/Stores';
 import { Button } from 'antd';
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { NOTIFY_START_TASK } from '../../common/Constants';
-import { StoreType } from '../../constants/Stores';
 import { AppState } from '../../global-store/GlobalStore';
 import { getTaskById, startTask } from '../../services/Store/StoreService';
 import { startButton } from '../../styles/Buttons';

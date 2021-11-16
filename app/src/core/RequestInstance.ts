@@ -1,6 +1,5 @@
 import axios, { AxiosInstance, CancelTokenSource } from 'axios';
-import { Proxy } from './../interfaces/OtherInterfaces';
-import { ProxyAgent } from './Proxy';
+import { Proxy } from './Proxy';
 
 const CancelToken = axios.CancelToken;
 export class RequestInstance {
@@ -32,7 +31,7 @@ export class RequestInstance {
         if (!proxyData) {
             this.axios.defaults.httpsAgent = undefined;
         } else {
-            const newProxy = new ProxyAgent(proxyData.host, proxyData.credential);
+            const newProxy = new Proxy(proxyData.host, proxyData.credentials);
             this.axios.defaults.httpsAgent = newProxy.getAgent();
         }
     }

@@ -5,6 +5,6 @@ import { TaskFactory } from '../TaskFactory';
 
 export class WalmartEvents extends BaseStoreEvents {
     protected newTask(taskData: TaskData): Task {
-        return TaskFactory.createWalmartTask(this.storeType, taskData as WalmartTaskData) as Task;
+        return TaskFactory.createTask(this.storeType, taskData as WalmartTaskData) as Task;
     }
 }

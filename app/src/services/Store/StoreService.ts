@@ -1,9 +1,9 @@
+import { NOTIFY_STOP_TASK } from '@common/Constants';
+import { StoreType } from '@constants/Stores';
+import { Captcha, Status, TaskData, TaskMap } from '@interfaces/TaskInterfaces';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { NOTIFY_STOP_TASK } from '../../common/Constants';
 import { assignProxy, deleteAllProxiesFromSet, deleteProxyFromSet } from '../Proxy/ProxyService';
-import { StoreType } from './../../constants/Stores';
 import { AppState } from './../../global-store/GlobalStore';
-import { Captcha, Status, TaskData, TaskMap } from './../../interfaces/TaskInterfaces';
 export interface Store {
     tasks: TaskMap;
     captchas: Captcha[]; //Queue of captchas

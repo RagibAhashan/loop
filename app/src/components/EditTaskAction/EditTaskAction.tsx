@@ -1,9 +1,9 @@
 import { EditFilled } from '@ant-design/icons';
+import { StoreType } from '@constants/Stores';
 import { Button } from 'antd';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { NOTIFY_EDIT_TASK } from '../../common/Constants';
-import { StoreType } from '../../constants/Stores';
 import { AppState } from '../../global-store/GlobalStore';
 import { assignRandomProxy, unassignProxy } from '../../services/Proxy/ProxyService';
 import { editTask, getTaskById } from '../../services/Store/StoreService';
@@ -42,7 +42,8 @@ const EditTaskAction = (props: any) => {
 
         setVisibleModal(false);
     };
-    return (        <div>
+    return (
+        <div>
             <Button onClick={onEditClick} style={editButton} size="small" icon={<EditFilled />} disabled={isTaskRunning} />
 
             <EditTaskModalComponent visible={visibleModal} onClose={onModalClose} onEdit={handleEditTask} task={currentTask} />

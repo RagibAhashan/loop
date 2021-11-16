@@ -9,6 +9,7 @@ import { CookieJar } from './CookieJar';
 import { RequestInstance } from './RequestInstance';
 
 export const CANCEL_ERROR = 'Cancel';
+
 export abstract class Task extends EventEmitter {
     protected requestInstance: RequestInstance;
     protected cookieJar!: CookieJar;
@@ -16,7 +17,7 @@ export abstract class Task extends EventEmitter {
     protected cancelTimeout: () => void;
     protected uuid: string;
     protected axiosSession: AxiosInstance;
-    protected taskData: TaskData;
+    public taskData: TaskData;
 
     constructor(uuid: string, requestInstance: RequestInstance, taskData: TaskData) {
         super();

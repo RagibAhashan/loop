@@ -1,6 +1,6 @@
+import { StoreType } from '@constants/Stores';
 import React, { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { StoreType } from '../../constants/Stores';
 import { Status, StatusLevel } from '../../interfaces/TaskInterfaces';
 import { stopTask } from '../../services/Store/StoreService';
 

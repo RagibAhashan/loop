@@ -17,7 +17,15 @@
             "@main_window/*": ["src/main_window/*"],
             "@license_window/*": ["src/license_window/*"],
             "@google_captcha_window/*": ["src/google_captcha_window/*"],
-            "@px_captcha_window/*": ["src/px_captcha_window/*"]
+            "@px_captcha_window/*": ["src/px_captcha_window/*"],
+            "@core/*": ["src/core/*"],
+            "@pages/*": ["src/pages/*"],
+            "@components/*": ["src/components/*"],
+            "@common/*": ["src/common/*"],
+            "@constants/*": ["src/constants/*"],
+            "@interfaces/*": ["src/interfaces/*"],
+            "@services/*": ["src/services/*"],
+            "@styles/*": ["src/styles/*"]
         },
         "jsx": "react",
         "removeComments": true

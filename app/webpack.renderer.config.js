@@ -1,5 +1,6 @@
 const rules = require('./webpack.rules');
 const plugins = require('./webpack.plugins');
+const path = require('path');
 
 rules.push({
     test: /\.css$/,
@@ -16,6 +17,20 @@ module.exports = {
         fallback: {
             crypto: require.resolve('crypto-browserify'),
             stream: require.resolve('stream-browserify'),
+        },
+        alias: {
+            '@main_window': path.resolve(__dirname, 'src/main_window/'),
+            '@license_window': path.resolve(__dirname, 'src/license_window/'),
+            '@google_captcha_window': path.resolve(__dirname, 'src/google_captcha_window/'),
+            '@px_captcha_window': path.resolve(__dirname, 'src/px_captcha_window/'),
+            '@core': path.resolve(__dirname, 'src/core/'),
+            '@pages': path.resolve(__dirname, 'src/pages/'),
+            '@components': path.resolve(__dirname, 'src/components/'),
+            '@common': path.resolve(__dirname, 'src/common/'),
+            '@constants': path.resolve(__dirname, 'src/constants/'),
+            '@interfaces': path.resolve(__dirname, 'src/interfaces/'),
+            '@services': path.resolve(__dirname, 'src/services/'),
+            '@styles': path.resolve(__dirname, 'src/styles/'),
         },
     },
 };

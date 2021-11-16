@@ -1,8 +1,8 @@
+import { StoreInfo, STORES, StoreType } from '@constants/Stores';
 import { Button, Form, Modal, Select } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { StoreInfo, STORES, StoreType } from '../../constants/Stores';
 import { AppState } from '../../global-store/GlobalStore';
 import { addStore, isStoreCreated } from '../../services/Store/StoreService';
 const { Option } = Select;

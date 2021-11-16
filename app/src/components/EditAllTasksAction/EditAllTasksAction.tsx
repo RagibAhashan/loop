@@ -1,7 +1,7 @@
+import { StoreType } from '@constants/Stores';
 import { Button } from 'antd';
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { StoreType } from '../../constants/Stores';
 import { AppState } from '../../global-store/GlobalStore';
 import { editAllTasks, getStoreById, getTasksByStore } from '../../services/Store/StoreService';
 import { buttonStyle } from '../../styles/Buttons';
