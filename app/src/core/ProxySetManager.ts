@@ -39,6 +39,17 @@ export class ProxySetManager {
         return this.getAllProxySets();
     }
 
+    private removeAllProxies(name: string): IProxySet[] | null {
+        if (!this.proxySetMap.has(name)) {
+            log('[ProxySet %s not found]', name);
+            return null;
+        }
+
+        const proxySet = this.proxySetMap.get(name);
+        proxySet.removeAllProxies();
+        return this.getAllProxySets();
+    }
+
     private getProxySet(name: string): ProxySet | undefined {
         return this.proxySetMap.get(name);
     }
@@ -59,6 +70,7 @@ export class ProxySetManager {
 
         ipcMain.on(ProxySetChannel.addProxySet, (event, name: string) => {
             const proxySets = this.addProxySet(name);
+            console.log('adding proxy sets', proxySets);
             if (proxySets) {
                 event.reply(ProxySetChannel.proxySetUpdated, proxySets);
             } else {
@@ -68,6 +80,15 @@ export class ProxySetManager {
 
         ipcMain.on(ProxySetChannel.removeProxySet, (event, name: string) => {
             const proxySets = this.removeProxySet(name);
+            if (proxySets) {
+                event.reply(ProxySetChannel.proxySetUpdated, proxySets);
+            } else {
+                event.reply(ProxySetChannel.proxySetError);
+            }
+        });
+
+        ipcMain.on(ProxySetChannel.removeAllProxiesFromProxySet, (event, name: string) => {
+            const proxySets = this.removeAllProxies(name);
             if (proxySets) {
                 event.reply(ProxySetChannel.proxySetUpdated, proxySets);
             } else {

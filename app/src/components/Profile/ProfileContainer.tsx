@@ -3,11 +3,14 @@ import { ProfileChannel } from '@core/IpcChannels';
 import { IProfile } from '@core/Profile';
 import { Button, message } from 'antd';
 import React, { useEffect, useState } from 'react';
+import EditProfileModal from './EditProfileModal';
 import ProfileList from './ProfileList';
 
 const ProfileContainer: React.FunctionComponent = () => {
     const [profiles, setProfiles] = useState<IProfile[]>([]);
-    const [showModal, setShowModal] = useState<boolean>(false);
+    const [showAddModal, setShowAddModal] = useState<boolean>(false);
+    const [showEditModal, setShowEditModal] = useState<boolean>(false);
+    const [currentProfileName, setCurrentProfileName] = useState<string>();
 
     useEffect(() => {
         window.ElectronBridge.invoke(ProfileChannel.getAllProfiles).then((data: IProfile[]) => {
@@ -33,7 +36,12 @@ const ProfileContainer: React.FunctionComponent = () => {
     };
 
     const handleAddProfile = () => {
-        setShowModal(true);
+        setShowAddModal(true);
+    };
+
+    const handleOnProfileClick = (profileName: string): void => {
+        setShowEditModal(true);
+        setCurrentProfileName(profileName);
     };
 
     return (
@@ -42,8 +50,9 @@ const ProfileContainer: React.FunctionComponent = () => {
                 Add Profile
             </Button>
 
-            <ProfileList profiles={profiles}> </ProfileList>
-            <AddProfileModal showModal={showModal} setShowModal={setShowModal}></AddProfileModal>
+            <ProfileList profiles={profiles} onProfileClick={handleOnProfileClick}></ProfileList>
+            <AddProfileModal showModal={showAddModal} setShowModal={setShowAddModal}></AddProfileModal>
+            <EditProfileModal showModal={showEditModal} setShowModal={setShowEditModal} profileName={currentProfileName}></EditProfileModal>
         </div>
     );
 };

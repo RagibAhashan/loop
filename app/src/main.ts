@@ -17,7 +17,9 @@ import {
 import { CaptchaType, STORES, StoreType } from './constants/Stores';
 import { captchaWindowManager } from './core/captcha-window/CaptchaWindowManager';
 import { debug } from './core/Log';
+import { ProfileManager } from './core/ProfileManager';
 import { ProxyFactory } from './core/proxies/ProxyFactory';
+import { ProxySetManager } from './core/ProxySetManager';
 import { TaskGroupManager } from './core/TaskGroupManager';
 import { Proxy } from './interfaces/OtherInterfaces';
 import UserAgentProvider from './services/UserAgentProvider';
@@ -105,6 +107,12 @@ ipcMain.on(ACCESS_GRANTED, () => {
 
 const taskGroupManager = new TaskGroupManager();
 taskGroupManager.ready();
+
+const profileManager = new ProfileManager();
+profileManager.ready();
+
+const proxySetManager = new ProxySetManager();
+proxySetManager.ready();
 
 // const flCAEvents = new FootLockerEvents(StoreType.FootlockerCA);
 // flCAEvents.initEvents();

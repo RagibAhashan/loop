@@ -1,21 +1,24 @@
 import { DeleteFilled } from '@ant-design/icons';
+import { ProxySetChannel } from '@core/IpcChannels';
+import { IProxySet } from '@core/ProxySet';
 import { Form, Modal, Select, Tooltip } from 'antd';
 import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { deleteProxySet, getProxySets } from '../../../services/Proxy/ProxyService';
 
-const CollectionFormDelete = (props: any) => {
+interface Props {
+    proxySets: IProxySet[];
+}
+const CollectionFormDelete: React.FunctionComponent<Props> = (props) => {
+    const { proxySets } = props;
     const [form] = Form.useForm();
 
     const [visibleDelete, setVisibleDelete] = useState(false);
 
-    const proxies = useSelector(getProxySets);
-    const dispatch = useDispatch();
-
     const handleDelete = (values: { proxies: string[] }) => {
         console.log('delete !', values);
         const arraySetToDelete = values.proxies;
-        arraySetToDelete.forEach((name) => dispatch(deleteProxySet({ name })));
+        arraySetToDelete.forEach((name) => {
+            window.ElectronBridge.send(ProxySetChannel.removeProxySet, name);
+        });
     };
     return (
         <div>
@@ -54,16 +57,10 @@ const CollectionFormDelete = (props: any) => {
                     }}
                 >
                     <Form.Item name="proxies" label="Sets" rules={[{ required: true, message: 'Please choose a set to delete!' }]}>
-                        <Select
-                            mode="multiple"
-                            placeholder="Choose sets to remove"
-                            // value={props.deleteSelection}
-                            // onChange={props.handleChange}
-                            style={{ width: '100%' }}
-                        >
-                            {Object.keys(proxies).map((proxySetName) => (
-                                <Select.Option key={proxySetName} value={proxySetName}>
-                                    {proxySetName}
+                        <Select mode="multiple" placeholder="Choose sets to remove" style={{ width: '100%' }}>
+                            {proxySets.map((proxySet) => (
+                                <Select.Option key={proxySet.name} value={proxySet.name}>
+                                    {proxySet.name}
                                 </Select.Option>
                             ))}
                         </Select>

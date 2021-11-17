@@ -13,6 +13,7 @@ export enum ProxySetChannel {
     getProxySetProxies = 'dynasty:getProxySetProxies',
     addProxySet = 'dynasty:addProxySet',
     removeProxySet = 'dynasty:removeProxySet',
+    removeAllProxiesFromProxySet = 'dynasty:removeAllProxiesFromProxySet',
     proxySetUpdated = 'dynasty:proxySetUpdated',
     proxiesLoaded = 'dynasty:proxiesLoaded',
     proxySetError = 'dynasty:proxySetError',

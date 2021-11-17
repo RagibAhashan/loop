@@ -1,11 +1,21 @@
+import { COUNTRY, REGIONS } from '@common/Regions';
+import { ProfileChannel } from '@core/IpcChannels';
+import { Profile } from '@core/Profile';
 import { Button, Checkbox, Col, Divider, Form, Input, Modal, Row, Select, Tabs } from 'antd';
 import React, { useEffect, useState } from 'react';
-import Cards from 'react-credit-cards';
 import { useDispatch } from 'react-redux';
-import { UserProfile } from '../../interfaces/TaskInterfaces';
-import { deleteProfile } from '../../services/Profile/ProfileService';
 
 const { TabPane } = Tabs;
+
+const { Option } = Select;
+type IObj = {
+    [key: string]: any;
+};
+
+const ALL_REGIONS: IObj = REGIONS;
+
+const ROW_GUTTER: [number, number] = [8, 0];
+const ROW_GUTTER_CC: [number, number] = [8, 0];
 
 /* eslint-disable no-template-curly-in-string */
 const validateMessages = {
@@ -53,12 +63,23 @@ const getMonths = (): any => {
     ];
 };
 
-const EditProfileModal = (props: any) => {
-    const {
-        isEditModalVisible,
-        setIsEditModalVisible,
-        profile,
-    }: { isEditModalVisible: boolean; setIsEditModalVisible: any; profile: UserProfile; onDeleteProfile: any } = props;
+interface Props {
+    showModal: boolean;
+    setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+    profileName: string;
+}
+
+const EditProfileModal: React.FunctionComponent<Props> = (props) => {
+    const { showModal, setShowModal, profileName } = props;
+
+    const [currentProfile, setCurrentProfile] = useState<Profile>();
+
+    const [shippingForm] = Form.useForm();
+    const [billingForm] = Form.useForm();
+    const [paymentForm] = Form.useForm();
+
+    const [country, setCountry] = useState('default');
+
     const [same, setSame] = useState(false);
     const [front, setFront] = useState(true);
 
@@ -76,27 +97,15 @@ const EditProfileModal = (props: any) => {
     const dispatch = useDispatch();
 
     useEffect(() => {
-        setFirstName(profile.billing.firstName);
-        setLastName(profile.billing.lastName);
-        setCreditCard(profile.payment.number);
-        setCvc(profile.payment.cvc);
-        setMonth(profile.payment.expiryMonth.length === 1 ? `0${profile.payment.expiryMonth}12` : profile.payment.expiryMonth);
-        setYear(profile.payment.expiryYear);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const handleOk = () => {
-        setIsEditModalVisible(false);
-    };
-
-    const handleCancel = () => {
-        // onDeleteProfile(data.profile)
-        setIsEditModalVisible(false);
-    };
-
-    const onDeleteProfile = (profileName: string) => {
-        dispatch(deleteProfile(profileName));
-    };
+        console.log('init edit profile modal');
+        window.ElectronBridge.invoke(ProfileChannel.getProfile, profileName).then((profile: Profile) => {
+            console.log('invoke profile response', profile);
+            setCurrentProfile(profile);
+            shippingForm.setFieldsValue(profile.profileData.shipping);
+            billingForm.setFieldsValue(profile.profileData.billing);
+            paymentForm.setFieldsValue(profile.profileData.payment);
+        });
+    }, [billingForm, paymentForm, profileName, shippingForm]);
 
     const changeMonth = (value: any) => {
         setMonth((prev) => (prev = value));
@@ -116,362 +125,254 @@ const EditProfileModal = (props: any) => {
         <div>
             <Modal
                 centered
-                title="View Profile"
-                visible={isEditModalVisible}
-                onOk={handleOk}
-                onCancel={handleCancel}
+                title="Create a new profile"
+                visible={showModal}
+                onOk={() => setShowModal(false)}
+                onCancel={() => setShowModal(false)}
                 width={1000}
-                okText="Save"
-                cancelText="Delete profile"
                 footer={false}
             >
-                <Form name="nest-messages" onFinish={editProfile} validateMessages={validateMessages}>
-                    <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
-                        <Tabs
-                            defaultActiveKey="1"
-                            tabBarExtraContent={
+                <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
+                    <Tabs defaultActiveKey="shippingTab">
+                        <TabPane tab="Profile and Shipping" key="shippingTab">
+                            <Form form={shippingForm} validateMessages={validateMessages}>
+                                <Row gutter={ROW_GUTTER}>
+                                    <Col span={8}>
+                                        <Form.Item rules={[{ required: true }]}>
+                                            <Input defaultValue={profileName} placeholder={'Profile name'} />
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+                                <Row gutter={ROW_GUTTER}>
+                                    <Col span={8}>
+                                        <Form.Item name="firstName" rules={[{ required: true }]}>
+                                            <Input placeholder={'First name'} />
+                                        </Form.Item>
+                                    </Col>
+
+                                    <Col span={8}>
+                                        <Form.Item name="lastName" rules={[{ required: true }]}>
+                                            <Input placeholder={'Last name'} />
+                                        </Form.Item>
+                                    </Col>
+
+                                    <Col span={8}>
+                                        <Form.Item name="phone" rules={[{ required: true }]}>
+                                            <Input placeholder={'Phone'} type="number" />
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+
+                                <Row gutter={ROW_GUTTER}>
+                                    <Col span={8}>
+                                        <Form.Item name="email" rules={[{ required: true }]}>
+                                            <Input placeholder={'Email'} />
+                                        </Form.Item>
+                                    </Col>
+
+                                    <Col span={8}>
+                                        <Form.Item name="address" rules={[{ required: true }]}>
+                                            <Input placeholder={'Address'} />
+                                        </Form.Item>
+                                    </Col>
+
+                                    <Col span={8}>
+                                        <Form.Item name="country" rules={[{ required: true }]}>
+                                            <Select placeholder="Country" allowClear>
+                                                {Object.keys(COUNTRY).map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+
+                                <Row gutter={ROW_GUTTER}>
+                                    <Col span={8}>
+                                        <Form.Item name="region" rules={[{ required: true }]}>
+                                            <Select placeholder="Province/State" allowClear>
+                                                {Object.entries(ALL_REGIONS[country]).map(([name, value]: [string, any]) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={8}>
+                                        <Form.Item name="town" rules={[{ required: true }]}>
+                                            <Input placeholder={'City'} />
+                                        </Form.Item>
+                                    </Col>
+
+                                    <Col span={8}>
+                                        <Form.Item name="postalCode" rules={[{ required: true }]}>
+                                            <Input placeholder={'Postal Code/Zip Code'} />
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+                            </Form>
+                        </TabPane>
+
+                        <TabPane tab="Payment Information" key="billingTab">
+                            <Form form={billingForm} validateMessages={validateMessages}>
+                                <Row gutter={ROW_GUTTER}>
+                                    <Col span={8}>
+                                        <Form.Item name="firstName" rules={[{ required: true }]}>
+                                            <Input placeholder={'First name'} disabled={same} />
+                                        </Form.Item>
+                                    </Col>
+
+                                    <Col span={8}>
+                                        <Form.Item name="lastName" rules={[{ required: true }]}>
+                                            <Input placeholder={'Last name'} disabled={same} />
+                                        </Form.Item>
+                                    </Col>
+
+                                    <Col span={8}>
+                                        <Form.Item name="phone" rules={[{ required: true }]}>
+                                            <Input placeholder={'Phone'} disabled={same} />
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+
+                                <Row gutter={ROW_GUTTER}>
+                                    <Col span={8}>
+                                        <Form.Item name="email" rules={[{ required: true, type: 'email' }]}>
+                                            <Input placeholder={'email'} disabled={same} />
+                                        </Form.Item>
+                                    </Col>
+
+                                    <Col span={8}>
+                                        <Form.Item name="address" rules={[{ required: true }]}>
+                                            <Input placeholder={'Address'} disabled={same} />
+                                        </Form.Item>
+                                    </Col>
+
+                                    <Col span={8}>
+                                        <Form.Item name="country" rules={[{ required: true }]}>
+                                            <Select placeholder="Country" allowClear disabled={same}>
+                                                {Object.keys(COUNTRY).map((name) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
+                                </Row>
+
+                                <Row gutter={ROW_GUTTER}>
+                                    <Col span={8}>
+                                        <Form.Item name="region" rules={[{ required: true }]}>
+                                            <Select placeholder="Province/State" allowClear disabled={same}>
+                                                {Object.entries(ALL_REGIONS[country]).map(([name, value]: [string, any]) => (
+                                                    <Option key={name} value={name}>
+                                                        {name}
+                                                    </Option>
+                                                ))}
+                                            </Select>
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={8}>
+                                        <Form.Item name="town" rules={[{ required: true }]}>
+                                            <Input placeholder={'City'} disabled={same} />
+                                        </Form.Item>
+                                    </Col>
+                                    <Col span={8}>
+                                        <Form.Item name="postalCode" rules={[{ required: true }]}>
+                                            <Input placeholder={'Postal Code/Zip Code'} disabled={same} />
+                                        </Form.Item>
+                                    </Col>
+
+                                    <Col span={8}>
+                                        <Checkbox checked={same}>Same as shipping</Checkbox>
+                                    </Col>
+                                </Row>
+                            </Form>
+
+                            <Divider> Enter your card </Divider>
+
+                            <div
+                                style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-around',
+                                    overflow: 'auto',
+                                    padding: 15,
+                                    alignItems: 'center',
+                                }}
+                            >
                                 <div>
-                                    <Button
-                                        type="primary"
-                                        danger
-                                        style={{ marginLeft: '-10px' }}
-                                        onClick={() => {
-                                            onDeleteProfile(profile.name);
-                                            setIsEditModalVisible(false);
-                                        }}
-                                    >
-                                        Delete Profile
-                                    </Button>
+                                    {/* <Cards
+                                        cvc={cvc}
+                                        expiry={`${month}${year}`}
+                                        focused={focused}
+                                        name={same ? `${shipFirstName} ${shipLastName}` : `${billFirstName} ${billLastName}`}
+                                        number={creditCardNumber}
+                                    /> */}
                                 </div>
-                            }
-                        >
-                            <TabPane tab="Profile and Shipping" key="1">
-                                <Row>
-                                    <Form.Item name="profile" rules={[{ required: true }]}>
-                                        <Input
-                                            disabled={true}
-                                            placeholder={'Profile name'}
-                                            style={{ width: '400px', margin: '1%', height: '40px' }}
-                                            defaultValue={profile.name}
-                                        />
-                                    </Form.Item>
-                                </Row>
-                                <br />
-                                <Row>
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={['shipping', 'firstName']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'First name'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.shipping.firstName}
-                                                onChange={(e) => {
-                                                    setshipFirstName((prev) => (prev = e.target.value));
-                                                    if (!front) {
-                                                        setFront((prev) => (prev = true));
-                                                    }
-                                                }}
-                                            />
-                                        </Form.Item>
-                                    </Col>
 
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={['shipping', 'lastName']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'Last name'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.shipping.lastName}
-                                                onChange={(e) => {
-                                                    setshipLastName((prev) => (prev = e.target.value));
-                                                    if (!front) {
-                                                        setFront((prev) => (prev = true));
-                                                    }
-                                                }}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={['shipping', 'phone']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'Phone'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.shipping.phone}
-                                                type="number"
-                                            />
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-
-                                <Row>
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={['shipping', 'email']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'Email'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.shipping.email}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={['shipping', 'address']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'Address'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.shipping.address}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={['shipping', 'town']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'City'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.shipping.town}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-
-                                <Row>
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={['shipping', 'postalCode']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'Postal Code'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.shipping.postalCode}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={['shipping', 'region']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'Province'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.shipping.region}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-                            </TabPane>
-
-                            <TabPane tab="Payment Information" key="2">
-                                <Row>
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'firstName']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'First name'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.billing.firstName}
-                                                onChange={(e) => {
-                                                    setFirstName((prev) => (prev = e.target.value));
-                                                    if (!front) {
-                                                        setFront((prev) => (prev = true));
-                                                    }
-                                                }}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'lastName']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'Last name'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.billing.lastName}
-                                                onChange={(e) => {
-                                                    setLastName((prev) => (prev = e.target.value));
-                                                    if (!front) {
-                                                        setFront((prev) => (prev = true));
-                                                    }
-                                                }}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'phone']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'Phone'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.billing.phone}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-
-                                <Row>
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'email']} rules={[{ required: true, type: 'email' }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'email'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.billing.email}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'address']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'Address'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.billing.address}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'region']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'City'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.billing.region}
-                                                value={profile.billing.region}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-
-                                <Row>
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'postalCode']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'Postal Code/Zip Code'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.billing.postalCode}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item name={[same ? 'shipping' : 'billing', 'region']} rules={[{ required: true }]}>
-                                            <Input
-                                                disabled={true}
-                                                placeholder={'Province/State'}
-                                                style={{ height: '40px' }}
-                                                defaultValue={profile.billing.region}
-                                            />
-                                        </Form.Item>
-                                    </Col>
-
-                                    <Col style={{ width: '30%', margin: '1%' }}>
-                                        <Form.Item wrapperCol={{ ...layout.wrapperCol }} name="same" valuePropName="checked">
-                                            <Checkbox
-                                                disabled={true}
-                                                checked={same}
-                                                onChange={(e) => {
-                                                    setSame(e.target.checked);
-                                                }}
-                                            >
-                                                Same as shipping
-                                            </Checkbox>
-                                        </Form.Item>
-                                    </Col>
-                                </Row>
-                                <br />
-                                <Divider> Enter your card </Divider>
-                                <Row>
-                                    <Col span={12}>
-                                        <Cards
-                                            cvc={cvc}
-                                            expiry={`${month}${year}`}
-                                            focused={front ? 'number' : 'cvc'}
-                                            name={same ? shipFirstName + ' ' + shipLastname : billFirstName + ' ' + billLastname}
-                                            number={creditCard}
-                                        />
-                                    </Col>
-
-                                    <Col span={12}>
-                                        <br />
-                                        <Row>
+                                <div>
+                                    <Form form={paymentForm} validateMessages={validateMessages}>
+                                        <Row gutter={ROW_GUTTER_CC}>
                                             <Col span={14}>
-                                                <Form.Item name={['payment', 'credit']} rules={[{ required: true }]}>
-                                                    <Input
-                                                        disabled={true}
-                                                        style={{ width: '100%', height: '40px' }}
-                                                        placeholder={'Credit Card'}
-                                                        defaultValue={profile.payment.number}
-                                                        type="number"
-                                                        onChange={(e) => {
-                                                            setCreditCard((prev) => (prev = e.target.value));
-                                                            if (!front) {
-                                                                setFront((prev) => (prev = true));
-                                                            }
-                                                        }}
-                                                    />
+                                                <Form.Item name={'number'} rules={[{ required: true }]}>
+                                                    <Input style={{ width: '100%' }} type="number" name="number" placeholder={'Credit Card'} />
                                                 </Form.Item>
                                             </Col>
-                                            <Col span={6} style={{ marginLeft: '1%' }}>
-                                                <Form.Item name={['payment', 'cvc']} rules={[{ required: true, min: 0, max: 999 }]}>
+                                            <Col span={10}>
+                                                <Form.Item name={'cvc'} rules={[{ required: true, min: 0, max: 999 }]}>
                                                     <Input
-                                                        disabled={true}
-                                                        style={{ width: '100%', height: '40px' }}
+                                                        style={{ width: '100%' }}
                                                         placeholder={'CVC'}
-                                                        defaultValue={profile.payment.cvc}
                                                         type="number"
+                                                        name="cvc"
                                                         onChange={(e) => {
-                                                            setCvc((prev) => (prev = e.target.value));
-                                                            if (front) {
-                                                                setFront((prev) => (prev = false));
-                                                            }
+                                                            setCvc(e.target.value);
                                                         }}
                                                     />
                                                 </Form.Item>
                                             </Col>
                                         </Row>
-                                        <br />
-                                        <Row>
-                                            <Col span={10}>
-                                                <Form.Item name={['payment', 'month']} rules={[{ required: true }]}>
+                                        <Row gutter={ROW_GUTTER_CC}>
+                                            <Col span={12}>
+                                                <Form.Item name={'expiryMonth'} rules={[{ required: true }]}>
                                                     <Select
                                                         style={{ width: '100%' }}
-                                                        placeholder="Expiration Year"
+                                                        placeholder="Expiration Month"
                                                         allowClear
                                                         options={getMonths()}
-                                                        defaultValue={profile.payment.expiryMonth}
                                                         onChange={changeMonth}
-                                                        disabled={true}
                                                     />
                                                 </Form.Item>
                                             </Col>
-                                            <Col span={10} style={{ marginLeft: '1%' }}>
-                                                <Form.Item name={['payment', 'year']} rules={[{ required: true }]}>
+                                            <Col span={12}>
+                                                <Form.Item name={'expiryYear'} rules={[{ required: true }]}>
                                                     <Select
                                                         style={{ width: '100%' }}
                                                         placeholder="Expiration Year"
                                                         allowClear
                                                         options={getYears()}
-                                                        defaultValue={profile.payment.expiryYear}
                                                         onChange={changeYear}
-                                                        disabled={true}
                                                     />
                                                 </Form.Item>
                                             </Col>
                                         </Row>
-                                    </Col>
-                                </Row>
-                            </TabPane>
-                        </Tabs>
-                    </div>
-                </Form>
+                                    </Form>
+                                    <Row gutter={ROW_GUTTER_CC}>
+                                        <Col span={24}>
+                                            <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
+                                                Edit Profile
+                                            </Button>
+                                        </Col>
+                                    </Row>
+                                </div>
+                            </div>
+                        </TabPane>
+                    </Tabs>
+                </div>
             </Modal>
         </div>
     );

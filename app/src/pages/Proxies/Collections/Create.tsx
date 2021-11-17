@@ -1,20 +1,22 @@
 import { PlusOutlined } from '@ant-design/icons';
+import { ProxySetChannel } from '@core/IpcChannels';
 import { Button, Form, Input, Modal, Tooltip } from 'antd';
 import React, { useState } from 'react';
-import { useDispatch } from 'react-redux';
-import { createProxySet } from '../../../services/Proxy/ProxyService';
-const CollectionFormCreate = (props: any) => {
+
+interface Props {
+    isButton: boolean;
+}
+
+const CollectionFormCreate: React.FunctionComponent<Props> = (props) => {
     const [form] = Form.useForm();
 
     const { isButton } = props; // this is just temporary styling, when no proxy set are created show a button, otherwise show a + sign, but to be changed
 
     const [visibleCreate, setVisibleCreate] = useState(false);
 
-    const dispatch = useDispatch();
-
     const onCreateSet = (values: { name: string }) => {
         const name = values.name;
-        dispatch(createProxySet({ name }));
+        window.ElectronBridge.send(ProxySetChannel.addProxySet, name);
         setVisibleCreate(false);
     };
 

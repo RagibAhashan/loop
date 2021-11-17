@@ -6,7 +6,7 @@ import { ProfileFactory } from './ProfileFactory';
 
 const log = debug.extend('ProfileManager');
 export type ProfileMap = Map<string, Profile>;
-export class ProfiletManager {
+export class ProfileManager {
     private profileMap: ProfileMap;
 
     constructor() {
@@ -68,27 +68,27 @@ export class ProfiletManager {
         });
 
         ipcMain.on(ProfileChannel.addProfile, (event, name: string, profileData: ProfileData) => {
-            const proxySets = this.addProfile(name, profileData);
-            if (proxySets) {
-                event.reply(ProfileChannel.profileUpdated, proxySets);
+            const profile = this.addProfile(name, profileData);
+            if (profile) {
+                event.reply(ProfileChannel.profileUpdated, profile);
             } else {
                 event.reply(ProfileChannel.profileError);
             }
         });
 
         ipcMain.on(ProfileChannel.removeProfile, (event, name: string) => {
-            const proxySets = this.removeProfile(name);
-            if (proxySets) {
-                event.reply(ProfileChannel.profileUpdated, proxySets);
+            const profile = this.removeProfile(name);
+            if (profile) {
+                event.reply(ProfileChannel.profileUpdated, profile);
             } else {
                 event.reply(ProfileChannel.profileError);
             }
         });
 
-        ipcMain.on(ProfileChannel.getProfile, (event, name: string) => {
+        ipcMain.handle(ProfileChannel.getProfile, (event, name: string): Profile => {
             const profile = this.getProfile(name);
             if (profile) {
-                event.reply(ProfileChannel.profileLoaded, profile);
+                return profile;
             }
         });
 

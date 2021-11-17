@@ -33,6 +33,10 @@ export class ProxySet implements IProxySet {
         }
     }
 
+    removeAllProxies(): void {
+        this.proxies = new Map();
+    }
+
     getAllProxies(): Proxy[] {
         return Array.from(this.proxies.values());
     }

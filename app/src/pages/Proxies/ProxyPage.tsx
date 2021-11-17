@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { STORES } from '@constants/Stores';
-import { Layout, Select, Tabs } from 'antd';
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { PROXY_TEST_REPLY } from '../../common/Constants';
-import { deleteAllProxiesFromSet, getProxySets } from '../../services/Proxy/ProxyService';
+import { ProxySetChannel } from '@core/IpcChannels';
+import { IProxySet } from '@core/ProxySet';
+import { Layout, message, Select, Tabs } from 'antd';
+import React, { useEffect, useState } from 'react';
 import CollectionFormCreate from './Collections/Create';
 import CollectionFormDelete from './Collections/Delete';
 import ProxySetContainer from './ProxySetContainer';
@@ -17,67 +16,32 @@ const ProxyPage = () => {
     const [store, setStore] = useState(undefined);
     const [, setCurrentProxySetName] = useState<string>();
 
-    // Popups Visibility
-    const [deleteSelection, setDeleteSelection] = useState(['']);
+    const [proxySets, setProxySets] = useState<IProxySet[]>([]);
 
-    const currentTab = { name: '', key: '1' };
-    const dispatch = useDispatch();
+    useEffect(() => {
+        console.log('init proxy page');
+        window.ElectronBridge.invoke(ProxySetChannel.getAllProxySets).then((proxySets: IProxySet[]) => setProxySets(proxySets));
 
-    const proxies = useSelector(getProxySets);
+        window.ElectronBridge.on(ProxySetChannel.proxySetUpdated, handleProxySetUpdated);
+        window.ElectronBridge.on(ProxySetChannel.proxySetError, handleProxySetExists);
 
-    const noProxyCreated = Object.keys(proxies).length === 0;
+        return () => {
+            window.ElectronBridge.removeListener(ProxySetChannel.proxySetUpdated, handleProxySetUpdated);
+            window.ElectronBridge.removeListener(ProxySetChannel.proxySetError, handleProxySetExists);
+        };
+    }, []);
 
-    window.ElectronBridge.on(PROXY_TEST_REPLY, (message, info) => {
-        // let set = proxies[info.setName].proxies;
-        // for (let i = 0; i < set?.length; i++) {
-        //     if (set[i].host === info.proxy) {
-        //         info.store.key === 'FootlockerCA' ? (set[i].testStatus.FootlockerCA = info.delay) : (set[i].testStatus.FootlockerUS = info.delay);
-        //     }
-        // }
-        // proxies.set(info.setName, set);
-        // localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
-
-        window.ElectronBridge.removeAllListeners(PROXY_TEST_REPLY);
-    });
-
-    const deleteAll = () => {
-        dispatch(deleteAllProxiesFromSet({ name: currentTab.name }));
+    const handleProxySetUpdated = (_, proxySets: IProxySet[]) => {
+        setProxySets(proxySets);
+        message.success('Success');
     };
 
-    const testIndividual = (proxyToTest: any, setName: any) => {
-        // let proxiesArray: Array<any> = proxies.get(setName) || [];
-        // proxiesArray = ProxyTester.testIndividual(proxyToTest, proxiesArray, store);
-        // proxies.set(setName, proxiesArray);
-        // setProxies(proxies);
-        // localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
-    };
-
-    const stopIndividual = (proxyToStop: any, setName: any) => {
-        // let proxiesArray: Array<any> = proxies.get(setName) || [];
-        // proxiesArray = ProxyTester.stopIndividual(proxyToStop, proxiesArray, store);
-        // proxies.set(setName, proxiesArray);
-        // setProxies(proxies);
-        // localStorage.setItem('proxies', JSON.stringify(Object.fromEntries(proxies)));
-    };
-
-    const testAll = () => {
-        // let set = proxies.get(currentTab.name) || [];
-        // for (let i = 0; i < set?.length; i++) {
-        //     testIndividual(set[i].proxy, currentTab.name);
-        //     window.ElectronBridge.send(NOTIFY_START_PROXY_TEST, currentTab.name, set[i].proxy, set[i].credential, store);
-        // }
+    const handleProxySetExists = (_) => {
+        message.error('Proxy Set Already Exists');
     };
 
     const onProxySetTabChange = (key: string) => {
         setCurrentProxySetName(key);
-    };
-
-    const options = () => {
-        const setSelection: any = [];
-        Object.keys(proxies).forEach((setName) => {
-            setSelection.push(setName);
-        });
-        return setSelection;
     };
 
     const { TabPane } = Tabs;
@@ -89,11 +53,11 @@ const ProxyPage = () => {
     );
 
     const TabPanes = () => {
-        if (!Object.keys(proxies).length) return;
-        return Object.keys(proxies).map((proxySet) => {
+        if (!proxySets.length) return;
+        return proxySets.map((proxySet) => {
             return (
-                <TabPane tab={proxySet} key={proxySet}>
-                    <ProxySetContainer proxySetName={proxySet}></ProxySetContainer>
+                <TabPane tab={proxySet.name} key={proxySet.name}>
+                    <ProxySetContainer proxySet={proxySet}></ProxySetContainer>
                 </TabPane>
             );
         });
@@ -105,7 +69,7 @@ const ProxyPage = () => {
 
     const AddRemoveSets = (
         <div style={{ margin: 'auto' }}>
-            {noProxyCreated ? (
+            {proxySets.length === 0 ? (
                 <CollectionFormCreate isButton={true} />
             ) : (
                 <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -119,7 +83,7 @@ const ProxyPage = () => {
 
                     <CollectionFormCreate isButton={false} />
 
-                    <CollectionFormDelete />
+                    <CollectionFormDelete proxySets={proxySets} />
                 </div>
             )}
         </div>

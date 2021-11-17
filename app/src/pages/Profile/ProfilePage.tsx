@@ -1,7 +1,6 @@
 import ProfileContainer from '@components/Profile/ProfileContainer';
 import { Divider } from 'antd';
 import React from 'react';
-import './profiles.css';
 
 const ProfilePage = () => {
     return (

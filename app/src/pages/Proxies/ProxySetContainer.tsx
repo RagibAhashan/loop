@@ -1,10 +1,9 @@
 import { CloseCircleOutlined, DeleteFilled, PlayCircleFilled } from '@ant-design/icons';
+import { ProxySetChannel } from '@core/IpcChannels';
+import { IProxySet } from '@core/ProxySet';
 import { Button, Col, Empty, Row } from 'antd';
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { FixedSizeList } from 'react-window';
-import { AppState } from '../../global-store/GlobalStore';
-import { deleteAllProxiesFromSet, getProxySetByName } from '../../services/Proxy/ProxyService';
 import CollectionFormAdd from './Collections/Add';
 import ProxyRow from './ProxyRow';
 
@@ -21,13 +20,14 @@ const Headers = () => {
     );
 };
 
-const ProxySetContainer = (props: any) => {
-    const { proxySetName }: { proxySetName: string } = props;
+interface Props {
+    proxySet: IProxySet;
+}
 
-    const proxySet = useSelector((state: AppState) => getProxySetByName(state, proxySetName));
+const ProxySetContainer: React.FunctionComponent<Props> = (props) => {
+    const { proxySet } = props;
+
     const proxyList = Object.values(proxySet.proxies);
-
-    const dispatch = useDispatch();
 
     // TODO refactor this code
     const renderProxies = (ele: any) => {
@@ -58,7 +58,7 @@ const ProxySetContainer = (props: any) => {
                 // testIndividual={testIndividual}
                 // stopTest={stopIndividual}
                 // currentTab={currentTab}
-                proxySetName={proxySetName}
+                proxySetName={proxySet.name}
                 proxyData={data}
                 style={style}
                 // store={store}
@@ -67,7 +67,7 @@ const ProxySetContainer = (props: any) => {
     };
 
     const deleteAll = () => {
-        dispatch(deleteAllProxiesFromSet({ name: proxySetName }));
+        window.ElectronBridge.send(ProxySetChannel.removeAllProxiesFromProxySet, proxySet.name);
     };
 
     const showProxies = () => {
@@ -91,15 +91,13 @@ const ProxySetContainer = (props: any) => {
             {showProxies()}
             <div style={{ paddingTop: '10px' }}>
                 <div>
-                    <CollectionFormAdd proxySetName={proxySetName} />
+                    <CollectionFormAdd proxySetName={proxySet.name} />
                 </div>
                 <div>
                     <Button
                         icon={<PlayCircleFilled style={{ color: 'green' }} />}
                         style={{ textAlign: 'center', float: 'left', marginLeft: '40px', paddingLeft: '35px', paddingRight: '35px' }}
                         type={'primary'}
-                        // disabled={proxies.get(currentTab.name)?.length === 0 || store === undefined ? true : false}
-                        // onClick={testAll}
                     >
                         Test All
                     </Button>
