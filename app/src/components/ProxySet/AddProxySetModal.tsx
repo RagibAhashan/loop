@@ -1,6 +1,5 @@
 import { ProxySetChannel } from '@core/IpcChannels';
-import { Form, Input, Modal } from 'antd';
-import { useForm } from 'antd/lib/form/Form';
+import { Button, Form, Input, Modal } from 'antd';
 import React from 'react';
 
 interface Props {
@@ -10,41 +9,30 @@ interface Props {
 
 const AddProxySetModal: React.FunctionComponent<Props> = (props) => {
     const { showModal, setShowModal } = props;
-    const [form] = useForm();
 
-    const onAddSet = (values: { name: string }) => {
-        console.log('add set', values);
+    const onAddProxySet = (values: { name: string }) => {
         window.ElectronBridge.send(ProxySetChannel.addProxySet, values.name);
+        setShowModal(false);
     };
 
     return (
         <div>
             <Modal
+                title={'Add a New Proxy Set'}
+                centered
                 visible={showModal}
-                bodyStyle={{ height: '50px', paddingTop: 5 }}
-                title="Create a new set"
-                okText="Create"
-                cancelText="Cancel"
                 onCancel={() => setShowModal(false)}
-                onOk={() => {
-                    form.validateFields()
-                        .then((values) => {
-                            form.resetFields();
-                            onAddSet(values);
-                        })
-                        .catch((info) => {});
-                }}
+                okText="Create Proxy Set"
+                footer={[
+                    <Button form="psForm" key="submit" htmlType="submit">
+                        Create Proxy Set
+                    </Button>,
+                ]}
+                width={900}
             >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    name="form_in_modal"
-                    initialValues={{
-                        modifier: 'public',
-                    }}
-                >
+                <Form id="psForm" onFinish={onAddProxySet}>
                     <Form.Item name="name" rules={[{ required: true, message: 'Please input the name of the set to add!' }]}>
-                        <Input placeholder="Input set same" />
+                        <Input placeholder="Set Name" />
                     </Form.Item>
                 </Form>
             </Modal>

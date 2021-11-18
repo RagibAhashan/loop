@@ -61,7 +61,12 @@ export class TaskFactory {
         const commonHeader = {
             'user-agent': UserAgentProvider.randomUserAgent(),
         };
-        const axios = new RequestInstance(store.baseURL, params, commonHeader, proxy ? new Proxy(proxy.host, proxy.credentials) : undefined);
+        const axios = new RequestInstance(
+            store.baseURL,
+            params,
+            commonHeader,
+            proxy ? new Proxy(proxy.hostname, proxy.port, proxy.user, proxy.password) : undefined,
+        );
 
         return axios;
     }

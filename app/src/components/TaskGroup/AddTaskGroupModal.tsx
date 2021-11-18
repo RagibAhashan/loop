@@ -25,7 +25,7 @@ const AddTaskGroupModal: React.FunctionComponent<Props> = (props) => {
 
     return (
         <Modal
-            title={'Add a New Group Task'}
+            title="Add a New Group Task"
             centered
             visible={showModal}
             onCancel={onClose}

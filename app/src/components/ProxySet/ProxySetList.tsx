@@ -1,12 +1,35 @@
+import { ProxySetChannel } from '@core/IpcChannels';
 import { IProxySet } from '@core/ProxySet';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import ProxySet from './ProxySet';
 
 interface Props {
     proxySets: IProxySet[];
 }
 
-const ProxyList: React.FunctionComponent<Props> = () => {
-    return <div> proxy list </div>;
+const ProxySetList: React.FunctionComponent<Props> = (props) => {
+    const { proxySets } = props;
+    const [currentSelectedProxySet, setCurrentSelectedProxySet] = useState(null);
+
+    useEffect(() => {
+        window.ElectronBridge.on(ProxySetChannel.onSelectedProxySet, handleOnProxySetSelected);
+
+        return () => {
+            window.ElectronBridge.removeListener(ProxySetChannel.onSelectedProxySet, handleOnProxySetSelected);
+        };
+    }, []);
+
+    const handleOnProxySetSelected = (_, proxySetName: string) => {
+        setCurrentSelectedProxySet(proxySetName);
+    };
+
+    return (
+        <div>
+            {proxySets.map((proxySet) => (
+                <ProxySet key={proxySet.name} name={proxySet.name} selected={currentSelectedProxySet}></ProxySet>
+            ))}
+        </div>
+    );
 };
 
-export default ProxyList;
+export default ProxySetList;

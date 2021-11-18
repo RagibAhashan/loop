@@ -4,7 +4,7 @@ export enum TaskGroupChannel {
     addTaskGroup = 'dynasty:addTaskGroup',
     removeTaskGroup = 'dynasty:removeTaskGroup',
     taskGroupUpdated = 'dynasty:taskGroupUpdated',
-    taskLoaded = 'dynasty:taskLoaded',
+    onTaskGroupSelected = 'dynasty:onTaskGroupSelected',
     taskGroupError = 'dynasty:taskGroupError',
 }
 
@@ -13,9 +13,12 @@ export enum ProxySetChannel {
     getProxySetProxies = 'dynasty:getProxySetProxies',
     addProxySet = 'dynasty:addProxySet',
     removeProxySet = 'dynasty:removeProxySet',
+    addProxyToSet = 'dynasty:addProxyToSet',
+    removeProxyFromSet = 'dynasty:removeProxyFromSet',
+    proxiesUpdated = 'dynasty:proxiesUpdated', // Event when proxies are added or removed to set
     removeAllProxiesFromProxySet = 'dynasty:removeAllProxiesFromProxySet',
     proxySetUpdated = 'dynasty:proxySetUpdated',
-    proxiesLoaded = 'dynasty:proxiesLoaded',
+    onSelectedProxySet = 'dynasty:onSelectedProxySet',
     proxySetError = 'dynasty:proxySetError',
 }
 
@@ -25,6 +28,6 @@ export enum ProfileChannel {
     addProfile = 'dynasty:addProfile',
     removeProfile = 'dynasty:removeProfile',
     profileUpdated = 'dynasty:profileUpdated',
-    profileLoaded = 'dynasty:profileLoaded',
+    onProfileSelected = 'dynasty:onProfileSelected',
     profileError = 'dynasty:profileError',
 }

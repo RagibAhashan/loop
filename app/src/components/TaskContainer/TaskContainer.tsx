@@ -23,14 +23,14 @@ const TaskContainer: React.FunctionComponent = () => {
     const [storeType, setStoreType] = useState();
 
     useEffect(() => {
-        window.ElectronBridge.on(TaskGroupChannel.taskLoaded, handleOnTaskLoaded);
+        window.ElectronBridge.on(TaskGroupChannel.onTaskGroupSelected, handleOnTaskGroupSelected);
 
         return () => {
-            window.ElectronBridge.removeListener(TaskGroupChannel.taskLoaded, handleOnTaskLoaded);
+            window.ElectronBridge.removeListener(TaskGroupChannel.onTaskGroupSelected, handleOnTaskGroupSelected);
         };
-    });
+    }, []);
 
-    const handleOnTaskLoaded = (event, storeType, tasks: Task[]) => {
+    const handleOnTaskGroupSelected = (event, storeType, tasks: Task[]) => {
         setStoreType(storeType);
         setTasks(tasks);
     };

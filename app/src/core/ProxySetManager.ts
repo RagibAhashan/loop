@@ -1,6 +1,8 @@
 import { ipcMain } from 'electron';
 import { ProxySetChannel } from './IpcChannels';
 import { debug } from './Log';
+import { Proxy } from './Proxy';
+import { ProxyFactory } from './ProxyFactory';
 import { IProxySet, ProxySet } from './ProxySet';
 import { ProxySetFactory } from './ProxySetFactory';
 
@@ -58,6 +60,44 @@ export class ProxySetManager {
         return Array.from(this.proxySetMap.values());
     }
 
+    /**
+     *
+     * @param hosts Array of string containing proxies in this format : host:port:user:pass
+     */
+    private addProxyToSet(setName: string, proxies: string[]): Proxy[] | null {
+        if (!this.proxySetMap.has(setName)) {
+            log('[ProxySet %s not found]', name);
+            return null;
+        }
+
+        const proxySet = this.proxySetMap.get(setName);
+
+        for (const proxyStr of proxies) {
+            const proxy = ProxyFactory.createProxy(proxyStr);
+            proxySet.addProxy(proxy);
+        }
+
+        return proxySet.getAllProxies();
+    }
+
+    /**
+     *
+     * @param hosts Array of string containing proxies full host = hostname:port
+     */
+    private removeProxyFromSet(setName: string, proxiesHost: string[]): Proxy[] | null {
+        if (!this.proxySetMap.has(setName)) {
+            log('[ProxySet %s not found]', name);
+            return null;
+        }
+        const proxySet = this.proxySetMap.get(setName);
+
+        for (const proxyHost of proxiesHost) {
+            proxySet.removeProxy(proxyHost);
+        }
+
+        return proxySet.getAllProxies();
+    }
+
     private editProxySetName(oldName: string, newName: string): void {
         const proxySet = this.proxySetMap.get(oldName);
         proxySet.editName(newName);
@@ -70,29 +110,28 @@ export class ProxySetManager {
 
         ipcMain.on(ProxySetChannel.addProxySet, (event, name: string) => {
             const proxySets = this.addProxySet(name);
-            console.log('adding proxy sets', proxySets);
             if (proxySets) {
-                event.reply(ProxySetChannel.proxySetUpdated, proxySets);
+                event.reply(ProxySetChannel.proxySetUpdated, proxySets, 'Proxy set created');
             } else {
-                event.reply(ProxySetChannel.proxySetError);
+                event.reply(ProxySetChannel.proxySetError, 'Proxy set already exists');
             }
         });
 
         ipcMain.on(ProxySetChannel.removeProxySet, (event, name: string) => {
             const proxySets = this.removeProxySet(name);
             if (proxySets) {
-                event.reply(ProxySetChannel.proxySetUpdated, proxySets);
+                event.reply(ProxySetChannel.proxySetUpdated, proxySets, 'Proxy set deleted');
             } else {
-                event.reply(ProxySetChannel.proxySetError);
+                event.reply(ProxySetChannel.proxySetError, 'Error');
             }
         });
 
         ipcMain.on(ProxySetChannel.removeAllProxiesFromProxySet, (event, name: string) => {
             const proxySets = this.removeAllProxies(name);
             if (proxySets) {
-                event.reply(ProxySetChannel.proxySetUpdated, proxySets);
+                event.reply(ProxySetChannel.proxySetUpdated, proxySets, 'All Proxy set deleted');
             } else {
-                event.reply(ProxySetChannel.proxySetError);
+                event.reply(ProxySetChannel.proxySetError, 'Error');
             }
         });
 
@@ -100,7 +139,25 @@ export class ProxySetManager {
             const currentProxySet = this.getProxySet(name);
             if (currentProxySet) {
                 const proxies = currentProxySet.getAllProxies();
-                event.reply(ProxySetChannel.proxiesLoaded, proxies);
+                event.reply(ProxySetChannel.onSelectedProxySet, currentProxySet.name, proxies);
+            }
+        });
+
+        ipcMain.on(ProxySetChannel.addProxyToSet, (event, name: string, proxies: string[]) => {
+            const proxyList = this.addProxyToSet(name, proxies);
+            if (proxyList) {
+                event.reply(ProxySetChannel.proxiesUpdated, proxyList);
+            } else {
+                event.reply(ProxySetChannel.proxySetError, 'Error');
+            }
+        });
+
+        ipcMain.on(ProxySetChannel.removeProxyFromSet, (event, name: string, proxyHosts: string[]) => {
+            const proxyList = this.removeProxyFromSet(name, proxyHosts);
+            if (proxyList) {
+                event.reply(ProxySetChannel.proxiesUpdated, proxyList);
+            } else {
+                event.reply(ProxySetChannel.proxySetError, 'Error');
             }
         });
     }

@@ -2,23 +2,11 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import installExtension, { REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } from 'electron-devtools-installer';
 import hash from 'object-hash';
 import si from 'systeminformation';
-import {
-    ACCESS_GRANTED,
-    CAPTHA_WINDOW_CLOSED,
-    CAPTHA_WINDOW_OPEN,
-    GET_SYSTEM_ID,
-    NOTIFY_START_PROXY_TEST,
-    NOTIFY_STOP_PROXY_TEST,
-    PROXY_TEST_REPLY,
-    PROXY_TEST_SUCCEEDED,
-    SET_PROXY_CAPTCHA_WINDOW,
-    STORE_KEY,
-} from './common/Constants';
+import { ACCESS_GRANTED, CAPTHA_WINDOW_CLOSED, CAPTHA_WINDOW_OPEN, GET_SYSTEM_ID, SET_PROXY_CAPTCHA_WINDOW, STORE_KEY } from './common/Constants';
 import { CaptchaType, STORES, StoreType } from './constants/Stores';
 import { captchaWindowManager } from './core/captcha-window/CaptchaWindowManager';
 import { debug } from './core/Log';
 import { ProfileManager } from './core/ProfileManager';
-import { ProxyFactory } from './core/proxies/ProxyFactory';
 import { ProxySetManager } from './core/ProxySetManager';
 import { TaskGroupManager } from './core/TaskGroupManager';
 import { Proxy } from './interfaces/OtherInterfaces';
@@ -204,25 +192,6 @@ ipcMain.handle(GET_SYSTEM_ID, async (event) => {
     try {
         const ID = await getSystemUniqueID();
         return ID;
-    } catch (error) {
-        console.log('err', error);
-    }
-});
-
-ipcMain.on(NOTIFY_START_PROXY_TEST, (event, setName, proxy, credential, store) => {
-    const proxyTest = ProxyFactory.createProxyTest(setName, proxy, credential, store);
-
-    proxyTest.on(PROXY_TEST_SUCCEEDED, (delay: any) => {
-        event.reply(PROXY_TEST_REPLY, delay, proxy);
-    });
-
-    proxyTest.executeTest();
-});
-
-ipcMain.on(NOTIFY_STOP_PROXY_TEST, async (event, setName, proxy, credential, store) => {
-    try {
-        console.log('got notified to stop!');
-        // stop test here
     } catch (error) {
         console.log('err', error);
     }

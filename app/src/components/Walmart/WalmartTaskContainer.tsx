@@ -1,5 +1,5 @@
 import AddTaskAction from '@components/AddTaskAction/AddTaskAction';
-import TaskListContainer from '@components/TaskList/TaskList';
+import TaskList from '@components/TaskList/TaskList';
 import { Task } from '@core/Task';
 import { Col, Row, Select } from 'antd';
 import React from 'react';
@@ -30,7 +30,7 @@ const WalmartTaskContainer: React.FunctionComponent<Props> = (props) => {
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'auto' }}>
             <WalmartHeaders />
 
-            <TaskListContainer tasks={tasks} TaskComponent={WalmartTask} />
+            <TaskList tasks={tasks} TaskComponent={WalmartTask} />
 
             <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10, width: '100%' }}>
                 <Col span={3}>

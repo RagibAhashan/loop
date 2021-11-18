@@ -81,9 +81,10 @@ export abstract class Task extends EventEmitter {
         };
     }
 
+    // TODO REMOVE THAT SHIT
     updateData(taskData: TaskData): void {
         console.log('updated old', this.taskData);
-        if (this.taskData.proxy?.host !== taskData.proxy?.host) this.updateProxy(taskData.proxy);
+        // if (this.taskData.proxy?.host !== taskData.proxy?.host) this.updateProxy(taskData.proxy);
         this.taskData = taskData;
         console.log('updated new', this.taskData, taskData);
     }

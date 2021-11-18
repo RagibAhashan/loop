@@ -5,7 +5,7 @@
     "description": "Dynasty AIO",
     "main": ".webpack/main",
     "scripts": {
-        "start": "cross-env electron-forge start",
+        "start": "cross-env debug=dynasty:* electron-forge start",
         "package": "electron-forge package",
         "make": "electron-forge make",
         "publish": "electron-forge publish",

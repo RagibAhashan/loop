@@ -21,16 +21,12 @@ export class ProxySet implements IProxySet {
         this.proxies = new Map();
     }
 
-    addProxy(proxies: Proxy[]): void {
-        for (const proxy of proxies) {
-            this.proxies.set(proxy.host, proxy);
-        }
+    addProxy(proxy: Proxy): void {
+        this.proxies.set(proxy.host, proxy);
     }
 
-    removeProxy(proxyHosts: string[]): void {
-        for (const host of proxyHosts) {
-            this.proxies.delete(host);
-        }
+    removeProxy(proxyHost: string): void {
+        this.proxies.delete(proxyHost);
     }
 
     removeAllProxies(): void {
@@ -46,6 +42,9 @@ export class ProxySet implements IProxySet {
     }
 
     testProxies(proxyHosts: string[]) {
-        throw new Error('Method not implemented.');
+        for (const proxyHost of proxyHosts) {
+            const proxy = this.proxies.get(proxyHost);
+            proxy.testProxy();
+        }
     }
 }

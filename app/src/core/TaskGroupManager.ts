@@ -85,7 +85,7 @@ export class TaskGroupManager {
             const currentTaskGroup = this.getTaskGroup(name);
             if (currentTaskGroup) {
                 const tasks = currentTaskGroup.getAllTasks();
-                event.reply(TaskGroupChannel.taskLoaded, currentTaskGroup.storeType, tasks);
+                event.reply(TaskGroupChannel.onTaskGroupSelected, currentTaskGroup.storeType, tasks);
             }
         });
     }

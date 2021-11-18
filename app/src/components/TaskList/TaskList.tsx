@@ -25,7 +25,7 @@ const TaskList: React.FunctionComponent<Props> = (props) => {
     const renderTaskComponent = (element: any) => {
         const { index, style } = element;
 
-        return <TaskComponent key={tasks[index].taskData.uuid} uuid={tasks[index].taskData.uuid} style={style} />;
+        return <TaskComponent key={tasks[index].taskData.uuid} task={tasks[index]} style={style} />;
     };
 
     return tasks.length === 0 ? (

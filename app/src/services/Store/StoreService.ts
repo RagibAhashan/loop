@@ -161,11 +161,11 @@ export const storeSlice = createSlice({
                 });
             })
             .addCase(deleteProxyFromSet, (state, action) => {
-                Object.values(state).forEach((store) => {
-                    Object.values(store.tasks).forEach((task) => {
-                        if (task.proxy?.host === action.payload.proxyHost) task.proxy = task.proxySet = null;
-                    });
-                });
+                // Object.values(state).forEach((store) => {
+                //     Object.values(store.tasks).forEach((task) => {
+                //         if (task.proxy?.host === action.payload.proxyHost) task.proxy = task.proxySet = null;
+                //     });
+                // });
             });
     },
 });

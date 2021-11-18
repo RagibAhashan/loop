@@ -31,7 +31,7 @@ export class RequestInstance {
         if (!proxyData) {
             this.axios.defaults.httpsAgent = undefined;
         } else {
-            const newProxy = new Proxy(proxyData.host, proxyData.credentials);
+            const newProxy = new Proxy(proxyData.hostname, proxyData.port, proxyData.user, proxyData.password);
             this.axios.defaults.httpsAgent = newProxy.getAgent();
         }
     }

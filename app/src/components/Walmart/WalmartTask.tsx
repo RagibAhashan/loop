@@ -1,61 +1,46 @@
 // import styles from './sidebar.module.css';
-import { StoreType } from '@constants/Stores';
+import { WalmartCATask } from '@core/walmart/WalmartCATask';
+import { WalmartUSTask } from '@core/walmart/WalmartUSTask';
 import { Col, Row, Tooltip } from 'antd';
 import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { TASK_SUCCESS } from '../../common/Constants';
-import { AppState } from '../../global-store/GlobalStore';
-import { WalmartTaskData } from '../../interfaces/TaskInterfaces';
-import { getTaskById } from '../../services/Store/StoreService';
-import DeleteTaskAction from '../DeleteTaskAction/DeleteTaskAction';
-import EditTaskAction from '../EditTaskAction/EditTaskAction';
-import StartTaskAction from '../StartTaskAction/StartTaskAction';
-import StopTaskAction from '../StopTaskAction/StopTaskAction';
-import TaskStatus from '../TaskStatus/TaskStatus';
-import WalmartEditTaskModal from './WalmartEditTaskModal';
 
-const WalmartTask = (props: any) => {
-    const {
-        uuid,
-        style,
-        storeKey,
-    }: {
-        uuid: string;
-        style: any;
-        storeKey: StoreType;
-    } = props;
+interface Props {
+    task: WalmartCATask | WalmartUSTask;
+    style: any;
+}
+const WalmartTask: React.FunctionComponent<Props> = (props) => {
+    const { task, style } = props;
 
-    const task = useSelector((state: AppState) => getTaskById(state, storeKey, uuid)) as WalmartTaskData;
-    const isRunning = task.running;
+    const isRunning = false;
 
     const registerTaskStatusListener = () => {
         // Rocket emoji waterfall
-        window.ElectronBridge.once(uuid + TASK_SUCCESS, () => {
-            const myNotification = new Notification('Checkout !', {
-                body: `Walmart Checked Out! 🚀🌑`,
-            });
-
-            setTimeout(() => {
-                myNotification.close();
-            }, 2000);
-        });
+        // window.ElectronBridge.once(uuid + TASK_SUCCESS, () => {
+        //     const myNotification = new Notification('Checkout !', {
+        //         body: `Walmart Checked Out! 🚀🌑`,
+        //     });
+        //     setTimeout(() => {
+        //         myNotification.close();
+        //     }, 2000);
+        // });
     };
 
     useEffect(() => {
-        registerTaskStatusListener();
+        // registerTaskStatusListener();
 
         return () => {
-            window.ElectronBridge.removeAllListeners(uuid + TASK_SUCCESS);
+            // window.ElectronBridge.removeAllListeners(uuid + TASK_SUCCESS);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const runButton = () => {
-        return isRunning ? (
-            <StopTaskAction storeKey={storeKey} uuid={uuid}></StopTaskAction>
-        ) : (
-            <StartTaskAction storeKey={storeKey} uuid={uuid}></StartTaskAction>
-        );
+        return <div> run button </div>;
+        // return isRunning ? (
+        //     <StopTaskAction storeKey={storeKey} uuid={uuid}></StopTaskAction>
+        // ) : (
+        //     <StartTaskAction storeKey={storeKey} uuid={uuid}></StartTaskAction>
+        // );
     };
 
     return (
@@ -70,18 +55,18 @@ const WalmartTask = (props: any) => {
                     userSelect: 'none',
                 }}
             >
-                <Tooltip placement="bottomLeft" title={`Retry Delay : ${task.retryDelay} ms`}>
+                <Tooltip placement="bottomLeft" title={`Retry Delay : ${task.taskData.retryDelay} ms`}>
                     <Col span={4} style={{ paddingLeft: 15, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.productSKU}</div>
+                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.taskData.productSKU}</div>
                     </Col>
                 </Tooltip>
 
                 <Col span={4}>
-                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.proxySet ? task.proxySet : 'No Proxies'}</div>
+                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.taskData.proxySet ?? 'No Proxies'}</div>
                 </Col>
 
                 <Col span={4}>
-                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.profileName}</div>
+                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.taskData.profileName}</div>
                 </Col>
 
                 <Col span={4} style={{ paddingRight: 15 }}>
@@ -89,19 +74,15 @@ const WalmartTask = (props: any) => {
                     {/* {renderSize()} */}
                 </Col>
 
-                <Col span={6}>
-                    <TaskStatus storeKey={storeKey} uuid={uuid}></TaskStatus>
-                </Col>
+                <Col span={6}>{/* <TaskStatus storeKey={storeKey} uuid={uuid}></TaskStatus> */}</Col>
 
                 <Col flex="auto" span={2}>
                     <div style={{ display: 'flex' }}>
                         <div>{runButton()}</div>
                         <div>
-                            <EditTaskAction storeKey={storeKey} uuid={uuid} EditTaskModalComponent={WalmartEditTaskModal}></EditTaskAction>
+                            {/* <EditTaskAction storeKey={storeKey} uuid={uuid} EditTaskModalComponent={WalmartEditTaskModal}></EditTaskAction> */}
                         </div>
-                        <div>
-                            <DeleteTaskAction storeKey={storeKey} uuid={uuid}></DeleteTaskAction>
-                        </div>
+                        <div>{/* <DeleteTaskAction storeKey={storeKey} uuid={uuid}></DeleteTaskAction> */}</div>
                     </div>
                 </Col>
             </Row>
