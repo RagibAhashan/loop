@@ -1,6 +1,7 @@
 import AddTaskAction from '@components/AddTaskAction/AddTaskAction';
 import TaskList from '@components/TaskList/TaskList';
 import { Task } from '@core/Task';
+import { TaskGroup } from '@core/TaskGroup';
 import { Col, Row, Select } from 'antd';
 import React from 'react';
 import WalmartHeaders from './WalmartHeaders';
@@ -19,10 +20,11 @@ for (let i = 4; i < 14; i += 0.5) {
 
 interface Props {
     tasks: Task[];
+    taskGroup: TaskGroup;
 }
 
 const WalmartTaskContainer: React.FunctionComponent<Props> = (props) => {
-    const { tasks } = props;
+    const { tasks, taskGroup } = props;
 
     const ROW_GUTTER: [number, number] = [24, 0];
 
@@ -34,7 +36,7 @@ const WalmartTaskContainer: React.FunctionComponent<Props> = (props) => {
 
             <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10, width: '100%' }}>
                 <Col span={3}>
-                    <AddTaskAction NewTaskModalComponent={WalmartNewTaskModal}></AddTaskAction>
+                    <AddTaskAction taskGroup={taskGroup} NewTaskModalComponent={WalmartNewTaskModal}></AddTaskAction>
                 </Col>
 
                 {/* <Col span={3}>

@@ -1,4 +1,3 @@
-import { IProxy } from '@core/Proxy';
 import { Moment } from 'moment';
 import { Proxy } from './OtherInterfaces';
 export interface CreditCard {
@@ -77,9 +76,7 @@ export interface TaskData {
     uuid: string;
     running: boolean;
     status: Status;
-    proxy: IProxy | null;
     proxySet: string | null;
-    profile: UserProfile;
     profileName: string;
     retryDelay: number;
 }

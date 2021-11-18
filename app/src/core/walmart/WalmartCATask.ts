@@ -17,6 +17,7 @@ import { COUNTRY, REGIONS } from './../../common/Regions';
 import { TaskData, WalmartCreditCard, WalmartTaskData } from './../../interfaces/TaskInterfaces';
 import { CookieJar } from './../CookieJar';
 import { CaptchaException } from './../exceptions/CaptchaException';
+import { ProfileManager } from './../ProfileManager';
 import { RequestInstance } from './../RequestInstance';
 import { generatePxCookies } from './scripts/px';
 
@@ -25,8 +26,8 @@ const log = debug.extend('WalmartCATask');
 export class WalmartCATask extends Task {
     public taskData: WalmartTaskData;
 
-    constructor(uuid: string, requestInstance: RequestInstance, taskData: WalmartTaskData) {
-        super(uuid, requestInstance, taskData);
+    constructor(uuid: string, requestInstance: RequestInstance, taskData: WalmartTaskData, profileManger: ProfileManager) {
+        super(uuid, requestInstance, taskData, profileManger);
         this.taskData = taskData;
     }
 
@@ -185,20 +186,20 @@ export class WalmartCATask extends Task {
                 const body = {
                     fulfillmentType: 'SHIPTOHOME',
                     deliveryInfo: {
-                        firstName: this.taskData.profile.shipping.firstName,
-                        lastName: this.taskData.profile.shipping.lastName,
-                        addressLine1: this.taskData.profile.shipping.address,
+                        firstName: this.userProfile.profileData.shipping.firstName,
+                        lastName: this.userProfile.profileData.shipping.lastName,
+                        addressLine1: this.userProfile.profileData.shipping.address,
                         addressLine2: '',
-                        city: this.taskData.profile.shipping.town,
-                        state: REGIONS[this.taskData.profile.shipping.country][this.taskData.profile.shipping.region].isocodeShort,
-                        postalCode: this.taskData.profile.shipping.postalCode,
-                        phone: this.taskData.profile.shipping.phone,
+                        city: this.userProfile.profileData.shipping.town,
+                        state: REGIONS[this.userProfile.profileData.shipping.country][this.userProfile.profileData.shipping.region].isocodeShort,
+                        postalCode: this.userProfile.profileData.shipping.postalCode,
+                        phone: this.userProfile.profileData.shipping.phone,
                         saveToProfile: true,
-                        country: COUNTRY[this.taskData.profile.shipping.country],
+                        country: COUNTRY[this.userProfile.profileData.shipping.country],
                         locationId: null,
                         overrideAddressVerification: false,
                     },
-                    email: this.taskData.profile.shipping.email,
+                    email: this.userProfile.profileData.shipping.email,
                 };
 
                 log('Setting shipping address %O', body);
@@ -334,16 +335,16 @@ export class WalmartCATask extends Task {
                         },
                         customer: {
                             address: {
-                                address1: this.taskData.profile.billing.address,
-                                city: this.taskData.profile.billing.town,
-                                country_code: COUNTRY[this.taskData.profile.shipping.country],
-                                postal_code: this.taskData.profile.billing.postalCode,
+                                address1: this.userProfile.profileData.billing.address,
+                                city: this.userProfile.profileData.billing.town,
+                                country_code: COUNTRY[this.userProfile.profileData.shipping.country],
+                                postal_code: this.userProfile.profileData.billing.postalCode,
                                 state_or_province_code:
-                                    REGIONS[this.taskData.profile.shipping.country][this.taskData.profile.shipping.region].isocodeShort,
+                                    REGIONS[this.userProfile.profileData.shipping.country][this.userProfile.profileData.shipping.region].isocodeShort,
                             },
-                            first_name: this.taskData.profile.billing.firstName,
-                            last_name: this.taskData.profile.billing.lastName,
-                            phone: this.taskData.profile.billing.phone,
+                            first_name: this.userProfile.profileData.billing.firstName,
+                            last_name: this.userProfile.profileData.billing.lastName,
+                            phone: this.userProfile.profileData.billing.phone,
                         },
                         save_to_profile: 'N',
                     },
@@ -432,7 +433,7 @@ export class WalmartCATask extends Task {
     private async encryptCard(): Promise<WalmartCreditCard> {
         const ccEncryptor = new WalmartEncryption();
 
-        const encCard = await ccEncryptor.encrypt(this.taskData.profile.payment);
+        const encCard = await ccEncryptor.encrypt(this.userProfile.profileData.payment);
 
         return encCard;
     }

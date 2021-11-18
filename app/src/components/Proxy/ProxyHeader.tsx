@@ -3,7 +3,16 @@ import React from 'react';
 
 const ProxyHeaders: React.FunctionComponent = () => {
     return (
-        <Row style={{ fontSize: '18px', textAlign: 'center', margin: 30, backgroundColor: '#312e2e', borderRadius: 10, padding: 5 }}>
+        <Row
+            style={{
+                fontSize: '18px',
+                textAlign: 'center',
+                margin: '10px 0px 5px 0px',
+                backgroundColor: 'rgb(38 39 43)',
+                borderRadius: 5,
+                padding: 5,
+            }}
+        >
             <Col span={4}>IP</Col>
             <Col span={4}>Port</Col>
             <Col span={4}>Username</Col>

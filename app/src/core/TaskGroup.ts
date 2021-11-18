@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { StoreType } from '../constants/Stores';
 import { TaskData } from './../interfaces/TaskInterfaces';
 import { debug } from './Log';
@@ -26,26 +25,21 @@ export class TaskGroup implements ITaskGroup {
         this.tasks = new Map();
     }
 
-    addTasks(tasks: TaskData[]): void {
-        for (const taskData of tasks) {
-            const uuid = uuidv4();
-            const newTask = TaskFactory.createTask(this.storeType, taskData);
-
-            //Should never happen
-            if (this.tasks.has(uuid)) {
-                log('UUID already exists in task map, could not add task %s %s', uuid, this.storeType);
-                continue;
-            }
-
-            this.tasks.set(uuid, newTask);
+    addTasks(taskData: TaskData): void {
+        const newTask = TaskFactory.createTask(this.storeType, taskData);
+        const uuid = newTask.taskData.uuid;
+        //Should never happen
+        if (this.tasks.has(uuid)) {
+            log('UUID already exists in task map, could not add task %s %s', uuid, this.storeType);
+            return;
         }
+
+        this.tasks.set(uuid, newTask);
     }
 
-    removeTask(uuids: string[]): void {
-        for (const uuid of uuids) {
-            if (this.tasks.has(uuid)) {
-                this.tasks.delete(uuid);
-            }
+    removeTask(uuid: string): void {
+        if (this.tasks.has(uuid)) {
+            this.tasks.delete(uuid);
         }
     }
 

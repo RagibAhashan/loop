@@ -6,14 +6,15 @@ import ProxyComponent from './ProxyComponent';
 
 interface Props {
     proxies: Proxy[];
+    selectedProxySetName: string;
 }
 const ProxyList: React.FunctionComponent<Props> = (props) => {
-    const { proxies } = props;
+    const { proxies, selectedProxySetName } = props;
 
     const renderProxies = (element: any) => {
         const { index, style } = element;
 
-        return <ProxyComponent key={proxies[index].host} proxy={proxies[index]} style={style} />;
+        return <ProxyComponent key={proxies[index].host} proxy={proxies[index]} selectedProxySetName={selectedProxySetName} style={style} />;
     };
 
     return proxies.length === 0 ? (

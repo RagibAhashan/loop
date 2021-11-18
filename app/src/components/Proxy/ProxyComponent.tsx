@@ -1,4 +1,5 @@
 import { DeleteFilled } from '@ant-design/icons';
+import { ProxySetChannel } from '@core/IpcChannels';
 import { Proxy } from '@core/Proxy';
 import { Button, Col, Row } from 'antd';
 import React from 'react';
@@ -31,10 +32,11 @@ const deleteButton = {
 interface Props {
     proxy: Proxy;
     style: any;
+    selectedProxySetName: string;
 }
 // Named it ProxyComponent to avoid name collision with the Proxy class
 const ProxyComponent: React.FunctionComponent<Props> = (props) => {
-    const { proxy, style } = props;
+    const { proxy, style, selectedProxySetName } = props;
 
     const statusColor = (level: string) => {
         switch (level) {
@@ -51,6 +53,10 @@ const ProxyComponent: React.FunctionComponent<Props> = (props) => {
             default:
                 return 'green';
         }
+    };
+
+    const handleDeleteProxy = () => {
+        window.ElectronBridge.send(ProxySetChannel.removeProxyFromSet, selectedProxySetName, [proxy.host]);
     };
 
     return (
@@ -86,15 +92,15 @@ const ProxyComponent: React.FunctionComponent<Props> = (props) => {
                     <svg height="6" width="6">
                         <circle cx="3" cy="3" r="3" fill={statusColor('idle')} />
                     </svg>
-                    <span style={{ color: statusColor('idle'), fontWeight: 500, marginLeft: 10 }}> statuc </span>
+                    <span style={{ color: statusColor('idle'), fontWeight: 500, marginLeft: 10 }}> Status [TODO] </span>
                 </div>
             </Col>
 
             <Col span={4}>
                 <div style={{ display: 'flex', justifyContent: 'center', marginLeft: '5px' }}>
-                    <div>run button</div>
+                    <div>Run [TODO]</div>
                     <div>
-                        <Button style={deleteButton} icon={<DeleteFilled />} size="small" />
+                        <Button style={deleteButton} icon={<DeleteFilled />} size="small" onClick={handleDeleteProxy} />
                     </div>
                 </div>
             </Col>

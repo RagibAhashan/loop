@@ -25,13 +25,11 @@ const ProxyContainer: React.FunctionComponent = () => {
     }, []);
 
     const handleOnProxySetSelected = (_, proxySetName: string, proxies: Proxy[]) => {
-        console.log('selected');
         setProxies(proxies);
         setSelectedProxySetName(proxySetName);
     };
 
     const handleOnProxisUpdated = (_, proxies: Proxy[]) => {
-        console.log('updated ');
         setProxies(proxies);
     };
 
@@ -46,8 +44,8 @@ const ProxyContainer: React.FunctionComponent = () => {
                 {selectedProxySetName ? <Button onClick={handleAddProxies}> Add Proxies </Button> : null}
             </div>
             <ProxyHeaders></ProxyHeaders>
-            <ProxyList proxies={proxies}></ProxyList>
-            <AddProxyModal showModal={showAddModal} setShowModal={setShowAddModal} proxySetName={selectedProxySetName}></AddProxyModal>
+            <ProxyList proxies={proxies} selectedProxySetName={selectedProxySetName}></ProxyList>
+            <AddProxyModal showModal={showAddModal} setShowModal={setShowAddModal} selectedProxySetName={selectedProxySetName}></AddProxyModal>
         </div>
     );
 };

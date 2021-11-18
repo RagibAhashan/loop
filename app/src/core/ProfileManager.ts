@@ -17,6 +17,10 @@ export class ProfileManager {
         this.registerListeners();
     }
 
+    public getProfileMap(): ProfileMap {
+        return this.profileMap;
+    }
+
     private addProfile(name: string, profileData: ProfileData): IProfile[] | null {
         if (this.profileMap.has(name)) {
             log('[Profile %s already exists]', name);

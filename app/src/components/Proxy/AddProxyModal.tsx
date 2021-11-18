@@ -10,15 +10,15 @@ const { TabPane } = Tabs;
 interface Props {
     showModal: boolean;
     setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
-    proxySetName: string;
+    selectedProxySetName: string;
 }
 
 const AddProxyModal: React.FunctionComponent<Props> = (props) => {
-    const { showModal, setShowModal, proxySetName } = props;
+    const { showModal, setShowModal, selectedProxySetName } = props;
 
     const onAddProxies = (proxies: string[]) => {
         console.log('adding proxies', proxies);
-        window.ElectronBridge.send(ProxySetChannel.addProxyToSet, proxySetName, proxies);
+        window.ElectronBridge.send(ProxySetChannel.addProxyToSet, selectedProxySetName, proxies);
         setShowModal(false);
     };
 

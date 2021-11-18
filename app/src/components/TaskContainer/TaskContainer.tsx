@@ -3,24 +3,25 @@ import WalmartTaskContainer from '@components/Walmart/WalmartTaskContainer';
 import { StoreType } from '@constants/Stores';
 import { TaskGroupChannel } from '@core/IpcChannels';
 import { Task } from '@core/Task';
+import { TaskGroup } from '@core/TaskGroup';
 import React, { useEffect, useState } from 'react';
 
-const RenderTaskContainer = (storeType: StoreType, tasks: Task[]) => {
-    switch (storeType) {
+const RenderTaskContainer = (taskGroup: TaskGroup, tasks: Task[]) => {
+    switch (taskGroup.storeType) {
         case StoreType.FootlockerCA:
         case StoreType.FootlockerUS:
-            return <FootlockerTaskContainer tasks={tasks} />;
+            return <FootlockerTaskContainer taskGroup={taskGroup} tasks={tasks} />;
         case StoreType.WalmartCA:
         case StoreType.WalmartUS:
-            return <WalmartTaskContainer tasks={tasks} />;
+            return <WalmartTaskContainer taskGroup={taskGroup} tasks={tasks} />;
         default:
             return null;
     }
 };
 
 const TaskContainer: React.FunctionComponent = () => {
-    const [tasks, setTasks] = useState([]);
-    const [storeType, setStoreType] = useState();
+    const [tasks, setTasks] = useState<Task[]>([]);
+    const [currentSelectedTaskGroup, setCurrentSelectedTaskGroup] = useState<TaskGroup>();
 
     useEffect(() => {
         window.ElectronBridge.on(TaskGroupChannel.onTaskGroupSelected, handleOnTaskGroupSelected);
@@ -30,12 +31,12 @@ const TaskContainer: React.FunctionComponent = () => {
         };
     }, []);
 
-    const handleOnTaskGroupSelected = (event, storeType, tasks: Task[]) => {
-        setStoreType(storeType);
+    const handleOnTaskGroupSelected = (event, taskGroup: TaskGroup, tasks: Task[]) => {
+        setCurrentSelectedTaskGroup(taskGroup);
         setTasks(tasks);
     };
 
-    return <div>{RenderTaskContainer(storeType, tasks)}</div>;
+    return <div>{RenderTaskContainer(currentSelectedTaskGroup, tasks)}</div>;
 };
 
 export default TaskContainer;

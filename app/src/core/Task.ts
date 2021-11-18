@@ -1,3 +1,5 @@
+import { Profile } from '@core/Profile';
+import { Proxy } from '@core/Proxy';
 import { AxiosInstance } from 'axios';
 import { EventEmitter } from 'events';
 import { TASK_STOPPED } from '../common/Constants';
@@ -5,21 +7,31 @@ import { TASK_STATUS, TASK_STOP } from './../common/Constants';
 import { StatusLevel, TaskData } from './../interfaces/TaskInterfaces';
 import { MESSAGES } from './constants/Constants';
 import { CookieJar } from './CookieJar';
+import { ProfileManager } from './ProfileManager';
 import { IProxy } from './Proxy';
 import { RequestInstance } from './RequestInstance';
 
 export const CANCEL_ERROR = 'Cancel';
 
-export abstract class Task extends EventEmitter {
+interface ITask {
+    taskData: TaskData;
+    userProfile: Profile;
+    proxy: Proxy;
+}
+
+export abstract class Task extends EventEmitter implements ITask {
     protected requestInstance: RequestInstance;
     protected cookieJar!: CookieJar;
     protected cancel: boolean;
     protected cancelTimeout: () => void;
     protected uuid: string;
     protected axiosSession: AxiosInstance;
+    protected profileManager: ProfileManager;
     public taskData: TaskData;
+    public userProfile: Profile;
+    public proxy: Proxy;
 
-    constructor(uuid: string, requestInstance: RequestInstance, taskData: TaskData) {
+    constructor(uuid: string, requestInstance: RequestInstance, taskData: TaskData, profileManager: ProfileManager) {
         super();
         this.requestInstance = requestInstance;
         this.axiosSession = requestInstance.axios;
@@ -27,9 +39,17 @@ export abstract class Task extends EventEmitter {
         this.cancelTimeout = () => {};
         this.uuid = uuid;
         this.taskData = taskData;
+        this.profileManager = profileManager;
+
+        this.loadUserProfile();
     }
 
     abstract doTask(): void;
+
+    protected loadUserProfile(): void {
+        const profile = this.profileManager.getProfileMap().get(this.taskData.profileName);
+        this.userProfile = profile;
+    }
 
     protected updateProxy(proxyData: IProxy | null): void {
         this.requestInstance.updateProxy(proxyData);

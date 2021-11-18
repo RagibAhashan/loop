@@ -25,6 +25,7 @@ import { RequestInstance } from '../RequestInstance';
 import { CANCEL_ERROR, Task } from '../Task';
 import { WalmartTaskData } from './../../interfaces/TaskInterfaces';
 import { CaptchaException } from './../exceptions/CaptchaException';
+import { ProfileManager } from './../ProfileManager';
 import { generatePxCookies } from './scripts/px';
 const log = debug.extend('WalmartUSTask');
 
@@ -37,8 +38,8 @@ export class WalmartUSTask extends Task {
     private static readonly WALMART_SELLER_DISPLAY_NAME = 'Walmart.com';
     private static readonly IN_STOCK = 'IN_STOCK';
 
-    constructor(uuid: string, requestInstance: RequestInstance, taskData: WalmartTaskData) {
-        super(uuid, requestInstance, taskData);
+    constructor(uuid: string, requestInstance: RequestInstance, taskData: WalmartTaskData, profileManger: ProfileManager) {
+        super(uuid, requestInstance, taskData, profileManger);
         this.taskData = taskData;
         this.createErrorInterceptor();
     }
@@ -64,7 +65,7 @@ export class WalmartUSTask extends Task {
 
     async doTask(): Promise<void> {
         try {
-            log('Starting task with proxy %O', this.taskData.proxy);
+            log('Starting task with proxy %O', this.proxy);
             this.cookieJar = new CookieJar(this.requestInstance.baseURL);
 
             await this.getSession();
@@ -383,11 +384,12 @@ export class WalmartUSTask extends Task {
                     variables: {
                         input: {
                             address: {
-                                addressLineOne: this.taskData.profile.shipping.address,
+                                addressLineOne: this.userProfile.profileData.shipping.address,
                                 addressLineTwo: '',
-                                city: this.taskData.profile.shipping.town,
-                                postalCode: this.taskData.profile.shipping.postalCode,
-                                state: REGIONS[this.taskData.profile.shipping.country][this.taskData.profile.shipping.region].isocodeShort,
+                                city: this.userProfile.profileData.shipping.town,
+                                postalCode: this.userProfile.profileData.shipping.postalCode,
+                                state: REGIONS[this.userProfile.profileData.shipping.country][this.userProfile.profileData.shipping.region]
+                                    .isocodeShort,
                                 addressType: null,
                                 businessName: null,
                                 isApoFpo: null,
@@ -395,12 +397,12 @@ export class WalmartUSTask extends Task {
                                 isPoBox: null,
                                 sealedAddress: null,
                             },
-                            firstName: this.taskData.profile.shipping.firstName,
-                            lastName: this.taskData.profile.shipping.lastName,
+                            firstName: this.userProfile.profileData.shipping.firstName,
+                            lastName: this.userProfile.profileData.shipping.lastName,
                             deliveryInstructions: null,
                             displayLabel: null,
                             isDefault: false,
-                            phone: this.taskData.profile.shipping.phone,
+                            phone: this.userProfile.profileData.shipping.phone,
                             overrideAvs: false,
                         },
                     },
@@ -576,15 +578,16 @@ export class WalmartUSTask extends Task {
                     query: 'mutation CreateCreditCard($input:AccountCreditCardInput!){createAccountCreditCard(input:$input){errors{code message}creditCard{...CreditCardFragment}}}fragment CreditCardFragment on CreditCard{__typename firstName lastName phone addressLineOne addressLineTwo city state postalCode cardType expiryYear expiryMonth lastFour id isDefault isExpired needVerifyCVV isEditable capOneProperties{shouldPromptForLink}linkedCard{availableCredit currentCreditBalance currentMinimumAmountDue minimumPaymentDueDate statementBalance statementDate rewards{rewardsBalance rewardsCurrency cashValue cashDisplayValue canRedeem}links{linkMethod linkHref linkType}}}',
                     variables: {
                         input: {
-                            firstName: this.taskData.profile.billing.lastName,
-                            lastName: this.taskData.profile.billing.lastName,
-                            phone: this.taskData.profile.billing.phone,
+                            firstName: this.userProfile.profileData.billing.lastName,
+                            lastName: this.userProfile.profileData.billing.lastName,
+                            phone: this.userProfile.profileData.billing.phone,
                             address: {
-                                addressLineOne: this.taskData.profile.billing.address,
+                                addressLineOne: this.userProfile.profileData.billing.address,
                                 addressLineTwo: null,
-                                postalCode: this.taskData.profile.billing.postalCode,
-                                city: this.taskData.profile.billing.town,
-                                state: REGIONS[this.taskData.profile.billing.country][this.taskData.profile.billing.region].isocodeShort,
+                                postalCode: this.userProfile.profileData.billing.postalCode,
+                                city: this.userProfile.profileData.billing.town,
+                                state: REGIONS[this.userProfile.profileData.billing.country][this.userProfile.profileData.billing.region]
+                                    .isocodeShort,
                                 isApoFpo: null,
                                 isLoadingDockAvailable: null,
                                 isPoBox: null,
@@ -754,7 +757,7 @@ export class WalmartUSTask extends Task {
                                 deliveryInstructions: null,
                                 deliveryOption: 'LEAVE_AT_DOOR',
                             },
-                            mobileNumber: this.taskData.profile.billing.phone,
+                            mobileNumber: this.userProfile.profileData.billing.phone,
                             paymentCvvInfos: [
                                 {
                                     preferenceId: creditCardId,
@@ -768,7 +771,7 @@ export class WalmartUSTask extends Task {
                             ],
                             paymentHandle: null,
                             acceptDonation: false,
-                            emailAddress: this.taskData.profile.billing.email,
+                            emailAddress: this.userProfile.profileData.billing.email,
                             fulfillmentOptions: null,
                             acceptedAgreements: [],
                         },
@@ -832,7 +835,7 @@ export class WalmartUSTask extends Task {
     private async encryptCard(): Promise<WalmartCreditCard> {
         const ccEncryptor = new WalmartEncryption();
 
-        const encCard = await ccEncryptor.encrypt(this.taskData.profile.payment);
+        const encCard = await ccEncryptor.encrypt(this.userProfile.profileData.payment);
 
         return encCard;
     }

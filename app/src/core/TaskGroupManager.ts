@@ -1,3 +1,5 @@
+import { Task } from '@core/Task';
+import { TaskData } from '@interfaces/TaskInterfaces';
 import { ipcMain } from 'electron';
 import { StoreType } from './../constants/Stores';
 import { TaskGroupChannel } from './IpcChannels';
@@ -48,6 +50,34 @@ export class TaskGroupManager {
         return Array.from(this.taskGroupMap.values());
     }
 
+    private addTaskToGroup(groupName: string, taskDatas: TaskData[]): Task[] | null {
+        if (!this.taskGroupMap.has(groupName)) {
+            log('[Group %s not found]', groupName);
+            return null;
+        }
+        const taskGroup = this.taskGroupMap.get(groupName);
+
+        for (const taskData of taskDatas) {
+            taskGroup.addTasks(taskData);
+        }
+
+        return taskGroup.getAllTasks();
+    }
+
+    private removeTaskFromGroup(groupName: string, uuids: string[]): Task[] | null {
+        if (!this.taskGroupMap.has(groupName)) {
+            log('[Group %s not found]', groupName);
+            return null;
+        }
+        const taskGroup = this.taskGroupMap.get(groupName);
+
+        for (const uuid of uuids) {
+            taskGroup.removeTask(uuid);
+        }
+
+        return taskGroup.getAllTasks();
+    }
+
     private editTaskGroupName(oldName: string, newName: string): void {
         const taskGroup = this.taskGroupMap.get(oldName);
         taskGroup.editName(newName);
@@ -85,7 +115,25 @@ export class TaskGroupManager {
             const currentTaskGroup = this.getTaskGroup(name);
             if (currentTaskGroup) {
                 const tasks = currentTaskGroup.getAllTasks();
-                event.reply(TaskGroupChannel.onTaskGroupSelected, currentTaskGroup.storeType, tasks);
+                event.reply(TaskGroupChannel.onTaskGroupSelected, currentTaskGroup, tasks);
+            }
+        });
+
+        ipcMain.on(TaskGroupChannel.addTaskToGroup, (event, name: string, tasks: TaskData[]) => {
+            const taskList = this.addTaskToGroup(name, tasks);
+            if (taskList) {
+                event.reply(TaskGroupChannel.tasksUpdated, taskList);
+            } else {
+                event.reply(TaskGroupChannel.taskGroupError, 'Error');
+            }
+        });
+
+        ipcMain.on(TaskGroupChannel.removeTaskFromGroup, (event, name: string, uuids: string[]) => {
+            const taskList = this.removeTaskFromGroup(name, uuids);
+            if (taskList) {
+                event.reply(TaskGroupChannel.tasksUpdated, taskList);
+            } else {
+                event.reply(TaskGroupChannel.taskGroupError, 'Error');
             }
         });
     }
