@@ -21,13 +21,13 @@ const Headers = () => {
 };
 
 interface Props {
-    proxySet: IProxySet;
+    proxySets: IProxySet;
 }
 
-const ProxySetContainer: React.FunctionComponent<Props> = (props) => {
-    const { proxySet } = props;
+const ProxySetContainerOld: React.FunctionComponent<Props> = (props) => {
+    const { proxySets } = props;
 
-    const proxyList = Object.values(proxySet.proxies);
+    const proxyList = Object.values(proxySets.proxies);
 
     // TODO refactor this code
     const renderProxies = (ele: any) => {
@@ -131,4 +131,4 @@ const ProxySetContainer: React.FunctionComponent<Props> = (props) => {
     );
 };
 
-export default ProxySetContainer;
+export default ProxySetContainerOld;
