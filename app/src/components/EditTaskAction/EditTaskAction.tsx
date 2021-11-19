@@ -1,52 +1,54 @@
 import { EditFilled } from '@ant-design/icons';
-import { StoreType } from '@constants/Stores';
+import { ITask } from '@core/Task';
 import { Button } from 'antd';
-import React, { useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { NOTIFY_EDIT_TASK } from '../../common/Constants';
-import { AppState } from '../../global-store/GlobalStore';
-import { assignRandomProxy } from '../../services/Proxy/ProxyService';
-import { editTask, getTaskById } from '../../services/Store/StoreService';
+import React, { useEffect, useState } from 'react';
 import { editButton } from '../../styles/Buttons';
 
-const EditTaskAction = (props: any) => {
-    const { storeKey, uuid, EditTaskModalComponent }: { storeKey: StoreType; uuid: string; EditTaskModalComponent: any; editAll: boolean } = props;
+interface Props {
+    uuid: string;
+    EditTaskModalComponent: React.ComponentType<any>;
+    currentTask: ITask;
+}
+const EditTaskAction: React.FunctionComponent<Props> = (props) => {
+    const { EditTaskModalComponent, currentTask } = props;
 
-    const dispatch = useDispatch();
-    const [visibleModal, setVisibleModal] = useState(false);
+    const [showModal, setShowModal] = useState(false);
 
-    const currentTask = useSelector((state: AppState) => getTaskById(state, storeKey, uuid));
-    const isTaskRunning = currentTask.running;
+    // const isTaskRunning = currentTask.running;
 
     const onEditClick = () => {
-        setVisibleModal(true);
+        setShowModal(true);
     };
 
-    const onModalClose = () => {
-        setVisibleModal(false);
-    };
+    useEffect(() => {
+        // get current task by uuid;
+    });
+
+    // const onModalClose = () => {
+    //     setVisibleModal(false);
+    // };
 
     const handleEditTask = (newValues: any) => {
-        console.log('new values ', newValues);
-        dispatch(editTask({ storeKey: storeKey, uuid: uuid, newValue: newValues }));
-        // after editing the task, check if proxy was modified and assign a random proxy
-        if (newValues.proxySet != null && currentTask.proxySet != newValues.proxySet) {
-            console.log('assigning randome values');
-            dispatch(assignRandomProxy(newValues.proxySet, storeKey, [uuid]));
-        } else if (newValues.proxySet == null) {
-            console.log('unassigning proxy after null');
-            // dispatch(unassignProxy({ name: currentTask.proxySet, proxy: currentTask.proxy, taskID: currentTask.uuid }));
-        }
+        // console.log('new values ', newValues);
+        // dispatch(editTask({ storeKey: storeKey, uuid: uuid, newValue: newValues }));
+        // // after editing the task, check if proxy was modified and assign a random proxy
+        // if (newValues.proxySet != null && currentTask.proxySet != newValues.proxySet) {
+        //     console.log('assigning randome values');
+        //     dispatch(assignRandomProxy(newValues.proxySet, storeKey, [uuid]));
+        // } else if (newValues.proxySet == null) {
+        //     console.log('unassigning proxy after null');
+        //     // dispatch(unassignProxy({ name: currentTask.proxySet, proxy: currentTask.proxy, taskID: currentTask.uuid }));
+        // }
 
-        window.ElectronBridge.send(NOTIFY_EDIT_TASK(storeKey), uuid, { ...currentTask, ...newValues });
+        // window.ElectronBridge.send(NOTIFY_EDIT_TASK(storeKey), uuid, { ...currentTask, ...newValues });
 
-        setVisibleModal(false);
+        setShowModal(false);
     };
     return (
         <div>
-            <Button onClick={onEditClick} style={editButton} size="small" icon={<EditFilled />} disabled={isTaskRunning} />
+            <Button onClick={onEditClick} style={editButton} size="small" icon={<EditFilled />} />
 
-            <EditTaskModalComponent visible={visibleModal} onClose={onModalClose} onEdit={handleEditTask} task={currentTask} />
+            <EditTaskModalComponent massEdit={false} showModal={showModal} setShowModal={setShowModal} onEdit={handleEditTask} task={currentTask} />
         </div>
     );
 };

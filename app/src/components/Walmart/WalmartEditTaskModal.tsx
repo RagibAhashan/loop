@@ -1,44 +1,49 @@
+import { IProfile } from '@core/Profile';
+import { IProxySet } from '@core/ProxySet';
+import { ITask } from '@core/Task';
 import { Col, Form, Input, InputNumber, Modal, Row, Select } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import { WalmartTaskData } from '../../interfaces/TaskInterfaces';
-import { getProfiles } from '../../services/Profile/ProfileService';
-import { getProxySets } from '../../services/Proxy/ProxyService';
 
 const validateMessages = {
     required: 'Required!',
 };
 const GUTTER: [number, number] = [16, 0];
 
-export const WalmartEditTaskModal = (props: any) => {
-    const {
-        visible,
-        onClose,
-        onEdit,
-        task,
-    }: { visible: boolean; onClose: () => void; onEdit: (newVal: WalmartTaskData) => void; task: WalmartTaskData } = props;
+interface Props {
+    showModal: boolean;
+    setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+    task: ITask;
+    massEdit: boolean;
+    proxySets: IProxySet[];
+    profiles: IProfile[];
+}
+
+export const WalmartEditTaskModal: React.FunctionComponent<Props> = (props) => {
+    const { showModal, setShowModal, task, proxySets, profiles, massEdit } = props;
+
     const [form] = useForm<WalmartTaskData>();
 
-    const profiles = useSelector(getProfiles);
-    const optionProfiles = Object.entries(profiles).map(([key, profile]) => {
-        return { label: profile.name, value: profile.name };
+    let optionsProfiles = profiles.map((profile) => {
+        return { label: profile.profileName, value: profile.profileName };
     });
 
-    const proxies = useSelector(getProxySets);
-    let proxiesOptions = Object.keys(proxies).map((proxySetName) => {
-        return { label: proxySetName, value: proxySetName };
+    let proxiesOptions: any = proxySets.map((proxySet) => {
+        return { label: proxySet.name, value: proxySet.name };
     });
+
     proxiesOptions = [...proxiesOptions, { label: 'No Proxies', value: null }];
+    optionsProfiles = [...optionsProfiles, { label: 'No Profile', value: null }];
 
     useEffect(() => {
         form.resetFields();
-        form.setFieldsValue(task);
+        if (!massEdit) form.setFieldsValue(task.taskData);
     });
 
     const title = () => {
         if (!task) return '';
-        return Object.keys(task).length > 0 ? 'Edit Task' : 'Mass Edit All';
+        return massEdit ? 'Mass Edit All' : 'Edit Task';
     };
 
     const removeUndefined = () => {
@@ -48,14 +53,15 @@ export const WalmartEditTaskModal = (props: any) => {
     };
 
     const handleOnEdit = (newTaskValues: WalmartTaskData) => {
-        onEdit(newTaskValues);
+        console.log('on edit');
+        // onEdit(newTaskValues);
     };
 
     return (
         <Modal
             title={title()}
             centered
-            visible={visible}
+            visible={showModal}
             onOk={() => {
                 Object.keys(task).length > 0
                     ? form
@@ -67,7 +73,7 @@ export const WalmartEditTaskModal = (props: any) => {
                           .catch((err) => {})
                     : handleOnEdit(removeUndefined());
             }}
-            onCancel={onClose}
+            onCancel={() => setShowModal(false)}
             okText="Edit"
             cancelText="Cancel"
             width={600}
@@ -84,7 +90,7 @@ export const WalmartEditTaskModal = (props: any) => {
                     <Row gutter={GUTTER}>
                         <Col span={12}>
                             <Form.Item name="profileName" rules={[{ required: true }]}>
-                                <Select placeholder="Profile" allowClear options={optionProfiles} />
+                                <Select placeholder="Profile" allowClear options={optionsProfiles} />
                             </Form.Item>
                         </Col>
                         <Col span={12}>

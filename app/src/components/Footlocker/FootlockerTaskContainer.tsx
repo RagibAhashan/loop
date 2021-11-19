@@ -5,7 +5,7 @@ import { ITaskGroup } from '@core/TaskGroup';
 import { Col, Row, Select } from 'antd';
 import React from 'react';
 import AddTaskAction from '../AddTaskAction/AddTaskAction';
-import TaskListContainer from '../TaskList/TaskList';
+import TaskList from '../TaskList/TaskList';
 import FLHeaders from './FLHeaders';
 import FLNewTaskModal from './FLNewTaskModal';
 import FLTask from './FLTask';
@@ -36,7 +36,7 @@ const FootlockerTaskContainer: React.FunctionComponent<Props> = (props) => {
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'auto' }}>
             <FLHeaders />
 
-            <TaskListContainer tasks={tasks} TaskComponent={FLTask} />
+            <TaskList tasks={tasks} TaskComponent={FLTask} />
 
             <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10, width: '100%' }}>
                 <Col span={3}>

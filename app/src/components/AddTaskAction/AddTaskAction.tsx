@@ -26,8 +26,9 @@ const AddTaskAction: React.FunctionComponent<Props> = (props) => {
             taskArr.push(newTask);
         }
 
-        console.log('adding task to ', taskGroup, taskGroup.name);
         window.ElectronBridge.send(TaskGroupChannel.addTaskToGroup, taskGroup.name, taskArr);
+
+        setShowModal(false);
     };
 
     return (

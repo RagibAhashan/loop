@@ -57,7 +57,7 @@ const TaskContainer: React.FunctionComponent = () => {
         }
     };
 
-    return <div>{RenderTaskContainer()}</div>;
+    return <div style={{ width: '100%', height: '100%' }}>{RenderTaskContainer()}</div>;
 };
 
 export default TaskContainer;

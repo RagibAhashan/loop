@@ -1,4 +1,5 @@
 import AddTaskAction from '@components/AddTaskAction/AddTaskAction';
+import EditAllTasksAction from '@components/EditAllTasksAction/EditAllTasksAction';
 import TaskList from '@components/TaskList/TaskList';
 import { IProfile } from '@core/Profile';
 import { IProxySet } from '@core/ProxySet';
@@ -6,6 +7,7 @@ import { ITask } from '@core/Task';
 import { ITaskGroup } from '@core/TaskGroup';
 import { Col, Row, Select } from 'antd';
 import React from 'react';
+import WalmartEditTaskModal from './WalmartEditTaskModal';
 import WalmartHeaders from './WalmartHeaders';
 import WalmartNewTaskModal from './WalmartNewTaskModal';
 import WalmartTask from './WalmartTask';
@@ -48,10 +50,15 @@ const WalmartTaskContainer: React.FunctionComponent<Props> = (props) => {
                     ></AddTaskAction>
                 </Col>
 
-                {/* <Col span={3}>
-                    <EditAllTasksAction EditTaskModalComponent={WalmartEditTaskModal}></EditAllTasksAction>
+                <Col span={3}>
+                    <EditAllTasksAction
+                        proxySets={proxySets}
+                        profiles={profiles}
+                        taskGroup={taskGroup}
+                        EditTaskModalComponent={WalmartEditTaskModal}
+                    ></EditAllTasksAction>
                 </Col>
-                <Col span={3}></Col>
+                {/* <Col span={3}></Col>
                 <Col span={3}>
                     <StartAllTasksAction></StartAllTasksAction>
                 </Col>

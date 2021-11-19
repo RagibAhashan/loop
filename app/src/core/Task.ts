@@ -64,7 +64,7 @@ export abstract class Task extends EventEmitter implements ITask {
     protected loadProxy(): void {
         this.proxy = this.proxyManager.pickProxyFromSet(this.taskData.proxySet);
         this.requestInstance.updateProxy(this.proxy);
-        console.log('picked proxy ', this.proxy);
+        console.log('picked proxy ', this.proxy.host);
     }
 
     protected unLoadProxy(): void {
