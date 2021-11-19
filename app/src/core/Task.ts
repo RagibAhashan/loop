@@ -8,7 +8,7 @@ import { StatusLevel, TaskData } from './../interfaces/TaskInterfaces';
 import { MESSAGES } from './constants/Constants';
 import { CookieJar } from './CookieJar';
 import { ProfileManager } from './ProfileManager';
-import { IProxy } from './Proxy';
+import { ProxySetManager } from './ProxySetManager';
 import { RequestInstance } from './RequestInstance';
 
 export const CANCEL_ERROR = 'Cancel';
@@ -27,11 +27,12 @@ export abstract class Task extends EventEmitter implements ITask {
     protected uuid: string;
     protected axiosSession: AxiosInstance;
     protected profileManager: ProfileManager;
+    protected proxyManager: ProxySetManager;
     public taskData: TaskData;
     public userProfile: Profile;
     public proxy: Proxy;
 
-    constructor(uuid: string, requestInstance: RequestInstance, taskData: TaskData, profileManager: ProfileManager) {
+    constructor(uuid: string, requestInstance: RequestInstance, taskData: TaskData, profileManager: ProfileManager, proxyManager: ProxySetManager) {
         super();
         this.requestInstance = requestInstance;
         this.axiosSession = requestInstance.axios;
@@ -40,8 +41,12 @@ export abstract class Task extends EventEmitter implements ITask {
         this.uuid = uuid;
         this.taskData = taskData;
         this.profileManager = profileManager;
+        this.proxyManager = proxyManager;
 
         this.loadUserProfile();
+        if (this.taskData.proxySet) {
+            this.loadProxy();
+        }
     }
 
     abstract doTask(): void;
@@ -51,8 +56,16 @@ export abstract class Task extends EventEmitter implements ITask {
         this.userProfile = profile;
     }
 
-    protected updateProxy(proxyData: IProxy | null): void {
-        this.requestInstance.updateProxy(proxyData);
+    protected loadProxy(): void {
+        this.proxy = this.proxyManager.pickProxyFromSet(this.taskData.proxySet);
+        this.requestInstance.updateProxy(this.proxy);
+        console.log('picked proxy ', this.proxy);
+    }
+
+    protected unLoadProxy(): void {
+        this.proxy = null;
+        this.taskData.proxySet = null;
+        this.requestInstance.updateProxy(null);
     }
 
     protected handleCancel(): void {

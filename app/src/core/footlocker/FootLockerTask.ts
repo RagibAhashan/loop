@@ -1,3 +1,5 @@
+import { ProfileManager } from '@core/ProfileManager';
+import { ProxySetManager } from '@core/ProxySetManager';
 import { AxiosResponse } from 'axios';
 import { NOTIFY_CAPTCHA_SOLVED, NOTIFY_CAPTCHA_TASK, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
 import { Cookie, Headers } from '../constants/Cookies';
@@ -14,13 +16,13 @@ export class FootLockerTask extends Task {
     productCode: string;
     currentSize: string;
 
-    constructor(uuid: string, requestInstance: RequestInstance, taskData: FLTaskData) {
-        super(uuid, requestInstance, taskData);
+    constructor(uuid: string, requestInstance: RequestInstance, taskData: FLTaskData, profileManager: ProfileManager, proxyManager: ProxySetManager) {
+        super(uuid, requestInstance, taskData, profileManager, proxyManager);
         this.captchaSolved = false;
         this.waitingRoom = { refresh: false, delay: 0 };
         this.currentSize = '';
         this.productCode = '';
-        this.taskData = this.taskData as FLTaskData;
+        this.taskData = taskData;
     }
 
     async doTask(): Promise<void> {
@@ -272,7 +274,7 @@ export class FootLockerTask extends Task {
 
                 let res = undefined;
 
-                res = await this.axiosSession.put(`/users/carts/current/email/${this.taskData.profile.shipping.email}`, undefined, {
+                res = await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.profileData.shipping.email}`, undefined, {
                     headers: headers,
                 });
 
@@ -336,7 +338,7 @@ export class FootLockerTask extends Task {
                     console.log('finish waiting refresh queue');
                 }
 
-                const body = this.getOrderForm(this.taskData.profile.payment);
+                const body = this.getOrderForm(this.userProfile.profileData.payment);
 
                 await this.axiosSession.post('/v2/users/orders', body, { headers: headers });
 
@@ -370,7 +372,7 @@ export class FootLockerTask extends Task {
     }
 
     getInfoForm(shipping: boolean): any {
-        const user = shipping ? this.taskData.profile.shipping : this.taskData.profile.billing;
+        const user = shipping ? this.userProfile.profileData.shipping : this.userProfile.profileData.billing;
         // return new FLCInfoForm(
         //     user.lastName,
         //     user.email,

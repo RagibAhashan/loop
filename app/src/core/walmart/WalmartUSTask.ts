@@ -1,3 +1,4 @@
+import { ProxySetManager } from '@core/ProxySetManager';
 import { NOTIFY_CAPTCHA_SOLVED, NOTIFY_CAPTCHA_TASK, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
 import { REGIONS } from '../../common/Regions';
 import { TaskData, WalmartCreditCard } from '../../interfaces/TaskInterfaces';
@@ -38,8 +39,14 @@ export class WalmartUSTask extends Task {
     private static readonly WALMART_SELLER_DISPLAY_NAME = 'Walmart.com';
     private static readonly IN_STOCK = 'IN_STOCK';
 
-    constructor(uuid: string, requestInstance: RequestInstance, taskData: WalmartTaskData, profileManger: ProfileManager) {
-        super(uuid, requestInstance, taskData, profileManger);
+    constructor(
+        uuid: string,
+        requestInstance: RequestInstance,
+        taskData: WalmartTaskData,
+        profileManger: ProfileManager,
+        proxyManager: ProxySetManager,
+    ) {
+        super(uuid, requestInstance, taskData, profileManger, proxyManager);
         this.taskData = taskData;
         this.createErrorInterceptor();
     }

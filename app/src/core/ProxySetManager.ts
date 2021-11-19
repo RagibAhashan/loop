@@ -19,6 +19,15 @@ export class ProxySetManager {
         this.registerListeners();
     }
 
+    public pickProxyFromSet(proxySetName: string): Proxy {
+        const proxySet = this.proxySetMap.get(proxySetName);
+        return proxySet.pickProxy();
+    }
+
+    private getProxySet(name: string): ProxySet | undefined {
+        return this.proxySetMap.get(name);
+    }
+
     private addProxySet(name: string): IProxySet[] | null {
         if (this.proxySetMap.has(name)) {
             log('[ProxySet %s already exists]', name);
@@ -50,10 +59,6 @@ export class ProxySetManager {
         const proxySet = this.proxySetMap.get(name);
         proxySet.removeAllProxies();
         return this.getAllProxySets();
-    }
-
-    private getProxySet(name: string): ProxySet | undefined {
-        return this.proxySetMap.get(name);
     }
 
     private getAllProxySets(): IProxySet[] {

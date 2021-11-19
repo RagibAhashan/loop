@@ -154,11 +154,11 @@ export const storeSlice = createSlice({
                 // }
             })
             .addCase(deleteAllProxiesFromSet, (state, action) => {
-                Object.values(state).forEach((store) => {
-                    Object.values(store.tasks).forEach((task) => {
-                        task.proxy = task.proxySet = null;
-                    });
-                });
+                // Object.values(state).forEach((store) => {
+                //     Object.values(store.tasks).forEach((task) => {
+                //         task.proxy = task.proxySet = null;
+                //     });
+                // });
             })
             .addCase(deleteProxyFromSet, (state, action) => {
                 // Object.values(state).forEach((store) => {

@@ -3,7 +3,6 @@ import { ProfileChannel } from '@core/IpcChannels';
 import { Profile } from '@core/Profile';
 import { Button, Checkbox, Col, Divider, Form, Input, Modal, Row, Select, Tabs } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 
 const { TabPane } = Tabs;
 
@@ -94,12 +93,13 @@ const EditProfileModal: React.FunctionComponent<Props> = (props) => {
     const [month, setMonth] = useState('');
     const [year, setYear] = useState('');
 
-    const dispatch = useDispatch();
-
     useEffect(() => {
         console.log('init edit profile modal');
         window.ElectronBridge.invoke(ProfileChannel.getProfile, profileName).then((profile: Profile) => {
             console.log('invoke profile response', profile);
+            if (!profile) {
+                return;
+            }
             setCurrentProfile(profile);
             shippingForm.setFieldsValue(profile.profileData.shipping);
             billingForm.setFieldsValue(profile.profileData.billing);

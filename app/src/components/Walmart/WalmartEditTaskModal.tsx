@@ -25,8 +25,6 @@ export const WalmartEditTaskModal = (props: any) => {
         return { label: profile.name, value: profile.name };
     });
 
-    const profileByName = (profileName: string) => profiles[profileName];
-
     const proxies = useSelector(getProxySets);
     let proxiesOptions = Object.keys(proxies).map((proxySetName) => {
         return { label: proxySetName, value: proxySetName };
@@ -50,10 +48,6 @@ export const WalmartEditTaskModal = (props: any) => {
     };
 
     const handleOnEdit = (newTaskValues: WalmartTaskData) => {
-        if (newTaskValues.profileName !== task.profileName) {
-            newTaskValues.profile = profileByName(newTaskValues.profileName);
-        }
-
         onEdit(newTaskValues);
     };
 

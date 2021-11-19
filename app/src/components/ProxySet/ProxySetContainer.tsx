@@ -23,8 +23,8 @@ const ProxySetContainer: React.FunctionComponent<Props> = () => {
         window.ElectronBridge.on(ProxySetChannel.proxySetError, handleProxySetError);
 
         return () => {
-            window.ElectronBridge.removeListener(ProxySetChannel.proxySetUpdated, handleProxySetUpdated);
-            window.ElectronBridge.removeListener(ProxySetChannel.proxySetError, handleProxySetError);
+            window.ElectronBridge.removeAllListeners(ProxySetChannel.proxySetUpdated);
+            window.ElectronBridge.removeAllListeners(ProxySetChannel.proxySetError);
         };
     }, []);
 

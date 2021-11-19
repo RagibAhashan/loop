@@ -1,5 +1,6 @@
-import { TaskGroupChannel } from '@core/IpcChannels';
-import { TaskGroup } from '@core/TaskGroup';
+import { IProfile } from '@core/Profile';
+import { IProxySet } from '@core/ProxySet';
+import { ITaskGroup } from '@core/TaskGroup';
 import { Button } from 'antd';
 import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
@@ -7,13 +8,15 @@ import { TaskData } from '../../interfaces/TaskInterfaces';
 import { buttonStyle } from '../../styles/Buttons';
 interface Props {
     NewTaskModalComponent: React.ComponentType<any>;
-    taskGroup: TaskGroup;
+    taskGroup: ITaskGroup;
+    proxySets: IProxySet[];
+    profiles: IProfile[];
 }
 // This component will contain the add task button and task modal composition
 const AddTaskAction: React.FunctionComponent<Props> = (props) => {
     const [showModal, setShowModal] = useState(false);
 
-    const { NewTaskModalComponent, taskGroup } = props;
+    const { NewTaskModalComponent, taskGroup, proxySets, profiles } = props;
 
     const handleAddTask = (task: TaskData, quantity: number) => {
         const taskArr: TaskData[] = [];
@@ -23,7 +26,7 @@ const AddTaskAction: React.FunctionComponent<Props> = (props) => {
         }
 
         console.log('adding task to ', taskGroup, taskGroup.name, taskGroup.tasks);
-        window.ElectronBridge.send(TaskGroupChannel.addTaskToGroup, taskGroup.name, taskArr);
+        // window.ElectronBridge.send(TaskGroupChannel.addTaskToGroup, taskGroup.name, taskArr);
     };
 
     return (
@@ -32,7 +35,13 @@ const AddTaskAction: React.FunctionComponent<Props> = (props) => {
                 Add Task
             </Button>
 
-            <NewTaskModalComponent showModal={showModal} setShowModal={setShowModal} onAdd={handleAddTask}></NewTaskModalComponent>
+            <NewTaskModalComponent
+                proxySets={proxySets}
+                profiles={profiles}
+                showModal={showModal}
+                setShowModal={setShowModal}
+                onAdd={handleAddTask}
+            ></NewTaskModalComponent>
         </div>
     );
 };

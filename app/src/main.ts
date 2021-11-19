@@ -1,3 +1,4 @@
+import { TaskGroupFactory } from '@core/TaskGroupFactory';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import hash from 'object-hash';
 import si from 'systeminformation';
@@ -91,14 +92,16 @@ ipcMain.on(ACCESS_GRANTED, () => {
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 });
 
-const taskGroupManager = new TaskGroupManager();
-taskGroupManager.ready();
-
 const profileManager = new ProfileManager();
 profileManager.ready();
 
 const proxySetManager = new ProxySetManager();
 proxySetManager.ready();
+
+const taskGroupFactory = new TaskGroupFactory(profileManager, proxySetManager);
+
+const taskGroupManager = new TaskGroupManager(taskGroupFactory);
+taskGroupManager.ready();
 
 // const flCAEvents = new FootLockerEvents(StoreType.FootlockerCA);
 // flCAEvents.initEvents();

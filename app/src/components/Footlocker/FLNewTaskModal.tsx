@@ -1,10 +1,9 @@
+import { ProfileChannel, ProxySetChannel } from '@core/IpcChannels';
+import { IProfile } from '@core/Profile';
+import { IProxySet } from '@core/ProxySet';
 import { Button, Checkbox, Col, DatePicker, Form, Input, InputNumber, Modal, Row, Select, TimePicker } from 'antd';
-import React, { Fragment, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { CreditCard, FLTaskData } from '../../interfaces/TaskInterfaces';
-import { FootlockerEncryption } from '../../services/Encryption/FootlockerEncryption';
-import { getProfiles } from '../../services/Profile/ProfileService';
-import { getProxySets } from '../../services/Proxy/ProxyService';
+import React, { Fragment, useEffect, useState } from 'react';
+import { FLTaskData } from '../../interfaces/TaskInterfaces';
 import { getSizes } from '../../services/task/TaskUtils';
 const validateMessages = {
     required: '',
@@ -28,35 +27,33 @@ const FLNewTaskModal = (props: any) => {
 
     const [form] = Form.useForm<FLTaskData>();
 
-    const profiles = useSelector(getProfiles);
-    const optionsProfiles = Object.entries(profiles).map(([key, profile]) => {
-        return { label: profile.name, value: profile.name };
+    const [profiles, setProfiles] = useState<IProfile[]>([]);
+    const [proxySets, setProxySets] = useState<IProxySet[]>([]);
+
+    useEffect(() => {
+        window.ElectronBridge.invoke(ProfileChannel.getAllProfiles).then((data: IProfile[]) => {
+            setProfiles(data);
+        });
+
+        window.ElectronBridge.invoke(ProxySetChannel.getAllProxySets).then((data: IProxySet[]) => {
+            setProxySets(data);
+        });
+
+        return () => {};
+    }, []);
+
+    const optionsProfiles = profiles.map((profile) => {
+        return { label: profile.profileName, value: profile.profileName };
     });
 
-    const proxies = useSelector(getProxySets);
-    let proxiesOptions: any = Object.keys(proxies).map((proxySetName) => {
-        return { label: proxySetName, value: proxySetName };
+    let proxiesOptions: any = proxySets.map((proxySet) => {
+        return { label: proxySet.name, value: proxySet.name };
     });
+
     proxiesOptions = [...proxiesOptions, { label: 'No Proxies', value: null }];
 
-    const getProfileByname = (profName: string) => profiles[profName];
-
     const onFinishForm = async (data: FLTaskData) => {
-        const setData = await setTaskData(data);
-        onAdd(setData, quantity);
-    };
-
-    const setTaskData = async (data: FLTaskData) => {
-        const deviceId = localStorage.getItem('deviceId');
-        let currProf = getProfileByname(data.profileName);
-
-        const ccEncryptor = new FootlockerEncryption();
-        const encryptedPayment = await ccEncryptor.encrypt(currProf.payment as CreditCard);
-
-        currProf = { ...currProf, payment: encryptedPayment };
-        data = { ...data, deviceId: deviceId, profile: { ...currProf } };
-
-        return data;
+        onAdd(data, quantity);
     };
 
     const onManualTimeChange = (e: any) => {

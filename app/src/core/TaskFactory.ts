@@ -4,7 +4,7 @@ import { StoreInfo, StoreType } from './../constants/Stores';
 import { FLTaskData, TaskData, WalmartTaskData } from './../interfaces/TaskInterfaces';
 import { FootLockerTask } from './footlocker/FootLockerTask';
 import { ProfileManager } from './ProfileManager';
-import { IProxy, Proxy } from './Proxy';
+import { ProxySetManager } from './ProxySetManager';
 import { RequestInstance } from './RequestInstance';
 import { Task } from './Task';
 import { taskManager } from './TaskManager';
@@ -12,9 +12,11 @@ import { WalmartCATask } from './walmart/WalmartCATask';
 import { WalmartUSTask } from './walmart/WalmartUSTask';
 export class TaskFactory {
     private profileManager: ProfileManager;
+    private proxyManager: ProxySetManager;
 
-    constructor(profileManager: ProfileManager) {
+    constructor(profileManager: ProfileManager, proxyManager: ProxySetManager) {
         this.profileManager = profileManager;
+        this.proxyManager = proxyManager;
     }
     public createTask(storeType: StoreType, taskData: TaskData): Task {
         let task;
@@ -34,9 +36,9 @@ export class TaskFactory {
     public createFootlockerTask(storeType: StoreType, taskData: FLTaskData): Task {
         const store = STORES[storeType];
 
-        const axios = this.createRequestInstance(store, taskData.proxy, { timestamp: Date.now() });
+        const axios = this.createRequestInstance(store, { timestamp: Date.now() });
 
-        const flTask = new FootLockerTask(taskData.uuid, axios, taskData);
+        const flTask = new FootLockerTask(taskData.uuid, axios, taskData, this.profileManager, this.proxyManager);
 
         taskManager.register(taskData.uuid, flTask);
 
@@ -46,15 +48,15 @@ export class TaskFactory {
     private createWalmartTask(storeType: StoreType, taskData: WalmartTaskData): Task {
         const store = STORES[storeType];
 
-        const axios = this.createRequestInstance(store, taskData.proxy);
+        const axios = this.createRequestInstance(store);
 
         let wTask;
         switch (storeType) {
             case StoreType.WalmartCA:
-                wTask = new WalmartCATask(taskData.uuid, axios, taskData, this.profileManager);
+                wTask = new WalmartCATask(taskData.uuid, axios, taskData, this.profileManager, this.proxyManager);
                 break;
             case StoreType.WalmartUS:
-                wTask = new WalmartUSTask(taskData.uuid, axios, taskData, this.profileManager);
+                wTask = new WalmartUSTask(taskData.uuid, axios, taskData, this.profileManager, this.proxyManager);
                 break;
         }
 
@@ -63,17 +65,12 @@ export class TaskFactory {
         return wTask;
     }
 
-    private createRequestInstance(store: StoreInfo, proxy: IProxy | null, params?: any): RequestInstance {
+    private createRequestInstance(store: StoreInfo, params?: any): RequestInstance {
         const commonHeader = {
             'user-agent': UserAgentProvider.randomUserAgent(),
         };
-        const axios = new RequestInstance(
-            store.baseURL,
-            params,
-            commonHeader,
-            proxy ? new Proxy(proxy.hostname, proxy.port, proxy.user, proxy.password) : undefined,
-        );
+        const requestInstance = new RequestInstance(store.baseURL, params, commonHeader);
 
-        return axios;
+        return requestInstance;
     }
 }

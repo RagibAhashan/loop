@@ -15,18 +15,20 @@ export interface ITaskGroup {
 export type TaskMap = Map<string, Task>;
 
 export class TaskGroup implements ITaskGroup {
+    private taskFactory: TaskFactory;
     name: string;
     tasks: TaskMap;
     storeType: StoreType;
 
-    constructor(name: string, storeType: StoreType) {
+    constructor(name: string, storeType: StoreType, taskFactory: TaskFactory) {
         this.name = name;
         this.storeType = storeType;
         this.tasks = new Map();
+        this.taskFactory = taskFactory;
     }
 
     addTasks(taskData: TaskData): void {
-        const newTask = TaskFactory.createTask(this.storeType, taskData);
+        const newTask = this.taskFactory.createTask(this.storeType, taskData);
         const uuid = newTask.taskData.uuid;
         //Should never happen
         if (this.tasks.has(uuid)) {

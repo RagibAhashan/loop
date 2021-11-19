@@ -1,3 +1,4 @@
+import { ProxySetManager } from '@core/ProxySetManager';
 import { WalmartEncryption } from '../../services/Encryption/WalmartEncryption';
 import { MESSAGES } from '../constants/Constants';
 import {
@@ -26,8 +27,14 @@ const log = debug.extend('WalmartCATask');
 export class WalmartCATask extends Task {
     public taskData: WalmartTaskData;
 
-    constructor(uuid: string, requestInstance: RequestInstance, taskData: WalmartTaskData, profileManger: ProfileManager) {
-        super(uuid, requestInstance, taskData, profileManger);
+    constructor(
+        uuid: string,
+        requestInstance: RequestInstance,
+        taskData: WalmartTaskData,
+        profileManger: ProfileManager,
+        proxyManager: ProxySetManager,
+    ) {
+        super(uuid, requestInstance, taskData, profileManger, proxyManager);
         this.taskData = taskData;
     }
 

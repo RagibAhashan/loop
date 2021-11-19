@@ -11,9 +11,11 @@ const log = debug.extend('TaskGroupManager');
 export type TaskGroupMap = Map<string, TaskGroup>;
 export class TaskGroupManager {
     private taskGroupMap: TaskGroupMap;
+    private taskGroupFactory: TaskGroupFactory;
 
-    constructor() {
+    constructor(taskGroupFactory: TaskGroupFactory) {
         this.taskGroupMap = new Map();
+        this.taskGroupFactory = taskGroupFactory;
     }
 
     public ready(): void {
@@ -26,7 +28,7 @@ export class TaskGroupManager {
             return null;
         }
 
-        const newGroup = TaskGroupFactory.createTaskGroup(name, storeType);
+        const newGroup = this.taskGroupFactory.createTaskGroup(name, storeType);
 
         this.taskGroupMap.set(name, newGroup);
         return this.getAllTaskGroups();
@@ -96,6 +98,7 @@ export class TaskGroupManager {
         ipcMain.on(TaskGroupChannel.addTaskGroup, (event, name: string, storeType: StoreType) => {
             const taskGroups = this.addTaskGroup(name, storeType);
             if (taskGroups) {
+                log('Replying task group update after add');
                 event.reply(TaskGroupChannel.taskGroupUpdated, taskGroups);
             } else {
                 event.reply(TaskGroupChannel.taskGroupError);
@@ -115,7 +118,7 @@ export class TaskGroupManager {
             const currentTaskGroup = this.getTaskGroup(name);
             if (currentTaskGroup) {
                 const tasks = currentTaskGroup.getAllTasks();
-                event.reply(TaskGroupChannel.onTaskGroupSelected, currentTaskGroup, tasks);
+                event.reply(TaskGroupChannel.onTaskGroupSelected, currentTaskGroup as ITaskGroup, tasks);
             }
         });
 

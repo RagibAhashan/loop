@@ -13,6 +13,7 @@ const ProfileContainer: React.FunctionComponent = () => {
     const [currentProfileName, setCurrentProfileName] = useState<string>();
 
     useEffect(() => {
+        console.log('init profile container');
         window.ElectronBridge.invoke(ProfileChannel.getAllProfiles).then((data: IProfile[]) => {
             setProfiles(data);
         });
@@ -21,8 +22,9 @@ const ProfileContainer: React.FunctionComponent = () => {
         window.ElectronBridge.on(ProfileChannel.profileError, handleProfileExists);
 
         return () => {
-            window.ElectronBridge.removeListener(ProfileChannel.profileUpdated, handleProfileUpdated);
-            window.ElectronBridge.removeListener(ProfileChannel.profileError, handleProfileExists);
+            console.log('destroy profile container');
+            window.ElectronBridge.removeAllListeners(ProfileChannel.profileUpdated);
+            window.ElectronBridge.removeAllListeners(ProfileChannel.profileError);
         };
     }, []);
 

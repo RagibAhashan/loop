@@ -1,14 +1,15 @@
+import { IProfile } from '@core/Profile';
+import { IProxySet } from '@core/ProxySet';
 import { Button, Col, Form, Input, InputNumber, Modal, Row, Select } from 'antd';
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
 import { WalmartTaskData } from '../../interfaces/TaskInterfaces';
-import { getProfiles } from '../../services/Profile/ProfileService';
-import { getProxySets } from '../../services/Proxy/ProxyService';
 
 interface Props {
     showModal: boolean;
     setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
     onAdd: (data: WalmartTaskData, quantity: number) => void;
+    proxySets: IProxySet[];
+    profiles: IProfile[];
 }
 const validateMessages = {
     required: '',
@@ -23,36 +24,25 @@ const buttonStyle: React.CSSProperties = {
 };
 
 const WalmartNewTaskModal: React.FunctionComponent<Props> = (props) => {
-    const { showModal, setShowModal, onAdd } = props;
+    const { showModal, setShowModal, onAdd, profiles, proxySets } = props;
 
     const [quantity, setQuantity] = useState(1);
-
     const [form] = Form.useForm<WalmartTaskData>();
 
-    const profiles = useSelector(getProfiles);
-    const optionsProfiles = Object.entries(profiles).map(([key, profile]) => {
-        return { label: profile.name, value: profile.name };
+    let optionsProfiles = profiles.map((profile) => {
+        return { label: profile.profileName, value: profile.profileName };
     });
 
-    const proxies = useSelector(getProxySets);
-    let proxiesOptions: any = Object.keys(proxies).map((proxySetName) => {
-        return { label: proxySetName, value: proxySetName };
+    let proxiesOptions: any = proxySets.map((proxySet) => {
+        return { label: proxySet.name, value: proxySet.name };
     });
+
     proxiesOptions = [...proxiesOptions, { label: 'No Proxies', value: null }];
-
-    const getProfileByname = (profName: string) => profiles[profName];
+    optionsProfiles = [...optionsProfiles, { label: 'No Profile', value: null }];
 
     const onFinishForm = async (data: WalmartTaskData) => {
-        const setData = await setTaskData(data);
-        onAdd(setData, quantity);
-    };
-
-    const setTaskData = async (data: WalmartTaskData) => {
-        const currProf = getProfileByname(data.profileName);
-
-        data = { ...data, profile: { ...currProf } };
-
-        return data;
+        console.log('adding task data walmart', data);
+        onAdd(data, quantity);
     };
 
     return (
@@ -82,7 +72,7 @@ const WalmartNewTaskModal: React.FunctionComponent<Props> = (props) => {
                         </Row>
                         <Row gutter={GUTTER}>
                             <Col span={12}>
-                                <Form.Item name="profileName" rules={[{ required: true }]}>
+                                <Form.Item name="profileName" rules={[{ required: false }]}>
                                     <Select placeholder="Profile" allowClear options={optionsProfiles} />
                                 </Form.Item>
                             </Col>

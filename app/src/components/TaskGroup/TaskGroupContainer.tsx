@@ -10,6 +10,7 @@ const TaskGroupContainer: React.FunctionComponent = () => {
     const [showModal, setShowModal] = useState<boolean>(false);
 
     useEffect(() => {
+        console.log('task group container init');
         window.ElectronBridge.invoke(TaskGroupChannel.getAllTaskGroups).then((data: ITaskGroup[]) => {
             setTaskGroups(data);
         });
@@ -18,8 +19,9 @@ const TaskGroupContainer: React.FunctionComponent = () => {
         window.ElectronBridge.on(TaskGroupChannel.taskGroupError, handleTaskGroupExists);
 
         return () => {
-            window.ElectronBridge.removeListener(TaskGroupChannel.taskGroupUpdated, handleTaskGroupUpdated);
-            window.ElectronBridge.removeListener(TaskGroupChannel.taskGroupError, handleTaskGroupExists);
+            console.log('destryoing');
+            window.ElectronBridge.removeAllListeners(TaskGroupChannel.taskGroupUpdated);
+            window.ElectronBridge.removeAllListeners(TaskGroupChannel.taskGroupError);
         };
     }, []);
 

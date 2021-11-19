@@ -1,7 +1,9 @@
 import AddTaskAction from '@components/AddTaskAction/AddTaskAction';
 import TaskList from '@components/TaskList/TaskList';
+import { IProfile } from '@core/Profile';
+import { IProxySet } from '@core/ProxySet';
 import { Task } from '@core/Task';
-import { TaskGroup } from '@core/TaskGroup';
+import { ITaskGroup } from '@core/TaskGroup';
 import { Col, Row, Select } from 'antd';
 import React from 'react';
 import WalmartHeaders from './WalmartHeaders';
@@ -20,11 +22,13 @@ for (let i = 4; i < 14; i += 0.5) {
 
 interface Props {
     tasks: Task[];
-    taskGroup: TaskGroup;
+    taskGroup: ITaskGroup;
+    profiles: IProfile[];
+    proxySets: IProxySet[];
 }
 
 const WalmartTaskContainer: React.FunctionComponent<Props> = (props) => {
-    const { tasks, taskGroup } = props;
+    const { tasks, taskGroup, profiles, proxySets } = props;
 
     const ROW_GUTTER: [number, number] = [24, 0];
 
@@ -36,7 +40,12 @@ const WalmartTaskContainer: React.FunctionComponent<Props> = (props) => {
 
             <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10, width: '100%' }}>
                 <Col span={3}>
-                    <AddTaskAction taskGroup={taskGroup} NewTaskModalComponent={WalmartNewTaskModal}></AddTaskAction>
+                    <AddTaskAction
+                        proxySets={proxySets}
+                        profiles={profiles}
+                        taskGroup={taskGroup}
+                        NewTaskModalComponent={WalmartNewTaskModal}
+                    ></AddTaskAction>
                 </Col>
 
                 {/* <Col span={3}>
