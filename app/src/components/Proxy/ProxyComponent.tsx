@@ -1,6 +1,6 @@
 import { DeleteFilled } from '@ant-design/icons';
 import { ProxySetChannel } from '@core/IpcChannels';
-import { Proxy } from '@core/Proxy';
+import { IProxy } from '@core/Proxy';
 import { Button, Col, Row } from 'antd';
 import React from 'react';
 
@@ -30,7 +30,7 @@ const deleteButton = {
 };
 
 interface Props {
-    proxy: Proxy;
+    proxy: IProxy;
     style: any;
     selectedProxySetName: string;
 }

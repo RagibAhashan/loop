@@ -1,10 +1,10 @@
-import { Task } from '@core/Task';
+import { ITask } from '@core/Task';
 import { Empty } from 'antd';
 import React from 'react';
 import { FixedSizeList } from 'react-window';
 
 interface Props {
-    tasks: Task[];
+    tasks: ITask[];
     TaskComponent: React.ComponentType<any>;
 }
 

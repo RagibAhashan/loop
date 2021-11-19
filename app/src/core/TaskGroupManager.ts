@@ -1,4 +1,4 @@
-import { Task } from '@core/Task';
+import { ITask } from '@core/Task';
 import { TaskData } from '@interfaces/TaskInterfaces';
 import { ipcMain } from 'electron';
 import { StoreType } from './../constants/Stores';
@@ -49,10 +49,12 @@ export class TaskGroupManager {
     }
 
     private getAllTaskGroups(): ITaskGroup[] {
-        return Array.from(this.taskGroupMap.values());
+        const taskGroups: ITaskGroup[] = [];
+        this.taskGroupMap.forEach((taskGroup) => taskGroups.push(taskGroup.getValue()));
+        return taskGroups;
     }
 
-    private addTaskToGroup(groupName: string, taskDatas: TaskData[]): Task[] | null {
+    private addTaskToGroup(groupName: string, taskDatas: TaskData[]): ITask[] | null {
         if (!this.taskGroupMap.has(groupName)) {
             log('[Group %s not found]', groupName);
             return null;
@@ -66,7 +68,7 @@ export class TaskGroupManager {
         return taskGroup.getAllTasks();
     }
 
-    private removeTaskFromGroup(groupName: string, uuids: string[]): Task[] | null {
+    private removeTaskFromGroup(groupName: string, uuids: string[]): ITask[] | null {
         if (!this.taskGroupMap.has(groupName)) {
             log('[Group %s not found]', groupName);
             return null;
@@ -118,12 +120,13 @@ export class TaskGroupManager {
             const currentTaskGroup = this.getTaskGroup(name);
             if (currentTaskGroup) {
                 const tasks = currentTaskGroup.getAllTasks();
-                event.reply(TaskGroupChannel.onTaskGroupSelected, currentTaskGroup as ITaskGroup, tasks);
+                event.reply(TaskGroupChannel.onTaskGroupSelected, currentTaskGroup.getValue(), tasks);
             }
         });
 
         ipcMain.on(TaskGroupChannel.addTaskToGroup, (event, name: string, tasks: TaskData[]) => {
             const taskList = this.addTaskToGroup(name, tasks);
+
             if (taskList) {
                 event.reply(TaskGroupChannel.tasksUpdated, taskList);
             } else {

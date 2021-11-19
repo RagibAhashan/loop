@@ -13,7 +13,7 @@ import { RequestInstance } from './RequestInstance';
 
 export const CANCEL_ERROR = 'Cancel';
 
-interface ITask {
+export interface ITask {
     taskData: TaskData;
     userProfile: Profile;
     proxy: Proxy;
@@ -50,6 +50,11 @@ export abstract class Task extends EventEmitter implements ITask {
     }
 
     abstract doTask(): void;
+
+    // Return a simple interface to be send to the view
+    public getValue(): ITask {
+        return { proxy: this.proxy, taskData: this.taskData, userProfile: this.userProfile };
+    }
 
     protected loadUserProfile(): void {
         const profile = this.profileManager.getProfileMap().get(this.taskData.profileName);

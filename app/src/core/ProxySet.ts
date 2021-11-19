@@ -1,12 +1,8 @@
-/*
-A proxy set regroups proxies
-*/
-
-import { Proxy } from './Proxy';
+import { IProxy, Proxy } from './Proxy';
+import { RingBuffer } from './RingBufffer';
 
 export interface IProxySet {
     name: string;
-    proxies: ProxyMap;
 }
 
 // Map of name (hostname:port) to proxy
@@ -23,34 +19,45 @@ export class ProxySet implements IProxySet {
         this.proxiesRingBuffer = new RingBuffer();
     }
 
-    pickProxy(): Proxy {
+    private proxyMapToArray(): Proxy[] {
+        return Array.from(this.proxies.values());
+    }
+
+    // Returns a simple data format for the view
+    public getValue(): IProxySet {
+        return { name: this.name };
+    }
+
+    public pickProxy(): Proxy {
         return this.proxiesRingBuffer.next();
     }
 
-    addProxy(proxy: Proxy): void {
+    public addProxy(proxy: Proxy): void {
         this.proxies.set(proxy.host, proxy);
         this.proxiesRingBuffer.fillBuffer(proxy);
     }
 
-    removeProxy(proxyHost: string): void {
+    public removeProxy(proxyHost: string): void {
         this.proxies.delete(proxyHost);
-        this.proxiesRingBuffer.initBuffer(this.getAllProxies());
+        this.proxiesRingBuffer.initBuffer(this.proxyMapToArray());
     }
 
-    removeAllProxies(): void {
+    public removeAllProxies(): void {
         this.proxies = new Map();
         this.proxiesRingBuffer.clearBuffer();
     }
 
-    getAllProxies(): Proxy[] {
-        return Array.from(this.proxies.values());
+    public getAllProxies(): IProxy[] {
+        const proxies: IProxy[] = [];
+        this.proxies.forEach((proxy) => proxies.push(proxy.getValue()));
+        return proxies;
     }
 
-    editName(newName: string): void {
+    public editName(newName: string): void {
         this.name = newName;
     }
 
-    testProxies(proxyHosts: string[]) {
+    public testProxies(proxyHosts: string[]) {
         for (const proxyHost of proxyHosts) {
             const proxy = this.proxies.get(proxyHost);
             proxy.testProxy();

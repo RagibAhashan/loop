@@ -4,12 +4,12 @@ import { StoreType } from '@constants/Stores';
 import { ProfileChannel, ProxySetChannel, TaskGroupChannel } from '@core/IpcChannels';
 import { IProfile } from '@core/Profile';
 import { IProxySet } from '@core/ProxySet';
-import { Task } from '@core/Task';
+import { ITask } from '@core/Task';
 import { ITaskGroup } from '@core/TaskGroup';
 import React, { useEffect, useState } from 'react';
 
 const TaskContainer: React.FunctionComponent = () => {
-    const [tasks, setTasks] = useState<Task[]>([]);
+    const [tasks, setTasks] = useState<ITask[]>([]);
     const [currentSelectedTaskGroup, setCurrentSelectedTaskGroup] = useState<ITaskGroup>();
 
     const [profiles, setProfiles] = useState<IProfile[]>([]);
@@ -17,6 +17,7 @@ const TaskContainer: React.FunctionComponent = () => {
 
     useEffect(() => {
         window.ElectronBridge.on(TaskGroupChannel.onTaskGroupSelected, handleOnTaskGroupSelected);
+        window.ElectronBridge.on(TaskGroupChannel.tasksUpdated, handleTasksUpdated);
 
         window.ElectronBridge.invoke(ProfileChannel.getAllProfiles).then((data: IProfile[]) => {
             setProfiles(data);
@@ -27,12 +28,17 @@ const TaskContainer: React.FunctionComponent = () => {
         });
 
         return () => {
-            window.ElectronBridge.removeListener(TaskGroupChannel.onTaskGroupSelected, handleOnTaskGroupSelected);
+            window.ElectronBridge.removeAllListeners(TaskGroupChannel.onTaskGroupSelected);
+            window.ElectronBridge.removeAllListeners(TaskGroupChannel.tasksUpdated);
         };
     }, []);
 
-    const handleOnTaskGroupSelected = (event, taskGroup: ITaskGroup, tasks: Task[]) => {
+    const handleOnTaskGroupSelected = (event, taskGroup: ITaskGroup, tasks: ITask[]) => {
         setCurrentSelectedTaskGroup(taskGroup);
+        setTasks(tasks);
+    };
+
+    const handleTasksUpdated = (event, tasks: ITask[]) => {
         setTasks(tasks);
     };
 

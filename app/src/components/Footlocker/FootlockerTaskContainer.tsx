@@ -1,6 +1,6 @@
 import { IProfile } from '@core/Profile';
 import { IProxySet } from '@core/ProxySet';
-import { Task } from '@core/Task';
+import { ITask } from '@core/Task';
 import { ITaskGroup } from '@core/TaskGroup';
 import { Col, Row, Select } from 'antd';
 import React from 'react';
@@ -21,7 +21,7 @@ for (let i = 4; i < 14; i += 0.5) {
 }
 
 interface Props {
-    tasks: Task[];
+    tasks: ITask[];
     taskGroup: ITaskGroup;
     profiles: IProfile[];
     proxySets: IProxySet[];

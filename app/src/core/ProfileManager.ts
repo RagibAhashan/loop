@@ -48,7 +48,9 @@ export class ProfileManager {
     }
 
     private getAllProfiles(): IProfile[] {
-        return Array.from(this.profileMap.values());
+        const profiles: IProfile[] = [];
+        this.profileMap.forEach((profile) => profiles.push(profile.getValue()));
+        return profiles;
     }
 
     private editProfileName(oldName: string, newName: string): void {

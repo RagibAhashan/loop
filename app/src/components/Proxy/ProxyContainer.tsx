@@ -1,5 +1,5 @@
 import { ProxySetChannel } from '@core/IpcChannels';
-import { Proxy } from '@core/Proxy';
+import { IProxy } from '@core/Proxy';
 import { Button, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 import AddProxyModal from './AddProxyModal';
@@ -9,7 +9,7 @@ import ProxyList from './ProxyList';
 const { Title } = Typography;
 
 const ProxyContainer: React.FunctionComponent = () => {
-    const [proxies, setProxies] = useState<Proxy[]>([]);
+    const [proxies, setProxies] = useState<IProxy[]>([]);
     const [selectedProxySetName, setSelectedProxySetName] = useState(null);
 
     const [showAddModal, setShowAddModal] = useState<boolean>(false);
@@ -24,12 +24,12 @@ const ProxyContainer: React.FunctionComponent = () => {
         };
     }, []);
 
-    const handleOnProxySetSelected = (_, proxySetName: string, proxies: Proxy[]) => {
+    const handleOnProxySetSelected = (_, proxySetName: string, proxies: IProxy[]) => {
         setProxies(proxies);
         setSelectedProxySetName(proxySetName);
     };
 
-    const handleOnProxisUpdated = (_, proxies: Proxy[]) => {
+    const handleOnProxisUpdated = (_, proxies: IProxy[]) => {
         setProxies(proxies);
     };
 

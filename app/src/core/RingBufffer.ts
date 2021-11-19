@@ -1,10 +1,11 @@
-class RingBuffer<T> {
+export class RingBuffer<T> {
     private size: number;
     private index: number;
     private buffer: T[];
 
     constructor(stuff?: T[]) {
         this.index = 0;
+        this.buffer = [];
         if (stuff) {
             this.initBuffer(stuff);
         }

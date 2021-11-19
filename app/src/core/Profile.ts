@@ -38,15 +38,19 @@ export class Profile implements IProfile {
         this.profileData = profileData;
     }
 
-    editProfileName(name: string) {
+    public getValue(): IProfile {
+        return { profileData: this.profileData, profileName: this.profileName };
+    }
+
+    public editProfileName(name: string) {
         this.profileName = name;
     }
 
-    editShipping(key: string, value: string) {
+    public editShipping(key: string, value: string) {
         this.profileData.shipping[key] = value;
     }
 
-    editBilling(key: string, value: string) {
+    public editBilling(key: string, value: string) {
         this.profileData.billing[key] = value;
     }
 }

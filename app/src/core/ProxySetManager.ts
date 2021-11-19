@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import { ProxySetChannel } from './IpcChannels';
 import { debug } from './Log';
-import { Proxy } from './Proxy';
+import { IProxy, Proxy } from './Proxy';
 import { ProxyFactory } from './ProxyFactory';
 import { IProxySet, ProxySet } from './ProxySet';
 import { ProxySetFactory } from './ProxySetFactory';
@@ -62,14 +62,16 @@ export class ProxySetManager {
     }
 
     private getAllProxySets(): IProxySet[] {
-        return Array.from(this.proxySetMap.values());
+        const proxySets: IProxySet[] = [];
+        this.proxySetMap.forEach((proxySet) => proxySets.push(proxySet.getValue()));
+        return proxySets;
     }
 
     /**
      *
      * @param hosts Array of string containing proxies in this format : host:port:user:pass
      */
-    private addProxyToSet(setName: string, proxies: string[]): Proxy[] | null {
+    private addProxyToSet(setName: string, proxies: string[]): IProxy[] | null {
         if (!this.proxySetMap.has(setName)) {
             log('[ProxySet %s not found]', name);
             return null;
@@ -89,7 +91,7 @@ export class ProxySetManager {
      *
      * @param hosts Array of string containing proxies full host = hostname:port
      */
-    private removeProxyFromSet(setName: string, proxiesHost: string[]): Proxy[] | null {
+    private removeProxyFromSet(setName: string, proxiesHost: string[]): IProxy[] | null {
         if (!this.proxySetMap.has(setName)) {
             log('[ProxySet %s not found]', name);
             return null;

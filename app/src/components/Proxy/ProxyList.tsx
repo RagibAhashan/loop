@@ -1,11 +1,11 @@
-import { Proxy } from '@core/Proxy';
+import { IProxy } from '@core/Proxy';
 import { Empty } from 'antd';
 import React from 'react';
 import { FixedSizeList } from 'react-window';
 import ProxyComponent from './ProxyComponent';
 
 interface Props {
-    proxies: Proxy[];
+    proxies: IProxy[];
     selectedProxySetName: string;
 }
 const ProxyList: React.FunctionComponent<Props> = (props) => {

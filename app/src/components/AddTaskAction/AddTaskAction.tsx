@@ -1,3 +1,4 @@
+import { TaskGroupChannel } from '@core/IpcChannels';
 import { IProfile } from '@core/Profile';
 import { IProxySet } from '@core/ProxySet';
 import { ITaskGroup } from '@core/TaskGroup';
@@ -25,8 +26,8 @@ const AddTaskAction: React.FunctionComponent<Props> = (props) => {
             taskArr.push(newTask);
         }
 
-        console.log('adding task to ', taskGroup, taskGroup.name, taskGroup.tasks);
-        // window.ElectronBridge.send(TaskGroupChannel.addTaskToGroup, taskGroup.name, taskArr);
+        console.log('adding task to ', taskGroup, taskGroup.name);
+        window.ElectronBridge.send(TaskGroupChannel.addTaskToGroup, taskGroup.name, taskArr);
     };
 
     return (

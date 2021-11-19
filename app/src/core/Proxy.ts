@@ -5,7 +5,7 @@ export interface IProxy {
     port: string;
     user: string;
     password: string;
-    httpsAgent: HttpsProxyAgent;
+    host: string;
 }
 export class Proxy implements IProxy {
     hostname: string;
@@ -30,7 +30,12 @@ export class Proxy implements IProxy {
         this.httpsAgent = new HttpsProxyAgent({ hostname: this.hostname, port: this.port, auth: auth });
     }
 
-    getAgent(): HttpsProxyAgent {
+    // Returns a simple data format for the view
+    public getValue(): IProxy {
+        return { hostname: this.hostname, password: this.password, user: this.user, port: this.port, host: this.host };
+    }
+
+    public getAgent(): HttpsProxyAgent {
         return this.httpsAgent;
     }
 
