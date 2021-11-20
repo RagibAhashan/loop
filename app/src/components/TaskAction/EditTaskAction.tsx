@@ -5,12 +5,11 @@ import React, { useEffect, useState } from 'react';
 import { editButton } from '../../styles/Buttons';
 
 interface Props {
-    uuid: string;
     EditTaskModalComponent: React.ComponentType<any>;
-    currentTask: ITask;
+    task: ITask;
 }
 const EditTaskAction: React.FunctionComponent<Props> = (props) => {
-    const { EditTaskModalComponent, currentTask } = props;
+    const { EditTaskModalComponent, task } = props;
 
     const [showModal, setShowModal] = useState(false);
 
@@ -21,8 +20,8 @@ const EditTaskAction: React.FunctionComponent<Props> = (props) => {
     };
 
     useEffect(() => {
-        // get current task by uuid;
-    });
+        console.log('editing current task', task);
+    }, []);
 
     // const onModalClose = () => {
     //     setVisibleModal(false);
@@ -48,7 +47,7 @@ const EditTaskAction: React.FunctionComponent<Props> = (props) => {
         <div>
             <Button onClick={onEditClick} style={editButton} size="small" icon={<EditFilled />} />
 
-            <EditTaskModalComponent massEdit={false} showModal={showModal} setShowModal={setShowModal} onEdit={handleEditTask} task={currentTask} />
+            <EditTaskModalComponent massEdit={false} showModal={showModal} setShowModal={setShowModal} onEdit={handleEditTask} task={task} />
         </div>
     );
 };

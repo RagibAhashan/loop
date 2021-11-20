@@ -13,7 +13,7 @@ interface Props {
 }
 
 const EditAllTasksAction: React.FunctionComponent<Props> = (props) => {
-    const { EditTaskModalComponent } = props;
+    const { EditTaskModalComponent, proxySets, profiles } = props;
 
     const [showModal, setShowModal] = useState(false);
 

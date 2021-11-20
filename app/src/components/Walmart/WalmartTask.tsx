@@ -1,4 +1,5 @@
 // import styles from './sidebar.module.css';
+import TaskActions from '@components/TaskAction/TaskAction';
 import { WalmartCATask } from '@core/walmart/WalmartCATask';
 import { WalmartUSTask } from '@core/walmart/WalmartUSTask';
 import { Col, Row, Tooltip } from 'antd';
@@ -34,15 +35,6 @@ const WalmartTask: React.FunctionComponent<Props> = (props) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const runButton = () => {
-        return <div> run button </div>;
-        // return isRunning ? (
-        //     <StopTaskAction storeKey={storeKey} uuid={uuid}></StopTaskAction>
-        // ) : (
-        //     <StartTaskAction storeKey={storeKey} uuid={uuid}></StartTaskAction>
-        // );
-    };
-
     return (
         <div style={style}>
             <Row
@@ -77,13 +69,7 @@ const WalmartTask: React.FunctionComponent<Props> = (props) => {
                 <Col span={6}>{/* <TaskStatus storeKey={storeKey} uuid={uuid}></TaskStatus> */}</Col>
 
                 <Col flex="auto" span={2}>
-                    <div style={{ display: 'flex' }}>
-                        <div>{runButton()}</div>
-                        <div>
-                            {/* <EditTaskAction storeKey={storeKey} uuid={uuid} EditTaskModalComponent={WalmartEditTaskModal}></EditTaskAction> */}
-                        </div>
-                        <div>{/* <DeleteTaskAction storeKey={storeKey} uuid={uuid}></DeleteTaskAction> */}</div>
-                    </div>
+                    <TaskActions task={task}></TaskActions>
                 </Col>
             </Row>
         </div>

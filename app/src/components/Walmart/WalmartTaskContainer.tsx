@@ -32,6 +32,7 @@ interface Props {
 const WalmartTaskContainer: React.FunctionComponent<Props> = (props) => {
     const { tasks, taskGroup, profiles, proxySets } = props;
 
+    console.log('walmart task container', profiles, proxySets);
     const ROW_GUTTER: [number, number] = [24, 0];
 
     return (

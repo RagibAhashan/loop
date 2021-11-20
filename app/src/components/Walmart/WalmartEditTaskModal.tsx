@@ -23,6 +23,8 @@ interface Props {
 export const WalmartEditTaskModal: React.FunctionComponent<Props> = (props) => {
     const { showModal, setShowModal, task, proxySets, profiles, massEdit } = props;
 
+    console.log('wal edit modal', proxySets, profiles);
+
     const [form] = useForm<WalmartTaskData>();
 
     let optionsProfiles = profiles.map((profile) => {
