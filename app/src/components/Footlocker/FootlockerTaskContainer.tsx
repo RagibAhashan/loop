@@ -36,7 +36,7 @@ const FootlockerTaskContainer: React.FunctionComponent<Props> = (props) => {
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'auto' }}>
             <FLHeaders />
 
-            <TaskList tasks={tasks} TaskComponent={FLTask} />
+            <TaskList groupName={taskGroup.name} profiles={profiles} proxySets={proxySets} tasks={tasks} TaskComponent={FLTask} />
 
             <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10, width: '100%' }}>
                 <Col span={3}>

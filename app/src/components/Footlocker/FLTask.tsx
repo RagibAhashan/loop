@@ -1,6 +1,8 @@
 // import styles from './sidebar.module.css';
 import TaskActions from '@components/TaskAction/TaskAction';
 import { FootLockerTask } from '@core/footlocker/FootLockerTask';
+import { IProfile } from '@core/Profile';
+import { IProxySet } from '@core/ProxySet';
 import { Col, Row, Tooltip } from 'antd';
 import React, { useEffect } from 'react';
 import TaskStatus from '../TaskStatus/TaskStatus';
@@ -8,10 +10,13 @@ import TaskStatus from '../TaskStatus/TaskStatus';
 interface Props {
     task: FootLockerTask;
     style: any;
+    proxySets: IProxySet[];
+    profiles: IProfile[];
+    groupName: string;
 }
 
 const FLTask: React.FunctionComponent<Props> = (props) => {
-    const { task, style } = props;
+    const { task, style, profiles, proxySets, groupName } = props;
 
     const isRunning = false;
 
@@ -73,7 +78,7 @@ const FLTask: React.FunctionComponent<Props> = (props) => {
                 </Col>
 
                 <Col flex="auto" span={2}>
-                    <TaskActions task={task}></TaskActions>
+                    <TaskActions groupName={groupName} profiles={profiles} proxySets={proxySets} task={task}></TaskActions>
                 </Col>
             </Row>
         </div>

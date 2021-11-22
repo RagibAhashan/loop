@@ -21,9 +21,7 @@ interface Props {
 }
 
 export const WalmartEditTaskModal: React.FunctionComponent<Props> = (props) => {
-    const { showModal, setShowModal, task, proxySets, profiles, massEdit } = props;
-
-    console.log('wal edit modal', proxySets, profiles);
+    const { proxySets, profiles, showModal, setShowModal, task, massEdit } = props;
 
     const [form] = useForm<WalmartTaskData>();
 
@@ -31,7 +29,7 @@ export const WalmartEditTaskModal: React.FunctionComponent<Props> = (props) => {
         return { label: profile.profileName, value: profile.profileName };
     });
 
-    let proxiesOptions: any = proxySets.map((proxySet) => {
+    let proxiesOptions = proxySets.map((proxySet) => {
         return { label: proxySet.name, value: proxySet.name };
     });
 
@@ -83,15 +81,20 @@ export const WalmartEditTaskModal: React.FunctionComponent<Props> = (props) => {
             <Form form={form} validateMessages={validateMessages}>
                 <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
                     <Row gutter={GUTTER}>
-                        <Col span={24}>
-                            <Form.Item name="productURL" rules={[{ required: true }]}>
-                                <Input placeholder="Product URL"></Input>
+                        <Col span={12}>
+                            <Form.Item name="productSKU" rules={[{ required: true }]}>
+                                <Input placeholder="Product SKU"></Input>
+                            </Form.Item>
+                        </Col>
+                        <Col span={12}>
+                            <Form.Item name="offerId" rules={[{ required: true }]}>
+                                <Input placeholder="Offer ID"></Input>
                             </Form.Item>
                         </Col>
                     </Row>
                     <Row gutter={GUTTER}>
                         <Col span={12}>
-                            <Form.Item name="profileName" rules={[{ required: true }]}>
+                            <Form.Item name="profileName" rules={[{ required: false }]}>
                                 <Select placeholder="Profile" allowClear options={optionsProfiles} />
                             </Form.Item>
                         </Col>

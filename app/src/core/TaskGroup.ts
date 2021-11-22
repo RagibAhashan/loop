@@ -49,6 +49,11 @@ export class TaskGroup implements ITaskGroup {
         }
     }
 
+    public removeAllTasks(): void {
+        this.tasks.get('safsadf');
+        this.tasks = new Map();
+    }
+
     public getAllTasks(): ITask[] {
         const tasks: ITask[] = [];
         this.tasks.forEach((task) => tasks.push(task.getValue()));

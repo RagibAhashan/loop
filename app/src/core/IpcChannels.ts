@@ -6,6 +6,7 @@ export enum TaskGroupChannel {
     taskGroupUpdated = 'dynasty:taskGroupUpdated',
     addTaskToGroup = 'dynasty:addTaskToGroup',
     removeTaskFromGroup = 'dynasty:removeTaskFromGroup',
+    removeAllTasksFromGroup = 'dynasty:removeAllTasksFromGroup',
     tasksUpdated = 'dynasty:tasksUpdated', // Event when tasks are added or removed to group
     onTaskGroupSelected = 'dynasty:onTaskGroupSelected',
     taskGroupError = 'dynasty:taskGroupError',

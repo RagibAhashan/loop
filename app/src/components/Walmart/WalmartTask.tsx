@@ -1,5 +1,7 @@
 // import styles from './sidebar.module.css';
 import TaskActions from '@components/TaskAction/TaskAction';
+import { IProfile } from '@core/Profile';
+import { IProxySet } from '@core/ProxySet';
 import { WalmartCATask } from '@core/walmart/WalmartCATask';
 import { WalmartUSTask } from '@core/walmart/WalmartUSTask';
 import { Col, Row, Tooltip } from 'antd';
@@ -8,9 +10,12 @@ import React, { useEffect } from 'react';
 interface Props {
     task: WalmartCATask | WalmartUSTask;
     style: any;
+    proxySets: IProxySet[];
+    profiles: IProfile[];
+    groupName: string;
 }
 const WalmartTask: React.FunctionComponent<Props> = (props) => {
-    const { task, style } = props;
+    const { task, style, proxySets, profiles, groupName } = props;
 
     const isRunning = false;
 
@@ -69,7 +74,7 @@ const WalmartTask: React.FunctionComponent<Props> = (props) => {
                 <Col span={6}>{/* <TaskStatus storeKey={storeKey} uuid={uuid}></TaskStatus> */}</Col>
 
                 <Col flex="auto" span={2}>
-                    <TaskActions task={task}></TaskActions>
+                    <TaskActions groupName={groupName} proxySets={proxySets} profiles={profiles} task={task}></TaskActions>
                 </Col>
             </Row>
         </div>

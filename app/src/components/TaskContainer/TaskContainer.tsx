@@ -15,7 +15,6 @@ const TaskContainer: React.FunctionComponent = () => {
     const [profiles, setProfiles] = useState<IProfile[]>([]);
     const [proxySets, setProxySets] = useState<IProxySet[]>([]);
 
-    console.log('taks container', profiles, proxySets);
     useEffect(() => {
         window.ElectronBridge.on(TaskGroupChannel.onTaskGroupSelected, handleOnTaskGroupSelected);
         window.ElectronBridge.on(TaskGroupChannel.tasksUpdated, handleTasksUpdated);

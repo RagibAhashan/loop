@@ -82,6 +82,19 @@ export class TaskGroupManager {
         return taskGroup.getAllTasks();
     }
 
+    private removeAllTasksFromGroup(groupName: string): ITask[] | null {
+        if (!this.taskGroupMap.has(groupName)) {
+            log('[Group %s not found]', groupName);
+            return null;
+        }
+
+        const taskGroup = this.taskGroupMap.get(groupName);
+
+        taskGroup.removeAllTasks();
+
+        return taskGroup.getAllTasks();
+    }
+
     private editTaskGroupName(oldName: string, newName: string): void {
         const taskGroup = this.taskGroupMap.get(oldName);
         taskGroup.editName(newName);
@@ -136,6 +149,15 @@ export class TaskGroupManager {
 
         ipcMain.on(TaskGroupChannel.removeTaskFromGroup, (event, name: string, uuids: string[]) => {
             const taskList = this.removeTaskFromGroup(name, uuids);
+            if (taskList) {
+                event.reply(TaskGroupChannel.tasksUpdated, taskList);
+            } else {
+                event.reply(TaskGroupChannel.taskGroupError, 'Error');
+            }
+        });
+
+        ipcMain.on(TaskGroupChannel.removeAllTasksFromGroup, (event, name: string) => {
+            const taskList = this.removeAllTasksFromGroup(name);
             if (taskList) {
                 event.reply(TaskGroupChannel.tasksUpdated, taskList);
             } else {

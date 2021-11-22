@@ -1,4 +1,5 @@
 import AddTaskAction from '@components/AddTaskAction/AddTaskAction';
+import DeleteAllTaskAction from '@components/DeleteAllTaskAction/DeleteAllTaskAction';
 import EditAllTasksAction from '@components/EditAllTasksAction/EditAllTasksAction';
 import TaskList from '@components/TaskList/TaskList';
 import { IProfile } from '@core/Profile';
@@ -32,14 +33,13 @@ interface Props {
 const WalmartTaskContainer: React.FunctionComponent<Props> = (props) => {
     const { tasks, taskGroup, profiles, proxySets } = props;
 
-    console.log('walmart task container', profiles, proxySets);
     const ROW_GUTTER: [number, number] = [24, 0];
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'auto' }}>
             <WalmartHeaders />
 
-            <TaskList tasks={tasks} TaskComponent={WalmartTask} />
+            <TaskList tasks={tasks} TaskComponent={WalmartTask} groupName={taskGroup.name} profiles={profiles} proxySets={proxySets} />
 
             <Row gutter={ROW_GUTTER} justify="end" style={{ marginTop: 10, width: '100%' }}>
                 <Col span={3}>
@@ -53,24 +53,24 @@ const WalmartTaskContainer: React.FunctionComponent<Props> = (props) => {
 
                 <Col span={3}>
                     <EditAllTasksAction
-                        proxySets={proxySets}
-                        profiles={profiles}
                         taskGroup={taskGroup}
                         EditTaskModalComponent={WalmartEditTaskModal}
+                        proxySets={proxySets}
+                        profiles={profiles}
                     ></EditAllTasksAction>
                 </Col>
-                {/* <Col span={3}></Col>
-                <Col span={3}>
+                <Col span={3}></Col>
+                {/* <Col span={3}>
                     <StartAllTasksAction></StartAllTasksAction>
                 </Col>
                 <Col span={3}>
                     <StopAllTasksAction></StopAllTasksAction>
                 </Col>
-                <Col span={3}></Col>
+                <Col span={3}></Col> */}
                 <Col span={3}>
-                    <DeleteAllTaskAction></DeleteAllTaskAction>
+                    <DeleteAllTaskAction tasks={tasks} taskGroup={taskGroup}></DeleteAllTaskAction>
                 </Col>
-                <Col span={3}>
+                {/* <Col span={3}>
                     <CaptchaAction></CaptchaAction>
                 </Col> */}
             </Row>

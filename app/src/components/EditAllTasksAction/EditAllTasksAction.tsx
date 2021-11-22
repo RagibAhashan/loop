@@ -38,7 +38,14 @@ const EditAllTasksAction: React.FunctionComponent<Props> = (props) => {
             <Button style={buttonStyle} type="primary" onClick={onEditClick}>
                 Edit All
             </Button>
-            <EditTaskModalComponent showModal={showModal} massEdit={true} setShowModal={setShowModal} task={{}} />
+            <EditTaskModalComponent
+                proxySets={proxySets}
+                profiles={profiles}
+                showModal={showModal}
+                massEdit={true}
+                setShowModal={setShowModal}
+                task={{}}
+            />
         </div>
     );
 };

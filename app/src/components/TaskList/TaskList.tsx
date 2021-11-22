@@ -1,15 +1,27 @@
+import { IProfile } from '@core/Profile';
+import { IProxySet } from '@core/ProxySet';
 import { ITask } from '@core/Task';
 import { Empty } from 'antd';
 import React from 'react';
 import { FixedSizeList } from 'react-window';
 
+interface TaskComponentProps {
+    task: ITask;
+    style: any;
+    proxySets: IProxySet[];
+    profiles: IProfile[];
+    groupName: string;
+}
 interface Props {
     tasks: ITask[];
-    TaskComponent: React.ComponentType<any>;
+    proxySets: IProxySet[];
+    profiles: IProfile[];
+    groupName: string;
+    TaskComponent: React.ComponentType<TaskComponentProps>;
 }
 
 const TaskList: React.FunctionComponent<Props> = (props) => {
-    const { tasks, TaskComponent } = props;
+    const { tasks, TaskComponent, profiles, proxySets, groupName } = props;
 
     // useEffect(() => {
     //     window.ElectronBridge.on(NOTIFY_TASK_STATUS(storeKey), (event, uuid: string, status: Status) => {
@@ -25,7 +37,16 @@ const TaskList: React.FunctionComponent<Props> = (props) => {
     const renderTaskComponent = (element: any) => {
         const { index, style } = element;
 
-        return <TaskComponent key={tasks[index].taskData.uuid} task={tasks[index]} style={style} />;
+        return (
+            <TaskComponent
+                key={tasks[index].taskData.uuid}
+                groupName={groupName}
+                task={tasks[index]}
+                proxySets={proxySets}
+                profiles={profiles}
+                style={style}
+            />
+        );
     };
 
     return tasks.length === 0 ? (

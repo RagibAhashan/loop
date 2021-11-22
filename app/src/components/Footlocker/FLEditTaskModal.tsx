@@ -1,10 +1,6 @@
 import { Col, Form, Input, InputNumber, Modal, Row, Select } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { FLTaskData } from '../../interfaces/TaskInterfaces';
-import { getProfiles } from '../../services/Profile/ProfileService';
-import { getProxySets } from '../../services/Proxy/ProxyService';
 import { getSizes } from '../../services/task/TaskUtils';
 
 const validateMessages = {
@@ -13,19 +9,19 @@ const validateMessages = {
 const GUTTER: [number, number] = [16, 0];
 
 export const FLEditTaskModal = (props: any) => {
-    const { visible, onClose, onEdit, task }: { visible: boolean; onClose: () => void; onEdit: (newVal: any) => void; task: FLTaskData } = props;
+    const { visible, onClose, onEdit, task, profiles, proxySets } = props;
     const [form] = useForm();
 
-    const profiles = useSelector(getProfiles);
-    const optionProfiles = Object.entries(profiles).map(([key, profile]) => {
-        return { label: profile.name, value: profile.name };
+    let optionsProfiles = profiles.map((profile) => {
+        return { label: profile.profileName, value: profile.profileName };
     });
 
-    const proxies = useSelector(getProxySets);
-    let proxiesOptions: any = Object.keys(proxies).map((proxySetName) => {
-        return { label: proxySetName, value: proxySetName };
+    let proxiesOptions: any = proxySets.map((proxySet) => {
+        return { label: proxySet.name, value: proxySet.name };
     });
+
     proxiesOptions = [...proxiesOptions, { label: 'No Proxies', value: null }];
+    optionsProfiles = [...optionsProfiles, { label: 'No Profile', value: null }];
 
     useEffect(() => {
         form.resetFields();
@@ -76,7 +72,7 @@ export const FLEditTaskModal = (props: any) => {
                     <Row gutter={GUTTER}>
                         <Col span={12}>
                             <Form.Item name="profileName" rules={[{ required: true }]}>
-                                <Select placeholder="Profile" allowClear options={optionProfiles} />
+                                <Select placeholder="Profile" allowClear options={optionsProfiles} />
                             </Form.Item>
                         </Col>
                         <Col span={12}>
