@@ -1,6 +1,8 @@
 import AddTaskAction from '@components/AddTaskAction/AddTaskAction';
 import DeleteAllTaskAction from '@components/DeleteAllTaskAction/DeleteAllTaskAction';
 import EditAllTasksAction from '@components/EditAllTasksAction/EditAllTasksAction';
+import StartAllTasksAction from '@components/StartAllTasksAction/StartAllTasksAction';
+import StopAllTasksAction from '@components/StopAllTasksAction/StopAllTasksAction';
 import TaskList from '@components/TaskList/TaskList';
 import { IProfile } from '@core/Profile';
 import { IProxySet } from '@core/ProxySet';
@@ -35,6 +37,9 @@ const WalmartTaskContainer: React.FunctionComponent<Props> = (props) => {
 
     const ROW_GUTTER: [number, number] = [24, 0];
 
+    const areTaskRunning = tasks.some((task) => task.isRunning);
+    const areTaskCreated = tasks.length > 0;
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'auto' }}>
             <WalmartHeaders />
@@ -60,13 +65,21 @@ const WalmartTaskContainer: React.FunctionComponent<Props> = (props) => {
                     ></EditAllTasksAction>
                 </Col>
                 <Col span={3}></Col>
-                {/* <Col span={3}>
-                    <StartAllTasksAction></StartAllTasksAction>
+                <Col span={3}>
+                    <StartAllTasksAction
+                        groupName={taskGroup.name}
+                        areTasksCreated={areTaskCreated}
+                        areTasksRunning={areTaskRunning}
+                    ></StartAllTasksAction>
                 </Col>
                 <Col span={3}>
-                    <StopAllTasksAction></StopAllTasksAction>
+                    <StopAllTasksAction
+                        groupName={taskGroup.name}
+                        areTasksCreated={areTaskCreated}
+                        areTasksRunning={areTaskRunning}
+                    ></StopAllTasksAction>
                 </Col>
-                <Col span={3}></Col> */}
+                <Col span={3}></Col>
                 <Col span={3}>
                     <DeleteAllTaskAction tasks={tasks} taskGroup={taskGroup}></DeleteAllTaskAction>
                 </Col>

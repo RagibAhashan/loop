@@ -1,10 +1,10 @@
 import { Profile } from '@core/Profile';
 import { Proxy } from '@core/Proxy';
+import { Status, StatusLevel, TaskData } from '@interfaces/TaskInterfaces';
 import { AxiosInstance } from 'axios';
 import { EventEmitter } from 'events';
 import { TASK_STOPPED } from '../common/Constants';
 import { TASK_STATUS, TASK_STOP } from './../common/Constants';
-import { StatusLevel, TaskData } from './../interfaces/TaskInterfaces';
 import { MESSAGES } from './constants/Constants';
 import { CookieJar } from './CookieJar';
 import { ProfileManager } from './ProfileManager';
@@ -17,6 +17,8 @@ export interface ITask {
     taskData: TaskData;
     userProfile: Profile;
     proxy: Proxy;
+    isRunning: boolean;
+    status: Status;
 }
 
 export abstract class Task extends EventEmitter implements ITask {
@@ -31,6 +33,8 @@ export abstract class Task extends EventEmitter implements ITask {
     public taskData: TaskData;
     public userProfile: Profile;
     public proxy: Proxy;
+    public isRunning: boolean;
+    public status: Status;
 
     constructor(uuid: string, requestInstance: RequestInstance, taskData: TaskData, profileManager: ProfileManager, proxyManager: ProxySetManager) {
         super();
@@ -43,6 +47,8 @@ export abstract class Task extends EventEmitter implements ITask {
         this.profileManager = profileManager;
         this.proxyManager = proxyManager;
 
+        this.status = { level: 'idle', message: 'Idle' };
+
         this.loadUserProfile();
         if (this.taskData.proxySet) {
             this.loadProxy();
@@ -53,7 +59,7 @@ export abstract class Task extends EventEmitter implements ITask {
 
     // Return a simple interface to be send to the view
     public getValue(): ITask {
-        return { proxy: this.proxy, taskData: this.taskData, userProfile: this.userProfile };
+        return { proxy: this.proxy, taskData: this.taskData, userProfile: this.userProfile, isRunning: this.isRunning, status: this.status };
     }
 
     protected loadUserProfile(): void {
@@ -78,9 +84,11 @@ export abstract class Task extends EventEmitter implements ITask {
         this.on(TASK_STOP, async () => {
             console.log('CANCELLING TASK');
             this.cancel = true;
-            this.emit(TASK_STATUS, { message: MESSAGES.CANCELED_MESSAGE, level: 'cancel' });
+            this.status = { message: MESSAGES.CANCELED_MESSAGE, level: 'cancel' };
+            this.emit(TASK_STATUS, this.status);
             this.requestInstance.cancel();
             this.cancelTimeout();
+            this.isRunning = false;
         });
     }
 
@@ -89,7 +97,8 @@ export abstract class Task extends EventEmitter implements ITask {
     }
 
     protected async emitStatusWithDelay(message: string, level: StatusLevel, delay?: number): Promise<any> {
-        this.emit(TASK_STATUS, { message: message, level: level });
+        this.status = { message: message, level: level };
+        this.emit(TASK_STATUS, this.status);
         const wait = this.waitError(delay ? delay : this.taskData.retryDelay);
         this.cancelTimeout = wait.cancel;
         // this is is promise not a function
@@ -130,12 +139,14 @@ export abstract class Task extends EventEmitter implements ITask {
     async execute(): Promise<void> {
         try {
             this.handleCancel();
-
+            this.isRunning = true;
             await this.doTask();
+            this.isRunning = false;
         } catch (err) {
             // waitError cancel would reject promise so error could equal to CANCEL_ERROR
             this.emit(TASK_STOPPED);
             console.log('EXECUTE ERROR', err);
+            this.isRunning = false;
         }
     }
 }

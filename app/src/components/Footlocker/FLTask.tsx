@@ -1,5 +1,5 @@
 // import styles from './sidebar.module.css';
-import TaskActions from '@components/TaskAction/TaskAction';
+import TaskActions from '@components/TaskAction/TaskActions';
 import { FootLockerTask } from '@core/footlocker/FootLockerTask';
 import { IProfile } from '@core/Profile';
 import { IProxySet } from '@core/ProxySet';
@@ -74,7 +74,7 @@ const FLTask: React.FunctionComponent<Props> = (props) => {
                 </Col>
 
                 <Col span={6}>
-                    <TaskStatus task={task}></TaskStatus>
+                    <TaskStatus status={task.status}></TaskStatus>
                 </Col>
 
                 <Col flex="auto" span={2}>

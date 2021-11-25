@@ -1,8 +1,5 @@
-import { StoreType } from '@constants/Stores';
-import React, { useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useEffect } from 'react';
 import { Status, StatusLevel } from '../../interfaces/TaskInterfaces';
-import { stopTask } from '../../services/Store/StoreService';
 
 const statusColor = (level: StatusLevel) => {
     switch (level) {
@@ -22,33 +19,25 @@ const statusColor = (level: StatusLevel) => {
     }
 };
 
-const readStatus = (uuid: string): Status => {
-    const status = localStorage.getItem(uuid) ?? JSON.stringify({ message: 'Idle', level: 'idle' });
+interface Props {
+    status: Status;
+}
+const TaskStatus: React.FunctionComponent<Props> = (props) => {
+    const { status } = props;
 
-    return JSON.parse(status);
-};
-
-const TaskStatus = (props: any) => {
-    const { uuid, storeKey }: { uuid: string; storeKey: StoreType } = props;
-
-    const [status, setStatus] = useState<Status>(readStatus(uuid));
-
-    const dispatch = useDispatch();
-
+    console.log('task status', status);
     useEffect(() => {
-        console.log('Task status init');
-        window.ElectronBridge.on(uuid, (event, status: Status) => {
-            setStatus(status);
-
-            if (status.level === 'fail') {
-                dispatch(stopTask({ storeKey: storeKey, uuid: uuid }));
-            }
-        });
-
-        return () => {
-            console.log('task status destroy');
-            window.ElectronBridge.removeAllListeners(uuid);
-        };
+        // console.log('Task status init');
+        // window.ElectronBridge.on(uuid, (event, status: Status) => {
+        //     setStatus(status);
+        //     if (status.level === 'fail') {
+        //         dispatch(stopTask({ storeKey: storeKey, uuid: uuid }));
+        //     }
+        // });
+        // return () => {
+        //     console.log('task status destroy');
+        //     window.ElectronBridge.removeAllListeners(uuid);
+        // };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 

@@ -3,6 +3,7 @@ import UserAgentProvider from '../services/UserAgentProvider';
 import { StoreInfo, StoreType } from './../constants/Stores';
 import { FLTaskData, TaskData, WalmartTaskData } from './../interfaces/TaskInterfaces';
 import { FootLockerTask } from './footlocker/FootLockerTask';
+import { TaskChannel } from './IpcChannels';
 import { ProfileManager } from './ProfileManager';
 import { ProxySetManager } from './ProxySetManager';
 import { RequestInstance } from './RequestInstance';
@@ -18,8 +19,8 @@ export class TaskFactory {
         this.profileManager = profileManager;
         this.proxyManager = proxyManager;
     }
-    public createTask(storeType: StoreType, taskData: TaskData): Task {
-        let task;
+    public createTask(event: Electron.IpcMainEvent, storeType: StoreType, taskData: TaskData): Task {
+        let task: Task;
         switch (storeType) {
             case StoreType.WalmartCA:
             case StoreType.WalmartUS:
@@ -30,6 +31,23 @@ export class TaskFactory {
                 task = this.createFootlockerTask(storeType, taskData as FLTaskData);
                 break;
         }
+
+        task.on(TaskChannel.onTaskStatus, (message: any) => {
+            event.reply(task.taskData.uuid, message);
+        });
+
+        // task.on(TaskChannel.onTaskStatus, () => {
+        //     event.reply(uuid + TASK_STOPPED, uuid);
+        // });
+
+        // task.on(NOTIFY_CAPTCHA_TASK, (captcha: Captcha) => {
+        //     console.log('task got captcha sending to renderer');
+        //     event.reply(NOTIFY_CAPTCHA_STORE(this.storeType), captcha);
+        // });
+
+        task.on(TaskChannel.onTaskSuccess, () => {
+            event.reply(task.taskData.uuid + 'TASK_SUCCESS');
+        });
 
         return task;
     }

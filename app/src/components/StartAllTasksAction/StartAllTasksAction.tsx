@@ -1,27 +1,18 @@
-import { StoreType } from '@constants/Stores';
+import { TaskGroupChannel } from '@core/IpcChannels';
 import { Button } from 'antd';
 import React from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { NOTIFY_START_TASK } from '../../common/Constants';
-import { AppState } from '../../global-store/GlobalStore';
-import { getStoreById, getTasksByStore, startAllTasks } from '../../services/Store/StoreService';
 import { buttonStyle } from '../../styles/Buttons';
 
-const StartAllTasksAction = (props: any) => {
-    const { storeKey }: { storeKey: StoreType; uuid: string } = props;
-
-    const tasks = useSelector((state: AppState) => getTasksByStore(state, storeKey));
-    const store = useSelector((state: AppState) => getStoreById(state, storeKey));
-    const areTasksRunning = store.running;
-    const areTasksCreated = Object.keys(tasks).length > 0;
-
-    const dispatch = useDispatch();
+interface Props {
+    groupName: string;
+    areTasksRunning: boolean;
+    areTasksCreated: boolean;
+}
+const StartAllTasksAction: React.FunctionComponent<Props> = (props) => {
+    const { groupName, areTasksCreated, areTasksRunning } = props;
 
     const handleStartAllTasks = () => {
-        dispatch(startAllTasks({ storeKey }));
-        Object.values(tasks).forEach((task) => {
-            window.ElectronBridge.send(NOTIFY_START_TASK(storeKey), task);
-        });
+        window.ElectronBridge.send(TaskGroupChannel.startAllTasks, groupName);
     };
 
     return (

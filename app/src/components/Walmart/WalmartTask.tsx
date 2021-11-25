@@ -1,5 +1,6 @@
 // import styles from './sidebar.module.css';
-import TaskActions from '@components/TaskAction/TaskAction';
+import TaskActions from '@components/TaskAction/TaskActions';
+import TaskStatus from '@components/TaskStatus/TaskStatus';
 import { IProfile } from '@core/Profile';
 import { IProxySet } from '@core/ProxySet';
 import { WalmartCATask } from '@core/walmart/WalmartCATask';
@@ -71,7 +72,9 @@ const WalmartTask: React.FunctionComponent<Props> = (props) => {
                     {/* {renderSize()} */}
                 </Col>
 
-                <Col span={6}>{/* <TaskStatus storeKey={storeKey} uuid={uuid}></TaskStatus> */}</Col>
+                <Col span={6}>
+                    <TaskStatus status={task.status}></TaskStatus>
+                </Col>
 
                 <Col flex="auto" span={2}>
                     <TaskActions groupName={groupName} proxySets={proxySets} profiles={profiles} task={task}></TaskActions>

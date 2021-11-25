@@ -54,7 +54,7 @@ export class TaskGroupManager {
         return taskGroups;
     }
 
-    private addTaskToGroup(groupName: string, taskDatas: TaskData[]): ITask[] | null {
+    private addTaskToGroup(event: Electron.IpcMainEvent, groupName: string, taskDatas: TaskData[]): ITask[] | null {
         if (!this.taskGroupMap.has(groupName)) {
             log('[Group %s not found]', groupName);
             return null;
@@ -62,7 +62,7 @@ export class TaskGroupManager {
         const taskGroup = this.taskGroupMap.get(groupName);
 
         for (const taskData of taskDatas) {
-            taskGroup.addTasks(taskData);
+            taskGroup.addTasks(event, taskData);
         }
 
         return taskGroup.getAllTasks();
@@ -95,6 +95,58 @@ export class TaskGroupManager {
         return taskGroup.getAllTasks();
     }
 
+    private startTask(groupName: string, uuid: string): ITask[] {
+        if (!this.taskGroupMap.has(groupName)) {
+            log('[Group %s not found]', groupName);
+            return null;
+        }
+
+        const taskGroup = this.taskGroupMap.get(groupName);
+
+        taskGroup.startTask(uuid);
+
+        return taskGroup.getAllTasks();
+    }
+
+    private startAllTasks(groupName: string): ITask[] {
+        if (!this.taskGroupMap.has(groupName)) {
+            log('[Group %s not found]', groupName);
+            return null;
+        }
+
+        const taskGroup = this.taskGroupMap.get(groupName);
+
+        taskGroup.startAllTasks();
+
+        return taskGroup.getAllTasks();
+    }
+
+    private stopTask(groupName: string, uuid: string): ITask[] {
+        if (!this.taskGroupMap.has(groupName)) {
+            log('[Group %s not found]', groupName);
+            return null;
+        }
+
+        const taskGroup = this.taskGroupMap.get(groupName);
+
+        taskGroup.stopTask(uuid);
+
+        return taskGroup.getAllTasks();
+    }
+
+    private stopAllTasks(groupName: string): ITask[] {
+        if (!this.taskGroupMap.has(groupName)) {
+            log('[Group %s not found]', groupName);
+            return null;
+        }
+
+        const taskGroup = this.taskGroupMap.get(groupName);
+
+        taskGroup.stopAllTasks();
+
+        return taskGroup.getAllTasks();
+    }
+
     private editTaskGroupName(oldName: string, newName: string): void {
         const taskGroup = this.taskGroupMap.get(oldName);
         taskGroup.editName(newName);
@@ -113,7 +165,6 @@ export class TaskGroupManager {
         ipcMain.on(TaskGroupChannel.addTaskGroup, (event, name: string, storeType: StoreType) => {
             const taskGroups = this.addTaskGroup(name, storeType);
             if (taskGroups) {
-                log('Replying task group update after add');
                 event.reply(TaskGroupChannel.taskGroupUpdated, taskGroups);
             } else {
                 event.reply(TaskGroupChannel.taskGroupError);
@@ -138,7 +189,7 @@ export class TaskGroupManager {
         });
 
         ipcMain.on(TaskGroupChannel.addTaskToGroup, (event, name: string, tasks: TaskData[]) => {
-            const taskList = this.addTaskToGroup(name, tasks);
+            const taskList = this.addTaskToGroup(event, name, tasks);
 
             if (taskList) {
                 event.reply(TaskGroupChannel.tasksUpdated, taskList);
@@ -163,6 +214,26 @@ export class TaskGroupManager {
             } else {
                 event.reply(TaskGroupChannel.taskGroupError, 'Error');
             }
+        });
+
+        ipcMain.on(TaskGroupChannel.startTask, (event, name: string, uuid: string) => {
+            const taskList = this.startTask(name, uuid);
+            event.reply(TaskGroupChannel.tasksUpdated, taskList);
+        });
+
+        ipcMain.on(TaskGroupChannel.startAllTasks, (event, name: string) => {
+            const taskList = this.startAllTasks(name);
+            event.reply(TaskGroupChannel.tasksUpdated, taskList);
+        });
+
+        ipcMain.on(TaskGroupChannel.stopTask, (event, name: string, uuid: string) => {
+            const taskList = this.stopTask(name, uuid);
+            event.reply(TaskGroupChannel.tasksUpdated, taskList);
+        });
+
+        ipcMain.on(TaskGroupChannel.stopAllTasks, (event, name: string) => {
+            const taskList = this.stopAllTasks(name);
+            event.reply(TaskGroupChannel.tasksUpdated, taskList);
         });
     }
 }

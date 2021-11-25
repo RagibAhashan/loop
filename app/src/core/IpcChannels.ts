@@ -10,6 +10,18 @@ export enum TaskGroupChannel {
     tasksUpdated = 'dynasty:tasksUpdated', // Event when tasks are added or removed to group
     onTaskGroupSelected = 'dynasty:onTaskGroupSelected',
     taskGroupError = 'dynasty:taskGroupError',
+    stopTask = 'dynasty:stopTask',
+    stopAllTasks = 'dynasty:stopAllTask',
+    startTask = 'dynasty:startTask',
+    startAllTasks = 'dynasty:startAllTasks',
+    editTask = 'dynasty:editTask',
+    editAllTasks = 'dynasty:editAllTasks',
+    taskStatusUpdated = 'dynasty:taskStatusUpdated',
+}
+
+export enum TaskChannel {
+    onTaskStatus = 'dynasty:onTaskStatus',
+    onTaskSuccess = 'dynasty:onTaskSuccess',
 }
 
 export enum ProxySetChannel {

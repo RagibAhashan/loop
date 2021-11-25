@@ -114,7 +114,7 @@ export const storeSlice = createSlice({
             state[action.payload.storeKey].captchas = state[action.payload.storeKey].captchas.filter((cap) => cap.taskUUID !== action.payload.uuid);
         },
         updateTaskStatus: (state, action: PayloadAction<StatusTaskPayload>) => {
-            state[action.payload.storeKey].tasks[action.payload.uuid].status = action.payload.status;
+            // state[action.payload.storeKey].tasks[action.payload.uuid].status = action.payload.status;
         },
         startAllTasks: (state, action: PayloadAction<StorePayload>) => {
             Object.values(state[action.payload.storeKey].tasks).forEach((task) => {

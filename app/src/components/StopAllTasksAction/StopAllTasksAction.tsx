@@ -1,26 +1,22 @@
+import { TaskGroupChannel } from '@core/IpcChannels';
 import { Button } from 'antd';
 import React from 'react';
 import { buttonStyle } from '../../styles/Buttons';
 
-const StopAllTasksAction = (props: any) => {
-    // const { storeKey }: { storeKey: StoreType; uuid: string } = props;
-
-    // const tasks = useSelector((state: AppState) => getTasksByStore(state, storeKey));
-    // const store = useSelector((state: AppState) => getStoreById(state, storeKey));
-    // const areTaskRunning = store.running;
-    // const areTaskCreated = Object.keys(tasks).length > 0;
-
-    // const dispatch = useDispatch();
+interface Props {
+    groupName: string;
+    areTasksRunning: boolean;
+    areTasksCreated: boolean;
+}
+const StopAllTasksAction: React.FunctionComponent<Props> = (props) => {
+    const { groupName, areTasksCreated, areTasksRunning } = props;
 
     const handleStopAllTasks = () => {
-        // dispatch(stopAllTasks({ storeKey }));
-        // Object.values(tasks).forEach((task) => {
-        //     window.ElectronBridge.send(NOTIFY_STOP_TASK(storeKey), task.uuid);
-        // });
+        window.ElectronBridge.send(TaskGroupChannel.stopAllTasks, groupName);
     };
 
     return (
-        <Button style={buttonStyle} type="primary" onClick={handleStopAllTasks} danger>
+        <Button style={buttonStyle} type="primary" onClick={handleStopAllTasks} danger disabled={!areTasksCreated || !areTasksRunning}>
             Stop all
         </Button>
     );

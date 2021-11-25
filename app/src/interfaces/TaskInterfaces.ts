@@ -75,7 +75,6 @@ export interface TaskMap {
 export interface TaskData {
     uuid: string;
     running: boolean;
-    status: Status;
     proxySet: string | null;
     profileName: string;
     retryDelay: number;

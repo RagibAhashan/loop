@@ -2,7 +2,7 @@ import WalmartEditTaskModal from '@components/Walmart/WalmartEditTaskModal';
 import { IProfile } from '@core/Profile';
 import { IProxySet } from '@core/ProxySet';
 import { ITask } from '@core/Task';
-import React from 'react';
+import React, { useEffect } from 'react';
 import DeleteTaskAction from './DeleteTaskAction';
 import EditTaskAction from './EditTaskAction';
 import StartTaskAction from './StartTaskAction';
@@ -18,10 +18,18 @@ interface Props {
 const TaskActions: React.FunctionComponent<Props> = (props) => {
     const { task, profiles, proxySets, groupName } = props;
 
+    useEffect(() => {
+        console.log('task action refreshed', task.isRunning);
+    }, []);
+
     const isRunning = false;
 
     const runButton = () => {
-        return isRunning ? <StopTaskAction task={task}></StopTaskAction> : <StartTaskAction task={task}></StartTaskAction>;
+        return task.isRunning ? (
+            <StopTaskAction groupName={groupName} task={task}></StopTaskAction>
+        ) : (
+            <StartTaskAction groupName={groupName} task={task}></StartTaskAction>
+        );
     };
 
     return (

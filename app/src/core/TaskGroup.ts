@@ -1,3 +1,4 @@
+import { TASK_STOP } from '@common/Constants';
 import { StoreType } from '../constants/Stores';
 import { TaskData } from './../interfaces/TaskInterfaces';
 import { debug } from './Log';
@@ -31,8 +32,8 @@ export class TaskGroup implements ITaskGroup {
         return { name: this.name, storeType: this.storeType };
     }
 
-    public addTasks(taskData: TaskData): void {
-        const newTask = this.taskFactory.createTask(this.storeType, taskData);
+    public addTasks(event: Electron.IpcMainEvent, taskData: TaskData): void {
+        const newTask = this.taskFactory.createTask(event, this.storeType, taskData);
         const uuid = newTask.taskData.uuid;
         //Should never happen
         if (this.tasks.has(uuid)) {
@@ -50,7 +51,8 @@ export class TaskGroup implements ITaskGroup {
     }
 
     public removeAllTasks(): void {
-        this.tasks.get('safsadf');
+        // stop all tasks
+        this.stopAllTasks();
         this.tasks = new Map();
     }
 
@@ -58,6 +60,28 @@ export class TaskGroup implements ITaskGroup {
         const tasks: ITask[] = [];
         this.tasks.forEach((task) => tasks.push(task.getValue()));
         return tasks;
+    }
+
+    public startTask(uuid: string): void {
+        const task = this.tasks.get(uuid);
+        task.execute();
+    }
+
+    public startAllTasks(): void {
+        for (const task of this.tasks.values()) {
+            task.execute();
+        }
+    }
+
+    public stopTask(uuid: string): void {
+        const task = this.tasks.get(uuid);
+        task.emit(TASK_STOP);
+    }
+
+    public stopAllTasks(): void {
+        for (const task of this.tasks.values()) {
+            task.emit(TASK_STOP);
+        }
     }
 
     public editName(newName: string): void {
