@@ -8,12 +8,31 @@ import { ITask } from '@core/Task';
 import { ITaskGroup } from '@core/TaskGroup';
 import React, { useEffect, useState } from 'react';
 
+interface State {
+    tasks: ITask[];
+    currentSelectedTaskGroup: ITaskGroup;
+}
+
 const TaskContainer: React.FunctionComponent = () => {
-    const [tasks, setTasks] = useState<ITask[]>([]);
-    const [currentSelectedTaskGroup, setCurrentSelectedTaskGroup] = useState<ITaskGroup>();
+    const [taskContainerState, setTaskContainerState] = useState<State>({ tasks: [], currentSelectedTaskGroup: undefined });
 
     const [profiles, setProfiles] = useState<IProfile[]>([]);
     const [proxySets, setProxySets] = useState<IProxySet[]>([]);
+
+    const handleOnTaskGroupSelected = (event, taskGroup: ITaskGroup, tasks: ITask[]) => {
+        // TODO : The state ordering here is important, if we put setCurrentSelectedTaskGroup, it will rerenreder with the old tasks and throw errors
+
+        setTaskContainerState({
+            tasks: tasks,
+            currentSelectedTaskGroup: taskGroup,
+        });
+    };
+
+    const handleTasksUpdated = (event, tasks: ITask[]) => {
+        setTaskContainerState((prev) => {
+            return { tasks: tasks, currentSelectedTaskGroup: prev.currentSelectedTaskGroup };
+        });
+    };
 
     useEffect(() => {
         window.ElectronBridge.on(TaskGroupChannel.onTaskGroupSelected, handleOnTaskGroupSelected);
@@ -33,25 +52,29 @@ const TaskContainer: React.FunctionComponent = () => {
         };
     }, []);
 
-    const handleOnTaskGroupSelected = (event, taskGroup: ITaskGroup, tasks: ITask[]) => {
-        setCurrentSelectedTaskGroup(taskGroup);
-        setTasks(tasks);
-    };
-
-    const handleTasksUpdated = (event, tasks: ITask[]) => {
-        setTasks(tasks);
-    };
-
     const RenderTaskContainer = () => {
-        if (!currentSelectedTaskGroup) return null;
-
-        switch (currentSelectedTaskGroup.storeType) {
+        if (!taskContainerState.currentSelectedTaskGroup) return null;
+        switch (taskContainerState.currentSelectedTaskGroup.storeType) {
             case StoreType.FootlockerCA:
             case StoreType.FootlockerUS:
-                return <FootlockerTaskContainer profiles={profiles} proxySets={proxySets} taskGroup={currentSelectedTaskGroup} tasks={tasks} />;
+                return (
+                    <FootlockerTaskContainer
+                        profiles={profiles}
+                        proxySets={proxySets}
+                        taskGroup={taskContainerState.currentSelectedTaskGroup}
+                        tasks={taskContainerState.tasks}
+                    />
+                );
             case StoreType.WalmartCA:
             case StoreType.WalmartUS:
-                return <WalmartTaskContainer profiles={profiles} proxySets={proxySets} taskGroup={currentSelectedTaskGroup} tasks={tasks} />;
+                return (
+                    <WalmartTaskContainer
+                        profiles={profiles}
+                        proxySets={proxySets}
+                        taskGroup={taskContainerState.currentSelectedTaskGroup}
+                        tasks={taskContainerState.tasks}
+                    />
+                );
             default:
                 return null;
         }

@@ -4,15 +4,17 @@ import { Status, StatusLevel, TaskData } from '@interfaces/TaskInterfaces';
 import { AxiosInstance } from 'axios';
 import { EventEmitter } from 'events';
 import { TASK_STOPPED } from '../common/Constants';
-import { TASK_STATUS, TASK_STOP } from './../common/Constants';
+import { TASK_STOP } from './../common/Constants';
 import { MESSAGES } from './constants/Constants';
 import { CookieJar } from './CookieJar';
+import { TaskChannel } from './IpcChannels';
+import { debug } from './Log';
 import { ProfileManager } from './ProfileManager';
 import { ProxySetManager } from './ProxySetManager';
 import { RequestInstance } from './RequestInstance';
 
 export const CANCEL_ERROR = 'Cancel';
-
+const log = debug.extend('Task');
 export interface ITask {
     taskData: TaskData;
     userProfile: Profile;
@@ -81,11 +83,10 @@ export abstract class Task extends EventEmitter implements ITask {
 
     protected handleCancel(): void {
         this.cancel = false;
-        this.on(TASK_STOP, async () => {
-            console.log('CANCELLING TASK');
+        this.once(TASK_STOP, async () => {
+            log('Cancelling Task');
             this.cancel = true;
-            this.status = { message: MESSAGES.CANCELED_MESSAGE, level: 'cancel' };
-            this.emit(TASK_STATUS, this.status);
+            this.emitStatus(MESSAGES.CANCELED_MESSAGE, 'cancel');
             this.requestInstance.cancel();
             this.cancelTimeout();
             this.isRunning = false;
@@ -96,9 +97,14 @@ export abstract class Task extends EventEmitter implements ITask {
         if (this.cancel) throw new Error(CANCEL_ERROR);
     }
 
+    protected emitStatus(message: string, level: StatusLevel): void {
+        this.status = { message: message, level: level };
+        this.emit(TaskChannel.onTaskStatus, this.status);
+    }
+
     protected async emitStatusWithDelay(message: string, level: StatusLevel, delay?: number): Promise<any> {
         this.status = { message: message, level: level };
-        this.emit(TASK_STATUS, this.status);
+        this.emit(TaskChannel.onTaskStatus, this.status);
         const wait = this.waitError(delay ? delay : this.taskData.retryDelay);
         this.cancelTimeout = wait.cancel;
         // this is is promise not a function

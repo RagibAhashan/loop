@@ -13,7 +13,7 @@ const TaskGroup: React.FunctionComponent<Props> = (props) => {
     const { name, store } = props;
 
     const handleClickTaskGroup = () => {
-        window.ElectronBridge.send(TaskGroupChannel.getTaskGroupTasks, name);
+        window.ElectronBridge.send(TaskGroupChannel.getAllTasksFromTaskGroup, name);
     };
     const handleRemoveTaskGroupClick = (event) => {
         window.ElectronBridge.send(TaskGroupChannel.removeTaskGroup, name);

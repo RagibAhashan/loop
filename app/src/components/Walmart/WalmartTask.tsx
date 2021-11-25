@@ -73,7 +73,7 @@ const WalmartTask: React.FunctionComponent<Props> = (props) => {
                 </Col>
 
                 <Col span={6}>
-                    <TaskStatus status={task.status}></TaskStatus>
+                    <TaskStatus groupName={groupName} task={task}></TaskStatus>
                 </Col>
 
                 <Col flex="auto" span={2}>

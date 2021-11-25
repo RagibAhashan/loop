@@ -114,10 +114,7 @@ export class WalmartUSTask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
-                this.emit(TASK_STATUS, {
-                    message: MESSAGES.GETTING_PRODUCT_INFO_MESSAGE,
-                    level: 'info',
-                });
+                this.emitStatus(MESSAGES.GETTING_PRODUCT_INFO_MESSAGE, 'info');
 
                 const cookie = this.cookieJar.serializeSession();
                 log('Getting session with %s url and cookies %s', this.parsedURL, cookie);
@@ -164,10 +161,7 @@ export class WalmartUSTask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
-                this.emit(TASK_STATUS, {
-                    message: MESSAGES.CHECKING_STOCK_INFO_MESSAGE,
-                    level: 'info',
-                });
+                this.emitStatus(MESSAGES.CHECKING_STOCK_INFO_MESSAGE, 'info');
 
                 const cookie = this.cookieJar.serializeSession();
 
@@ -324,10 +318,7 @@ export class WalmartUSTask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
-                this.emit(TASK_STATUS, {
-                    message: MESSAGES.ADD_CART_INFO_MESSAGE,
-                    level: 'info',
-                });
+                this.emitStatus(MESSAGES.ADD_CART_INFO_MESSAGE, 'info');
 
                 const cookie = this.cookieJar.serializeSession();
 
@@ -377,10 +368,7 @@ export class WalmartUSTask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
-                this.emit(TASK_STATUS, {
-                    message: MESSAGES.BILLING_INFO_MESSAGE,
-                    level: 'info',
-                });
+                this.emitStatus(MESSAGES.BILLING_INFO_MESSAGE, 'info');
 
                 const cookie = this.cookieJar.serializeSession();
 
@@ -742,10 +730,7 @@ export class WalmartUSTask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
-                this.emit(TASK_STATUS, {
-                    message: MESSAGES.PLACING_ORDER_INFO_MESSAGE,
-                    level: 'info',
-                });
+                this.emitStatus(MESSAGES.PLACING_ORDER_INFO_MESSAGE, 'info');
 
                 const cookie = this.cookieJar.serializeSession();
                 if (cookie) headers = { ...headers, cookie: cookie };
@@ -847,17 +832,6 @@ export class WalmartUSTask extends Task {
         return encCard;
     }
 
-    // create an object URL from the product URL and at the same time parses the itemid from the url
-    // private initParsedURL(): void {
-    //     try {
-    //         this.parsedURL = new URL(this.taskData.productURL);
-    //         const match = this.parsedURL.pathname.match(this.ITEM_ID_REGEX);
-    //         if (match) this.itemId = match.shift();
-    //     } catch (error) {
-    //         this.parsedURL = undefined;
-    //     }
-    // }
-
     /*
     Walmart prompts a captcha with a 412 HTTP status code and a json object containing information to render the captcha
     captchaResponse should be in this format : 
@@ -913,6 +887,7 @@ export class WalmartUSTask extends Task {
             },
             async (error) => {
                 if (error.response) {
+                    log('Error %s', JSON.stringify(error.response, null, 4));
                     // Captcha
                     if (error.response.status === 412) {
                         log('Dispatching Captcha');

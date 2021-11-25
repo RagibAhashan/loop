@@ -180,11 +180,19 @@ export class TaskGroupManager {
             }
         });
 
-        ipcMain.on(TaskGroupChannel.getTaskGroupTasks, (event, name: string) => {
+        ipcMain.on(TaskGroupChannel.getAllTasksFromTaskGroup, (event, name: string) => {
             const currentTaskGroup = this.getTaskGroup(name);
             if (currentTaskGroup) {
                 const tasks = currentTaskGroup.getAllTasks();
                 event.reply(TaskGroupChannel.onTaskGroupSelected, currentTaskGroup.getValue(), tasks);
+            }
+        });
+
+        ipcMain.handle(TaskGroupChannel.getTaskFromTaskGroup, (event, name: string, uuid: string): ITask => {
+            const currentTaskGroup = this.getTaskGroup(name);
+            if (currentTaskGroup) {
+                const task = currentTaskGroup.getTask(uuid);
+                return task;
             }
         });
 

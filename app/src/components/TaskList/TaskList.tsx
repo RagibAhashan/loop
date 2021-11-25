@@ -23,16 +23,6 @@ interface Props {
 const TaskList: React.FunctionComponent<Props> = (props) => {
     const { tasks, TaskComponent, profiles, proxySets, groupName } = props;
 
-    // useEffect(() => {
-    //     window.ElectronBridge.on(NOTIFY_TASK_STATUS(storeKey), (event, uuid: string, status: Status) => {
-    //         localStorage.setItem(uuid, JSON.stringify(status));
-    //     });
-
-    //     return () => {
-    //         window.ElectronBridge.removeAllListeners(NOTIFY_TASK_STATUS(storeKey));
-    //     };
-    // }, []);
-
     // element is a parameter passed by FixedSizeList, it has an index and a style object
     const renderTaskComponent = (element: any) => {
         const { index, style } = element;

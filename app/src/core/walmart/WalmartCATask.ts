@@ -13,7 +13,6 @@ import {
 } from '../constants/Walmart';
 import { debug } from '../Log';
 import { Task } from '../Task';
-import { TASK_STATUS } from './../../common/Constants';
 import { COUNTRY, REGIONS } from './../../common/Regions';
 import { TaskData, WalmartCreditCard, WalmartTaskData } from './../../interfaces/TaskInterfaces';
 import { CookieJar } from './../CookieJar';
@@ -36,6 +35,7 @@ export class WalmartCATask extends Task {
     ) {
         super(uuid, requestInstance, taskData, profileManger, proxyManager);
         this.taskData = taskData;
+        this.createErrorInterceptor();
     }
 
     async doTask(): Promise<void> {
@@ -69,10 +69,7 @@ export class WalmartCATask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
-                this.emit(TASK_STATUS, {
-                    message: MESSAGES.GETTING_PRODUCT_INFO_MESSAGE,
-                    level: 'info',
-                });
+                this.emitStatus(MESSAGES.GETTING_PRODUCT_INFO_MESSAGE, 'info');
 
                 const cookie = this.cookieJar.serializeSession();
 
@@ -113,10 +110,7 @@ export class WalmartCATask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
-                this.emit(TASK_STATUS, {
-                    message: MESSAGES.ADD_CART_INFO_MESSAGE,
-                    level: 'info',
-                });
+                this.emitStatus(MESSAGES.ADD_CART_INFO_MESSAGE, 'info');
 
                 const cookie = this.cookieJar.serializeSession();
 
@@ -146,7 +140,6 @@ export class WalmartCATask extends Task {
                 }
             } catch (err) {
                 this.cancelTask();
-                log('Add To Cart Error %O', err.response.data ?? err);
                 await this.emitStatusWithDelay(MESSAGES.ADD_CART_ERROR_MESSAGE, 'error');
                 retry = true;
             }
@@ -182,10 +175,7 @@ export class WalmartCATask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
-                this.emit(TASK_STATUS, {
-                    message: MESSAGES.BILLING_INFO_MESSAGE,
-                    level: 'info',
-                });
+                this.emitStatus(MESSAGES.BILLING_INFO_MESSAGE, 'info');
 
                 const cookie = this.cookieJar.serializeSession();
                 if (cookie) headers = { ...headers, cookie: cookie };
@@ -232,10 +222,7 @@ export class WalmartCATask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
-                this.emit(TASK_STATUS, {
-                    message: MESSAGES.BILLING_INFO_MESSAGE,
-                    level: 'info',
-                });
+                this.emitStatus(MESSAGES.BILLING_INFO_MESSAGE, 'info');
 
                 const cookie = this.cookieJar.serializeSession();
                 if (cookie) headers = { ...headers, cookie: cookie };
@@ -292,7 +279,7 @@ export class WalmartCATask extends Task {
                     cardType: 'CREDIT_CARD',
                     pmId: 'VISA',
                     cardLast4Digits: encryptedCard.number.substr(encryptedCard.number.length - 4),
-                    //referenceId: '79p7cs', // TODO seems that this field can be removed
+                    referenceId: '79p7cs', // TODO seems that this field can be removed
                 },
             ],
         };
@@ -318,10 +305,7 @@ export class WalmartCATask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
-                this.emit(TASK_STATUS, {
-                    message: MESSAGES.BILLING_INFO_MESSAGE,
-                    level: 'info',
-                });
+                this.emitStatus(MESSAGES.BILLING_INFO_MESSAGE, 'info');
 
                 const cookie = this.cookieJar.serializeSession();
                 if (cookie) headers = { ...headers, cookie: cookie };
@@ -393,10 +377,7 @@ export class WalmartCATask extends Task {
             try {
                 retry = false;
                 this.cancelTask();
-                this.emit(TASK_STATUS, {
-                    message: MESSAGES.PLACING_ORDER_INFO_MESSAGE,
-                    level: 'info',
-                });
+                this.emitStatus(MESSAGES.PLACING_ORDER_INFO_MESSAGE, 'info');
 
                 const cookie = this.cookieJar.serializeSession();
                 if (cookie) headers = { ...headers, cookie: cookie };
@@ -445,13 +426,14 @@ export class WalmartCATask extends Task {
         return encCard;
     }
 
-    private createCaptchaInterceptor(): void {
+    private createErrorInterceptor(): void {
         this.axiosSession.interceptors.response.use(
             (response) => {
                 return response;
             },
             async (error) => {
                 if (error.response) {
+                    log('Response Error %s', JSON.stringify(error.response, null, 4));
                     // Captcha
                     if (error.response.status === 412) {
                         log('Dispatching Captcha');

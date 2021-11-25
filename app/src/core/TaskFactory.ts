@@ -1,9 +1,10 @@
 import { STORES } from '../constants/Stores';
 import UserAgentProvider from '../services/UserAgentProvider';
 import { StoreInfo, StoreType } from './../constants/Stores';
-import { FLTaskData, TaskData, WalmartTaskData } from './../interfaces/TaskInterfaces';
+import { FLTaskData, Status, TaskData, WalmartTaskData } from './../interfaces/TaskInterfaces';
 import { FootLockerTask } from './footlocker/FootLockerTask';
 import { TaskChannel } from './IpcChannels';
+import { debug } from './Log';
 import { ProfileManager } from './ProfileManager';
 import { ProxySetManager } from './ProxySetManager';
 import { RequestInstance } from './RequestInstance';
@@ -11,6 +12,8 @@ import { Task } from './Task';
 import { taskManager } from './TaskManager';
 import { WalmartCATask } from './walmart/WalmartCATask';
 import { WalmartUSTask } from './walmart/WalmartUSTask';
+
+const log = debug.extend('TaskFactory');
 export class TaskFactory {
     private profileManager: ProfileManager;
     private proxyManager: ProxySetManager;
@@ -32,8 +35,8 @@ export class TaskFactory {
                 break;
         }
 
-        task.on(TaskChannel.onTaskStatus, (message: any) => {
-            event.reply(task.taskData.uuid, message);
+        task.on(TaskChannel.onTaskStatus, (message: Status) => {
+            event.reply(TaskChannel.onTaskStatus + task.taskData.uuid, message);
         });
 
         // task.on(TaskChannel.onTaskStatus, () => {

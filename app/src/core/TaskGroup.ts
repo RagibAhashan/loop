@@ -62,6 +62,11 @@ export class TaskGroup implements ITaskGroup {
         return tasks;
     }
 
+    public getTask(uuid: string): ITask {
+        const task = this.tasks.get(uuid);
+        return task.getValue();
+    }
+
     public startTask(uuid: string): void {
         const task = this.tasks.get(uuid);
         task.execute();
@@ -74,6 +79,7 @@ export class TaskGroup implements ITaskGroup {
     }
 
     public stopTask(uuid: string): void {
+        log('Stopping task');
         const task = this.tasks.get(uuid);
         task.emit(TASK_STOP);
     }

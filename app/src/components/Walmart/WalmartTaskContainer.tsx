@@ -40,6 +40,8 @@ const WalmartTaskContainer: React.FunctionComponent<Props> = (props) => {
     const areTaskRunning = tasks.some((task) => task.isRunning);
     const areTaskCreated = tasks.length > 0;
 
+    console.log('walmart task container', taskGroup.name, tasks);
+
     return (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', overflow: 'auto' }}>
             <WalmartHeaders />

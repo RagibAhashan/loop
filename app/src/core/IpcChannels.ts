@@ -1,6 +1,7 @@
 export enum TaskGroupChannel {
     getAllTaskGroups = 'dynasty:getAllTaskGroups',
-    getTaskGroupTasks = 'dynasty:getTaskGroupTasks',
+    getAllTasksFromTaskGroup = 'dynasty:getAllTasksFromTaskGroup',
+    getTaskFromTaskGroup = 'dynasty:getTaskFromTaskGroup',
     addTaskGroup = 'dynasty:addTaskGroup',
     removeTaskGroup = 'dynasty:removeTaskGroup',
     taskGroupUpdated = 'dynasty:taskGroupUpdated',
