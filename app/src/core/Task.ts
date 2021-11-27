@@ -134,6 +134,23 @@ export abstract class Task extends EventEmitter implements ITask {
         };
     }
 
+    protected waitForCaptcha(): { promise: any; cancel: any } {
+        let cancel;
+
+        const promise = new Promise((resolve, reject) => {
+            this.once(TaskChannel.onCaptchaSolved, () => {
+                resolve(`${this.constructor.name} captcha solved by user`);
+            });
+
+            cancel = () => {
+                this.cancelTimeout = () => {};
+                reject(CANCEL_ERROR);
+            };
+        });
+
+        return { promise: promise, cancel: cancel };
+    }
+
     // TODO REMOVE THAT SHIT
     updateData(taskData: TaskData): void {
         console.log('updated old', this.taskData);

@@ -84,18 +84,24 @@ const WalmartNewTaskModal: React.FunctionComponent<Props> = (props) => {
                         </Row>
 
                         <Row gutter={GUTTER}>
-                            <Col span={12}>
+                            <Col span={8}>
+                                <Form.Item name="productQuantity" rules={[{ required: true }]}>
+                                    <InputNumber style={{ width: '100%' }} placeholder="Product Quantity" value={1} />
+                                </Form.Item>
+                            </Col>
+
+                            <Col span={8}>
                                 <Form.Item name="retryDelay" rules={[{ required: true }]}>
                                     <InputNumber style={{ width: '100%' }} placeholder="Retry delay" />
                                 </Form.Item>
                             </Col>
 
-                            <Col span={12}>
+                            <Col span={8}>
                                 <Form.Item rules={[{ required: true }]}>
                                     <InputNumber
                                         style={{ width: '100%' }}
                                         value={quantity}
-                                        placeholder="Quantity"
+                                        placeholder="Task Quantity"
                                         onChange={(value) => setQuantity(value)}
                                     />
                                 </Form.Item>

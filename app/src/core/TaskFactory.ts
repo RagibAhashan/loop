@@ -1,7 +1,7 @@
 import { STORES } from '../constants/Stores';
 import UserAgentProvider from '../services/UserAgentProvider';
 import { StoreInfo, StoreType } from './../constants/Stores';
-import { FLTaskData, Status, TaskData, WalmartTaskData } from './../interfaces/TaskInterfaces';
+import { Captcha, FLTaskData, Status, TaskData, WalmartTaskData } from './../interfaces/TaskInterfaces';
 import { FootLockerTask } from './footlocker/FootLockerTask';
 import { TaskChannel } from './IpcChannels';
 import { debug } from './Log';
@@ -43,10 +43,10 @@ export class TaskFactory {
         //     event.reply(uuid + TASK_STOPPED, uuid);
         // });
 
-        // task.on(NOTIFY_CAPTCHA_TASK, (captcha: Captcha) => {
-        //     console.log('task got captcha sending to renderer');
-        //     event.reply(NOTIFY_CAPTCHA_STORE(this.storeType), captcha);
-        // });
+        task.on(TaskChannel.onCaptcha, (captcha: Captcha) => {
+            log('task got captcha sending to renderer');
+            event.reply(TaskChannel.onCaptcha + task.taskData.uuid, captcha);
+        });
 
         task.on(TaskChannel.onTaskSuccess, () => {
             event.reply(task.taskData.uuid + 'TASK_SUCCESS');

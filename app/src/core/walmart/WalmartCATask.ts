@@ -17,6 +17,7 @@ import { COUNTRY, REGIONS } from './../../common/Regions';
 import { TaskData, WalmartCreditCard, WalmartTaskData } from './../../interfaces/TaskInterfaces';
 import { CookieJar } from './../CookieJar';
 import { CaptchaException } from './../exceptions/CaptchaException';
+import { TaskChannel } from './../IpcChannels';
 import { ProfileManager } from './../ProfileManager';
 import { RequestInstance } from './../RequestInstance';
 import { generatePxCookies } from './scripts/px';
@@ -95,7 +96,7 @@ export class WalmartCATask extends Task {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 }
             } catch (err) {
-                log('Get Session Error %O', err);
+                log('Get Session Error');
                 this.cancelTask();
                 retry = true;
                 await this.emitStatusWithDelay(MESSAGES.SESSION_ERROR_MESSAGE, 'error');
@@ -122,7 +123,7 @@ export class WalmartCATask extends Task {
                         {
                             offerId: this.taskData.offerId,
                             skuId: this.taskData.offerId,
-                            quantity: 1,
+                            quantity: this.taskData.productQuantity,
                             allowSubstitutions: false,
                             subscription: false,
                             action: 'ADD',
@@ -139,6 +140,7 @@ export class WalmartCATask extends Task {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 }
             } catch (err) {
+                log('Adding to cart error');
                 this.cancelTask();
                 await this.emitStatusWithDelay(MESSAGES.ADD_CART_ERROR_MESSAGE, 'error');
                 retry = true;
@@ -162,7 +164,7 @@ export class WalmartCATask extends Task {
                 log('Checking as guest response %O', resp.statusText);
                 if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
             } catch (err) {
-                log('Checking as guest Error %O', err);
+                log('Checking as guest Error');
                 throw new Error(err);
             }
         } while (retry);
@@ -207,7 +209,7 @@ export class WalmartCATask extends Task {
 
                 if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
             } catch (err) {
-                log('Set Shipping Address Failed %O', err);
+                log('Set Shipping Address Failed');
                 this.cancelTask();
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
                 retry = true;
@@ -246,10 +248,7 @@ export class WalmartCATask extends Task {
 
                 if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
             } catch (err) {
-                // log('Set Shipping Method Failed %O', err);
-                if (err.response) {
-                    log('Set Shipping Method Failed %O', err.response.data['errors']);
-                }
+                log('Set Shipping Method Failed');
                 this.cancelTask();
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
                 retry = true;
@@ -360,7 +359,7 @@ export class WalmartCATask extends Task {
                 log('Setting cc resp %O', resp.statusText);
                 log('Got payment id %s', paymentId);
             } catch (err) {
-                log('Setting Credit Card Failed %O', err);
+                log('Setting Credit Card Failed');
                 this.cancelTask();
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE + ' SCC', 'error');
                 retry = true;
@@ -411,7 +410,7 @@ export class WalmartCATask extends Task {
                 if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 log('Payment resp %O', resp.statusText);
             } catch (err) {
-                log('Payment Failed %s %O', err.response.status ?? err, err.response.data ?? err);
+                log('Payment Failed');
                 this.cancelTask();
                 await this.emitStatusWithDelay(MESSAGES.CHECKOUT_FAILED_MESSAGE, 'error');
             }
@@ -426,6 +425,22 @@ export class WalmartCATask extends Task {
         return encCard;
     }
 
+    /*
+    This function will wait for the user to solve the captcha
+    */
+    private async dispatchCaptcha(captchaResponse: any): Promise<void> {
+        this.emitStatus(MESSAGES.WAIT_CAPTCHA_MESSAGE, 'info');
+
+        this.emit(TaskChannel.onCaptcha, {
+            uuid: this.uuid,
+            params: captchaResponse,
+        });
+
+        const waitCap = this.waitForCaptcha();
+        this.cancelTimeout = waitCap.cancel;
+        await waitCap.promise;
+    }
+
     private createErrorInterceptor(): void {
         this.axiosSession.interceptors.response.use(
             (response) => {
@@ -433,11 +448,11 @@ export class WalmartCATask extends Task {
             },
             async (error) => {
                 if (error.response) {
-                    log('Response Error %s', JSON.stringify(error.response, null, 4));
+                    log('Response Error %O', error.response);
                     // Captcha
                     if (error.response.status === 412) {
                         log('Dispatching Captcha');
-                        // await this.dispatchCaptcha(error.response.data);
+                        await this.dispatchCaptcha(error.response.data);
                         return Promise.reject(new CaptchaException('Walmart US Captcha Exception', error.response));
                     }
                 }

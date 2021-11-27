@@ -85,9 +85,7 @@ const WalmartTaskContainer: React.FunctionComponent<Props> = (props) => {
                 <Col span={3}>
                     <DeleteAllTaskAction tasks={tasks} taskGroup={taskGroup}></DeleteAllTaskAction>
                 </Col>
-                {/* <Col span={3}>
-                    <CaptchaAction></CaptchaAction>
-                </Col> */}
+                <Col span={3}>{/* <CaptchaAction></CaptchaAction> */}</Col>
             </Row>
         </div>
     );

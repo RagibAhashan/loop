@@ -92,6 +92,7 @@ export interface FLTaskData extends TaskData {
 export interface WalmartTaskData extends TaskData {
     productSKU: string;
     offerId: string;
+    productQuantity: number;
 }
 
 export interface StartTaskData {

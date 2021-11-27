@@ -23,6 +23,8 @@ export enum TaskGroupChannel {
 export enum TaskChannel {
     onTaskStatus = 'dynasty:onTaskStatus',
     onTaskSuccess = 'dynasty:onTaskSuccess',
+    onCaptcha = 'dynasty:onCaptcha',
+    onCaptchaSolved = 'dynasty:onCaptchaSolved',
 }
 
 export enum ProxySetChannel {

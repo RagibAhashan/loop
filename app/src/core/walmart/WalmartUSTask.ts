@@ -1,5 +1,5 @@
 import { ProxySetManager } from '@core/ProxySetManager';
-import { NOTIFY_CAPTCHA_SOLVED, NOTIFY_CAPTCHA_TASK, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
+import { NOTIFY_CAPTCHA_TASK, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
 import { REGIONS } from '../../common/Regions';
 import { TaskData, WalmartCreditCard } from '../../interfaces/TaskInterfaces';
 import { WalmartEncryption } from '../../services/Encryption/WalmartEncryption';
@@ -23,7 +23,7 @@ import {
 import { CookieJar } from '../CookieJar';
 import { debug } from '../Log';
 import { RequestInstance } from '../RequestInstance';
-import { CANCEL_ERROR, Task } from '../Task';
+import { Task } from '../Task';
 import { WalmartTaskData } from './../../interfaces/TaskInterfaces';
 import { CaptchaException } from './../exceptions/CaptchaException';
 import { ProfileManager } from './../ProfileManager';
@@ -145,7 +145,7 @@ export class WalmartUSTask extends Task {
 
                 log('Cookies %s', this.cookieJar.serializeSession());
             } catch (err) {
-                log('Get Session Error %O', err);
+                log('Get Session Error');
                 this.cancelTask();
                 retry = true;
                 await this.emitStatusWithDelay(MESSAGES.SESSION_ERROR_MESSAGE, 'error');
@@ -260,7 +260,7 @@ export class WalmartUSTask extends Task {
             } catch (err) {
                 this.cancelTask();
                 retry = true;
-                log('Get OfferId Error %O', err.response.data);
+                log('Get OfferId Error');
                 await this.emitStatusWithDelay(MESSAGES.OOS_RETRY_MESSAGE, 'info');
             }
         } while (retry);
@@ -305,7 +305,7 @@ export class WalmartUSTask extends Task {
                 this.cancelTask();
                 retry = true;
                 // TODO Change this error message
-                log('Get Card Id error %O', error);
+                log('Get Card Id error');
                 await this.emitStatusWithDelay('Getting Cart Id Failed', 'error');
             }
         } while (retry);
@@ -332,7 +332,7 @@ export class WalmartUSTask extends Task {
                             items: [
                                 {
                                     offerId: offerId,
-                                    quantity: 1,
+                                    quantity: this.taskData.productQuantity,
                                     lineItemId: lineItemId,
                                 },
                             ],
@@ -355,7 +355,7 @@ export class WalmartUSTask extends Task {
             } catch (error) {
                 this.cancelTask();
                 retry = true;
-                log('Add To Cart Error %O', error);
+                log('Add To Cart Error');
                 await this.emitStatusWithDelay(MESSAGES.ADD_CART_ERROR_MESSAGE, 'error');
             }
         } while (retry);
@@ -417,7 +417,7 @@ export class WalmartUSTask extends Task {
             } catch (error) {
                 this.cancelTask();
                 retry = true;
-                log('Create delivery address Error %O', error);
+                log('Create delivery address Error');
                 await this.emitStatusWithDelay(MESSAGES.ADDRESS_ERROR_MESSAGE, 'error');
             }
         } while (retry);
@@ -461,7 +461,7 @@ export class WalmartUSTask extends Task {
                 this.cancelTask();
                 retry = true;
 
-                log('Set Fulfillment Error %O', error);
+                log('Set Fulfillment Error');
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
             }
         } while (retry);
@@ -502,11 +502,9 @@ export class WalmartUSTask extends Task {
 
                 return contractId;
             } catch (error) {
+                console.log('Create contract Error');
                 this.cancelTask();
                 retry = true;
-
-                // log('Create contract Error %O', JSON.stringify(error, null, 4));
-                console.log('Create contract Error', JSON.stringify(error.data));
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
             }
         } while (retry);
@@ -546,10 +544,10 @@ export class WalmartUSTask extends Task {
 
                 return tenderPlanId;
             } catch (error) {
+                log('get tender plan Error');
                 this.cancelTask();
                 retry = true;
 
-                log('get tender plan Error %O', error);
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
             }
         } while (retry);
@@ -620,10 +618,10 @@ export class WalmartUSTask extends Task {
 
                 return [creditCardId, encryptedCard];
             } catch (error) {
+                log('create credit card Error');
                 this.cancelTask();
                 retry = true;
 
-                log('create credit card Error %O', error);
                 await this.emitStatusWithDelay(MESSAGES.CREDIT_CARD_REJECTED, 'error');
             }
         } while (retry);
@@ -675,9 +673,9 @@ export class WalmartUSTask extends Task {
 
                 return newTenderPlanId;
             } catch (error) {
+                log('Update tender plan Error');
                 this.cancelTask();
                 retry = true;
-                log('Update tender plan Error %O', error);
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
             }
         } while (retry);
@@ -715,9 +713,9 @@ export class WalmartUSTask extends Task {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 }
             } catch (error) {
+                log('Save tender plan Error');
                 this.cancelTask();
                 retry = true;
-                log('Save tender plan Error %O', error['data']['errors']);
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
             }
         } while (retry);
@@ -777,7 +775,7 @@ export class WalmartUSTask extends Task {
                 if (resp.headers['set-cookie']) await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 log('Payment resp %O', resp.status);
             } catch (error) {
-                log('Payment Failed %O', error.data, error.response);
+                log('Payment Failed');
                 this.cancelTask();
                 retry = true;
                 await this.emitStatusWithDelay(MESSAGES.PLACING_ORDER_ERROR_MESSAGE, 'error');
@@ -817,7 +815,7 @@ export class WalmartUSTask extends Task {
                     level: 'success',
                 });
             } catch (error) {
-                log('Purchase Failed %O', error);
+                log('Purchase Failed');
                 this.cancelTask();
                 await this.emitStatusWithDelay(MESSAGES.CHECKOUT_FAILED_MESSAGE, 'fail');
             }
@@ -858,23 +856,6 @@ export class WalmartUSTask extends Task {
         const waitCap = this.waitForCaptcha();
         this.cancelTimeout = waitCap.cancel;
         await waitCap.promise;
-    }
-
-    private waitForCaptcha(): { promise: any; cancel: any } {
-        let cancel;
-
-        const promise = new Promise((resolve, reject) => {
-            this.once(NOTIFY_CAPTCHA_SOLVED, () => {
-                resolve('Walmart US captcha solved by user');
-            });
-
-            cancel = () => {
-                this.cancelTimeout = () => {};
-                reject(CANCEL_ERROR);
-            };
-        });
-
-        return { promise: promise, cancel: cancel };
     }
 
     // Walmart graphQL api returns a successful response inside an object with the `data` key

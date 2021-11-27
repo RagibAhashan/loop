@@ -32,6 +32,7 @@ const ProxySet: React.FunctionComponent<Props> = (props) => {
                 backgroundColor: '#212427',
                 padding: 10,
                 margin: 10,
+                borderRadius: 5,
                 border: isSelected ? '1px solid rgb(177 142 15 / 92%)' : undefined,
             }}
             onClick={handleClickProxySet}
