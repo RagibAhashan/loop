@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron';
+import { AppDatabase } from './AppDatabase';
 import { ProfileChannel } from './IpcChannels';
 import { debug } from './Log';
 import { IProfile, Profile, ProfileData } from './Profile';
@@ -8,9 +9,19 @@ const log = debug.extend('ProfileManager');
 export type ProfileMap = Map<string, Profile>;
 export class ProfileManager {
     private profileMap: ProfileMap;
+    private database: AppDatabase;
 
-    constructor() {
+    constructor(database: AppDatabase) {
         this.profileMap = new Map();
+        this.database = database;
+    }
+
+    private async loadFromDB(): Promise<void> {
+        const profiles = await this.database.loadModelDB<IProfile>('Profiles');
+        for (const profile of profiles) {
+            this.addProfile(profile.profileName, profile.profileData);
+        }
+        log('Loaded');
     }
 
     public ready(): void {

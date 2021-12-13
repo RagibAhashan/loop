@@ -1,3 +1,5 @@
+import { AppDatabase } from '@core/AppDatabase';
+import { TaskFactory } from '@core/TaskFactory';
 import { TaskGroupFactory } from '@core/TaskGroupFactory';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import hash from 'object-hash';
@@ -92,6 +94,8 @@ ipcMain.on(ACCESS_GRANTED, () => {
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 });
 
+const appDatabase = new AppDatabase();
+
 const profileManager = new ProfileManager();
 profileManager.ready();
 
@@ -99,9 +103,12 @@ const proxySetManager = new ProxySetManager();
 proxySetManager.ready();
 
 const taskGroupFactory = new TaskGroupFactory(profileManager, proxySetManager);
+const taskFactory = new TaskFactory(profileManager, proxySetManager);
 
-const taskGroupManager = new TaskGroupManager(taskGroupFactory);
+const taskGroupManager = new TaskGroupManager(taskGroupFactory, taskFactory, appDatabase);
 taskGroupManager.ready();
+
+console.log('path app', app.getPath('appData'), app.getAppPath(), app.getPath('home'));
 
 // const flCAEvents = new FootLockerEvents(StoreType.FootlockerCA);
 // flCAEvents.initEvents();

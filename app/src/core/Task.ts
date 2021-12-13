@@ -21,6 +21,7 @@ export interface ITask {
     proxy: Proxy;
     isRunning: boolean;
     status: Status;
+    taskGroupName: string;
 }
 
 export abstract class Task extends EventEmitter implements ITask {
@@ -37,8 +38,16 @@ export abstract class Task extends EventEmitter implements ITask {
     public proxy: Proxy;
     public isRunning: boolean;
     public status: Status;
+    public taskGroupName: string;
 
-    constructor(uuid: string, requestInstance: RequestInstance, taskData: TaskData, profileManager: ProfileManager, proxyManager: ProxySetManager) {
+    constructor(
+        uuid: string,
+        requestInstance: RequestInstance,
+        taskData: TaskData,
+        taskGroupName: string,
+        profileManager: ProfileManager,
+        proxyManager: ProxySetManager,
+    ) {
         super();
         this.requestInstance = requestInstance;
         this.axiosSession = requestInstance.axios;
@@ -48,6 +57,7 @@ export abstract class Task extends EventEmitter implements ITask {
         this.taskData = taskData;
         this.profileManager = profileManager;
         this.proxyManager = proxyManager;
+        this.taskGroupName = taskGroupName;
 
         this.status = { level: 'idle', message: 'Idle' };
 
@@ -61,7 +71,14 @@ export abstract class Task extends EventEmitter implements ITask {
 
     // Return a simple interface to be send to the view
     public getValue(): ITask {
-        return { proxy: this.proxy, taskData: this.taskData, userProfile: this.userProfile, isRunning: this.isRunning, status: this.status };
+        return {
+            proxy: this.proxy,
+            taskData: this.taskData,
+            userProfile: this.userProfile,
+            isRunning: this.isRunning,
+            status: this.status,
+            taskGroupName: this.taskGroupName,
+        };
     }
 
     protected loadUserProfile(): void {
@@ -72,7 +89,6 @@ export abstract class Task extends EventEmitter implements ITask {
     protected loadProxy(): void {
         this.proxy = this.proxyManager.pickProxyFromSet(this.taskData.proxySet);
         this.requestInstance.updateProxy(this.proxy);
-        console.log('picked proxy ', this.proxy.host);
     }
 
     protected unLoadProxy(): void {

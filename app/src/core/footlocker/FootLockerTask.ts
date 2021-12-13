@@ -16,8 +16,15 @@ export class FootLockerTask extends Task {
     productCode: string;
     currentSize: string;
 
-    constructor(uuid: string, requestInstance: RequestInstance, taskData: FLTaskData, profileManager: ProfileManager, proxyManager: ProxySetManager) {
-        super(uuid, requestInstance, taskData, profileManager, proxyManager);
+    constructor(
+        uuid: string,
+        requestInstance: RequestInstance,
+        taskData: FLTaskData,
+        taskGroupName: string,
+        profileManager: ProfileManager,
+        proxyManager: ProxySetManager,
+    ) {
+        super(uuid, requestInstance, taskData, taskGroupName, profileManager, proxyManager);
         this.captchaSolved = false;
         this.waitingRoom = { refresh: false, delay: 0 };
         this.currentSize = '';

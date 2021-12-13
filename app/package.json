@@ -5,7 +5,7 @@
     "description": "Dynasty AIO",
     "main": ".webpack/main",
     "scripts": {
-        "start": "cross-env DEBUG=dynasty:* DEBUG_DEPTH=null electron-forge start",
+        "start": "cross-env DEBUG=dynasty:*,electron-forge:plugin:webpack DEBUG_DEPTH=null electron-forge start",
         "package": "electron-forge package",
         "make": "electron-forge make",
         "publish": "electron-forge publish",
@@ -139,6 +139,7 @@
         "cheerio": "^1.0.0-rc.10",
         "cookie": "^0.4.1",
         "crypto-browserify": "^3.12.0",
+        "dexie": "^3.2.0",
         "electron-squirrel-startup": "^1.0.0",
         "got": "^11.8.2",
         "https-proxy-agent": "^5.0.0",

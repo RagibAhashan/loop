@@ -15,7 +15,7 @@ export class TaskGroupFactory {
     }
 
     public createTaskGroup(name: string, storeType: StoreType): TaskGroup {
-        const taskGroup = new TaskGroup(name, storeType, this.taskFactory);
+        const taskGroup = new TaskGroup(name, storeType);
         return taskGroup;
     }
 }

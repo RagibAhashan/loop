@@ -80,7 +80,7 @@ export class ProxySetManager {
         const proxySet = this.proxySetMap.get(setName);
 
         for (const proxyStr of proxies) {
-            const proxy = ProxyFactory.createProxy(proxyStr);
+            const proxy = ProxyFactory.createProxy(proxyStr, setName);
             proxySet.addProxy(proxy);
         }
 

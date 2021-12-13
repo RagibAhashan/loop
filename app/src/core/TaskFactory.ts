@@ -22,16 +22,16 @@ export class TaskFactory {
         this.profileManager = profileManager;
         this.proxyManager = proxyManager;
     }
-    public createTask(event: Electron.IpcMainEvent, storeType: StoreType, taskData: TaskData): Task {
+    public createTask(event: Electron.IpcMainEvent, storeType: StoreType, taskData: TaskData, taskGroupName: string): Task {
         let task: Task;
         switch (storeType) {
             case StoreType.WalmartCA:
             case StoreType.WalmartUS:
-                task = this.createWalmartTask(storeType, taskData as WalmartTaskData);
+                task = this.createWalmartTask(storeType, taskData as WalmartTaskData, taskGroupName);
                 break;
             case StoreType.FootlockerCA:
             case StoreType.FootlockerUS:
-                task = this.createFootlockerTask(storeType, taskData as FLTaskData);
+                task = this.createFootlockerTask(storeType, taskData as FLTaskData, taskGroupName);
                 break;
         }
 
@@ -54,19 +54,19 @@ export class TaskFactory {
 
         return task;
     }
-    public createFootlockerTask(storeType: StoreType, taskData: FLTaskData): Task {
+    public createFootlockerTask(storeType: StoreType, taskData: FLTaskData, taskGroupName: string): Task {
         const store = STORES[storeType];
 
         const axios = this.createRequestInstance(store, { timestamp: Date.now() });
 
-        const flTask = new FootLockerTask(taskData.uuid, axios, taskData, this.profileManager, this.proxyManager);
+        const flTask = new FootLockerTask(taskData.uuid, axios, taskData, taskGroupName, this.profileManager, this.proxyManager);
 
         taskManager.register(taskData.uuid, flTask);
 
         return flTask;
     }
 
-    private createWalmartTask(storeType: StoreType, taskData: WalmartTaskData): Task {
+    private createWalmartTask(storeType: StoreType, taskData: WalmartTaskData, taskGroupName: string): Task {
         const store = STORES[storeType];
 
         const axios = this.createRequestInstance(store);
@@ -74,10 +74,10 @@ export class TaskFactory {
         let wTask;
         switch (storeType) {
             case StoreType.WalmartCA:
-                wTask = new WalmartCATask(taskData.uuid, axios, taskData, this.profileManager, this.proxyManager);
+                wTask = new WalmartCATask(taskData.uuid, axios, taskData, taskGroupName, this.profileManager, this.proxyManager);
                 break;
             case StoreType.WalmartUS:
-                wTask = new WalmartUSTask(taskData.uuid, axios, taskData, this.profileManager, this.proxyManager);
+                wTask = new WalmartUSTask(taskData.uuid, axios, taskData, taskGroupName, this.profileManager, this.proxyManager);
                 break;
         }
 

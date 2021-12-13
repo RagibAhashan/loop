@@ -43,10 +43,11 @@ export class WalmartUSTask extends Task {
         uuid: string,
         requestInstance: RequestInstance,
         taskData: WalmartTaskData,
+        taskGroupName: string,
         profileManger: ProfileManager,
         proxyManager: ProxySetManager,
     ) {
-        super(uuid, requestInstance, taskData, profileManger, proxyManager);
+        super(uuid, requestInstance, taskData, taskGroupName, profileManger, proxyManager);
         this.taskData = taskData;
         this.createErrorInterceptor();
     }

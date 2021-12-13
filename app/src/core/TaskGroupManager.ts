@@ -2,8 +2,10 @@ import { ITask } from '@core/Task';
 import { TaskData } from '@interfaces/TaskInterfaces';
 import { ipcMain } from 'electron';
 import { StoreType } from './../constants/Stores';
+import { AppDatabase } from './AppDatabase';
 import { TaskGroupChannel } from './IpcChannels';
 import { debug } from './Log';
+import { TaskFactory } from './TaskFactory';
 import { ITaskGroup, TaskGroup } from './TaskGroup';
 import { TaskGroupFactory } from './TaskGroupFactory';
 
@@ -12,10 +14,14 @@ export type TaskGroupMap = Map<string, TaskGroup>;
 export class TaskGroupManager {
     private taskGroupMap: TaskGroupMap;
     private taskGroupFactory: TaskGroupFactory;
+    private database: AppDatabase;
+    private taskFactory: TaskFactory;
 
-    constructor(taskGroupFactory: TaskGroupFactory) {
+    constructor(taskGroupFactory: TaskGroupFactory, taskFactory: TaskFactory, database: AppDatabase) {
         this.taskGroupMap = new Map();
+        this.database = database;
         this.taskGroupFactory = taskGroupFactory;
+        this.taskFactory = taskFactory;
     }
 
     public ready(): void {
@@ -31,6 +37,7 @@ export class TaskGroupManager {
         const newGroup = this.taskGroupFactory.createTaskGroup(name, storeType);
 
         this.taskGroupMap.set(name, newGroup);
+
         return this.getAllTaskGroups();
     }
 
@@ -40,7 +47,10 @@ export class TaskGroupManager {
             return null;
         }
 
+        const group = this.taskGroupMap.get(name);
+
         this.taskGroupMap.delete(name);
+
         return this.getAllTaskGroups();
     }
 
@@ -59,10 +69,15 @@ export class TaskGroupManager {
             log('[Group %s not found]', groupName);
             return null;
         }
+
         const taskGroup = this.taskGroupMap.get(groupName);
 
+        const tempTaskDB = [];
+
         for (const taskData of taskDatas) {
-            taskGroup.addTasks(event, taskData);
+            const newTask = this.taskFactory.createTask(event, taskGroup.storeType, taskData, groupName);
+            taskGroup.addTasks(newTask);
+            tempTaskDB.push(tempTaskDB);
         }
 
         return taskGroup.getAllTasks();
