@@ -30,5 +30,5 @@
         "jsx": "react",
         "removeComments": true
     },
-    "include": ["src/**/*"]
+    "include": ["src/**/*", "tests/**/*"]
 }

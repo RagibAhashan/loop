@@ -26,6 +26,34 @@ export class TaskGroupManager {
 
     public ready(): void {
         this.registerListeners();
+        this.loadFromDB();
+    }
+
+    public async loadFromDB(): Promise<void> {
+        const taskGroups = await this.database.loadModelDB<ITaskGroup>('TaskGroup');
+        const tasks = await this.database.loadModelDB<ITask>('Task');
+
+        if (!taskGroups || !tasks) return;
+
+        for (const taskGroup of taskGroups) {
+            this.addTaskGroup(taskGroup.name, taskGroup.storeType);
+            this.addTaskToGroup(
+                taskGroup.name,
+                tasks.map((task) => task.taskData),
+            );
+        }
+
+        log('TaskGroup Loaded');
+    }
+
+    public async saveToDB(): Promise<boolean> {
+        const tgSaved = await this.database.saveModelDB<ITaskGroup>('TaskGroup', this.getAllTaskGroups());
+        const tSaved = await this.database.saveModelDB<ITask>('Task', this.getAllTasks());
+
+        if (!tgSaved || tSaved) return false;
+
+        log('TaskGroups Saved to DB!');
+        return true;
     }
 
     private addTaskGroup(name: string, storeType: StoreType): ITaskGroup[] | null {
@@ -64,7 +92,13 @@ export class TaskGroupManager {
         return taskGroups;
     }
 
-    private addTaskToGroup(event: Electron.IpcMainEvent, groupName: string, taskDatas: TaskData[]): ITask[] | null {
+    private getAllTasks(): ITask[] {
+        const tasks: ITask[] = [];
+        this.taskGroupMap.forEach((taskGroup) => tasks.push(...taskGroup.getAllTasks()));
+        return tasks;
+    }
+
+    private addTaskToGroup(groupName: string, taskDatas: TaskData[]): ITask[] | null {
         if (!this.taskGroupMap.has(groupName)) {
             log('[Group %s not found]', groupName);
             return null;
@@ -75,7 +109,7 @@ export class TaskGroupManager {
         const tempTaskDB = [];
 
         for (const taskData of taskDatas) {
-            const newTask = this.taskFactory.createTask(event, taskGroup.storeType, taskData, groupName);
+            const newTask = this.taskFactory.createTask(taskGroup.storeType, taskData, groupName);
             taskGroup.addTasks(newTask);
             tempTaskDB.push(tempTaskDB);
         }
@@ -212,7 +246,7 @@ export class TaskGroupManager {
         });
 
         ipcMain.on(TaskGroupChannel.addTaskToGroup, (event, name: string, tasks: TaskData[]) => {
-            const taskList = this.addTaskToGroup(event, name, tasks);
+            const taskList = this.addTaskToGroup(name, tasks);
 
             if (taskList) {
                 event.reply(TaskGroupChannel.tasksUpdated, taskList);

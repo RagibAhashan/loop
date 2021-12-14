@@ -27,7 +27,7 @@ export class RingBuffer<T> {
         this.index = 0;
     }
 
-    public next(): T {
-        return this.buffer[this.index++ % this.size];
+    public next(): T | null {
+        return this.buffer[this.index++ % this.size] ?? null;
     }
 }

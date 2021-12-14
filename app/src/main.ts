@@ -85,6 +85,14 @@ app.on('activate', () => {
     }
 });
 
+app.on('before-quit', async () => {
+    log('Saving models to DB');
+    await profileManager.saveToDB();
+    await taskGroupManager.saveToDB();
+    await proxySetManager.saveToDB();
+    log('Saving models saved!');
+});
+
 // if (process.platform === 'darwin') {
 //     app.dock.hide();
 // }
@@ -96,19 +104,19 @@ ipcMain.on(ACCESS_GRANTED, () => {
 
 const appDatabase = new AppDatabase();
 
-const profileManager = new ProfileManager();
+const profileManager = new ProfileManager(appDatabase);
 profileManager.ready();
 
-const proxySetManager = new ProxySetManager();
+const proxySetManager = new ProxySetManager(appDatabase);
 proxySetManager.ready();
 
-const taskGroupFactory = new TaskGroupFactory(profileManager, proxySetManager);
-const taskFactory = new TaskFactory(profileManager, proxySetManager);
+const taskGroupFactory = new TaskGroupFactory();
+const taskFactory = new TaskFactory(profileManager, proxySetManager, mainWindow);
 
 const taskGroupManager = new TaskGroupManager(taskGroupFactory, taskFactory, appDatabase);
 taskGroupManager.ready();
 
-console.log('path app', app.getPath('appData'), app.getAppPath(), app.getPath('home'));
+log('path app', app.getPath('appData'), app.getAppPath(), app.getPath('home'));
 
 // const flCAEvents = new FootLockerEvents(StoreType.FootlockerCA);
 // flCAEvents.initEvents();

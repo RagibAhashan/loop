@@ -1,5 +1,5 @@
 import { IProxy, Proxy } from './Proxy';
-import { RingBuffer } from './RingBufffer';
+import { RingBuffer } from './RingBuffer';
 
 export interface IProxySet {
     name: string;

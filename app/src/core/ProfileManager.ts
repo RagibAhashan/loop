@@ -16,16 +16,29 @@ export class ProfileManager {
         this.database = database;
     }
 
-    private async loadFromDB(): Promise<void> {
-        const profiles = await this.database.loadModelDB<IProfile>('Profiles');
+    public async loadFromDB(): Promise<void> {
+        const profiles = await this.database.loadModelDB<IProfile>('Profile');
+
+        if (!profiles) return;
+
         for (const profile of profiles) {
             this.addProfile(profile.profileName, profile.profileData);
         }
         log('Loaded');
     }
 
-    public ready(): void {
+    public async saveToDB(): Promise<boolean> {
+        const profilesSaved = await this.database.saveModelDB<IProfile>('Profile', this.getAllProfiles());
+
+        if (!profilesSaved) return false;
+
+        log('Profiles Saved to DB!');
+        return true;
+    }
+
+    public async ready(): Promise<void> {
         this.registerListeners();
+        this.loadFromDB();
     }
 
     public getProfileMap(): ProfileMap {

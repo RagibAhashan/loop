@@ -1,7 +1,9 @@
+import { AppDatabase } from '@core/AppDatabase';
+import { Proxy } from '@core/Proxy';
 import { ipcMain } from 'electron';
 import { ProxySetChannel } from './IpcChannels';
 import { debug } from './Log';
-import { IProxy, Proxy } from './Proxy';
+import { IProxy } from './Proxy';
 import { ProxyFactory } from './ProxyFactory';
 import { IProxySet, ProxySet } from './ProxySet';
 import { ProxySetFactory } from './ProxySetFactory';
@@ -11,12 +13,45 @@ export type ProxySetMap = Map<string, ProxySet>;
 export class ProxySetManager {
     private proxySetMap: ProxySetMap;
 
-    constructor() {
+    private database: AppDatabase;
+
+    constructor(database: AppDatabase) {
         this.proxySetMap = new Map();
+        this.database = database;
     }
 
     public ready(): void {
         this.registerListeners();
+        this.loadFromDB();
+    }
+
+    public async loadFromDB(): Promise<void> {
+        const proxySets = await this.database.loadModelDB<IProxySet>('ProxySet');
+
+        const proxies = await this.database.loadModelDB<IProxy>('Proxy');
+
+        if (!proxySets || !proxies) return;
+
+        for (const proxySet of proxySets) {
+            this.addProxySet(proxySet.name);
+            this.addProxyToSet(
+                proxySet.name,
+                proxies.map((proxy) => `${proxy.host}:${proxy.user}:${proxy.password}`),
+            );
+        }
+
+        log('ProxySet Loaded');
+    }
+
+    public async saveToDB(): Promise<boolean> {
+        log('saving all %O %O', this.getAllProxies(), this.getAllProxySets());
+        const proxySetsSaved = await this.database.saveModelDB<IProxySet>('ProxySet', this.getAllProxySets());
+        const proxiesSaved = await this.database.saveModelDB<IProxy>('Proxy', this.getAllProxies());
+
+        if (!proxySetsSaved || !proxiesSaved) return false;
+
+        log('ProxySet Saved to DB!');
+        return true;
     }
 
     public pickProxyFromSet(proxySetName: string): Proxy {
@@ -65,6 +100,12 @@ export class ProxySetManager {
         const proxySets: IProxySet[] = [];
         this.proxySetMap.forEach((proxySet) => proxySets.push(proxySet.getValue()));
         return proxySets;
+    }
+
+    private getAllProxies(): IProxy[] {
+        const proxies: IProxy[] = [];
+        this.proxySetMap.forEach((proxySet) => proxies.push(...proxySet.getAllProxies()));
+        return proxies;
     }
 
     /**

@@ -1,3 +1,4 @@
+import { BrowserWindow } from 'electron';
 import { STORES } from '../constants/Stores';
 import UserAgentProvider from '../services/UserAgentProvider';
 import { StoreInfo, StoreType } from './../constants/Stores';
@@ -17,12 +18,16 @@ const log = debug.extend('TaskFactory');
 export class TaskFactory {
     private profileManager: ProfileManager;
     private proxyManager: ProxySetManager;
+    // TODO : should not have electron logic here
+    // mainWindow is used to send a message to the window on task evens (status, captcha, etc)
+    private mainWindow: BrowserWindow;
 
-    constructor(profileManager: ProfileManager, proxyManager: ProxySetManager) {
+    constructor(profileManager: ProfileManager, proxyManager: ProxySetManager, mainWindow: BrowserWindow) {
         this.profileManager = profileManager;
         this.proxyManager = proxyManager;
+        this.mainWindow = mainWindow;
     }
-    public createTask(event: Electron.IpcMainEvent, storeType: StoreType, taskData: TaskData, taskGroupName: string): Task {
+    public createTask(storeType: StoreType, taskData: TaskData, taskGroupName: string): Task {
         let task: Task;
         switch (storeType) {
             case StoreType.WalmartCA:
@@ -36,7 +41,7 @@ export class TaskFactory {
         }
 
         task.on(TaskChannel.onTaskStatus, (message: Status) => {
-            event.reply(TaskChannel.onTaskStatus + task.taskData.uuid, message);
+            this.mainWindow.webContents.send(TaskChannel.onTaskStatus + task.taskData.uuid, message);
         });
 
         // task.on(TaskChannel.onTaskStatus, () => {
@@ -45,11 +50,11 @@ export class TaskFactory {
 
         task.on(TaskChannel.onCaptcha, (captcha: Captcha) => {
             log('task got captcha sending to renderer');
-            event.reply(TaskChannel.onCaptcha + task.taskData.uuid, captcha);
+            this.mainWindow.webContents.send(TaskChannel.onCaptcha + task.taskData.uuid, captcha);
         });
 
         task.on(TaskChannel.onTaskSuccess, () => {
-            event.reply(task.taskData.uuid + 'TASK_SUCCESS');
+            this.mainWindow.webContents.send(task.taskData.uuid + 'TASK_SUCCESS');
         });
 
         return task;
