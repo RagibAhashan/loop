@@ -44,7 +44,6 @@ export class ProxySetManager {
     }
 
     public async saveToDB(): Promise<boolean> {
-        log('saving all %O %O', this.getAllProxies(), this.getAllProxySets());
         const proxySetsSaved = await this.database.saveModelDB<IProxySet>('ProxySet', this.getAllProxySets());
         const proxiesSaved = await this.database.saveModelDB<IProxy>('Proxy', this.getAllProxies());
 

@@ -24,7 +24,7 @@ export class AppDatabase {
 
             await modelDB.close();
 
-            log('Loaded %s json %s', modelName, modelString);
+            log('Loaded %s json', modelName);
             return JSON.parse(modelString);
         } catch (error) {
             log('%s DB non existent %O', modelName, error);

@@ -39,7 +39,20 @@ export class TaskGroupManager {
             this.addTaskGroup(taskGroup.name, taskGroup.storeType);
             this.addTaskToGroup(
                 taskGroup.name,
-                tasks.map((task) => task.taskData),
+                tasks.map((task) => {
+                    if (task.taskGroupName === taskGroup.name) {
+                        return task.taskData;
+                    }
+                }),
+            );
+            log(
+                'Loading group %s with %O',
+                taskGroup.name,
+                tasks.map((task) => {
+                    if (task.taskGroupName === taskGroup.name) {
+                        return task.taskData;
+                    }
+                }),
             );
         }
 

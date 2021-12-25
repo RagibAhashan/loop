@@ -73,7 +73,14 @@ app.whenReady().then(async () => {
     createWindow();
 });
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
+    //TODO(wail) maybe not the best place to put this here
+    log('Saving models to DB');
+    await profileManager.saveToDB();
+    await taskGroupManager.saveToDB();
+    await proxySetManager.saveToDB();
+    log('models saved!');
+
     if (process.platform !== 'darwin') {
         app.quit();
     }
@@ -83,14 +90,6 @@ app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
     }
-});
-
-app.on('before-quit', async () => {
-    log('Saving models to DB');
-    await profileManager.saveToDB();
-    await taskGroupManager.saveToDB();
-    await proxySetManager.saveToDB();
-    log('Saving models saved!');
 });
 
 // if (process.platform === 'darwin') {
@@ -115,8 +114,6 @@ const taskFactory = new TaskFactory(profileManager, proxySetManager, mainWindow)
 
 const taskGroupManager = new TaskGroupManager(taskGroupFactory, taskFactory, appDatabase);
 taskGroupManager.ready();
-
-log('path app', app.getPath('appData'), app.getAppPath(), app.getPath('home'));
 
 // const flCAEvents = new FootLockerEvents(StoreType.FootlockerCA);
 // flCAEvents.initEvents();
