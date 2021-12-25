@@ -2,9 +2,7 @@
 import { DeleteFilled, PlayCircleFilled, StopFilled } from '@ant-design/icons';
 import { Button, Col, Row } from 'antd';
 import React from 'react';
-import { useDispatch } from 'react-redux';
 import { NOTIFY_START_PROXY_TEST, NOTIFY_STOP_PROXY_TEST } from '../../common/Constants';
-import { deleteProxyFromSet } from '../../services/Proxy/ProxyService';
 
 const startButton = {
     border: 'none',
@@ -34,8 +32,6 @@ const deleteButton = {
 // TODO Refactor this component with redux
 const ProxyRow = (props: any) => {
     const { proxyData, style, currentTab, store, proxySetName } = props;
-
-    const dispatch = useDispatch();
 
     const statusColor = (level: string) => {
         switch (level) {
@@ -78,8 +74,6 @@ const ProxyRow = (props: any) => {
     };
 
     const deleteIndividual = () => {
-        dispatch(deleteProxyFromSet({ name: proxySetName, proxyHost: proxyData.ip + ':' + proxyData.port }));
-
         // TODO test logic
         // window.ElectronBridge.send(NOTIFY_STOP_PROXY_TEST, currentTab.name, proxyToDelete, record.credential, store);
     };

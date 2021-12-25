@@ -1,11 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { STORE_KEY } from '../common/Constants';
 import { STORES, StoreType } from '../constants/Stores';
 import { debug } from '../core/Log';
-import { AppState } from '../global-store/GlobalStore';
 import { Captcha } from '../interfaces/TaskInterfaces';
-import { getCaptchaQueueFromStore } from '../services/Store/StoreService';
 
 const log = debug.extend('PXCaptcha');
 
@@ -30,10 +27,6 @@ const captchaContainer = {
 } as React.CSSProperties;
 
 const CaptchaFrame = () => {
-    const captchaQueue = useSelector((state: AppState) => getCaptchaQueueFromStore(state, StoreType.WalmartUS));
-
-    const dispatch = useDispatch();
-
     const [storeKey, setStoreKey] = useState<StoreType>();
 
     // const nextCaptcha = (): Captcha => {
