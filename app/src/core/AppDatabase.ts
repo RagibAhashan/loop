@@ -5,7 +5,7 @@ import { debug } from './Log';
 const log = debug.extend('AppDatabase');
 
 // Never change this
-export type ModelName = 'Profile' | 'ProxySet' | 'TaskGroup' | 'Task' | 'Proxy';
+export type ModelName = 'Profile' | 'ProfileGroup' | 'ProxySet' | 'TaskGroup' | 'Task' | 'Proxy';
 
 export class AppDatabase {
     // TODO accounts, captcha solvers, settings,

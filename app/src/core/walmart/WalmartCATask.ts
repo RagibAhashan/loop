@@ -1,4 +1,3 @@
-import { ProxySetManager } from '@core/ProxySetManager';
 import { WalmartEncryption } from '../../services/Encryption/WalmartEncryption';
 import { MESSAGES } from '../constants/Constants';
 import {
@@ -12,34 +11,17 @@ import {
     WALMART_CA_SHIPPING_METHOD_HEADERS,
 } from '../constants/Walmart';
 import { debug } from '../Log';
-import { Task } from '../Task';
 import { COUNTRY, REGIONS } from './../../common/Regions';
-import { TaskData, WalmartCreditCard, WalmartTaskData } from './../../interfaces/TaskInterfaces';
+import { WalmartCreditCard } from './../../interfaces/TaskInterfaces';
 import { CookieJar } from './../CookieJar';
 import { CaptchaException } from './../exceptions/CaptchaException';
 import { TaskChannel } from './../IpcChannels';
-import { ProfileManager } from './../ProfileManager';
-import { RequestInstance } from './../RequestInstance';
 import { generatePxCookies } from './scripts/px';
+import { WalmartTask } from './WalmartTask';
 
 const log = debug.extend('WalmartCATask');
 
-export class WalmartCATask extends Task {
-    public taskData: WalmartTaskData;
-
-    constructor(
-        uuid: string,
-        requestInstance: RequestInstance,
-        taskData: WalmartTaskData,
-        taskGroupName: string,
-        profileManger: ProfileManager,
-        proxyManager: ProxySetManager,
-    ) {
-        super(uuid, requestInstance, taskData, taskGroupName, profileManger, proxyManager);
-        this.taskData = taskData;
-        this.createErrorInterceptor();
-    }
-
+export class WalmartCATask extends WalmartTask {
     async doTask(): Promise<void> {
         try {
             this.cookieJar = new CookieJar(this.requestInstance.baseURL);
@@ -122,9 +104,9 @@ export class WalmartCATask extends Task {
                     postalCode: 'L5V2N6',
                     items: [
                         {
-                            offerId: this.taskData.offerId,
-                            skuId: this.taskData.offerId,
-                            quantity: this.taskData.productQuantity,
+                            offerId: this.offerId,
+                            skuId: this.offerId,
+                            quantity: this.productQuantity,
                             allowSubstitutions: false,
                             subscription: false,
                             action: 'ADD',
@@ -186,20 +168,20 @@ export class WalmartCATask extends Task {
                 const body = {
                     fulfillmentType: 'SHIPTOHOME',
                     deliveryInfo: {
-                        firstName: this.userProfile.profileData.shipping.firstName,
-                        lastName: this.userProfile.profileData.shipping.lastName,
-                        addressLine1: this.userProfile.profileData.shipping.address,
+                        firstName: this.userProfile.shipping.firstName,
+                        lastName: this.userProfile.shipping.lastName,
+                        addressLine1: this.userProfile.shipping.address,
                         addressLine2: '',
-                        city: this.userProfile.profileData.shipping.town,
-                        state: REGIONS[this.userProfile.profileData.shipping.country][this.userProfile.profileData.shipping.region].isocodeShort,
-                        postalCode: this.userProfile.profileData.shipping.postalCode,
-                        phone: this.userProfile.profileData.shipping.phone,
+                        city: this.userProfile.shipping.town,
+                        state: REGIONS[this.userProfile.shipping.country][this.userProfile.shipping.region].isocodeShort,
+                        postalCode: this.userProfile.shipping.postalCode,
+                        phone: this.userProfile.shipping.phone,
                         saveToProfile: true,
-                        country: COUNTRY[this.userProfile.profileData.shipping.country],
+                        country: COUNTRY[this.userProfile.shipping.country],
                         locationId: null,
                         overrideAddressVerification: false,
                     },
-                    email: this.userProfile.profileData.shipping.email,
+                    email: this.userProfile.shipping.email,
                 };
 
                 log('Setting shipping address %O', body);
@@ -233,7 +215,7 @@ export class WalmartCATask extends Task {
                 const body = {
                     shipMethods: [
                         {
-                            offerId: this.taskData.offerId,
+                            offerId: this.offerId,
                             levelOfService: 'STANDARD',
                         },
                     ],
@@ -326,16 +308,15 @@ export class WalmartCATask extends Task {
                         },
                         customer: {
                             address: {
-                                address1: this.userProfile.profileData.billing.address,
-                                city: this.userProfile.profileData.billing.town,
-                                country_code: COUNTRY[this.userProfile.profileData.shipping.country],
-                                postal_code: this.userProfile.profileData.billing.postalCode,
-                                state_or_province_code:
-                                    REGIONS[this.userProfile.profileData.shipping.country][this.userProfile.profileData.shipping.region].isocodeShort,
+                                address1: this.userProfile.billing.address,
+                                city: this.userProfile.billing.town,
+                                country_code: COUNTRY[this.userProfile.shipping.country],
+                                postal_code: this.userProfile.billing.postalCode,
+                                state_or_province_code: REGIONS[this.userProfile.shipping.country][this.userProfile.shipping.region].isocodeShort,
                             },
-                            first_name: this.userProfile.profileData.billing.firstName,
-                            last_name: this.userProfile.profileData.billing.lastName,
-                            phone: this.userProfile.profileData.billing.phone,
+                            first_name: this.userProfile.billing.firstName,
+                            last_name: this.userProfile.billing.lastName,
+                            phone: this.userProfile.billing.phone,
                         },
                         save_to_profile: 'N',
                     },
@@ -421,7 +402,7 @@ export class WalmartCATask extends Task {
     private async encryptCard(): Promise<WalmartCreditCard> {
         const ccEncryptor = new WalmartEncryption();
 
-        const encCard = await ccEncryptor.encrypt(this.userProfile.profileData.payment);
+        const encCard = await ccEncryptor.encrypt(this.userProfile.payment);
 
         return encCard;
     }
@@ -442,7 +423,7 @@ export class WalmartCATask extends Task {
         await waitCap.promise;
     }
 
-    private createErrorInterceptor(): void {
+    protected createErrorInterceptor(): void {
         this.axiosSession.interceptors.response.use(
             (response) => {
                 return response;
@@ -460,11 +441,5 @@ export class WalmartCATask extends Task {
                 return Promise.reject(error);
             },
         );
-    }
-
-    // TODO : change the way we update tasks
-    // functions are not pure
-    updateData(taskData: TaskData): void {
-        super.updateData(taskData);
     }
 }

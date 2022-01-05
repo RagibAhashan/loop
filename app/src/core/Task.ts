@@ -1,6 +1,6 @@
 import { Profile } from '@core/Profile';
 import { Proxy } from '@core/Proxy';
-import { Status, StatusLevel, TaskData } from '@interfaces/TaskInterfaces';
+import { Status, StatusLevel } from '@interfaces/TaskInterfaces';
 import { AxiosInstance } from 'axios';
 import { EventEmitter } from 'events';
 import { TASK_STOPPED } from '../common/Constants';
@@ -9,43 +9,68 @@ import { MESSAGES } from './constants/Constants';
 import { CookieJar } from './CookieJar';
 import { TaskChannel } from './IpcChannels';
 import { debug } from './Log';
-import { ProfileManager } from './ProfileManager';
+import { ProfileGroupManager } from './ProfileGroupManager';
+import { ProxySet } from './ProxySet';
 import { ProxySetManager } from './ProxySetManager';
 import { RequestInstance } from './RequestInstance';
+import { Viewable } from './Viewable';
 
 export const CANCEL_ERROR = 'Cancel';
 const log = debug.extend('Task');
-export interface ITask {
-    taskData: TaskData;
-    userProfile: Profile;
-    proxy: Proxy;
-    isRunning: boolean;
-    status: Status;
-    taskGroupName: string;
+
+export interface TaskFormData {
+    profileName: string;
+    proxySetName: string;
+    retryDelay: number;
 }
 
-export abstract class Task extends EventEmitter implements ITask {
+export interface TaskViewData {
+    uuid: string;
+    proxySetName: string;
+    profileName: string;
+    retryDelay: number;
+    status: Status;
+    isRunning: boolean;
+}
+
+export interface ITask {
+    userProfile: Profile;
+    proxy: Proxy | null;
+    proxySet: ProxySet | null;
+    isRunning: boolean;
+    status: Status;
+    taskGroupId: string;
+    retryDelay: number;
+    uuid: string;
+}
+
+export abstract class Task extends EventEmitter implements ITask, Viewable<TaskViewData> {
     protected requestInstance: RequestInstance;
     protected cookieJar!: CookieJar;
     protected cancel: boolean;
     protected cancelTimeout: () => void;
-    protected uuid: string;
     protected axiosSession: AxiosInstance;
-    protected profileManager: ProfileManager;
+    protected profileGroupManager: ProfileGroupManager;
     protected proxyManager: ProxySetManager;
-    public taskData: TaskData;
+
+    public uuid: string;
     public userProfile: Profile;
-    public proxy: Proxy;
+    public proxy: Proxy | null;
+    public proxySet: ProxySet | null;
     public isRunning: boolean;
     public status: Status;
-    public taskGroupName: string;
+    public taskGroupId: string;
+    public retryDelay: number;
 
     constructor(
         uuid: string,
+        retryDelay: number,
+        userProfile: Profile,
+        proxySet: ProxySet,
+        proxy: Proxy,
+        taskGroupId: string,
         requestInstance: RequestInstance,
-        taskData: TaskData,
-        taskGroupName: string,
-        profileManager: ProfileManager,
+        profileGroupManager: ProfileGroupManager,
         proxyManager: ProxySetManager,
     ) {
         super();
@@ -54,47 +79,28 @@ export abstract class Task extends EventEmitter implements ITask {
         this.cancel = false;
         this.cancelTimeout = () => {};
         this.uuid = uuid;
-        this.taskData = taskData;
-        this.profileManager = profileManager;
+        this.profileGroupManager = profileGroupManager;
         this.proxyManager = proxyManager;
-        this.taskGroupName = taskGroupName;
-
+        this.taskGroupId = taskGroupId;
+        this.retryDelay = retryDelay;
         this.status = { level: 'idle', message: 'Idle' };
-
-        this.loadUserProfile();
-        if (this.taskData.proxySet) {
-            this.loadProxy();
-        }
+        this.proxySet = proxySet;
+        this.proxy = proxy;
+        this.userProfile = userProfile;
     }
 
     abstract doTask(): void;
 
     // Return a simple interface to be send to the view
-    public getValue(): ITask {
+    public getViewData(): TaskViewData {
         return {
-            proxy: this.proxy,
-            taskData: this.taskData,
-            userProfile: this.userProfile,
-            isRunning: this.isRunning,
+            proxySetName: this.proxySet.name,
+            uuid: this.uuid,
+            retryDelay: this.retryDelay,
+            profileName: this.userProfile.profileName,
             status: this.status,
-            taskGroupName: this.taskGroupName,
+            isRunning: this.isRunning,
         };
-    }
-
-    protected loadUserProfile(): void {
-        const profile = this.profileManager.getProfileMap().get(this.taskData.profileName);
-        this.userProfile = profile;
-    }
-
-    protected loadProxy(): void {
-        this.proxy = this.proxyManager.pickProxyFromSet(this.taskData.proxySet);
-        this.requestInstance.updateProxy(this.proxy);
-    }
-
-    protected unLoadProxy(): void {
-        this.proxy = null;
-        this.taskData.proxySet = null;
-        this.requestInstance.updateProxy(null);
     }
 
     protected handleCancel(): void {
@@ -121,7 +127,7 @@ export abstract class Task extends EventEmitter implements ITask {
     protected async emitStatusWithDelay(message: string, level: StatusLevel, delay?: number): Promise<any> {
         this.status = { message: message, level: level };
         this.emit(TaskChannel.onTaskStatus, this.status);
-        const wait = this.waitError(delay ? delay : this.taskData.retryDelay);
+        const wait = this.waitError(delay ? delay : this.retryDelay);
         this.cancelTimeout = wait.cancel;
         // this is is promise not a function
         return wait.promise;
@@ -165,14 +171,6 @@ export abstract class Task extends EventEmitter implements ITask {
         });
 
         return { promise: promise, cancel: cancel };
-    }
-
-    // TODO REMOVE THAT SHIT
-    updateData(taskData: TaskData): void {
-        console.log('updated old', this.taskData);
-        // if (this.taskData.proxy?.host !== taskData.proxy?.host) this.updateProxy(taskData.proxy);
-        this.taskData = taskData;
-        console.log('updated new', this.taskData, taskData);
     }
 
     async execute(): Promise<void> {

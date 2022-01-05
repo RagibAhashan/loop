@@ -1,14 +1,14 @@
 import { QuestionCircleOutlined } from '@ant-design/icons';
 import { TaskGroupChannel } from '@core/IpcChannels';
-import { ITask } from '@core/Task';
-import { ITaskGroup } from '@core/TaskGroup';
+import { TaskViewData } from '@core/Task';
+import { TaskGroupViewData } from '@core/TaskGroup';
 import { Button, Popconfirm } from 'antd';
 import React from 'react';
 import { buttonStyle } from '../../styles/Buttons';
 
 interface Props {
-    tasks: ITask[];
-    taskGroup: ITaskGroup;
+    tasks: TaskViewData[];
+    taskGroup: TaskGroupViewData;
 }
 // This component will contain the delete all task button
 const DeleteAllTaskAction: React.FunctionComponent<Props> = (props) => {

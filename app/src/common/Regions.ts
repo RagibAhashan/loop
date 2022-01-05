@@ -81,4 +81,15 @@ export const REGIONS: { [key: string]: CountryIsoCode } = {
     default: {},
 };
 
+export type Country = 'Canada' | 'United States';
+
 export const COUNTRY: any = { Canada: 'CA', 'United States': 'US' };
+
+export const getRegions = (country: Country): CountryIsoCode => {
+    switch (country) {
+        case 'Canada':
+            return PROVINCES_CANADA;
+        case 'United States':
+            return STATES_USA;
+    }
+};

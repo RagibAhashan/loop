@@ -18,6 +18,8 @@ export enum TaskGroupChannel {
     editTask = 'dynasty:editTask',
     editAllTasks = 'dynasty:editAllTasks',
     taskStatusUpdated = 'dynasty:taskStatusUpdated',
+    editTaskGroupName = 'dynasty:editTaskGroupName',
+    editTaskGroupStore = 'dynasty:editTaskGroupStore',
 }
 
 export enum TaskChannel {
@@ -41,12 +43,24 @@ export enum ProxySetChannel {
     proxySetError = 'dynasty:proxySetError',
 }
 
-export enum ProfileChannel {
-    getAllProfiles = 'dynasty:getAllProfiles',
-    getProfile = 'dynasty:getProfile',
-    addProfile = 'dynasty:addProfile',
-    removeProfile = 'dynasty:removeProfile',
-    profileUpdated = 'dynasty:profileUpdated',
-    onProfileSelected = 'dynasty:onProfileSelected',
-    profileError = 'dynasty:profileError',
+export enum ProfileGroupChannel {
+    getAllProfileGroups = 'dynasty:getAllProfiles',
+    getAllProfileGroupsTree = 'dynasty:getAllProfileGroupsTree',
+    getProfileGroup = 'dynasty:getProfileGroup',
+    addProfileGroup = 'dynasty:addProfileGroup',
+    removeProfileGroup = 'dynasty:removeProfileGroup',
+    profileGroupUpdated = 'dynasty:profileGroupUpdated',
+    onProfileGroupSelected = 'dynasty:onProfileGroupSelected',
+    profileGroupError = 'dynasty:profileGroupError',
+    getAllProfilesFromProfileGroup = 'dynasty:getAllProfilesFromProfileGroup',
+    getProfileFromProfileGroup = 'dynasty:getProfileFromProfileGroup',
+    addProfileToGroup = 'dynasty:addProfileToGroup',
+    removeProfileFromProfileGroup = 'dynasty:removeProfileFromProfileGroup',
+    removeAllProfilesFromProfileGroup = 'dynasty:removeAllProfilesFromProfileGroup',
+    profilesUpdated = 'dynasty:tasksUpdated', // Event when profiles are added or removed to group
+    editProfileGroupName = 'dynasty:editProfileGroupName',
+    editProfileName = 'dynasty:editProfileName',
+    editProfileShipping = 'dynasty:editProfileShipping',
+    editProfileBilling = 'dynasty:editProfileBilling',
+    editProfilePayment = 'dynasty:editProfilePayment',
 }

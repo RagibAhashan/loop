@@ -1,12 +1,11 @@
-import { ITask } from '@core/Task';
-import { TaskData } from '@interfaces/TaskInterfaces';
+import { ITask, Task, TaskFormData, TaskViewData } from '@core/Task';
 import { ipcMain } from 'electron';
 import { StoreType } from './../constants/Stores';
 import { AppDatabase } from './AppDatabase';
 import { TaskGroupChannel } from './IpcChannels';
 import { debug } from './Log';
 import { TaskFactory } from './TaskFactory';
-import { ITaskGroup, TaskGroup } from './TaskGroup';
+import { TaskGroup, TaskGroupViewData } from './TaskGroup';
 import { TaskGroupFactory } from './TaskGroupFactory';
 
 const log = debug.extend('TaskGroupManager');
@@ -30,38 +29,30 @@ export class TaskGroupManager {
     }
 
     public async loadFromDB(): Promise<void> {
-        const taskGroups = await this.database.loadModelDB<ITaskGroup>('TaskGroup');
-        const tasks = await this.database.loadModelDB<ITask>('Task');
+        const taskGroups = await this.database.loadModelDB<TaskGroup>('TaskGroup');
+        const tasks = await this.database.loadModelDB<Task>('Task');
 
         if (!taskGroups || !tasks) return;
 
         for (const taskGroup of taskGroups) {
-            this.addTaskGroup(taskGroup.name, taskGroup.storeType);
-            this.addTaskToGroup(
-                taskGroup.name,
-                tasks.map((task) => {
-                    if (task.taskGroupName === taskGroup.name) {
-                        return task.taskData;
-                    }
-                }),
-            );
-            log(
-                'Loading group %s with %O',
-                taskGroup.name,
-                tasks.map((task) => {
-                    if (task.taskGroupName === taskGroup.name) {
-                        return task.taskData;
-                    }
-                }),
-            );
+            this.addTaskGroup(taskGroup.id, taskGroup.name, taskGroup.storeType);
+
+            // TODO Review this logic
+            const taskDatas: ITask[] = [];
+
+            tasks.forEach((task) => {
+                if (task.taskGroupId === taskGroup.id) taskDatas.push(task);
+            });
+
+            this.addTaskToGroup(taskGroup.name, taskDatas);
         }
 
         log('TaskGroup Loaded');
     }
 
     public async saveToDB(): Promise<boolean> {
-        const tgSaved = await this.database.saveModelDB<ITaskGroup>('TaskGroup', this.getAllTaskGroups());
-        const tSaved = await this.database.saveModelDB<ITask>('Task', this.getAllTasks());
+        const tgSaved = await this.database.saveModelDB<TaskGroup>('TaskGroup', this.getAllTaskGroups());
+        const tSaved = await this.database.saveModelDB<Task>('Task', this.getAllTasks());
 
         if (!tgSaved || tSaved) return false;
 
@@ -69,163 +60,170 @@ export class TaskGroupManager {
         return true;
     }
 
-    private addTaskGroup(name: string, storeType: StoreType): ITaskGroup[] | null {
+    private addTaskGroup(id: string, name: string, storeType: StoreType): TaskGroupViewData[] | null {
         if (this.taskGroupMap.has(name)) {
             log('[Group %s already exists]', name);
             return null;
         }
 
-        const newGroup = this.taskGroupFactory.createTaskGroup(name, storeType);
+        const newGroup = this.taskGroupFactory.createTaskGroup(id, name, storeType);
 
-        this.taskGroupMap.set(name, newGroup);
+        this.taskGroupMap.set(id, newGroup);
 
-        return this.getAllTaskGroups();
+        return this.getAllTaskGroupsViewData();
     }
 
-    private removeTaskGroup(name: string): ITaskGroup[] | null {
-        if (!this.taskGroupMap.has(name)) {
-            log('[Group %s not found]', name);
+    private removeTaskGroup(groupId: string): TaskGroupViewData[] | null {
+        if (!this.taskGroupMap.has(groupId)) {
+            log('[Group not found]');
             return null;
         }
+        this.taskGroupMap.delete(groupId);
 
-        const group = this.taskGroupMap.get(name);
-
-        this.taskGroupMap.delete(name);
-
-        return this.getAllTaskGroups();
+        return this.getAllTaskGroupsViewData();
     }
 
-    private getTaskGroup(name: string): TaskGroup | undefined {
-        return this.taskGroupMap.get(name);
+    private getTaskGroup(groupId: string): TaskGroup | undefined {
+        return this.taskGroupMap.get(groupId);
     }
 
-    private getAllTaskGroups(): ITaskGroup[] {
-        const taskGroups: ITaskGroup[] = [];
-        this.taskGroupMap.forEach((taskGroup) => taskGroups.push(taskGroup.getValue()));
+    private getAllTaskGroupsViewData(): TaskGroupViewData[] {
+        const taskGroups: TaskGroupViewData[] = [];
+        this.taskGroupMap.forEach((taskGroup) => taskGroups.push(taskGroup.getViewData()));
         return taskGroups;
     }
 
-    private getAllTasks(): ITask[] {
-        const tasks: ITask[] = [];
+    private getAllTaskGroups(): TaskGroup[] {
+        return Array.from(this.taskGroupMap.values());
+    }
+
+    private getAllTasks(): Task[] {
+        const tasks: Task[] = [];
         this.taskGroupMap.forEach((taskGroup) => tasks.push(...taskGroup.getAllTasks()));
         return tasks;
     }
 
-    private addTaskToGroup(groupName: string, taskDatas: TaskData[]): ITask[] | null {
-        if (!this.taskGroupMap.has(groupName)) {
-            log('[Group %s not found]', groupName);
+    private addTaskToGroup(groupId: string, taskDatas: Partial<ITask>[]): TaskViewData[] | null {
+        if (!this.taskGroupMap.has(groupId)) {
+            log('[Group %s not found]', groupId);
             return null;
         }
 
-        const taskGroup = this.taskGroupMap.get(groupName);
+        const taskGroup = this.taskGroupMap.get(groupId);
 
         const tempTaskDB = [];
 
         for (const taskData of taskDatas) {
-            const newTask = this.taskFactory.createTask(taskGroup.storeType, taskData, groupName);
+            const newTask = this.taskFactory.createTask(taskGroup.storeType, taskData, groupId);
             taskGroup.addTasks(newTask);
             tempTaskDB.push(tempTaskDB);
         }
 
-        return taskGroup.getAllTasks();
+        return taskGroup.getAllTasksViewData();
     }
 
-    private removeTaskFromGroup(groupName: string, uuids: string[]): ITask[] | null {
-        if (!this.taskGroupMap.has(groupName)) {
-            log('[Group %s not found]', groupName);
+    private removeTaskFromGroup(groupId: string, uuids: string[]): TaskViewData[] | null {
+        if (!this.taskGroupMap.has(groupId)) {
+            log('[Group %s not found]', groupId);
             return null;
         }
-        const taskGroup = this.taskGroupMap.get(groupName);
+        const taskGroup = this.taskGroupMap.get(groupId);
 
         for (const uuid of uuids) {
             taskGroup.removeTask(uuid);
         }
 
-        return taskGroup.getAllTasks();
+        return taskGroup.getAllTasksViewData();
     }
 
-    private removeAllTasksFromGroup(groupName: string): ITask[] | null {
-        if (!this.taskGroupMap.has(groupName)) {
-            log('[Group %s not found]', groupName);
+    private removeAllTasksFromGroup(groupId: string): TaskViewData[] | null {
+        if (!this.taskGroupMap.has(groupId)) {
+            log('[Group %s not found]', groupId);
             return null;
         }
 
-        const taskGroup = this.taskGroupMap.get(groupName);
+        const taskGroup = this.taskGroupMap.get(groupId);
 
         taskGroup.removeAllTasks();
 
-        return taskGroup.getAllTasks();
+        return taskGroup.getAllTasksViewData();
     }
 
-    private startTask(groupName: string, uuid: string): ITask[] {
-        if (!this.taskGroupMap.has(groupName)) {
-            log('[Group %s not found]', groupName);
+    private startTask(groupId: string, uuid: string): TaskViewData[] {
+        if (!this.taskGroupMap.has(groupId)) {
+            log('[Group %s not found]', groupId);
             return null;
         }
 
-        const taskGroup = this.taskGroupMap.get(groupName);
+        const taskGroup = this.taskGroupMap.get(groupId);
 
         taskGroup.startTask(uuid);
 
-        return taskGroup.getAllTasks();
+        return taskGroup.getAllTasksViewData();
     }
 
-    private startAllTasks(groupName: string): ITask[] {
-        if (!this.taskGroupMap.has(groupName)) {
-            log('[Group %s not found]', groupName);
+    private startAllTasks(groupId: string): TaskViewData[] {
+        if (!this.taskGroupMap.has(groupId)) {
+            log('[Group %s not found]', groupId);
             return null;
         }
 
-        const taskGroup = this.taskGroupMap.get(groupName);
+        const taskGroup = this.taskGroupMap.get(groupId);
 
         taskGroup.startAllTasks();
 
-        return taskGroup.getAllTasks();
+        return taskGroup.getAllTasksViewData();
     }
 
-    private stopTask(groupName: string, uuid: string): ITask[] {
-        if (!this.taskGroupMap.has(groupName)) {
-            log('[Group %s not found]', groupName);
+    private stopTask(groupId: string, uuid: string): TaskViewData[] {
+        if (!this.taskGroupMap.has(groupId)) {
+            log('[Group %s not found]', groupId);
             return null;
         }
 
-        const taskGroup = this.taskGroupMap.get(groupName);
+        const taskGroup = this.taskGroupMap.get(groupId);
 
         taskGroup.stopTask(uuid);
 
-        return taskGroup.getAllTasks();
+        return taskGroup.getAllTasksViewData();
     }
 
-    private stopAllTasks(groupName: string): ITask[] {
-        if (!this.taskGroupMap.has(groupName)) {
-            log('[Group %s not found]', groupName);
+    private stopAllTasks(groupId: string): TaskViewData[] {
+        if (!this.taskGroupMap.has(groupId)) {
+            log('[Group %s not found]', groupId);
             return null;
         }
 
-        const taskGroup = this.taskGroupMap.get(groupName);
+        const taskGroup = this.taskGroupMap.get(groupId);
 
         taskGroup.stopAllTasks();
 
-        return taskGroup.getAllTasks();
+        return taskGroup.getAllTasksViewData();
     }
 
-    private editTaskGroupName(oldName: string, newName: string): void {
-        const taskGroup = this.taskGroupMap.get(oldName);
+    private editTaskGroupName(groupId: string, newName: string): TaskGroupViewData[] {
+        const taskGroup = this.taskGroupMap.get(groupId);
+
         taskGroup.editName(newName);
+
+        return this.getAllTaskGroupsViewData();
     }
 
-    private editTaskGroupStore(name: string, newStoreType: StoreType): void {
-        const taskGroup = this.taskGroupMap.get(name);
+    private editTaskGroupStore(groupId: string, newStoreType: StoreType): TaskGroupViewData[] {
+        const taskGroup = this.taskGroupMap.get(groupId);
+
         taskGroup.editStore(newStoreType);
+
+        return this.getAllTaskGroupsViewData();
     }
 
     private registerListeners(): void {
-        ipcMain.handle(TaskGroupChannel.getAllTaskGroups, (_) => {
-            return this.getAllTaskGroups();
+        ipcMain.handle(TaskGroupChannel.getAllTaskGroups, (_): TaskGroupViewData[] => {
+            return this.getAllTaskGroupsViewData();
         });
 
-        ipcMain.on(TaskGroupChannel.addTaskGroup, (event, name: string, storeType: StoreType) => {
-            const taskGroups = this.addTaskGroup(name, storeType);
+        ipcMain.on(TaskGroupChannel.addTaskGroup, (event, id: string, name: string, storeType: StoreType) => {
+            const taskGroups = this.addTaskGroup(id, name, storeType);
             if (taskGroups) {
                 event.reply(TaskGroupChannel.taskGroupUpdated, taskGroups);
             } else {
@@ -233,8 +231,8 @@ export class TaskGroupManager {
             }
         });
 
-        ipcMain.on(TaskGroupChannel.removeTaskGroup, (event, name: string) => {
-            const taskGroups = this.removeTaskGroup(name);
+        ipcMain.on(TaskGroupChannel.removeTaskGroup, (event, groupId: string) => {
+            const taskGroups = this.removeTaskGroup(groupId);
             if (taskGroups) {
                 event.reply(TaskGroupChannel.taskGroupUpdated, taskGroups);
             } else {
@@ -242,24 +240,43 @@ export class TaskGroupManager {
             }
         });
 
-        ipcMain.on(TaskGroupChannel.getAllTasksFromTaskGroup, (event, name: string) => {
-            const currentTaskGroup = this.getTaskGroup(name);
-            if (currentTaskGroup) {
-                const tasks = currentTaskGroup.getAllTasks();
-                event.reply(TaskGroupChannel.onTaskGroupSelected, currentTaskGroup.getValue(), tasks);
+        ipcMain.on(TaskGroupChannel.editTaskGroupName, (event, groupId: string, newName: string) => {
+            const taskGroup = this.editTaskGroupName(groupId, newName);
+
+            if (taskGroup) {
+                event.reply(TaskGroupChannel.taskGroupUpdated, taskGroup);
+            } else {
+                event.reply(TaskGroupChannel.taskGroupError);
             }
         });
 
-        ipcMain.handle(TaskGroupChannel.getTaskFromTaskGroup, (event, name: string, uuid: string): ITask => {
-            const currentTaskGroup = this.getTaskGroup(name);
+        ipcMain.on(TaskGroupChannel.editTaskGroupStore, (event, groupId: string, newStoreType: StoreType) => {
+            const taskGroup = this.editTaskGroupStore(groupId, newStoreType);
+            if (taskGroup) {
+                event.reply(TaskGroupChannel.taskGroupUpdated, taskGroup);
+            } else {
+                event.reply(TaskGroupChannel.taskGroupError);
+            }
+        });
+
+        ipcMain.on(TaskGroupChannel.getAllTasksFromTaskGroup, (event, groupId: string) => {
+            const currentTaskGroup = this.getTaskGroup(groupId);
             if (currentTaskGroup) {
-                const task = currentTaskGroup.getTask(uuid);
+                const tasks = currentTaskGroup.getAllTasksViewData();
+                event.reply(TaskGroupChannel.onTaskGroupSelected, currentTaskGroup.getViewData(), tasks);
+            }
+        });
+
+        ipcMain.handle(TaskGroupChannel.getTaskFromTaskGroup, (event, groupId: string, uuid: string): TaskViewData => {
+            const currentTaskGroup = this.getTaskGroup(groupId);
+            if (currentTaskGroup) {
+                const task = currentTaskGroup.getTaskViewData(uuid);
                 return task;
             }
         });
 
-        ipcMain.on(TaskGroupChannel.addTaskToGroup, (event, name: string, tasks: TaskData[]) => {
-            const taskList = this.addTaskToGroup(name, tasks);
+        ipcMain.on(TaskGroupChannel.addTaskToGroup, (event, groupId: string, tasks: TaskFormData[]) => {
+            const taskList = this.addTaskToGroup(groupId, tasks);
 
             if (taskList) {
                 event.reply(TaskGroupChannel.tasksUpdated, taskList);
@@ -268,8 +285,8 @@ export class TaskGroupManager {
             }
         });
 
-        ipcMain.on(TaskGroupChannel.removeTaskFromGroup, (event, name: string, uuids: string[]) => {
-            const taskList = this.removeTaskFromGroup(name, uuids);
+        ipcMain.on(TaskGroupChannel.removeTaskFromGroup, (event, groupId: string, uuids: string[]) => {
+            const taskList = this.removeTaskFromGroup(groupId, uuids);
             if (taskList) {
                 event.reply(TaskGroupChannel.tasksUpdated, taskList);
             } else {
@@ -277,8 +294,8 @@ export class TaskGroupManager {
             }
         });
 
-        ipcMain.on(TaskGroupChannel.removeAllTasksFromGroup, (event, name: string) => {
-            const taskList = this.removeAllTasksFromGroup(name);
+        ipcMain.on(TaskGroupChannel.removeAllTasksFromGroup, (event, groupId: string) => {
+            const taskList = this.removeAllTasksFromGroup(groupId);
             if (taskList) {
                 event.reply(TaskGroupChannel.tasksUpdated, taskList);
             } else {
@@ -286,23 +303,23 @@ export class TaskGroupManager {
             }
         });
 
-        ipcMain.on(TaskGroupChannel.startTask, (event, name: string, uuid: string) => {
-            const taskList = this.startTask(name, uuid);
+        ipcMain.on(TaskGroupChannel.startTask, (event, groupId: string, uuid: string) => {
+            const taskList = this.startTask(groupId, uuid);
             event.reply(TaskGroupChannel.tasksUpdated, taskList);
         });
 
-        ipcMain.on(TaskGroupChannel.startAllTasks, (event, name: string) => {
-            const taskList = this.startAllTasks(name);
+        ipcMain.on(TaskGroupChannel.startAllTasks, (event, groupId: string) => {
+            const taskList = this.startAllTasks(groupId);
             event.reply(TaskGroupChannel.tasksUpdated, taskList);
         });
 
-        ipcMain.on(TaskGroupChannel.stopTask, (event, name: string, uuid: string) => {
-            const taskList = this.stopTask(name, uuid);
+        ipcMain.on(TaskGroupChannel.stopTask, (event, groupId: string, uuid: string) => {
+            const taskList = this.stopTask(groupId, uuid);
             event.reply(TaskGroupChannel.tasksUpdated, taskList);
         });
 
-        ipcMain.on(TaskGroupChannel.stopAllTasks, (event, name: string) => {
-            const taskList = this.stopAllTasks(name);
+        ipcMain.on(TaskGroupChannel.stopAllTasks, (event, groupId: string) => {
+            const taskList = this.stopAllTasks(groupId);
             event.reply(TaskGroupChannel.tasksUpdated, taskList);
         });
     }

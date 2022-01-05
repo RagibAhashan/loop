@@ -1,10 +1,10 @@
 import { IProfile } from '@core/Profile';
 import { IProxySet } from '@core/ProxySet';
 import { ITask } from '@core/Task';
+import { IWalmartTask } from '@core/walmart/WalmartTask';
 import { Col, Form, Input, InputNumber, Modal, Row, Select } from 'antd';
 import { useForm } from 'antd/lib/form/Form';
 import React, { useEffect } from 'react';
-import { WalmartTaskData } from '../../interfaces/TaskInterfaces';
 
 const validateMessages = {
     required: 'Required!',
@@ -23,7 +23,7 @@ interface Props {
 export const WalmartEditTaskModal: React.FunctionComponent<Props> = (props) => {
     const { proxySets, profiles, showModal, setShowModal, task, massEdit } = props;
 
-    const [form] = useForm<WalmartTaskData>();
+    const [form] = useForm<IWalmartTask>();
 
     let optionsProfiles = profiles.map((profile) => {
         return { label: profile.profileName, value: profile.profileName };
@@ -38,7 +38,7 @@ export const WalmartEditTaskModal: React.FunctionComponent<Props> = (props) => {
 
     useEffect(() => {
         form.resetFields();
-        if (!massEdit) form.setFieldsValue(task.taskData);
+        if (!massEdit) form.setFieldsValue(task);
     });
 
     const title = () => {
@@ -52,7 +52,7 @@ export const WalmartEditTaskModal: React.FunctionComponent<Props> = (props) => {
         return values;
     };
 
-    const handleOnEdit = (newTaskValues: WalmartTaskData) => {
+    const handleOnEdit = (newTaskValues: IWalmartTask) => {
         console.log('on edit');
         // onEdit(newTaskValues);
     };

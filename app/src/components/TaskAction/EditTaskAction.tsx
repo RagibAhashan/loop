@@ -1,19 +1,19 @@
 import { EditFilled } from '@ant-design/icons';
-import { IProfile } from '@core/Profile';
-import { IProxySet } from '@core/ProxySet';
-import { ITask } from '@core/Task';
+import { ProfileGroupViewData } from '@core/ProfileGroup';
+import { ProxySetViewData } from '@core/ProxySet';
+import { TaskViewData } from '@core/Task';
 import { Button } from 'antd';
 import React, { useState } from 'react';
 import { editButton } from '../../styles/Buttons';
 
 interface Props {
     EditTaskModalComponent: React.ComponentType<any>;
-    task: ITask;
-    proxySets: IProxySet[];
-    profiles: IProfile[];
+    task: TaskViewData;
+    proxySets: ProxySetViewData[];
+    profileGroups: ProfileGroupViewData[];
 }
 const EditTaskAction: React.FunctionComponent<Props> = (props) => {
-    const { EditTaskModalComponent, task, proxySets, profiles } = props;
+    const { EditTaskModalComponent, task, proxySets, profileGroups } = props;
 
     const [showModal, setShowModal] = useState(false);
 
@@ -48,7 +48,7 @@ const EditTaskAction: React.FunctionComponent<Props> = (props) => {
             <Button onClick={onEditClick} style={editButton} size="small" icon={<EditFilled />} />
 
             <EditTaskModalComponent
-                profiles={profiles}
+                profileGroups={profileGroups}
                 proxySets={proxySets}
                 massEdit={false}
                 showModal={showModal}

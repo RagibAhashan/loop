@@ -1,28 +1,48 @@
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import { Viewable } from './Viewable';
+
+export const proxyPrefix = 'prox';
+
+export interface ProxyFormData {
+    id: string;
+    proxy: string; // Array of string containing proxies in this format : host:port:user:pass
+}
+
+export interface ProxyViewData {
+    id: string;
+    hostname: string;
+    port: string;
+    user: string;
+    password: string;
+    host: string;
+}
 
 export interface IProxy {
+    id: string;
     hostname: string;
     port: string;
     user: string;
     password: string;
     host: string;
-    proxySetName: string;
+    proxySetId: string;
 }
-export class Proxy implements IProxy {
+export class Proxy implements IProxy, Viewable<ProxyViewData> {
+    id: string;
     hostname: string;
     port: string;
     user: string;
     password: string;
     host: string;
-    proxySetName: string;
+    proxySetId: string;
     httpsAgent: HttpsProxyAgent;
 
-    constructor(hostname: string, port: string, proxySetName: string, user?: string, password?: string) {
+    constructor(id: string, proxySetId: string, hostname: string, port: string, user?: string, password?: string) {
+        this.id = id;
         this.hostname = hostname;
         this.port = port;
         this.user = user;
         this.password = password;
-        this.proxySetName = proxySetName;
+        this.proxySetId = proxySetId;
         this.host = `${this.hostname}:${this.port}`;
 
         let auth = undefined;
@@ -34,14 +54,14 @@ export class Proxy implements IProxy {
     }
 
     // Returns a simple data format for the view
-    public getValue(): IProxy {
+    public getViewData(): ProxyViewData {
         return {
+            id: this.id,
             hostname: this.hostname,
             password: this.password,
             user: this.user,
             port: this.port,
             host: this.host,
-            proxySetName: this.proxySetName,
         };
     }
 

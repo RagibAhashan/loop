@@ -1,26 +1,43 @@
+import { useDisclosure } from '@chakra-ui/react';
 import { TaskGroupChannel } from '@core/IpcChannels';
-import { IProfile } from '@core/Profile';
-import { IProxySet } from '@core/ProxySet';
-import { ITaskGroup } from '@core/TaskGroup';
+import { ProfileGroupViewData } from '@core/ProfileGroup';
+import { ProxySetViewData } from '@core/ProxySet';
+import { TaskFormData } from '@core/Task';
+import { TaskGroupViewData } from '@core/TaskGroup';
 import { Button } from 'antd';
-import React, { useState } from 'react';
+import React from 'react';
 import { v4 as uuid } from 'uuid';
-import { TaskData } from '../../interfaces/TaskInterfaces';
 import { buttonStyle } from '../../styles/Buttons';
+
+export interface TaskFormValues {
+    profileName: string;
+    retryDelay: number;
+    proxySetName: string;
+    quantity: number;
+}
+
+export interface NewTaskModalProps {
+    proxySets: ProxySetViewData[];
+    profileGroups: ProfileGroupViewData[];
+    isOpen: boolean;
+    onClose: () => void;
+    onAdd: (data: TaskFormData, quantity: number) => void;
+}
+
 interface Props {
-    NewTaskModalComponent: React.ComponentType<any>;
-    taskGroup: ITaskGroup;
-    proxySets: IProxySet[];
-    profiles: IProfile[];
+    NewTaskModalComponent: React.ComponentType<NewTaskModalProps>;
+    taskGroup: TaskGroupViewData;
+    proxySets: ProxySetViewData[];
+    profileGroups: ProfileGroupViewData[];
 }
 // This component will contain the add task button and task modal composition
 const AddTaskAction: React.FunctionComponent<Props> = (props) => {
-    const [showModal, setShowModal] = useState(false);
+    const { isOpen, onOpen, onClose } = useDisclosure();
 
-    const { NewTaskModalComponent, taskGroup, proxySets, profiles } = props;
+    const { NewTaskModalComponent, taskGroup, proxySets, profileGroups } = props;
 
-    const handleAddTask = (task: TaskData, quantity: number) => {
-        const taskArr: TaskData[] = [];
+    const handleAddTask = (task: TaskFormData, quantity: number) => {
+        const taskArr: TaskFormData[] = [];
         for (let i = 0; i < quantity; i++) {
             const newTask = { ...task, uuid: uuid() };
             taskArr.push(newTask);
@@ -28,21 +45,21 @@ const AddTaskAction: React.FunctionComponent<Props> = (props) => {
 
         window.ElectronBridge.send(TaskGroupChannel.addTaskToGroup, taskGroup.name, taskArr);
 
-        setShowModal(false);
+        onClose();
     };
 
     return (
         <div>
-            <Button style={buttonStyle} type="primary" onClick={() => setShowModal(true)}>
+            <Button style={buttonStyle} type="primary" onClick={onOpen}>
                 Add Task
             </Button>
 
             <NewTaskModalComponent
                 proxySets={proxySets}
-                profiles={profiles}
-                showModal={showModal}
-                setShowModal={setShowModal}
+                profileGroups={profileGroups}
                 onAdd={handleAddTask}
+                isOpen={isOpen}
+                onClose={onClose}
             ></NewTaskModalComponent>
         </div>
     );

@@ -1,5 +1,5 @@
 import { TaskChannel, TaskGroupChannel } from '@core/IpcChannels';
-import { ITask } from '@core/Task';
+import { TaskViewData } from '@core/Task';
 import React, { useEffect, useState } from 'react';
 import { Status, StatusLevel } from '../../interfaces/TaskInterfaces';
 
@@ -22,7 +22,7 @@ const statusColor = (level: StatusLevel) => {
 };
 
 interface Props {
-    task: ITask;
+    task: TaskViewData;
     groupName: string;
 }
 const TaskStatus: React.FunctionComponent<Props> = (props) => {
@@ -31,13 +31,13 @@ const TaskStatus: React.FunctionComponent<Props> = (props) => {
     const [status, setStatus] = useState<Status>(task.status);
 
     useEffect(() => {
-        window.ElectronBridge.on(TaskChannel.onTaskStatus + task.taskData.uuid, handleTaskStatusUpdated);
-        window.ElectronBridge.invoke(TaskGroupChannel.getTaskFromTaskGroup, groupName, task.taskData.uuid).then((data: ITask) => {
+        window.ElectronBridge.on(TaskChannel.onTaskStatus + task.uuid, handleTaskStatusUpdated);
+        window.ElectronBridge.invoke(TaskGroupChannel.getTaskFromTaskGroup, groupName, task.uuid).then((data: TaskViewData) => {
             setStatus(data.status);
         });
 
         return () => {
-            window.ElectronBridge.removeAllListeners(TaskChannel.onTaskStatus + task.taskData.uuid);
+            window.ElectronBridge.removeAllListeners(TaskChannel.onTaskStatus + task.uuid);
         };
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

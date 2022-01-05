@@ -7,3 +7,40 @@
 General note : The UI state does not need to store and manage information that is related to business logic,
 for example, at the moment we are storing proxies and doing proxies assignement logic in the redux state. This slows the app, we would rather
 assign proxies in a structure that is stored in the backend only, and if we want to check what proxy a task is using we could just fetch it from the backend.
+
+2. Redundant FormData interface, just reuse classes interface I<T>, only useful for Task, for all the other entities, their formdata interface is the exact same as their class interface.
+
+notes :
+
+hot reloading does not work (electron-forge)
+
+https://github.com/electron-userland/electron-forge/issues/2560
+
+debug was not working, issue still not fixed
+
+https://github.com/electron-userland/electron-forge/issues/1369
+
+Investigate this error, throws rarely :
+
+```
+node:internal/process/promises:246
+          triggerUncaughtException(err, true /* fromPromise */);
+          ^
+
+RpcIpcMessagePortClosedError: Cannot send the message - the message port has been closed for the process 613131.
+    at /home/wail/loop/app/node_modules/fork-ts-checker-webpack-plugin/lib/rpc/rpc-ipc/RpcIpcMessagePort.js:47:47
+    at processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: undefined,
+  signal: undefined
+}
+node:internal/process/promises:246
+          triggerUncaughtException(err, true /* fromPromise */);
+          ^
+
+RpcIpcMessagePortClosedError: Cannot send the message - the message port has been closed for the process 613137.
+    at /home/wail/loop/app/node_modules/fork-ts-checker-webpack-plugin/lib/rpc/rpc-ipc/RpcIpcMessagePort.js:47:47
+    at processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: undefined,
+  signal: undefined
+}
+```

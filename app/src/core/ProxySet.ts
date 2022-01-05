@@ -1,19 +1,34 @@
-import { IProxy, Proxy } from './Proxy';
+import { Proxy, ProxyViewData } from './Proxy';
 import { RingBuffer } from './RingBuffer';
+import { Viewable } from './Viewable';
 
+export const proxySetPrefix = 'proxset';
+
+export interface ProxySetFormData {
+    id: string;
+    name: string;
+}
+
+export interface ProxySetViewData {
+    id: string;
+    name: string;
+}
 export interface IProxySet {
+    id: string;
     name: string;
 }
 
 // Map of name (hostname:port) to proxy
 export type ProxyMap = Map<string, Proxy>;
 
-export class ProxySet implements IProxySet {
+export class ProxySet implements IProxySet, Viewable<ProxySetViewData> {
+    id: string;
     name: string;
     proxies: ProxyMap;
     proxiesRingBuffer: RingBuffer<Proxy>;
 
-    constructor(name: string) {
+    constructor(id: string, name: string) {
+        this.id = id;
         this.name = name;
         this.proxies = new Map();
         this.proxiesRingBuffer = new RingBuffer();
@@ -23,9 +38,8 @@ export class ProxySet implements IProxySet {
         return Array.from(this.proxies.values());
     }
 
-    // Returns a simple data format for the view
-    public getValue(): IProxySet {
-        return { name: this.name };
+    public getViewData(): ProxySetViewData {
+        return { id: this.id, name: this.name };
     }
 
     public pickProxy(): Proxy {
@@ -33,12 +47,12 @@ export class ProxySet implements IProxySet {
     }
 
     public addProxy(proxy: Proxy): void {
-        this.proxies.set(proxy.host, proxy);
+        this.proxies.set(proxy.id, proxy);
         this.proxiesRingBuffer.fillBuffer(proxy);
     }
 
-    public removeProxy(proxyHost: string): void {
-        this.proxies.delete(proxyHost);
+    public removeProxy(proxyId: string): void {
+        this.proxies.delete(proxyId);
         this.proxiesRingBuffer.initBuffer(this.proxyMapToArray());
     }
 
@@ -47,9 +61,13 @@ export class ProxySet implements IProxySet {
         this.proxiesRingBuffer.clearBuffer();
     }
 
-    public getAllProxies(): IProxy[] {
-        const proxies: IProxy[] = [];
-        this.proxies.forEach((proxy) => proxies.push(proxy.getValue()));
+    public getAllProxies(): Proxy[] {
+        return Array.from(this.proxies.values());
+    }
+
+    public getAllProxiesViewData(): ProxyViewData[] {
+        const proxies: ProxyViewData[] = [];
+        this.proxies.forEach((proxy) => proxies.push(proxy.getViewData()));
         return proxies;
     }
 

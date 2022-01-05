@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 import { withRouter } from 'react-router-dom';
 import logo from '../assets/crown.png';
 import { PROFILE_ROUTE, PROXY_ROUTE, SETTINGS_ROUTE, TASKS_ROUTE } from '../common/Constants';
-import styles from './sidebar.module.css';
 
 const { Sider } = Layout;
 
@@ -19,12 +18,12 @@ const SideBar = withRouter(({ history }) => {
             }}
         >
             <Row>
-                <img alt="Logo" src={logo} className={collapsed ? styles.collapsedLogo : styles.uncollapsedLogo}></img>
+                <img alt="Logo" src={logo} className={collapsed ? 'collapsedLogo' : 'uncollapsedLogo'}></img>
             </Row>
-            <Menu className={styles.menu} theme="dark" defaultSelectedKeys={['1']} mode="inline">
+            <Menu className="menu" theme="dark" defaultSelectedKeys={['1']} mode="inline">
                 <Menu.Item
                     key="1"
-                    className={styles.menuItem}
+                    className="menuItem"
                     icon={<PieChartOutlined />}
                     onClick={() => {
                         history.push(PROFILE_ROUTE);
@@ -35,18 +34,18 @@ const SideBar = withRouter(({ history }) => {
 
                 <Menu.Item
                     key="2"
-                    className={styles.menuItem}
+                    className={'menuItem'}
                     icon={<DesktopOutlined />}
                     onClick={() => {
                         history.push(PROXY_ROUTE);
                     }}
                 >
-                    Manage Proxies
+                    Proxies
                 </Menu.Item>
 
                 <Menu.Item
                     key="3"
-                    className={styles.menuItem}
+                    className={'menuItem'}
                     icon={<FileOutlined />}
                     onClick={() => {
                         history.push(TASKS_ROUTE);
@@ -56,7 +55,7 @@ const SideBar = withRouter(({ history }) => {
                 </Menu.Item>
                 <Menu.Item
                     key="4"
-                    className={styles.menuItem}
+                    className={'menuItem'}
                     icon={<SettingOutlined />}
                     onClick={() => {
                         history.push(SETTINGS_ROUTE);

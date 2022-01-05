@@ -1,7 +1,11 @@
+import { Profile } from '@core/Profile';
+import { ProfileGroupManager } from '@core/ProfileGroupManager';
+import { Proxy } from '@core/Proxy';
+import { ProxySet } from '@core/ProxySet';
 import { ProxySetManager } from '@core/ProxySetManager';
 import { NOTIFY_CAPTCHA_TASK, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
 import { REGIONS } from '../../common/Regions';
-import { TaskData, WalmartCreditCard } from '../../interfaces/TaskInterfaces';
+import { WalmartCreditCard } from '../../interfaces/TaskInterfaces';
 import { WalmartEncryption } from '../../services/Encryption/WalmartEncryption';
 import UserAgentProvider from '../../services/UserAgentProvider';
 import { MESSAGES } from '../constants/Constants';
@@ -23,16 +27,15 @@ import {
 import { CookieJar } from '../CookieJar';
 import { debug } from '../Log';
 import { RequestInstance } from '../RequestInstance';
-import { Task } from '../Task';
-import { WalmartTaskData } from './../../interfaces/TaskInterfaces';
 import { CaptchaException } from './../exceptions/CaptchaException';
-import { ProfileManager } from './../ProfileManager';
 import { generatePxCookies } from './scripts/px';
+import { WalmartTask } from './WalmartTask';
 const log = debug.extend('WalmartUSTask');
 
-export class WalmartUSTask extends Task {
-    public taskData: WalmartTaskData;
-    protected parsedURL!: URL;
+export class WalmartUSTask extends WalmartTask {
+    public offerId: string;
+    public productQuantity: number;
+    public productSKU: string;
 
     private static readonly WALMART_SELLER_ID = 'F55CDC31AB754BB68FE0B39041159D63';
     private static readonly WALMART_CATALOG_SELLER_ID = '0';
@@ -41,15 +44,32 @@ export class WalmartUSTask extends Task {
 
     constructor(
         uuid: string,
-        requestInstance: RequestInstance,
-        taskData: WalmartTaskData,
+        retryDelay: number,
+        userProfile: Profile,
+        proxySet: ProxySet,
+        proxy: Proxy,
         taskGroupName: string,
-        profileManger: ProfileManager,
+        requestInstance: RequestInstance,
+        profileGroupManager: ProfileGroupManager,
         proxyManager: ProxySetManager,
+        offerId: string,
+        productQuantity: number,
+        productSKU: string,
     ) {
-        super(uuid, requestInstance, taskData, taskGroupName, profileManger, proxyManager);
-        this.taskData = taskData;
-        this.createErrorInterceptor();
+        super(
+            uuid,
+            retryDelay,
+            userProfile,
+            proxySet,
+            proxy,
+            taskGroupName,
+            requestInstance,
+            profileGroupManager,
+            proxyManager,
+            offerId,
+            productQuantity,
+            productSKU,
+        );
     }
 
     private isSoldByWalmartAndInStock(product: any): boolean {
@@ -82,7 +102,7 @@ export class WalmartUSTask extends Task {
 
             const cartId = await this.getCartId();
 
-            await this.addToCart(cartId, this.taskData.offerId, lineItemId);
+            await this.addToCart(cartId, this.offerId, lineItemId);
 
             const addressId = await this.createDeliveryAddress();
 
@@ -118,7 +138,7 @@ export class WalmartUSTask extends Task {
                 this.emitStatus(MESSAGES.GETTING_PRODUCT_INFO_MESSAGE, 'info');
 
                 const cookie = this.cookieJar.serializeSession();
-                log('Getting session with %s url and cookies %s', this.parsedURL, cookie);
+                log('Getting session with cookies %s', cookie);
 
                 if (cookie) {
                     headers = { ...headers, cookie: cookie };
@@ -136,8 +156,8 @@ export class WalmartUSTask extends Task {
                 }
 
                 // http://walmart.com/ip/pname/pid -> /ip/pname/pid
-                const productURL = this.parsedURL.pathname;
-                const resp = await this.axiosSession.get(productURL, { headers: headers });
+
+                const resp = await this.axiosSession.get('TODO', { headers: headers });
                 log('Getting session resp %O', resp.status);
 
                 if (resp.headers['set-cookie']) {
@@ -156,7 +176,7 @@ export class WalmartUSTask extends Task {
 
     async getLineItemId(): Promise<string> {
         let retry = false;
-        let headers: any = { ...WALMART_US_GET_ITEM_HEADERS, referer: this.parsedURL.toString() };
+        let headers: any = { ...WALMART_US_GET_ITEM_HEADERS, referer: 'htt' };
 
         do {
             try {
@@ -169,75 +189,13 @@ export class WalmartUSTask extends Task {
                 if (cookie) headers = { ...headers, cookie: cookie };
 
                 const body = {
-                    query: 'query ItemById( $itemId:String! $selected:Boolean $variantFieldId:String $postalAddress:PostalAddress $storeFrontIds:[StoreFrontId]$page:Int $sort:String $limit:Int $filters:[String]$channel:String! $pageType:String! $tenant:String! $version:String! $p13N:P13NRequest $p13nCls:JSON $layout:[String]$tempo:JSON $semStoreId:Int $catalogSellerId:String $fetchBuyBoxAd:Boolean! $fetchMarquee:Boolean! $fetchSkyline:Boolean! $fetchSpCarousel:Boolean! $fulfillmentIntent:String ){contentLayout( channel:$channel pageType:$pageType tenant:$tenant version:$version ){modules(p13n:$p13nCls tempo:$tempo){configs{...on EnricherModuleConfigsV1{zoneV1}...on TempoWM_GLASSWWWItemCarouselConfigsV1{products{...ContentLayoutProduct}subTitle tileOptions{addToCart averageRatings displayAveragePriceCondition displayPricePerUnit displayStandardPrice displayWasPrice fulfillmentBadging mediaRatings productFlags productLabels productPrice productTitle}title type spBeaconInfo{adUuid moduleInfo pageViewUUID placement max}viewAllLink{linkText title uid}}...on TempoWM_GLASSWWWItemFitmentModuleConfigs{fitment{partTypeID partTypeIDs result{status notes position formId quantityTitle resultSubTitle suggestions{id position loadIndex speedRating searchQueryParam labels{...FitmentLabel}fitmentSuggestionParams{id value}cat_id}extendedAttributes{...FitmentFieldFragment}labels{...FitmentLabel}}labels{...FitmentLabel}savedVehicle{...FitmentVehicleFragment}}}...on TempoWM_GLASSWWWItemRelatedShelvesConfigs{seoItemRelmData(id:$itemId){relm{id url name}}}...on TempoWM_GLASSWWWCapitalOneBannerConfigsV1{bannerBackgroundColor primaryImage{alt src}bannerCta{ctaLink{linkText title clickThrough{value}uid}textColor}bannerText{text isBold isUnderlined underlinedColor textColor}}...on TempoWM_GLASSWWWProductWarrantyPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWGeneralWarningsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductIndicationsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductDescriptionPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductDirectionsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductSpecificationsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWNutritionValuePlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWReviewsPlaceholderConfigs{expandedOnPageLoad}...on TempoWM_GLASSWWWProductDescriptionPlaceholderConfigs{expandedOnPageLoad}...BuyBoxAdConfigsFragment @include(if:$fetchBuyBoxAd)...MarqueeDisplayAdConfigsFragment @include(if:$fetchMarquee)...SkylineDisplayAdConfigsFragment @include(if:$fetchSkyline)...SponsoredProductCarouselConfigsFragment @include(if:$fetchSpCarousel)}moduleId matchedTrigger{pageType pageId zone inheritable}name type version status publishedDate}layouts(layout:$layout){id layout}pageMetadata{location{postalCode stateOrProvinceCode city storeId}pageContext}}product( catalogSellerId:$catalogSellerId itemId:$itemId postalAddress:$postalAddress storeFrontIds:$storeFrontIds selected:$selected semStoreId:$semStoreId p13N:$p13N variantFieldId:$variantFieldId fulfillmentIntent:$fulfillmentIntent ){...FullProductFragment}idml(itemId:$itemId html:true){...IDMLFragment}reviews( itemId:$itemId page:$page limit:$limit sort:$sort filters:$filters ){...FullReviewsFragment}}fragment FullProductFragment on Product{showFulfillmentLink additionalOfferCount shippingRestriction availabilityStatus averageRating brand badges{...BadgesFragment}rhPath partTerminologyId aaiaBrandId manufacturerProductId productTypeId tireSize tireLoadIndex tireSpeedRating viscosity model buyNowEligible preOrder{...PreorderFragment}canonicalUrl catalogSellerId sellerReviewCount sellerAverageRating category{...ProductCategoryFragment}classType classId fulfillmentTitle shortDescription fulfillmentType fulfillmentBadge fulfillmentLabel{wPlusFulfillmentText message shippingText fulfillmentText locationText fulfillmentMethod addressEligibility fulfillmentType postalCode}hasSellerBadge itemType id imageInfo{...ProductImageInfoFragment}location{postalCode stateOrProvinceCode city storeIds}manufacturerName name numberOfReviews orderMinLimit orderLimit offerId priceInfo{priceDisplayCodes{...PriceDisplayCodesFragment}currentPrice{...ProductPriceFragment}wasPrice{...ProductPriceFragment}unitPrice{...ProductPriceFragment}subscriptionPrice{price priceString intervalFrequency duration percentageRate subscriptionString}priceRange{minPrice maxPrice priceString currencyUnit unitOfMeasure denominations{price priceString selected}}}returnPolicy{returnable freeReturns returnWindow{value unitType}}fsaEligibleInd sellerId sellerName sellerDisplayName secondaryOfferPrice{currentPrice{priceType priceString price}}semStoreData{pickupStoreId deliveryStoreId isSemLocationDifferent}shippingOption{...ShippingOptionFragment}type pickupOption{slaTier accessTypes availabilityStatus storeName storeId}salesUnit usItemId variantCriteria{id categoryTypeAllValues name type variantList{availabilityStatus id images name products swatchImageUrl selected}}variants{...MinimalProductFragment}groupMetaData{groupType groupSubType numberOfComponents groupComponents{quantity offerId componentType}}upc wfsEnabled sellerType ironbankCategory snapEligible promoData{id description terms type templateData{priceString imageUrl}}showAddOnServices addOnServices{serviceType serviceTitle serviceSubTitle groups{groupType groupTitle assetUrl shortDescription services{displayName offerId selectedDisplayName currentPrice{price priceString}}}}productLocation{displayValue}}fragment BadgesFragment on UnifiedBadge{flags{__typename...on BaseBadge{id text key query}...on PreviouslyPurchasedBadge{id text key lastBoughtOn numBought criteria{name value}}}labels{__typename...on BaseBadge{id text key}...on PreviouslyPurchasedBadge{id text key lastBoughtOn numBought}}tags{__typename...on BaseBadge{id text key}}}fragment ShippingOptionFragment on ShippingOption{accessTypes availabilityStatus slaTier deliveryDate maxDeliveryDate shipMethod shipPrice{...ProductPriceFragment}}fragment ProductCategoryFragment on ProductCategory{categoryPathId path{name url}}fragment PreorderFragment on PreOrder{streetDate streetDateDisplayable streetDateType isPreOrder preOrderMessage preOrderStreetDateMessage}fragment MinimalProductFragment on Variant{availabilityStatus imageInfo{...ProductImageInfoFragment}priceInfo{priceDisplayCodes{...PriceDisplayCodesFragment}currentPrice{...ProductPriceFragment}wasPrice{...ProductPriceFragment}unitPrice{...ProductPriceFragment}}productUrl usItemId id:productId fulfillmentBadge}fragment ProductImageInfoFragment on ProductImageInfo{allImages{id url zoomable}thumbnailUrl}fragment PriceDisplayCodesFragment on PriceDisplayCodes{clearance eligibleForAssociateDiscount finalCostByWeight hidePriceForSOI priceDisplayCondition pricePerUnitUom reducedPrice rollback strikethrough submapType unitOfMeasure unitPriceDisplayCondition}fragment ProductPriceFragment on ProductPrice{price priceString variantPriceString priceType currencyUnit}fragment NutrientFragment on Nutrient{name amount dvp childNutrients{name amount dvp}}fragment NutritionAttributeFragment on NutritionAttribute{name mainNutrient{...NutrientFragment}childNutrients{...NutrientFragment childNutrients{...NutrientFragment}}}fragment IdmlAttributeFragment on IdmlAttribute{name value attribute}fragment ServingAttributeFragment on ServingAttribute{name values{...IdmlAttributeFragment values{...IdmlAttributeFragment}}}fragment IDMLFragment on Idml{chokingHazards{...LegalContentFragment}directions{name value}indications{name value}ingredients{activeIngredientName{name value}activeIngredients{name value}inactiveIngredients{name value}ingredients{name value}}longDescription shortDescription interactiveProductVideo specifications{name value}warnings{name value}warranty{information length}esrbRating mpaaRating nutritionFacts{calorieInfo{...NutritionAttributeFragment}keyNutrients{name values{...NutritionAttributeFragment}}vitaminMinerals{...NutritionAttributeFragment}servingInfo{...ServingAttributeFragment}additionalDisclaimer{...IdmlAttributeFragment values{...IdmlAttributeFragment values{...IdmlAttributeFragment}}}staticContent{...IdmlAttributeFragment values{...IdmlAttributeFragment values{...IdmlAttributeFragment}}}}}fragment FullReviewsFragment on ProductReviews{averageOverallRating customerReviews{...CustomerReviewsFragment}ratingValueFiveCount ratingValueFourCount ratingValueOneCount ratingValueThreeCount ratingValueTwoCount roundedAverageOverallRating topNegativeReview{rating reviewSubmissionTime negativeFeedback positiveFeedback reviewText reviewTitle}topPositiveReview{rating reviewSubmissionTime negativeFeedback positiveFeedback reviewText reviewTitle}totalReviewCount}fragment LegalContentFragment on LegalContent{ageRestriction headline headline image mature message}fragment CustomerReviewsFragment on CustomerReview{rating reviewSubmissionTime reviewText reviewTitle userNickname}fragment ContentLayoutProduct on Product{name badges{...BadgesFragment}canonicalUrl classType availabilityStatus showAtc averageRating fulfillmentBadge fulfillmentSpeed fulfillmentTitle fulfillmentType imageInfo{thumbnailUrl}numberOfReviews offerId orderMinLimit orderLimit p13nDataV1{predictedQuantity flags{PREVIOUSLY_PURCHASED{text}CUSTOMERS_PICK{text}}}previouslyPurchased{label}preOrder{...PreorderFragment}priceInfo{currentPrice{...ProductPriceFragment}listPrice{...ProductPriceFragment}subscriptionPrice{priceString}priceDisplayCodes{clearance eligibleForAssociateDiscount finalCostByWeight hidePriceForSOI priceDisplayCondition pricePerUnitUom reducedPrice rollback strikethrough submapType unitOfMeasure unitPriceDisplayCondition}priceRange{minPrice maxPrice priceString}unitPrice{...ProductPriceFragment}wasPrice{...ProductPriceFragment}}rhPath salesUnit sellerId sellerName hasSellerBadge seller{name sellerId}shippingOption{slaTier shipMethod}showOptions snapEligible sponsoredProduct{spQs clickBeacon spTags}usItemId variantCount variantCriteria{name id variantList{name swatchImageUrl selectedProduct{usItemId canonicalUrl}}}}fragment FitmentLabel on FitmentLabels{links{...FitmentLabelEntity}messages{...FitmentLabelEntity}ctas{...FitmentLabelEntity}images{...FitmentLabelEntity}}fragment FitmentVehicleFragment on FitmentVehicle{vehicleYear{...FitmentVehicleFieldFragment}vehicleMake{...FitmentVehicleFieldFragment}vehicleModel{...FitmentVehicleFieldFragment}additionalAttributes{...FitmentVehicleFieldFragment}}fragment FitmentVehicleFieldFragment on FitmentVehicleField{id value label}fragment FitmentFieldFragment on FitmentField{id value displayName data{value label}extended dependsOn}fragment FitmentLabelEntity on FitmentLabelEntity{id label}fragment BuyBoxAdConfigsFragment on TempoWM_GLASSWWWBuyBoxAdConfigs{_rawConfigs moduleLocation lazy ad{...SponsoredProductsAdFragment}}fragment MarqueeDisplayAdConfigsFragment on TempoWM_GLASSWWWMarqueeDisplayAdConfigs{_rawConfigs ad{...DisplayAdFragment}}fragment DisplayAdFragment on Ad{...AdFragment adContent{type data{__typename...AdDataDisplayAdFragment}}}fragment AdFragment on Ad{status moduleType platform pageId pageType storeId stateCode zipCode pageContext moduleConfigs adsContext adRequestComposite}fragment AdDataDisplayAdFragment on AdData{...on DisplayAd{json status}}fragment SkylineDisplayAdConfigsFragment on TempoWM_GLASSWWWSkylineDisplayAdConfigs{_rawConfigs ad{...SkylineDisplayAdFragment}}fragment SkylineDisplayAdFragment on Ad{...SkylineAdFragment adContent{type data{__typename...SkylineAdDataDisplayAdFragment}}}fragment SkylineAdFragment on Ad{status moduleType platform pageId pageType storeId stateCode zipCode pageContext moduleConfigs adsContext adRequestComposite}fragment SkylineAdDataDisplayAdFragment on AdData{...on DisplayAd{json status}}fragment SponsoredProductCarouselConfigsFragment on TempoWM_GLASSWWWSponsoredProductCarouselConfigs{_rawConfigs moduleType ad{...SponsoredProductsAdFragment}}fragment SponsoredProductsAdFragment on Ad{...AdFragment adContent{type data{__typename...AdDataSponsoredProductsFragment}}}fragment AdDataSponsoredProductsFragment on AdData{...on SponsoredProducts{adUuid adExpInfo moduleInfo products{...ProductFragment}}}fragment ProductFragment on Product{usItemId offerId badges{flags{key text}labels{key text}tags{key text}}priceInfo{priceDisplayCodes{rollback reducedPrice eligibleForAssociateDiscount clearance strikethrough submapType priceDisplayCondition unitOfMeasure pricePerUnitUom}currentPrice{price priceString}wasPrice{price priceString}priceRange{minPrice maxPrice priceString}unitPrice{price priceString}}showOptions sponsoredProduct{spQs clickBeacon spTags}canonicalUrl numberOfReviews averageRating availabilityStatus imageInfo{thumbnailUrl allImages{id url}}name fulfillmentBadge classType type p13nData{predictedQuantity flags{PREVIOUSLY_PURCHASED{text}CUSTOMERS_PICK{text}}labels{PREVIOUSLY_PURCHASED{text}CUSTOMERS_PICK{text}}}}',
+                    query: 'query ItemById( $itemId:String! ){ product( itemId:$itemId ){...FullProductFragment}} fragment FullProductFragment on Product{giftingEligibility subscriptionEligible showFulfillmentLink additionalOfferCount shippingRestriction availabilityStatus averageRating brand rhPath partTerminologyId aaiaBrandId manufacturerProductId productTypeId tireSize tireLoadIndex tireSpeedRating viscosity model buyNowEligible showBuyWithWplus preOrder{...PreorderFragment}canonicalUrl catalogSellerId sellerReviewCount sellerAverageRating category{...ProductCategoryFragment}classType classId fulfillmentTitle shortDescription fulfillmentType fulfillmentBadge fulfillmentLabel{wPlusFulfillmentText message shippingText fulfillmentText locationText fulfillmentMethod addressEligibility fulfillmentType postalCode}hasSellerBadge itemType id imageInfo{...ProductImageInfoFragment}location{postalCode stateOrProvinceCode city storeIds}manufacturerName name numberOfReviews orderMinLimit orderLimit offerId priceInfo{priceDisplayCodes{...PriceDisplayCodesFragment} currentPrice{...ProductPriceFragment}wasPrice{...ProductPriceFragment}unitPrice{...ProductPriceFragment}savings{priceString}subscriptionPrice{price priceString intervalFrequency duration percentageRate subscriptionString} priceRange{minPrice maxPrice priceString currencyUnit unitOfMeasure denominations{price priceString selected}}} returnPolicy{returnable freeReturns returnWindow{value unitType}}fsaEligibleInd sellerId sellerName sellerDisplayName secondaryOfferPrice{currentPrice{priceType priceString price}}semStoreData{pickupStoreId deliveryStoreId isSemLocationDifferent}shippingOption{...ShippingOptionFragment}type pickupOption{slaTier accessTypes availabilityStatus storeName storeId}salesUnit usItemId variantCriteria{id categoryTypeAllValues name type variantList{availabilityStatus id images name products swatchImageUrl selected}}variants{...MinimalProductFragment}groupMetaData{groupType groupSubType numberOfComponents groupComponents{quantity offerId componentType productDisplayName}}upc wfsEnabled sellerType ironbankCategory snapEligible promoData{id description terms type templateData{priceString imageUrl}}showAddOnServices addOnServices{serviceType serviceTitle serviceSubTitle groups{groupType groupTitle assetUrl shortDescription services{displayName offerId selectedDisplayName currentPrice{price priceString}}}}productLocation{displayValue}}fragment PriceDisplayCodesFragment on PriceDisplayCodes{clearance eligibleForAssociateDiscount finalCostByWeight hidePriceForSOI priceDisplayCondition pricePerUnitUom reducedPrice rollback strikethrough submapType unitOfMeasure unitPriceDisplayCondition}fragment PreorderFragment on PreOrder{streetDate streetDateDisplayable streetDateType isPreOrder preOrderMessage preOrderStreetDateMessage}fragment ProductCategoryFragment on ProductCategory{categoryPathId path{name url}}fragment ProductImageInfoFragment on ProductImageInfo{allImages{id url zoomable}thumbnailUrl}fragment ShippingOptionFragment on ShippingOption{accessTypes availabilityStatus slaTier deliveryDate maxDeliveryDate shipMethod shipPrice{...ProductPriceFragment}}fragment ProductPriceFragment on ProductPrice{price priceString variantPriceString priceType currencyUnit}fragment MinimalProductFragment on Variant{availabilityStatus imageInfo{...ProductImageInfoFragment}priceInfo{priceDisplayCodes{...PriceDisplayCodesFragment}currentPrice{...ProductPriceFragment}wasPrice{...ProductPriceFragment}unitPrice{...ProductPriceFragment}}productUrl usItemId id:productId fulfillmentBadge}',
                     variables: {
-                        itemId: this.taskData.productSKU,
-                        semStoreId: null,
-                        selected: true,
-                        channel: 'WWW',
-                        pageType: 'ItemPageGlobal',
-                        tenant: 'WM_GLASS',
-                        version: 'v1',
-                        layout: ['itemDesktop'],
-                        tempo: {
-                            targeting: '%7B%22userState%22%3A%22loggedIn%22%7D',
-                            params: [
-                                {
-                                    key: 'expoVars',
-                                    value: 'expoVariationValue',
-                                },
-                                {
-                                    key: 'expoVars',
-                                    value: 'expoVariationValue2',
-                                },
-                            ],
-                        },
-                        page: 1,
-                        limit: 10,
-                        sort: 'relevancy',
-                        filters: [],
-                        p13N: {
-                            reqId: '',
-                            pageId: this.taskData.productSKU,
-                            modules: [
-                                {
-                                    moduleType: 'PersonalizedLabels',
-                                    moduleId: '234-sdfsfvns-sdfdskvl',
-                                },
-                            ],
-                            userClientInfo: {
-                                ipAddress: 'IP=0:0:0:0:0:0:0:1-0:0:0:0:0:0:0:1',
-                                isZipLocated: true,
-                                callType: 'CLIENT',
-                                deviceType: 'desktop',
-                            },
-                            userReqInfo: {
-                                refererContext: {
-                                    source: 'itempage',
-                                    catId: '',
-                                    facet: '',
-                                    query: '',
-                                },
-                                pageUrl: '',
-                            },
-                        },
-                        p13nCls: {
-                            pageId: this.taskData.productSKU,
-                            userClientInfo: {
-                                ipAddress: 'IP=0:0:0:0:0:0:0:1-0:0:0:0:0:0:0:1',
-                                isZipLocated: true,
-                                callType: 'CLIENT',
-                                deviceType: 'desktop',
-                            },
-                        },
-                        fetchBuyBoxAd: true,
-                        fetchMarquee: true,
-                        fetchSkyline: true,
-                        fetchSpCarousel: true,
+                        itemId: this.productSKU,
                     },
                 };
 
-                const resp = await this.axiosSession.post(`/orchestra/home/graphql/ip/${this.taskData.productSKU}`, body, { headers: headers });
+                const resp = await this.axiosSession.post(`/orchestra/home/graphql/ip/${this.productSKU}`, body, { headers: headers });
 
                 const itemDesc = resp.data['data'];
 
@@ -269,7 +227,7 @@ export class WalmartUSTask extends Task {
 
     async getCartId(): Promise<string> {
         let retry = false;
-        let headers: any = { ...WALMART_US_MERGE_GET_CART_HEADERS, referer: this.parsedURL.toString() };
+        let headers: any = { ...WALMART_US_MERGE_GET_CART_HEADERS };
 
         do {
             try {
@@ -314,7 +272,7 @@ export class WalmartUSTask extends Task {
 
     async addToCart(cartId: string, offerId: string, lineItemId: string): Promise<void> {
         let retry = false;
-        let headers: any = { ...WALMART_US_ATC_HEADERS, referer: this.parsedURL.toString() };
+        let headers: any = { ...WALMART_US_ATC_HEADERS };
         do {
             try {
                 retry = false;
@@ -333,7 +291,7 @@ export class WalmartUSTask extends Task {
                             items: [
                                 {
                                     offerId: offerId,
-                                    quantity: this.taskData.productQuantity,
+                                    quantity: this.productQuantity,
                                     lineItemId: lineItemId,
                                 },
                             ],
@@ -364,7 +322,7 @@ export class WalmartUSTask extends Task {
 
     async createDeliveryAddress(): Promise<string> {
         let retry = false;
-        let headers: any = { ...WALMART_US_CREATE_DELIVERY_ADDRESS, referer: this.parsedURL.toString() };
+        let headers: any = { ...WALMART_US_CREATE_DELIVERY_ADDRESS };
         do {
             try {
                 retry = false;
@@ -380,12 +338,11 @@ export class WalmartUSTask extends Task {
                     variables: {
                         input: {
                             address: {
-                                addressLineOne: this.userProfile.profileData.shipping.address,
+                                addressLineOne: this.userProfile.shipping.address,
                                 addressLineTwo: '',
-                                city: this.userProfile.profileData.shipping.town,
-                                postalCode: this.userProfile.profileData.shipping.postalCode,
-                                state: REGIONS[this.userProfile.profileData.shipping.country][this.userProfile.profileData.shipping.region]
-                                    .isocodeShort,
+                                city: this.userProfile.shipping.town,
+                                postalCode: this.userProfile.shipping.postalCode,
+                                state: REGIONS[this.userProfile.shipping.country][this.userProfile.shipping.region].isocodeShort,
                                 addressType: null,
                                 businessName: null,
                                 isApoFpo: null,
@@ -393,12 +350,12 @@ export class WalmartUSTask extends Task {
                                 isPoBox: null,
                                 sealedAddress: null,
                             },
-                            firstName: this.userProfile.profileData.shipping.firstName,
-                            lastName: this.userProfile.profileData.shipping.lastName,
+                            firstName: this.userProfile.shipping.firstName,
+                            lastName: this.userProfile.shipping.lastName,
                             deliveryInstructions: null,
                             displayLabel: null,
                             isDefault: false,
-                            phone: this.userProfile.profileData.shipping.phone,
+                            phone: this.userProfile.shipping.phone,
                             overrideAvs: false,
                         },
                     },
@@ -426,7 +383,7 @@ export class WalmartUSTask extends Task {
 
     async setFulFillment(cartId: string, addressId: string): Promise<void> {
         let retry = false;
-        let headers: any = { ...WALMART_US_SET_FULFILLMENT_HEADERS, referer: this.parsedURL.toString() };
+        let headers: any = { ...WALMART_US_SET_FULFILLMENT_HEADERS };
         do {
             try {
                 retry = false;
@@ -470,7 +427,7 @@ export class WalmartUSTask extends Task {
 
     async createContract(cartId: string): Promise<string> {
         let retry = false;
-        let headers: any = { ...WALMART_US_CREATE_CONTRACT_HEADERS, referer: this.parsedURL.toString() };
+        let headers: any = { ...WALMART_US_CREATE_CONTRACT_HEADERS };
         do {
             try {
                 retry = false;
@@ -572,16 +529,15 @@ export class WalmartUSTask extends Task {
                     query: 'mutation CreateCreditCard($input:AccountCreditCardInput!){createAccountCreditCard(input:$input){errors{code message}creditCard{...CreditCardFragment}}}fragment CreditCardFragment on CreditCard{__typename firstName lastName phone addressLineOne addressLineTwo city state postalCode cardType expiryYear expiryMonth lastFour id isDefault isExpired needVerifyCVV isEditable capOneProperties{shouldPromptForLink}linkedCard{availableCredit currentCreditBalance currentMinimumAmountDue minimumPaymentDueDate statementBalance statementDate rewards{rewardsBalance rewardsCurrency cashValue cashDisplayValue canRedeem}links{linkMethod linkHref linkType}}}',
                     variables: {
                         input: {
-                            firstName: this.userProfile.profileData.billing.lastName,
-                            lastName: this.userProfile.profileData.billing.lastName,
-                            phone: this.userProfile.profileData.billing.phone,
+                            firstName: this.userProfile.billing.lastName,
+                            lastName: this.userProfile.billing.lastName,
+                            phone: this.userProfile.billing.phone,
                             address: {
-                                addressLineOne: this.userProfile.profileData.billing.address,
+                                addressLineOne: this.userProfile.billing.address,
                                 addressLineTwo: null,
-                                postalCode: this.userProfile.profileData.billing.postalCode,
-                                city: this.userProfile.profileData.billing.town,
-                                state: REGIONS[this.userProfile.profileData.billing.country][this.userProfile.profileData.billing.region]
-                                    .isocodeShort,
+                                postalCode: this.userProfile.billing.postalCode,
+                                city: this.userProfile.billing.town,
+                                state: REGIONS[this.userProfile.billing.country][this.userProfile.billing.region].isocodeShort,
                                 isApoFpo: null,
                                 isLoadingDockAvailable: null,
                                 isPoBox: null,
@@ -748,7 +704,7 @@ export class WalmartUSTask extends Task {
                                 deliveryInstructions: null,
                                 deliveryOption: 'LEAVE_AT_DOOR',
                             },
-                            mobileNumber: this.userProfile.profileData.billing.phone,
+                            mobileNumber: this.userProfile.billing.phone,
                             paymentCvvInfos: [
                                 {
                                     preferenceId: creditCardId,
@@ -762,7 +718,7 @@ export class WalmartUSTask extends Task {
                             ],
                             paymentHandle: null,
                             acceptDonation: false,
-                            emailAddress: this.userProfile.profileData.billing.email,
+                            emailAddress: this.userProfile.billing.email,
                             fulfillmentOptions: null,
                             acceptedAgreements: [],
                         },
@@ -826,7 +782,7 @@ export class WalmartUSTask extends Task {
     private async encryptCard(): Promise<WalmartCreditCard> {
         const ccEncryptor = new WalmartEncryption();
 
-        const encCard = await ccEncryptor.encrypt(this.userProfile.profileData.payment);
+        const encCard = await ccEncryptor.encrypt(this.userProfile.payment);
 
         return encCard;
     }
@@ -861,7 +817,7 @@ export class WalmartUSTask extends Task {
 
     // Walmart graphQL api returns a successful response inside an object with the `data` key
     // An error response is returned inside an array with the `errors` key
-    private createErrorInterceptor(): void {
+    protected createErrorInterceptor(): void {
         this.axiosSession.interceptors.response.use(
             (response) => {
                 if (response.data['errors']) return Promise.reject(response);
@@ -880,11 +836,5 @@ export class WalmartUSTask extends Task {
                 return Promise.reject(error);
             },
         );
-    }
-
-    // TODO : change the way we update tasks, dont update parsedURL here
-    // functions are not pure
-    updateData(taskData: TaskData): void {
-        super.updateData(taskData);
     }
 }

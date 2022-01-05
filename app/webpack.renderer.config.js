@@ -17,6 +17,10 @@ module.exports = {
         fallback: {
             crypto: require.resolve('crypto-browserify'),
             stream: require.resolve('stream-browserify'),
+            // https://stackoverflow.com/questions/64557638/how-to-polyfill-node-core-modules-in-webpack-5
+            assert: false,
+            tls: false,
+            net: false,
         },
         alias: {
             '@main_window': path.resolve(__dirname, 'src/main_window/'),
@@ -31,6 +35,7 @@ module.exports = {
             '@interfaces': path.resolve(__dirname, 'src/interfaces/'),
             '@services': path.resolve(__dirname, 'src/services/'),
             '@styles': path.resolve(__dirname, 'src/styles/'),
+            '@css': path.resolve(__dirname, 'src/css/'),
         },
     },
 };

@@ -1,11 +1,30 @@
+import { CreditCardFactory } from './CreditCardFactory';
 import { debug } from './Log';
-import { Profile, ProfileData } from './Profile';
+import { Profile, ProfileFormData } from './Profile';
 
 const log = debug.extend('ProfileFactory');
 
 export class ProfileFactory {
-    public static createProfile(name: string, profileData: ProfileData): Profile {
-        const profile = new Profile(name, profileData);
+    private creditCardFactory: CreditCardFactory;
+
+    constructor(creditCardFactory: CreditCardFactory) {
+        this.creditCardFactory = creditCardFactory;
+    }
+    public createProfile(groupName: string, profileData: ProfileFormData): Profile {
+        // expiryMonth: string, expiryYear: string, cvc: string, cardHolderName: string
+        const cc = this.creditCardFactory.createCreditCard(profileData.payment);
+
+        const profile = new Profile(
+            profileData.id,
+            profileData.profileName,
+            groupName,
+            profileData.billing,
+            profileData.shipping,
+            cc,
+            this.creditCardFactory,
+        );
+
+        log('Profile created');
         return profile;
     }
 }

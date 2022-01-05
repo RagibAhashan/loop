@@ -1,12 +1,3 @@
-import { Moment } from 'moment';
-import { Proxy } from './OtherInterfaces';
-export interface CreditCard {
-    number: string;
-    expiryMonth: string;
-    expiryYear: string;
-    cvc: string;
-}
-
 export interface Billing {
     lastName: string;
     email: string;
@@ -19,13 +10,6 @@ export interface Billing {
     region: string;
     /** Town is synonym for city */
     town: string;
-}
-export interface UserProfile {
-    payment: CreditCard;
-    billing: Billing;
-    shipping: Billing;
-    same: boolean;
-    name: string;
 }
 
 // TODO move this interface somewhere else
@@ -67,38 +51,4 @@ export interface GoogleCaptcha {
 export interface Captcha {
     taskUUID: string;
     params: PxCaptcha | GoogleCaptcha;
-}
-
-export interface TaskMap {
-    [key: string]: TaskData; //a task have its uuid as key
-}
-export interface TaskData {
-    uuid: string;
-    running: boolean;
-    proxySet: string | null;
-    profileName: string;
-    retryDelay: number;
-}
-
-export interface FLTaskData extends TaskData {
-    productSKU: string;
-    deviceId: string | null;
-    startDate?: Moment;
-    startTime?: Moment;
-    sizes: string[];
-    manualTime?: boolean;
-}
-
-export interface WalmartTaskData extends TaskData {
-    productSKU: string;
-    offerId: string;
-    productQuantity: number;
-}
-
-export interface StartTaskData {
-    profileData: UserProfile;
-    proxyData: Proxy | undefined;
-    sizes: string[];
-    retryDelay: number;
-    productSKU: string;
 }

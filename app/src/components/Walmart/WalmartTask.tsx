@@ -1,22 +1,20 @@
-// import styles from './sidebar.module.css';
 import TaskActions from '@components/TaskAction/TaskActions';
 import TaskStatus from '@components/TaskStatus/TaskStatus';
-import { IProfile } from '@core/Profile';
-import { IProxySet } from '@core/ProxySet';
-import { WalmartCATask } from '@core/walmart/WalmartCATask';
-import { WalmartUSTask } from '@core/walmart/WalmartUSTask';
+import { ProfileGroupViewData } from '@core/ProfileGroup';
+import { ProxySetViewData } from '@core/ProxySet';
+import { WalmartTaskViewData } from '@core/walmart/WalmartTask';
 import { Col, Row, Tooltip } from 'antd';
 import React, { useEffect } from 'react';
 
 interface Props {
-    task: WalmartCATask | WalmartUSTask;
+    task: WalmartTaskViewData;
     style: any;
-    proxySets: IProxySet[];
-    profiles: IProfile[];
+    proxySets: ProxySetViewData[];
+    profileGroups: ProfileGroupViewData[];
     groupName: string;
 }
 const WalmartTask: React.FunctionComponent<Props> = (props) => {
-    const { task, style, proxySets, profiles, groupName } = props;
+    const { task, style, proxySets, profileGroups, groupName } = props;
 
     const isRunning = false;
 
@@ -53,18 +51,18 @@ const WalmartTask: React.FunctionComponent<Props> = (props) => {
                     userSelect: 'none',
                 }}
             >
-                <Tooltip placement="bottomLeft" title={`Retry Delay : ${task.taskData.retryDelay} ms`}>
+                <Tooltip placement="bottomLeft" title={`Retry Delay : ${task.retryDelay} ms`}>
                     <Col span={4} style={{ paddingLeft: 15, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.taskData.productSKU}</div>
+                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.productSKU}</div>
                     </Col>
                 </Tooltip>
 
                 <Col span={4}>
-                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.taskData.proxySet ?? 'No Proxies'}</div>
+                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.proxySetName ?? 'No Proxies'}</div>
                 </Col>
 
                 <Col span={4}>
-                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.taskData.profileName}</div>
+                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.profileName}</div>
                 </Col>
 
                 <Col span={4} style={{ paddingRight: 15 }}>
@@ -77,7 +75,7 @@ const WalmartTask: React.FunctionComponent<Props> = (props) => {
                 </Col>
 
                 <Col flex="auto" span={2}>
-                    <TaskActions groupName={groupName} proxySets={proxySets} profiles={profiles} task={task}></TaskActions>
+                    <TaskActions groupName={groupName} proxySets={proxySets} profileGroups={profileGroups} task={task}></TaskActions>
                 </Col>
             </Row>
         </div>

@@ -1,19 +1,19 @@
-import { IProfile } from '@core/Profile';
-import { IProxySet } from '@core/ProxySet';
-import { ITaskGroup } from '@core/TaskGroup';
+import { ProfileGroupViewData } from '@core/ProfileGroup';
+import { ProxySetViewData } from '@core/ProxySet';
+import { TaskGroupViewData } from '@core/TaskGroup';
 import { Button } from 'antd';
 import React, { useState } from 'react';
 import { buttonStyle } from '../../styles/Buttons';
 
 interface Props {
     EditTaskModalComponent: React.ComponentType<any>;
-    taskGroup: ITaskGroup;
-    proxySets: IProxySet[];
-    profiles: IProfile[];
+    taskGroup: TaskGroupViewData;
+    proxySets: ProxySetViewData[];
+    profileGroups: ProfileGroupViewData[];
 }
 
 const EditAllTasksAction: React.FunctionComponent<Props> = (props) => {
-    const { EditTaskModalComponent, proxySets, profiles } = props;
+    const { EditTaskModalComponent, proxySets, profileGroups } = props;
 
     const [showModal, setShowModal] = useState(false);
 
@@ -40,7 +40,7 @@ const EditAllTasksAction: React.FunctionComponent<Props> = (props) => {
             </Button>
             <EditTaskModalComponent
                 proxySets={proxySets}
-                profiles={profiles}
+                profileGroups={profileGroups}
                 showModal={showModal}
                 massEdit={true}
                 setShowModal={setShowModal}

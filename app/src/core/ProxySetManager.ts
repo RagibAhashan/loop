@@ -1,11 +1,10 @@
 import { AppDatabase } from '@core/AppDatabase';
-import { Proxy } from '@core/Proxy';
+import { Proxy, ProxyFormData, ProxyViewData } from '@core/Proxy';
 import { ipcMain } from 'electron';
 import { ProxySetChannel } from './IpcChannels';
 import { debug } from './Log';
-import { IProxy } from './Proxy';
 import { ProxyFactory } from './ProxyFactory';
-import { IProxySet, ProxySet } from './ProxySet';
+import { ProxySet, ProxySetViewData } from './ProxySet';
 import { ProxySetFactory } from './ProxySetFactory';
 
 const log = debug.extend('ProxySetManager');
@@ -26,26 +25,30 @@ export class ProxySetManager {
     }
 
     public async loadFromDB(): Promise<void> {
-        const proxySets = await this.database.loadModelDB<IProxySet>('ProxySet');
+        const proxySets = await this.database.loadModelDB<ProxySet>('ProxySet');
 
-        const proxies = await this.database.loadModelDB<IProxy>('Proxy');
+        const proxies = await this.database.loadModelDB<Proxy>('Proxy');
 
         if (!proxySets || !proxies) return;
 
         for (const proxySet of proxySets) {
-            this.addProxySet(proxySet.name);
-            this.addProxyToSet(
-                proxySet.name,
-                proxies.map((proxy) => `${proxy.host}:${proxy.user}:${proxy.password}`),
-            );
+            this.addProxySet(proxySet.id, proxySet.name);
+
+            const proxiesData: ProxyFormData[] = [];
+
+            proxies.forEach((proxy) => {
+                if (proxy.proxySetId === proxySet.id) proxiesData.push({ proxy: `${proxy.host}:${proxy.user}:${proxy.password}`, id: proxy.id });
+            });
+
+            this.addProxyToSet(proxySet.id, proxiesData);
         }
 
         log('ProxySet Loaded');
     }
 
     public async saveToDB(): Promise<boolean> {
-        const proxySetsSaved = await this.database.saveModelDB<IProxySet>('ProxySet', this.getAllProxySets());
-        const proxiesSaved = await this.database.saveModelDB<IProxy>('Proxy', this.getAllProxies());
+        const proxySetsSaved = await this.database.saveModelDB<ProxySet>('ProxySet', this.getAllProxySets());
+        const proxiesSaved = await this.database.saveModelDB<Proxy>('Proxy', this.getAllProxies());
 
         if (!proxySetsSaved || !proxiesSaved) return false;
 
@@ -53,145 +56,158 @@ export class ProxySetManager {
         return true;
     }
 
-    public pickProxyFromSet(proxySetName: string): Proxy {
-        const proxySet = this.proxySetMap.get(proxySetName);
+    public pickProxyFromSet(setId: string): Proxy {
+        const proxySet = this.proxySetMap.get(setId);
         return proxySet.pickProxy();
     }
 
-    private getProxySet(name: string): ProxySet | undefined {
-        return this.proxySetMap.get(name);
+    private getProxySet(setId: string): ProxySet | undefined {
+        return this.proxySetMap.get(setId);
     }
 
-    private addProxySet(name: string): IProxySet[] | null {
-        if (this.proxySetMap.has(name)) {
+    private addProxySet(setId: string, name: string): ProxySetViewData[] | null {
+        if (this.proxySetMap.has(setId)) {
             log('[ProxySet %s already exists]', name);
             return null;
         }
 
-        const newSet = ProxySetFactory.createProxySet(name);
+        const newSet = ProxySetFactory.createProxySet(setId, name);
 
-        this.proxySetMap.set(name, newSet);
-        return this.getAllProxySets();
+        this.proxySetMap.set(setId, newSet);
+
+        return this.getAllProxySetsViewData();
     }
 
-    private removeProxySet(name: string): IProxySet[] | null {
-        if (!this.proxySetMap.has(name)) {
-            log('[ProxySet %s not found]', name);
+    private removeProxySet(setId: string): ProxySetViewData[] | null {
+        if (!this.proxySetMap.has(setId)) {
+            log('[ProxySet not found to remove]');
             return null;
         }
 
-        this.proxySetMap.delete(name);
-        return this.getAllProxySets();
+        this.proxySetMap.delete(setId);
+        return this.getAllProxySetsViewData();
     }
 
-    private removeAllProxies(name: string): IProxySet[] | null {
-        if (!this.proxySetMap.has(name)) {
-            log('[ProxySet %s not found]', name);
+    private removeAllProxies(setId: string): ProxySetViewData[] | null {
+        if (!this.proxySetMap.has(setId)) {
+            log('[ProxySet not found]');
             return null;
         }
 
-        const proxySet = this.proxySetMap.get(name);
+        const proxySet = this.proxySetMap.get(setId);
+
         proxySet.removeAllProxies();
-        return this.getAllProxySets();
+
+        return this.getAllProxySetsViewData();
     }
 
-    private getAllProxySets(): IProxySet[] {
-        const proxySets: IProxySet[] = [];
-        this.proxySetMap.forEach((proxySet) => proxySets.push(proxySet.getValue()));
+    private getAllProxySets(): ProxySet[] {
+        return Array.from(this.proxySetMap.values());
+    }
+
+    private getAllProxies(): Proxy[] {
+        const proxies: Proxy[] = [];
+        this.proxySetMap.forEach((proxySet) => proxies.push(...proxySet.getAllProxies()));
+        return proxies;
+    }
+
+    private getAllProxySetsViewData(): ProxySetViewData[] {
+        const proxySets: ProxySetViewData[] = [];
+        this.proxySetMap.forEach((proxySet) => proxySets.push(proxySet.getViewData()));
         return proxySets;
     }
 
-    private getAllProxies(): IProxy[] {
-        const proxies: IProxy[] = [];
-        this.proxySetMap.forEach((proxySet) => proxies.push(...proxySet.getAllProxies()));
+    private getAllProxiesViewData(): ProxyViewData[] {
+        const proxies: ProxyViewData[] = [];
+        this.proxySetMap.forEach((proxySet) => proxies.push(...proxySet.getAllProxiesViewData()));
         return proxies;
     }
 
     /**
      *
-     * @param hosts Array of string containing proxies in this format : host:port:user:pass
+     * @param proxies Array of string containing proxies in this format : host:port:user:pass
      */
-    private addProxyToSet(setName: string, proxies: string[]): IProxy[] | null {
-        if (!this.proxySetMap.has(setName)) {
-            log('[ProxySet %s not found]', name);
+    private addProxyToSet(setId: string, proxies: ProxyFormData[]): ProxyViewData[] | null {
+        if (!this.proxySetMap.has(setId)) {
+            log('[ProxySet not found]');
             return null;
         }
 
-        const proxySet = this.proxySetMap.get(setName);
+        const proxySet = this.proxySetMap.get(setId);
 
-        for (const proxyStr of proxies) {
-            const proxy = ProxyFactory.createProxy(proxyStr, setName);
+        for (const proxyData of proxies) {
+            const proxy = ProxyFactory.createProxy(setId, proxyData);
             proxySet.addProxy(proxy);
         }
 
-        return proxySet.getAllProxies();
+        return proxySet.getAllProxiesViewData();
     }
 
     /**
      *
      * @param hosts Array of string containing proxies full host = hostname:port
      */
-    private removeProxyFromSet(setName: string, proxiesHost: string[]): IProxy[] | null {
-        if (!this.proxySetMap.has(setName)) {
-            log('[ProxySet %s not found]', name);
+    private removeProxyFromSet(setId: string, proxyIds: string[]): ProxyViewData[] | null {
+        if (!this.proxySetMap.has(setId)) {
+            log('[ProxySetnot found]');
             return null;
         }
-        const proxySet = this.proxySetMap.get(setName);
+        const proxySet = this.proxySetMap.get(setId);
 
-        for (const proxyHost of proxiesHost) {
-            proxySet.removeProxy(proxyHost);
+        for (const proxyId of proxyIds) {
+            proxySet.removeProxy(proxyId);
         }
 
-        return proxySet.getAllProxies();
+        return proxySet.getAllProxiesViewData();
     }
 
-    private editProxySetName(oldName: string, newName: string): void {
-        const proxySet = this.proxySetMap.get(oldName);
+    private editProxySetName(setId: string, newName: string): void {
+        const proxySet = this.proxySetMap.get(setId);
         proxySet.editName(newName);
     }
 
     private registerListeners(): void {
-        ipcMain.handle(ProxySetChannel.getAllProxySets, (_) => {
-            return this.getAllProxySets();
+        ipcMain.handle(ProxySetChannel.getAllProxySets, (_): ProxySetViewData[] => {
+            return this.getAllProxySetsViewData();
         });
 
-        ipcMain.on(ProxySetChannel.addProxySet, (event, name: string) => {
-            const proxySets = this.addProxySet(name);
+        ipcMain.on(ProxySetChannel.addProxySet, (event, id: string, name: string) => {
+            const proxySets = this.addProxySet(id, name);
             if (proxySets) {
-                event.reply(ProxySetChannel.proxySetUpdated, proxySets, 'Proxy set created');
+                event.reply(ProxySetChannel.proxySetUpdated, proxySets, 'Proxy Set Created');
             } else {
                 event.reply(ProxySetChannel.proxySetError, 'Proxy set already exists');
             }
         });
 
-        ipcMain.on(ProxySetChannel.removeProxySet, (event, name: string) => {
-            const proxySets = this.removeProxySet(name);
+        ipcMain.on(ProxySetChannel.removeProxySet, (event, setId: string) => {
+            const proxySets = this.removeProxySet(setId);
             if (proxySets) {
-                event.reply(ProxySetChannel.proxySetUpdated, proxySets, 'Proxy set deleted');
+                event.reply(ProxySetChannel.proxySetUpdated, proxySets, 'Proxy Set Deleted');
             } else {
                 event.reply(ProxySetChannel.proxySetError, 'Error');
             }
         });
 
-        ipcMain.on(ProxySetChannel.removeAllProxiesFromProxySet, (event, name: string) => {
-            const proxySets = this.removeAllProxies(name);
+        ipcMain.on(ProxySetChannel.removeAllProxiesFromProxySet, (event, setId: string) => {
+            const proxySets = this.removeAllProxies(setId);
             if (proxySets) {
-                event.reply(ProxySetChannel.proxySetUpdated, proxySets, 'All Proxy set deleted');
+                event.reply(ProxySetChannel.proxySetUpdated, proxySets, 'All Proxy Set Deleted');
             } else {
                 event.reply(ProxySetChannel.proxySetError, 'Error');
             }
         });
 
-        ipcMain.on(ProxySetChannel.getProxySetProxies, (event, name: string) => {
-            const currentProxySet = this.getProxySet(name);
+        ipcMain.on(ProxySetChannel.getProxySetProxies, (event, setId: string) => {
+            const currentProxySet = this.getProxySet(setId);
             if (currentProxySet) {
-                const proxies = currentProxySet.getAllProxies();
-                event.reply(ProxySetChannel.onSelectedProxySet, currentProxySet.name, proxies);
+                const proxies = currentProxySet.getAllProxiesViewData();
+                event.reply(ProxySetChannel.onSelectedProxySet, currentProxySet.getViewData(), proxies);
             }
         });
 
-        ipcMain.on(ProxySetChannel.addProxyToSet, (event, name: string, proxies: string[]) => {
-            const proxyList = this.addProxyToSet(name, proxies);
+        ipcMain.on(ProxySetChannel.addProxyToSet, (event, setId: string, proxies: ProxyFormData[]) => {
+            const proxyList = this.addProxyToSet(setId, proxies);
             if (proxyList) {
                 event.reply(ProxySetChannel.proxiesUpdated, proxyList);
             } else {
@@ -199,8 +215,8 @@ export class ProxySetManager {
             }
         });
 
-        ipcMain.on(ProxySetChannel.removeProxyFromSet, (event, name: string, proxyHosts: string[]) => {
-            const proxyList = this.removeProxyFromSet(name, proxyHosts);
+        ipcMain.on(ProxySetChannel.removeProxyFromSet, (event, setId: string, proxyIds: string[]) => {
+            const proxyList = this.removeProxyFromSet(setId, proxyIds);
             if (proxyList) {
                 event.reply(ProxySetChannel.proxiesUpdated, proxyList);
             } else {

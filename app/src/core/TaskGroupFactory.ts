@@ -7,8 +7,8 @@ const log = debug.extend('TaskGroupFactory');
 export class TaskGroupFactory {
     constructor() {}
 
-    public createTaskGroup(name: string, storeType: StoreType): TaskGroup {
-        const taskGroup = new TaskGroup(name, storeType);
+    public createTaskGroup(id: string, name: string, storeType: StoreType): TaskGroup {
+        const taskGroup = new TaskGroup(id, name, storeType);
         return taskGroup;
     }
 }

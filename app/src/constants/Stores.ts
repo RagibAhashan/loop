@@ -55,3 +55,7 @@ export const STORES: StoresMap = {
         captchaType: CaptchaType.Px,
     },
 };
+
+export const getStores = () => {
+    return Object.entries(STORES);
+};

@@ -1,41 +1,55 @@
 import { TASK_STOP } from '@common/Constants';
 import { StoreType } from '../constants/Stores';
 import { debug } from './Log';
-import { ITask, Task } from './Task';
+import { Task, TaskViewData } from './Task';
+import { Viewable } from './Viewable';
 
 const log = debug.extend('TaskGroup');
 
-export interface ITaskGroup {
+export interface TaskGroupViewData {
+    id: string;
     name: string;
     storeType: StoreType;
 }
 
+export interface ITaskGroup {
+    id: string;
+    name: string;
+    storeType: StoreType;
+    // add methods if necessary
+}
+
 export type TaskMap = Map<string, Task>;
 
-export class TaskGroup implements ITaskGroup {
+export class TaskGroup implements ITaskGroup, Viewable<TaskGroupViewData> {
+    id: string;
     name: string;
     storeType: StoreType;
     tasks: TaskMap;
 
-    constructor(name: string, storeType: StoreType) {
+    constructor(id: string, name: string, storeType: StoreType) {
+        this.id = id;
         this.name = name;
         this.storeType = storeType;
         this.tasks = new Map();
     }
 
-    // Returns a simple data format for the view
-    public getValue(): ITaskGroup {
-        return { name: this.name, storeType: this.storeType };
+    public getViewData(): TaskGroupViewData {
+        return {
+            id: this.id,
+            name: this.name,
+            storeType: this.storeType,
+        };
     }
 
     public addTasks(task: Task): void {
         //Should never happen
-        if (this.tasks.has(task.taskData.uuid)) {
-            log('UUID already exists in task map, could not add task %s %s', task.taskData.uuid, this.storeType);
+        if (this.tasks.has(task.uuid)) {
+            log('UUID already exists in task map, could not add task %s %s', task.uuid, this.storeType);
             return;
         }
 
-        this.tasks.set(task.taskData.uuid, task);
+        this.tasks.set(task.uuid, task);
     }
 
     public removeTask(uuid: string): void {
@@ -50,15 +64,24 @@ export class TaskGroup implements ITaskGroup {
         this.tasks = new Map();
     }
 
-    public getAllTasks(): ITask[] {
-        const tasks: ITask[] = [];
-        this.tasks.forEach((task) => tasks.push(task.getValue()));
+    public getAllTasksViewData(): TaskViewData[] {
+        const tasks: TaskViewData[] = [];
+        this.tasks.forEach((task) => tasks.push(task.getViewData()));
         return tasks;
     }
 
-    public getTask(uuid: string): ITask {
+    public getTaskViewData(uuid: string): TaskViewData {
         const task = this.tasks.get(uuid);
-        return task.getValue();
+        return task.getViewData();
+    }
+
+    public getAllTasks(): Task[] {
+        return Array.from(this.tasks.values());
+    }
+
+    public getTask(uuid: string): Task {
+        const task = this.tasks.get(uuid);
+        return task;
     }
 
     public startTask(uuid: string): void {

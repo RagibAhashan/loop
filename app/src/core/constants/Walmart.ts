@@ -41,6 +41,7 @@ export const WALMART_US_GET_ITEM_HEADERS = {
     'content-type': 'application/json',
     'is-variant-fetch': 'false',
     origin: 'https://www.walmart.com',
+    referer: 'https://www.walmart.com/ip/',
     pragma: 'no-cache',
     'sec-fetch-dest': 'empty',
     'sec-fetch-mode': 'cors',

@@ -1,12 +1,13 @@
 import { Layout } from 'antd';
 import React, { useEffect } from 'react';
+import { hot } from 'react-hot-loader';
 import { Route } from 'react-router-dom';
 import { PROFILE_ROUTE, PROXY_ROUTE, SETTINGS_ROUTE, TASKS_ROUTE } from '../common/Constants';
 import SideBar from '../components/sidebar';
-import ProfilePage from '../pages/Profile/ProfilePage';
-import ProxyPage from '../pages/Proxies/ProxyPage';
+import ProfilePage from '../pages/Profile/profile-page';
+import ProxyPage from '../pages/Proxies/proxy-page';
 import SettingsPage from '../pages/settingsPage';
-import TaskPage from '../pages/Task/TaskPage';
+import TaskPage from '../pages/task/task-page';
 import { Fingerprint } from '../services/Fingerprint';
 const { Content } = Layout;
 
@@ -18,6 +19,8 @@ const generateFingerPrint = () => {
 };
 
 const App = () => {
+    // const { colorMode, toggleColorMode } = useColorMode();
+
     // Important : This useEffect needs to only be executed once at startup
     useEffect(() => {
         console.log('app refresh wtf');
@@ -41,4 +44,6 @@ const App = () => {
     );
 };
 
-export default App;
+// https://github.com/electron-userland/electron-forge/issues/2560
+// export default App;
+export default hot(module)(App);

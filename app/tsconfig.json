@@ -25,7 +25,8 @@
             "@constants/*": ["src/constants/*"],
             "@interfaces/*": ["src/interfaces/*"],
             "@services/*": ["src/services/*"],
-            "@styles/*": ["src/styles/*"]
+            "@styles/*": ["src/styles/*"],
+            "@css/*": ["src/css/*"]
         },
         "jsx": "react",
         "removeComments": true

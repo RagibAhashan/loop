@@ -2,46 +2,47 @@ import { BrowserWindow } from 'electron';
 import { STORES } from '../constants/Stores';
 import UserAgentProvider from '../services/UserAgentProvider';
 import { StoreInfo, StoreType } from './../constants/Stores';
-import { Captcha, FLTaskData, Status, TaskData, WalmartTaskData } from './../interfaces/TaskInterfaces';
-import { FootLockerTask } from './footlocker/FootLockerTask';
+import { Captcha, Status } from './../interfaces/TaskInterfaces';
+import { FootLockerTask, IFootLockerTask } from './footlocker/FootLockerTask';
 import { TaskChannel } from './IpcChannels';
 import { debug } from './Log';
-import { ProfileManager } from './ProfileManager';
+import { ProfileGroupManager } from './ProfileGroupManager';
 import { ProxySetManager } from './ProxySetManager';
 import { RequestInstance } from './RequestInstance';
-import { Task } from './Task';
+import { ITask, Task } from './Task';
 import { taskManager } from './TaskManager';
 import { WalmartCATask } from './walmart/WalmartCATask';
+import { IWalmartTask } from './walmart/WalmartTask';
 import { WalmartUSTask } from './walmart/WalmartUSTask';
 
 const log = debug.extend('TaskFactory');
 export class TaskFactory {
-    private profileManager: ProfileManager;
+    private profileGroupManager: ProfileGroupManager;
     private proxyManager: ProxySetManager;
     // TODO : should not have electron logic here
     // mainWindow is used to send a message to the window on task evens (status, captcha, etc)
     private mainWindow: BrowserWindow;
 
-    constructor(profileManager: ProfileManager, proxyManager: ProxySetManager, mainWindow: BrowserWindow) {
-        this.profileManager = profileManager;
+    constructor(profileGroupManager: ProfileGroupManager, proxyManager: ProxySetManager, mainWindow: BrowserWindow) {
+        this.profileGroupManager = profileGroupManager;
         this.proxyManager = proxyManager;
         this.mainWindow = mainWindow;
     }
-    public createTask(storeType: StoreType, taskData: TaskData, taskGroupName: string): Task {
+    public createTask(storeType: StoreType, taskData: Partial<ITask>, taskGroupId: string): Task {
         let task: Task;
         switch (storeType) {
             case StoreType.WalmartCA:
             case StoreType.WalmartUS:
-                task = this.createWalmartTask(storeType, taskData as WalmartTaskData, taskGroupName);
+                task = this.createWalmartTask(storeType, taskData as Partial<IWalmartTask>, taskGroupId);
                 break;
             case StoreType.FootlockerCA:
             case StoreType.FootlockerUS:
-                task = this.createFootlockerTask(storeType, taskData as FLTaskData, taskGroupName);
+                task = this.createFootlockerTask(storeType, taskData as Partial<IFootLockerTask>, taskGroupId);
                 break;
         }
 
         task.on(TaskChannel.onTaskStatus, (message: Status) => {
-            this.mainWindow.webContents.send(TaskChannel.onTaskStatus + task.taskData.uuid, message);
+            this.mainWindow.webContents.send(TaskChannel.onTaskStatus + task.uuid, message);
         });
 
         // task.on(TaskChannel.onTaskStatus, () => {
@@ -50,28 +51,41 @@ export class TaskFactory {
 
         task.on(TaskChannel.onCaptcha, (captcha: Captcha) => {
             log('task got captcha sending to renderer');
-            this.mainWindow.webContents.send(TaskChannel.onCaptcha + task.taskData.uuid, captcha);
+            this.mainWindow.webContents.send(TaskChannel.onCaptcha + task.uuid, captcha);
         });
 
         task.on(TaskChannel.onTaskSuccess, () => {
-            this.mainWindow.webContents.send(task.taskData.uuid + 'TASK_SUCCESS');
+            this.mainWindow.webContents.send(task.uuid + 'TASK_SUCCESS');
         });
 
         return task;
     }
-    public createFootlockerTask(storeType: StoreType, taskData: FLTaskData, taskGroupName: string): Task {
+    public createFootlockerTask(storeType: StoreType, taskData: Partial<IFootLockerTask>, taskGroupId: string): Task {
         const store = STORES[storeType];
 
         const axios = this.createRequestInstance(store, { timestamp: Date.now() });
 
-        const flTask = new FootLockerTask(taskData.uuid, axios, taskData, taskGroupName, this.profileManager, this.proxyManager);
+        const flTask = new FootLockerTask(
+            taskData.uuid,
+            taskData.retryDelay,
+            taskData.userProfile,
+            taskData.proxySet,
+            taskData.proxy,
+            taskGroupId,
+            axios,
+            this.profileGroupManager,
+            this.proxyManager,
+            taskData.productSKU,
+            taskData.sizes,
+            taskData.deviceId,
+        );
 
         taskManager.register(taskData.uuid, flTask);
 
         return flTask;
     }
 
-    private createWalmartTask(storeType: StoreType, taskData: WalmartTaskData, taskGroupName: string): Task {
+    private createWalmartTask(storeType: StoreType, taskData: Partial<IWalmartTask>, taskGroupId: string): Task {
         const store = STORES[storeType];
 
         const axios = this.createRequestInstance(store);
@@ -79,10 +93,36 @@ export class TaskFactory {
         let wTask;
         switch (storeType) {
             case StoreType.WalmartCA:
-                wTask = new WalmartCATask(taskData.uuid, axios, taskData, taskGroupName, this.profileManager, this.proxyManager);
+                wTask = new WalmartCATask(
+                    taskData.uuid,
+                    taskData.retryDelay,
+                    taskData.userProfile,
+                    taskData.proxySet,
+                    taskData.proxy,
+                    taskGroupId,
+                    axios,
+                    this.profileGroupManager,
+                    this.proxyManager,
+                    taskData.offerId,
+                    taskData.productQuantity,
+                    taskData.productSKU,
+                );
                 break;
             case StoreType.WalmartUS:
-                wTask = new WalmartUSTask(taskData.uuid, axios, taskData, taskGroupName, this.profileManager, this.proxyManager);
+                wTask = new WalmartUSTask(
+                    taskData.uuid,
+                    taskData.retryDelay,
+                    taskData.userProfile,
+                    taskData.proxySet,
+                    taskData.proxy,
+                    taskGroupId,
+                    axios,
+                    this.profileGroupManager,
+                    this.proxyManager,
+                    taskData.offerId,
+                    taskData.productQuantity,
+                    taskData.productSKU,
+                );
                 break;
         }
 

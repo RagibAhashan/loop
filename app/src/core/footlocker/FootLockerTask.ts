@@ -1,38 +1,76 @@
-import { ProfileManager } from '@core/ProfileManager';
+import { CreditCard } from '@core/CreditCard';
+import { Profile } from '@core/Profile';
+import { ProfileGroupManager } from '@core/ProfileGroupManager';
+import { Proxy } from '@core/Proxy';
+import { ProxySet } from '@core/ProxySet';
 import { ProxySetManager } from '@core/ProxySetManager';
+import { Viewable } from '@core/Viewable';
 import { AxiosResponse } from 'axios';
 import { NOTIFY_CAPTCHA_SOLVED, NOTIFY_CAPTCHA_TASK, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
 import { Cookie, Headers } from '../constants/Cookies';
 import { ERRORS_CART, ERRORS_CHECKOUT, ERRORS_PAYMENT, ERRORS_SHIPPING, STATUS_ERROR } from '../constants/FootLocker';
-import { CANCEL_ERROR, Task } from '../Task';
-import { CreditCard, FLTaskData } from './../../interfaces/TaskInterfaces';
+import { CANCEL_ERROR, ITask, Task, TaskViewData } from '../Task';
 import { MESSAGES } from './../constants/Constants';
 import { CookieJar } from './../CookieJar';
 import { RequestInstance } from './../RequestInstance';
 
-export class FootLockerTask extends Task {
-    captchaSolved: boolean;
-    waitingRoom: { refresh: boolean; delay: number };
-    productCode: string;
-    currentSize: string;
+export interface FootLockerTaskViewData extends TaskViewData {
+    productSKU: string;
+    sizes: string[];
+}
+export interface IFootLockerTask extends ITask {
+    productSKU: string;
+    deviceId: string | null;
+    sizes: string[];
+}
+
+export class FootLockerTask extends Task implements IFootLockerTask, Viewable<FootLockerTaskViewData> {
+    public captchaSolved: boolean;
+    public waitingRoom: { refresh: boolean; delay: number };
+    public productCode: string;
+    public currentSize: string;
+    public deviceId: string;
+    public sizes: string[];
+    public productSKU: string;
 
     constructor(
         uuid: string,
-        requestInstance: RequestInstance,
-        taskData: FLTaskData,
+        retryDelay: number,
+        userProfile: Profile,
+        proxySet: ProxySet,
+        proxy: Proxy,
         taskGroupName: string,
-        profileManager: ProfileManager,
+        requestInstance: RequestInstance,
+        profileGroupManager: ProfileGroupManager,
         proxyManager: ProxySetManager,
+        productSKU: string,
+        sizes: string[],
+        deviceId: string,
     ) {
-        super(uuid, requestInstance, taskData, taskGroupName, profileManager, proxyManager);
+        super(uuid, retryDelay, userProfile, proxySet, proxy, taskGroupName, requestInstance, profileGroupManager, proxyManager);
         this.captchaSolved = false;
         this.waitingRoom = { refresh: false, delay: 0 };
         this.currentSize = '';
         this.productCode = '';
-        this.taskData = taskData;
+        this.productSKU = productSKU;
+        this.sizes = sizes;
+        this.deviceId = deviceId;
     }
 
-    async doTask(): Promise<void> {
+    public getViewData(): FootLockerTaskViewData {
+        return {
+            proxySetName: this.proxySet.name,
+            uuid: this.uuid,
+            retryDelay: this.retryDelay,
+            profileName: this.userProfile.profileName,
+            status: this.status,
+            productSKU: this.productSKU,
+            sizes: this.sizes,
+            isRunning: this.isRunning,
+        };
+    }
+
+    public async doTask(): Promise<void> {
         try {
             this.cookieJar = new CookieJar(this.requestInstance.baseURL);
 
@@ -136,7 +174,7 @@ export class FootLockerTask extends Task {
 
                 console.log('checkout header', headers);
 
-                const response = await this.axiosSession.get(`/products/pdp/${(this.taskData as FLTaskData).productSKU}`, { headers: headers });
+                const response = await this.axiosSession.get(`/products/pdp/${this.productSKU}`, { headers: headers });
 
                 const cookies = response.headers['set-cookie'];
                 if (cookies) await this.cookieJar.saveInSessionFromString(cookies);
@@ -148,14 +186,14 @@ export class FootLockerTask extends Task {
                     await this.emitStatusWithDelay(MESSAGES.CHECKING_STOCK_ERROR_MESSAGE, 'error');
                     continue;
                 }
-                const { code: styleCode } = variantAttributes.find((attr: any) => attr.sku === (this.taskData as FLTaskData).productSKU);
+                const { code: styleCode } = variantAttributes.find((attr: any) => attr.sku === this.productSKU);
 
                 const inStockUnits = sellableUnits.filter(
                     (unit: any) =>
                         unit.stockLevelStatus === 'inStock' && unit.attributes.some((attr: any) => attr.id === styleCode && attr.type === 'style'),
                 );
 
-                const size = (this.taskData as FLTaskData).sizes[Math.floor(Math.random() * (this.taskData as FLTaskData).sizes.length)];
+                const size = this.sizes[Math.floor(Math.random() * this.sizes.length)];
                 this.currentSize = size;
                 for (const unit of inStockUnits) {
                     for (const attr of unit.attributes) {
@@ -281,7 +319,7 @@ export class FootLockerTask extends Task {
 
                 let res = undefined;
 
-                res = await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.profileData.shipping.email}`, undefined, {
+                res = await this.axiosSession.put(`/users/carts/current/email/${this.userProfile.shipping.email}`, undefined, {
                     headers: headers,
                 });
 
@@ -345,7 +383,7 @@ export class FootLockerTask extends Task {
                     console.log('finish waiting refresh queue');
                 }
 
-                const body = this.getOrderForm(this.userProfile.profileData.payment);
+                const body = this.getOrderForm(this.userProfile.payment);
 
                 await this.axiosSession.post('/v2/users/orders', body, { headers: headers });
 
@@ -379,7 +417,7 @@ export class FootLockerTask extends Task {
     }
 
     getInfoForm(shipping: boolean): any {
-        const user = shipping ? this.userProfile.profileData.shipping : this.userProfile.profileData.billing;
+        const user = shipping ? this.userProfile.shipping : this.userProfile.billing;
         // return new FLCInfoForm(
         //     user.lastName,
         //     user.email,
