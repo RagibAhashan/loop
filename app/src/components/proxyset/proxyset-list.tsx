@@ -1,5 +1,5 @@
-import { ProxySetChannel } from '@core/IpcChannels';
-import { ProxySetViewData } from '@core/ProxySet';
+import { ProxySetChannel } from '@core/ipc-channels';
+import { ProxySetViewData } from '@core/proxyset';
 import React, { useEffect, useState } from 'react';
 import ProxySet from './proxyset';
 

@@ -8,7 +8,7 @@ import ProfilePage from '../pages/Profile/profile-page';
 import ProxyPage from '../pages/Proxies/proxy-page';
 import SettingsPage from '../pages/settingsPage';
 import TaskPage from '../pages/task/task-page';
-import { Fingerprint } from '../services/Fingerprint';
+import { Fingerprint } from '../services/fingerprint';
 const { Content } = Layout;
 
 const generateFingerPrint = () => {

@@ -1,7 +1,7 @@
 import { generateId } from '@core/helpers';
-import { ProxySetChannel } from '@core/IpcChannels';
-import { ProxyFormData, proxyPrefix } from '@core/Proxy';
-import { ProxySetViewData } from '@core/ProxySet';
+import { ProxySetChannel } from '@core/ipc-channels';
+import { ProxyFormData, proxyPrefix } from '@core/proxy';
+import { ProxySetViewData } from '@core/proxyset';
 import { Modal, Tabs } from 'antd';
 import React, { useState } from 'react';
 import CopyProxy from './copy-proxy';

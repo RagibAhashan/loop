@@ -1,6 +1,6 @@
-import { ProfileGroupChannel } from '@core/IpcChannels';
-import { ProfileViewData } from '@core/Profile';
-import { ProfileGroupViewData } from '@core/ProfileGroup';
+import { ProfileGroupChannel } from '@core/ipc-channels';
+import { ProfileViewData } from '@core/profile';
+import { ProfileGroupViewData } from '@core/profilegroup';
 import { Button } from 'antd';
 import React, { useEffect, useState } from 'react';
 import AddProfileModal from './add-profile-modal';
@@ -19,9 +19,7 @@ const ProfileContainer: React.FunctionComponent = () => {
     const [isEditOpen, setEditOpen] = useState<boolean>(false);
     const [selectedProfile, setSelectedProfile] = useState<ProfileViewData>();
 
-    console.log('profile container', profileContainerState.profiles);
     useEffect(() => {
-        console.log('profile container init');
         window.ElectronBridge.on(ProfileGroupChannel.onProfileGroupSelected, handleOnProfileGroupSelected);
         window.ElectronBridge.on(ProfileGroupChannel.profilesUpdated, handleProfilesUpdated);
 

@@ -1,6 +1,6 @@
-import { ProxySetChannel } from '@core/IpcChannels';
-import { ProxyViewData } from '@core/Proxy';
-import { ProxySetViewData } from '@core/ProxySet';
+import { ProxySetChannel } from '@core/ipc-channels';
+import { ProxyViewData } from '@core/proxy';
+import { ProxySetViewData } from '@core/proxyset';
 import { Button, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 import AddProxyModal from './add-proxy-modal';

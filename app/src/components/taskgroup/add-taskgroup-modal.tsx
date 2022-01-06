@@ -1,5 +1,5 @@
 import { getStores } from '@constants/Stores';
-import { TaskGroupChannel } from '@core/IpcChannels';
+import { TaskGroupChannel } from '@core/ipc-channels';
 import { Button, Input, Modal, Select } from 'antd';
 import React, { useState } from 'react';
 
@@ -22,19 +22,16 @@ const AddTaskGroupModal: React.FunctionComponent<Props> = (props) => {
     };
 
     return (
-        <>
-            <p>{store}</p>
-            <Modal title={'New Profile Group'} visible={isOpen} onCancel={() => setOpen(false)} footer={[<Button onClick={onSubmit}>Add</Button>]}>
-                <Input id="groupName" type="text" placeholder="Name" onChange={(e) => setName(e.target.value)} />
-                <Select placeholder="Select store" onChange={(value) => setStore(value.toString())}>
-                    {getStores().map(([key, store]) => (
-                        <Select.Option key={key} value={store.key}>
-                            {store.name}
-                        </Select.Option>
-                    ))}
-                </Select>
-            </Modal>
-        </>
+        <Modal title={'New Profile Group'} visible={isOpen} onCancel={() => setOpen(false)} footer={<Button onClick={onSubmit}>Add</Button>}>
+            <Input id="groupName" type="text" placeholder="Name" onChange={(e) => setName(e.target.value)} />
+            <Select placeholder="Select store" onChange={(value) => setStore(value.toString())}>
+                {getStores().map(([key, store]) => (
+                    <Select.Option key={key} value={store.key} disabled={key.includes('Foot')}>
+                        {store.name}
+                    </Select.Option>
+                ))}
+            </Select>
+        </Modal>
     );
 };
 

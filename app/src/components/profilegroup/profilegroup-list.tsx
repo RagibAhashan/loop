@@ -1,5 +1,5 @@
-import { ProfileGroupChannel } from '@core/IpcChannels';
-import { ProfileGroupViewData } from '@core/ProfileGroup';
+import { ProfileGroupChannel } from '@core/ipc-channels';
+import { ProfileGroupViewData } from '@core/profilegroup';
 import React, { useEffect, useState } from 'react';
 import ProfileGroup from './profilegroup';
 

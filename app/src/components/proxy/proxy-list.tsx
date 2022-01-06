@@ -1,5 +1,5 @@
-import { ProxyViewData } from '@core/Proxy';
-import { ProxySetViewData } from '@core/ProxySet';
+import { ProxyViewData } from '@core/proxy';
+import { ProxySetViewData } from '@core/proxyset';
 import { Empty } from 'antd';
 import React from 'react';
 import { FixedSizeList } from 'react-window';

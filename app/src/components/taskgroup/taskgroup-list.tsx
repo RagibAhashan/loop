@@ -1,5 +1,5 @@
-import { TaskGroupChannel } from '@core/IpcChannels';
-import { TaskGroupViewData } from '@core/TaskGroup';
+import { TaskGroupChannel } from '@core/ipc-channels';
+import { TaskGroupViewData } from '@core/taskgroup';
 import React, { useEffect, useState } from 'react';
 import TaskGroup from './taskgroup';
 
@@ -10,7 +10,7 @@ const TaskGroupList: React.FunctionComponent<Props> = (props) => {
     const { taskGroups } = props;
 
     // Only used to style focus the selected task group
-    const [currentSelectedTaskGroup, setCurrentSelectedTaskGroup] = useState(null);
+    const [selectedTaskGroup, setSelectedTaskGroup] = useState(null);
 
     useEffect(() => {
         window.ElectronBridge.on(TaskGroupChannel.onTaskGroupSelected, handleOnTaskGroupSelected);
@@ -21,13 +21,13 @@ const TaskGroupList: React.FunctionComponent<Props> = (props) => {
     }, []);
 
     const handleOnTaskGroupSelected = (_, taskGroup: TaskGroupViewData) => {
-        setCurrentSelectedTaskGroup(taskGroup.name);
+        setSelectedTaskGroup(taskGroup);
     };
 
     return (
         <div>
             {taskGroups.map((taskGroup) => (
-                <TaskGroup key={taskGroup.name} name={taskGroup.name} store={taskGroup.storeType} selected={currentSelectedTaskGroup}></TaskGroup>
+                <TaskGroup key={taskGroup.name} taskGroup={taskGroup} selected={selectedTaskGroup}></TaskGroup>
             ))}
         </div>
     );

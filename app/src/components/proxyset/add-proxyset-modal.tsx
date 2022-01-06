@@ -1,6 +1,6 @@
 import { generateId } from '@core/helpers';
-import { ProxySetChannel } from '@core/IpcChannels';
-import { proxySetPrefix } from '@core/ProxySet';
+import { ProxySetChannel } from '@core/ipc-channels';
+import { proxySetPrefix } from '@core/proxyset';
 import { Input, Modal } from 'antd';
 import React, { useState } from 'react';
 

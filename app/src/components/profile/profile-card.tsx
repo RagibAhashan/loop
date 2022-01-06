@@ -1,6 +1,6 @@
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
-import { ProfileGroupChannel } from '@core/IpcChannels';
-import { ProfileViewData } from '@core/Profile';
+import { ProfileGroupChannel } from '@core/ipc-channels';
+import { ProfileViewData } from '@core/profile';
 import { Badge, Card } from 'antd';
 import React from 'react';
 

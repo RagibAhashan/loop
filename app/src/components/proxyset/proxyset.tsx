@@ -1,6 +1,6 @@
 import { CloseCircleOutlined } from '@ant-design/icons';
-import { ProxySetChannel } from '@core/IpcChannels';
-import { ProxySetViewData } from '@core/ProxySet';
+import { ProxySetChannel } from '@core/ipc-channels';
+import { ProxySetViewData } from '@core/proxyset';
 import { Button } from 'antd';
 import React from 'react';
 

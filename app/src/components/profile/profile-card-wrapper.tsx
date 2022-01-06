@@ -1,4 +1,4 @@
-import { ProfileViewData } from '@core/Profile';
+import { ProfileViewData } from '@core/profile';
 import React from 'react';
 import ProfileCard from './profile-card';
 

@@ -1,18 +1,18 @@
-import { CreditCard } from '@core/CreditCard';
-import { Profile } from '@core/Profile';
-import { ProfileGroupManager } from '@core/ProfileGroupManager';
-import { Proxy } from '@core/Proxy';
-import { ProxySet } from '@core/ProxySet';
-import { ProxySetManager } from '@core/ProxySetManager';
-import { Viewable } from '@core/Viewable';
+import { CreditCard } from '@core/credit-card';
+import { Profile } from '@core/profile';
+import { ProfileGroupManager } from '@core/profilegroup-manager';
+import { Proxy } from '@core/proxy';
+import { ProxySet } from '@core/proxyset';
+import { ProxySetManager } from '@core/proxyset-manager';
+import { Viewable } from '@core/viewable';
 import { AxiosResponse } from 'axios';
 import { NOTIFY_CAPTCHA_SOLVED, NOTIFY_CAPTCHA_TASK, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
 import { Cookie, Headers } from '../constants/Cookies';
 import { ERRORS_CART, ERRORS_CHECKOUT, ERRORS_PAYMENT, ERRORS_SHIPPING, STATUS_ERROR } from '../constants/FootLocker';
-import { CANCEL_ERROR, ITask, Task, TaskViewData } from '../Task';
+import { CookieJar } from '../cookie-jar';
+import { RequestInstance } from '../request-instance';
+import { CANCEL_ERROR, ITask, Task, TaskViewData } from '../task';
 import { MESSAGES } from './../constants/Constants';
-import { CookieJar } from './../CookieJar';
-import { RequestInstance } from './../RequestInstance';
 
 export interface FootLockerTaskViewData extends TaskViewData {
     productSKU: string;

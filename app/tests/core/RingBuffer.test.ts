@@ -1,4 +1,4 @@
-import { RingBuffer } from '../../src/core/RingBuffer';
+import { RingBuffer } from '../../src/core/ring-buffer';
 let service: RingBuffer<number>;
 
 beforeEach(() => {

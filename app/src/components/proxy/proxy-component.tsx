@@ -1,7 +1,7 @@
 import { DeleteFilled } from '@ant-design/icons';
-import { ProxySetChannel } from '@core/IpcChannels';
-import { ProxyViewData } from '@core/Proxy';
-import { ProxySetViewData } from '@core/ProxySet';
+import { ProxySetChannel } from '@core/ipc-channels';
+import { ProxyViewData } from '@core/proxy';
+import { ProxySetViewData } from '@core/proxyset';
 import { Button, Col, Row } from 'antd';
 import React from 'react';
 

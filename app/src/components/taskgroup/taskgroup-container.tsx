@@ -1,5 +1,5 @@
-import { TaskGroupChannel } from '@core/IpcChannels';
-import { TaskGroupViewData } from '@core/TaskGroup';
+import { TaskGroupChannel } from '@core/ipc-channels';
+import { TaskGroupViewData } from '@core/taskgroup';
 import { Button, message } from 'antd';
 import React, { useEffect, useState } from 'react';
 import AddTaskGroupModal from './add-taskgroup-modal';

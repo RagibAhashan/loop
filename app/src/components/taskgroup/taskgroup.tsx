@@ -1,24 +1,25 @@
 import { CloseCircleOutlined } from '@ant-design/icons';
-import { StoreType } from '@constants/Stores';
-import { TaskGroupChannel } from '@core/IpcChannels';
+import { TaskGroupChannel } from '@core/ipc-channels';
+import { TaskGroupViewData } from '@core/taskgroup';
 import { Button } from 'antd';
 import React from 'react';
 
 interface Props {
-    name: string;
-    store: StoreType;
-    selected: string;
+    taskGroup: TaskGroupViewData;
+    selected: TaskGroupViewData;
 }
 
 const TaskGroup: React.FunctionComponent<Props> = (props) => {
-    const { name, store, selected } = props;
+    const { taskGroup, selected } = props;
 
-    const isSelected = name === selected;
+    const isSelected = selected ? taskGroup.id === selected.id : false;
+
     const handleClickTaskGroup = () => {
-        window.ElectronBridge.send(TaskGroupChannel.getAllTasksFromTaskGroup, name);
+        window.ElectronBridge.send(TaskGroupChannel.getAllTasksFromTaskGroup, taskGroup.id);
     };
+
     const handleRemoveTaskGroupClick = (event) => {
-        window.ElectronBridge.send(TaskGroupChannel.removeTaskGroup, name);
+        window.ElectronBridge.send(TaskGroupChannel.removeTaskGroup, taskGroup.id);
         event.stopPropagation();
     };
 
@@ -38,8 +39,8 @@ const TaskGroup: React.FunctionComponent<Props> = (props) => {
             <div>
                 <Button type="primary" shape="circle" icon={<CloseCircleOutlined />} onClick={handleRemoveTaskGroupClick} />
             </div>
-            <div>Group {name}</div>
-            <div>Store {store}</div>
+            <div>Group {taskGroup.name}</div>
+            <div>Store {taskGroup.storeType}</div>
         </div>
     );
 };

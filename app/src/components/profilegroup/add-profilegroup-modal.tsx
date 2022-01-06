@@ -1,6 +1,6 @@
 import { generateId } from '@core/helpers';
-import { ProfileGroupChannel } from '@core/IpcChannels';
-import { profileGroupPrefix } from '@core/ProfileGroup';
+import { ProfileGroupChannel } from '@core/ipc-channels';
+import { profileGroupPrefix } from '@core/profilegroup';
 import { Input } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
 import React, { useState } from 'react';

@@ -1,7 +1,7 @@
 import Editable from '@components/base/editable';
-import { ProfileGroupChannel } from '@core/IpcChannels';
-import { ProfileViewData } from '@core/Profile';
-import { ProfileGroupViewData } from '@core/ProfileGroup';
+import { ProfileGroupChannel } from '@core/ipc-channels';
+import { ProfileViewData } from '@core/profile';
+import { ProfileGroupViewData } from '@core/profilegroup';
 import { Form, Tabs } from 'antd';
 import Modal from 'antd/lib/modal/Modal';
 import React, { useState } from 'react';

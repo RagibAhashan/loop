@@ -1,10 +1,10 @@
-import { AppDatabase } from '@core/AppDatabase';
-import { CreditCardFactory } from '@core/CreditCardFactory';
-import { ProfileFactory } from '@core/ProfileFactory';
-import { ProfileGroupFactory } from '@core/ProfileGroupFactory';
-import { ProfileGroupManager } from '@core/ProfileGroupManager';
-import { TaskFactory } from '@core/TaskFactory';
-import { TaskGroupFactory } from '@core/TaskGroupFactory';
+import { AppDatabase } from '@core/app-database';
+import { CreditCardFactory } from '@core/credit-card-factory';
+import { ProfileFactory } from '@core/profile-factory';
+import { ProfileGroupFactory } from '@core/profilegroup-factory';
+import { ProfileGroupManager } from '@core/profilegroup-manager';
+import { TaskFactory } from '@core/task-factory';
+import { TaskGroupFactory } from '@core/taskgroup-factory';
 import * as electron from 'electron';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import hash from 'object-hash';
@@ -12,11 +12,11 @@ import si from 'systeminformation';
 import { ACCESS_GRANTED, CAPTHA_WINDOW_CLOSED, CAPTHA_WINDOW_OPEN, GET_SYSTEM_ID, SET_PROXY_CAPTCHA_WINDOW, STORE_KEY } from './common/Constants';
 import { CaptchaType, STORES, StoreType } from './constants/Stores';
 import { captchaWindowManager } from './core/captcha-window/CaptchaWindowManager';
-import { debug } from './core/Log';
-import { ProxySetManager } from './core/ProxySetManager';
-import { TaskGroupManager } from './core/TaskGroupManager';
+import { debug } from './core/log';
+import { ProxySetManager } from './core/proxyset-manager';
+import { TaskGroupManager } from './core/taskgroup-manager';
 import { Proxy } from './interfaces/OtherInterfaces';
-import UserAgentProvider from './services/UserAgentProvider';
+import UserAgentProvider from './services/user-agent-provider';
 
 const log = debug.extend('main');
 /* eslint-disable @typescript-eslint/no-unused-vars */

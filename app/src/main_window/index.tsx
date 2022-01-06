@@ -1,4 +1,3 @@
-import { ChakraProvider, ColorModeScript } from '@chakra-ui/react';
 import '@css/index.less';
 import React from 'react';
 import { render } from 'react-dom';
@@ -7,10 +6,7 @@ import App from './App';
 
 render(
     <MemoryRouter>
-        <ChakraProvider>
-            <ColorModeScript initialColorMode={'light'} />
-            <App></App>
-        </ChakraProvider>
+        <App></App>
     </MemoryRouter>,
     document.getElementById('root'),
 );

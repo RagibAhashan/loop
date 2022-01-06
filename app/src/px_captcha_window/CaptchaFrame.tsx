@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { STORE_KEY } from '../common/Constants';
 import { STORES, StoreType } from '../constants/Stores';
-import { debug } from '../core/Log';
+import { debug } from '../core/log';
 import { Captcha } from '../interfaces/TaskInterfaces';
 
 const log = debug.extend('PXCaptcha');
