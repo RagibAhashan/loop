@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { SET_PROXY_CAPTCHA_WINDOW } from '../common/Constants';
-import { StoreType } from '../constants/Stores';
+import { StoreType } from '../constants/stores';
 import { Captcha, PxCaptcha } from '../interfaces/TaskInterfaces';
 
 /*

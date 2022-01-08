@@ -1,4 +1,4 @@
-import { StoreType } from '@constants/Stores';
+import { StoreType } from '@constants/stores';
 import { BrowserWindow } from 'electron';
 
 /*

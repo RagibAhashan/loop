@@ -39,8 +39,9 @@ export enum ProxySetChannel {
     proxiesUpdated = 'dynasty:proxiesUpdated', // Event when proxies are added or removed to set
     removeAllProxiesFromProxySet = 'dynasty:removeAllProxiesFromProxySet',
     proxySetUpdated = 'dynasty:proxySetUpdated',
-    onSelectedProxySet = 'dynasty:onSelectedProxySet',
+    onProxySetSelected = 'dynasty:onProxySetSelected',
     proxySetError = 'dynasty:proxySetError',
+    editProxySetName = 'dynasty:proxySetName',
 }
 
 export enum ProfileGroupChannel {
@@ -63,4 +64,31 @@ export enum ProfileGroupChannel {
     editProfileShipping = 'dynasty:editProfileShipping',
     editProfileBilling = 'dynasty:editProfileBilling',
     editProfilePayment = 'dynasty:editProfilePayment',
+}
+
+export enum SettingsChannel {
+    getSettings = 'dynasty:getSettings',
+    setBrowserPath = 'dynasty:setBrowserPath',
+    setDiscordWebhook = 'dynasty:setDiscordWebhook',
+    setPublicCheckout = 'dynasty:setPublicCheckout',
+    settingsUpdated = 'dynasty:settingsUpdated',
+    testDiscordWebhook = 'dynasty:testDiscordWebhook',
+}
+
+export enum AccountGroupChannel {
+    getAccountGroups = 'dynasty:getAccounts',
+    addAccountGroup = 'dynasty:addAccountGroup',
+    removeAccountGroup = 'dynasty:removeAccountGroup',
+    getAllAccountsFromGroup = 'dynasty:getAllAccountsFromGroup',
+    accountGroupsUpdated = 'dynasty:accountGroupsUpdated',
+    accountsUpdated = 'dynasty:accountsUpdated',
+    accountGroupError = 'dynasty:accountGroupError',
+    addAccountToGroup = 'dynasty:addAccountToGroup',
+    removeAccountFromGroup = 'dynasty:removeAccountFromGroup',
+    removeAllAccountsFromGroup = 'dynasty:removeAllAccountsFromGroup',
+    getAccountFromAccountGroup = 'dynasty:getAccountFromAccountGroup',
+    onAccountGroupSelected = 'dynasty:onAccountGroupSelected',
+    editAccountGroupName = 'dynasty:editAccountGroupName',
+
+    logIn = 'dynasty:logIn',
 }

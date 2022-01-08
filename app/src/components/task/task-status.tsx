@@ -1,5 +1,6 @@
 import { TaskChannel, TaskGroupChannel } from '@core/ipc-channels';
 import { TaskViewData } from '@core/task';
+import { TaskGroupViewData } from '@core/taskgroup';
 import React, { useEffect, useState } from 'react';
 import { Status, StatusLevel } from '../../interfaces/TaskInterfaces';
 
@@ -23,21 +24,21 @@ const statusColor = (level: StatusLevel) => {
 
 interface Props {
     task: TaskViewData;
-    groupName: string;
+    taskGroup: TaskGroupViewData;
 }
 const TaskStatus: React.FunctionComponent<Props> = (props) => {
-    const { task, groupName } = props;
+    const { task, taskGroup } = props;
 
     const [status, setStatus] = useState<Status>(task.status);
 
     useEffect(() => {
-        window.ElectronBridge.on(TaskChannel.onTaskStatus + task.uuid, handleTaskStatusUpdated);
-        window.ElectronBridge.invoke(TaskGroupChannel.getTaskFromTaskGroup, groupName, task.uuid).then((data: TaskViewData) => {
+        window.ElectronBridge.on(TaskChannel.onTaskStatus + task.id, handleTaskStatusUpdated);
+        window.ElectronBridge.invoke(TaskGroupChannel.getTaskFromTaskGroup, taskGroup.id, task.id).then((data: TaskViewData) => {
             setStatus(data.status);
         });
 
         return () => {
-            window.ElectronBridge.removeAllListeners(TaskChannel.onTaskStatus + task.uuid);
+            window.ElectronBridge.removeAllListeners(TaskChannel.onTaskStatus + task.id);
         };
 
         // eslint-disable-next-line react-hooks/exhaustive-deps

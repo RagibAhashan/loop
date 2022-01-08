@@ -12,10 +12,10 @@ const ProxySetList: React.FunctionComponent<Props> = (props) => {
     const [selectedProxySet, setSelectedProxySet] = useState(null);
 
     useEffect(() => {
-        window.ElectronBridge.on(ProxySetChannel.onSelectedProxySet, handleOnProxySetSelected);
+        window.ElectronBridge.on(ProxySetChannel.onProxySetSelected, handleOnProxySetSelected);
 
         return () => {
-            window.ElectronBridge.removeAllListeners(ProxySetChannel.onSelectedProxySet);
+            window.ElectronBridge.removeAllListeners(ProxySetChannel.onProxySetSelected);
         };
     }, []);
 

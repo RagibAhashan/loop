@@ -24,9 +24,9 @@ const TaskGroupContainer: React.FunctionComponent = () => {
         };
     }, []);
 
-    const handleTaskGroupUpdated = (_, taskGroups: TaskGroupViewData[]) => {
+    const handleTaskGroupUpdated = (_, taskGroups: TaskGroupViewData[], msg) => {
         setTaskGroups(taskGroups);
-        message.success('Task Group Created', 2);
+        if (msg) message.success(msg, 2);
     };
 
     const handleTaskGroupExists = (_) => {

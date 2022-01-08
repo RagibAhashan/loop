@@ -1,42 +1,28 @@
+import Task from '@components/task/task';
 import { ProfileGroupViewData } from '@core/profilegroup';
 import { ProxySetViewData } from '@core/proxyset';
 import { TaskViewData } from '@core/task';
+import { TaskGroupViewData } from '@core/taskgroup';
 import { Empty } from 'antd';
 import React from 'react';
 import { FixedSizeList } from 'react-window';
-
-interface TaskComponentProps {
-    task: TaskViewData;
-    style: any;
-    proxySets: ProxySetViewData[];
-    profileGroups: ProfileGroupViewData[];
-    groupName: string;
-}
 
 interface Props {
     tasks: TaskViewData[];
     proxySets: ProxySetViewData[];
     profileGroups: ProfileGroupViewData[];
-    groupName: string;
-    TaskComponent: React.ComponentType<TaskComponentProps>;
+    taskGroup: TaskGroupViewData;
 }
 
 const TaskList: React.FunctionComponent<Props> = (props) => {
-    const { tasks, TaskComponent, profileGroups, proxySets, groupName } = props;
+    const { tasks, profileGroups, proxySets, taskGroup } = props;
 
     // element is a parameter passed by FixedSizeList, it has an index and a style object
     const renderTaskComponent = (element: any) => {
         const { index, style } = element;
 
         return (
-            <TaskComponent
-                key={tasks[index].uuid}
-                groupName={groupName}
-                task={tasks[index]}
-                proxySets={proxySets}
-                profileGroups={profileGroups}
-                style={style}
-            />
+            <Task key={tasks[index].id} taskGroup={taskGroup} task={tasks[index]} proxySets={proxySets} profileGroups={profileGroups} style={style} />
         );
     };
 

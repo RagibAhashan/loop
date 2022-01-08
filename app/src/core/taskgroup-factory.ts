@@ -1,4 +1,4 @@
-import { StoreType } from '../constants/Stores';
+import { StoreType } from '../constants/stores';
 import { debug } from './log';
 import { TaskGroup } from './taskgroup';
 

@@ -1,8 +1,13 @@
+import { AccountFactory } from '@core/account-factory';
+import { AccountGroupFactory } from '@core/account-group-factory';
+import { AccountGroupManager } from '@core/account-group-manager';
 import { AppDatabase } from '@core/app-database';
 import { CreditCardFactory } from '@core/credit-card-factory';
 import { ProfileFactory } from '@core/profile-factory';
 import { ProfileGroupFactory } from '@core/profilegroup-factory';
 import { ProfileGroupManager } from '@core/profilegroup-manager';
+import { Settings } from '@core/settings';
+import { SettingsManager } from '@core/settings-manager';
 import { TaskFactory } from '@core/task-factory';
 import { TaskGroupFactory } from '@core/taskgroup-factory';
 import * as electron from 'electron';
@@ -10,7 +15,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import hash from 'object-hash';
 import si from 'systeminformation';
 import { ACCESS_GRANTED, CAPTHA_WINDOW_CLOSED, CAPTHA_WINDOW_OPEN, GET_SYSTEM_ID, SET_PROXY_CAPTCHA_WINDOW, STORE_KEY } from './common/Constants';
-import { CaptchaType, STORES, StoreType } from './constants/Stores';
+import { CaptchaType, STORES, StoreType } from './constants/stores';
 import { captchaWindowManager } from './core/captcha-window/CaptchaWindowManager';
 import { debug } from './core/log';
 import { ProxySetManager } from './core/proxyset-manager';
@@ -85,19 +90,6 @@ app.whenReady().then(async () => {
     createWindow();
 });
 
-app.on('window-all-closed', async () => {
-    //TODO(wail) maybe not the best place to put this here
-    log('Saving models to DB');
-    await profileGroupManager.saveToDB();
-    await proxySetManager.saveToDB();
-    await taskGroupManager.saveToDB();
-    log('models saved!');
-
-    if (process.platform !== 'darwin') {
-        app.quit();
-    }
-});
-
 app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
         createWindow();
@@ -115,10 +107,14 @@ ipcMain.on(ACCESS_GRANTED, () => {
 
 const appDatabase = new AppDatabase();
 
+const settings = new Settings();
+const settingsManager = new SettingsManager(appDatabase, settings);
+settingsManager.ready();
+
 const creditCardFactory = new CreditCardFactory();
 const profileFactory = new ProfileFactory(creditCardFactory);
 const profileGroupFactory = new ProfileGroupFactory();
-const profileGroupManager = new ProfileGroupManager(profileGroupFactory, profileFactory, appDatabase);
+const profileGroupManager = new ProfileGroupManager(appDatabase, profileGroupFactory, profileFactory);
 profileGroupManager.ready();
 
 const proxySetManager = new ProxySetManager(appDatabase);
@@ -127,20 +123,30 @@ proxySetManager.ready();
 const taskGroupFactory = new TaskGroupFactory();
 const taskFactory = new TaskFactory(profileGroupManager, proxySetManager, mainWindow);
 
-const taskGroupManager = new TaskGroupManager(taskGroupFactory, taskFactory, appDatabase);
+const taskGroupManager = new TaskGroupManager(appDatabase, taskGroupFactory, taskFactory);
 taskGroupManager.ready();
 
-// const flCAEvents = new FootLockerEvents(StoreType.FootlockerCA);
-// flCAEvents.initEvents();
+const accountGroupFactory = new AccountGroupFactory();
+const accountFactory = new AccountFactory(settingsManager);
 
-// const flUSEvents = new FootLockerEvents(StoreType.FootlockerUS);
-// flUSEvents.initEvents();
+const accountGroupManager = new AccountGroupManager(appDatabase, accountGroupFactory, accountFactory);
+accountGroupManager.ready();
 
-// const wUSEvents = new WalmartEvents(StoreType.WalmartUS);
-// wUSEvents.initEvents();
+app.on('window-all-closed', async () => {
+    //TODO(wail) maybe not the best place to put this here
+    log('Saving models to DB');
+    await profileGroupManager.saveToDB();
+    await proxySetManager.saveToDB();
+    await taskGroupManager.saveToDB();
+    await settingsManager.saveToDB();
+    await accountGroupManager.saveToDB();
 
-// const wCAEvents = new WalmartEvents(StoreType.WalmartCA);
-// wCAEvents.initEvents();
+    log('models saved!');
+
+    if (process.platform !== 'darwin') {
+        app.quit();
+    }
+});
 
 ipcMain.on(CAPTHA_WINDOW_OPEN, (event, store: StoreType, proxyHost: string) => {
     const currentStore = STORES[store];

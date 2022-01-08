@@ -1,19 +1,20 @@
 import { DeleteFilled, QuestionCircleOutlined } from '@ant-design/icons';
 import { TaskGroupChannel } from '@core/ipc-channels';
 import { TaskViewData } from '@core/task';
+import { TaskGroupViewData } from '@core/taskgroup';
 import { Button, Popconfirm } from 'antd';
 import React from 'react';
 import { deleteButton } from '../../styles/Buttons';
 
 interface Props {
     task: TaskViewData;
-    groupName: string;
+    taskGroup: TaskGroupViewData;
 }
 const DeleteTaskAction: React.FunctionComponent<Props> = (props) => {
-    const { task, groupName } = props;
+    const { task, taskGroup } = props;
 
     const handleDelete = () => {
-        window.ElectronBridge.send(TaskGroupChannel.removeTaskFromGroup, groupName, [task.uuid]);
+        window.ElectronBridge.send(TaskGroupChannel.removeTaskFromGroup, taskGroup.id, [task.id]);
     };
 
     return (

@@ -5,7 +5,7 @@ import { debug } from './log';
 const log = debug.extend('AppDatabase');
 
 // Never change this
-export type ModelName = 'Profile' | 'ProfileGroup' | 'ProxySet' | 'TaskGroup' | 'Task' | 'Proxy';
+export type ModelName = 'Profile' | 'ProfileGroup' | 'ProxySet' | 'TaskGroup' | 'Task' | 'Proxy' | 'Settings' | 'Account' | 'AccountGroup';
 
 export class AppDatabase {
     // TODO accounts, captcha solvers, settings,
@@ -14,7 +14,7 @@ export class AppDatabase {
 
     constructor() {}
 
-    public async loadModelDB<T>(modelName: ModelName): Promise<T[] | null> {
+    public async loadModelDB<T>(modelName: ModelName): Promise<T | null> {
         try {
             console.log(AppDatabase.APP_PATH);
             log('Opening %s', `${AppDatabase.APP_PATH}/dynasty.${modelName}.db`);
@@ -32,7 +32,7 @@ export class AppDatabase {
         }
     }
 
-    public async saveModelDB<T>(modelName: string, model: T[]): Promise<boolean> {
+    public async saveModelDB<T>(modelName: string, model: T): Promise<boolean> {
         const modelDB = await open(`${AppDatabase.APP_PATH}/dynasty.${modelName}.db`, 'w');
         const modelString = JSON.stringify(model);
         await modelDB.writeFile(modelString);

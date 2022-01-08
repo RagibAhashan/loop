@@ -44,3 +44,7 @@ RpcIpcMessagePortClosedError: Cannot send the message - the message port has bee
   signal: undefined
 }
 ```
+
+-   Checkout Tailwind css components, they seem to have good looking community components
+
+https://tailwindui.com/#components

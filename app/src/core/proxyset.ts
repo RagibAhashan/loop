@@ -12,7 +12,9 @@ export interface ProxySetFormData {
 export interface ProxySetViewData {
     id: string;
     name: string;
+    proxies: ProxyViewData[];
 }
+
 export interface IProxySet {
     id: string;
     name: string;
@@ -39,7 +41,7 @@ export class ProxySet implements IProxySet, Viewable<ProxySetViewData> {
     }
 
     public getViewData(): ProxySetViewData {
-        return { id: this.id, name: this.name };
+        return { id: this.id, name: this.name, proxies: this.getAllProxiesViewData() };
     }
 
     public pickProxy(): Proxy {

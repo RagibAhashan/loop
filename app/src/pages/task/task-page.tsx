@@ -1,4 +1,4 @@
-import TaskContainer from '@components/task-container/task-container';
+import TaskContainer from '@components/task/task-container';
 import TaskGroupContainer from '@components/taskgroup/taskgroup-container';
 import React from 'react';
 

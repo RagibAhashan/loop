@@ -97,7 +97,6 @@ const AddProfileModal: React.FunctionComponent<Props> = (props) => {
                 id="profileForm"
             >
                 {/* https://github.com/ant-design/ant-design/issues/21829 */}
-
                 {() => (
                     <>
                         <Modal
@@ -116,93 +115,101 @@ const AddProfileModal: React.FunctionComponent<Props> = (props) => {
                             <div>
                                 <Tabs defaultActiveKey="shippingTab" onChange={onTabChange}>
                                     <TabPane tab="Profile and Shipping" key="shippingTab">
-                                        <Form.Item name={['profileName']} label="Profile Name" required rules={[requiredWithoutMessage]}>
-                                            <Input />
-                                        </Form.Item>
-                                        <Form.Item name={['shipping', 'firstName']} label="First Name" required rules={[requiredWithoutMessage]}>
-                                            <Input />
-                                        </Form.Item>
-                                        <Form.Item name={['shipping', 'lastName']} label="Last Name" required rules={[requiredWithoutMessage]}>
-                                            <Input />
-                                        </Form.Item>
-                                        <Form.Item name={['shipping', 'phone']} label="Phone" required rules={[requiredWithoutMessage]}>
-                                            <Input placeholder={'Phone'} type="number" />
-                                        </Form.Item>
-                                        <Form.Item name={['shipping', 'email']} label="Email" required rules={[requiredWithoutMessage]}>
-                                            <Input placeholder={'Email'} />
-                                        </Form.Item>
-                                        <Form.Item name={['shipping', 'address']} label="Address" required rules={[requiredWithoutMessage]}>
-                                            <Input placeholder={'Address'} />
-                                        </Form.Item>
-                                        <Form.Item name={['shipping', 'town']} label="Town" required rules={[requiredWithoutMessage]}>
-                                            <Input placeholder={'Town'} />
-                                        </Form.Item>
-                                        <Form.Item name={['shipping', 'postalCode']} label="Postal Code" required rules={[requiredWithoutMessage]}>
-                                            <Input placeholder={'Postal Code'} />
-                                        </Form.Item>
-                                        <Form.Item name={['shipping', 'country']} label="Country" required rules={[requiredWithoutMessage]}>
-                                            <Select
-                                                placeholder="Country"
-                                                options={getCountriesOptions()}
-                                                allowClear
-                                                onChange={() => onCountryChange('shipping')}
-                                            ></Select>
-                                        </Form.Item>
-                                        <Form.Item
-                                            name={['shipping', 'region']}
-                                            label="Region"
-                                            required
-                                            rules={[requiredWithoutMessage]}
-                                            dependencies={['shipping']}
-                                        >
-                                            <Select
-                                                placeholder="Region"
-                                                options={getRegionsOptions(profileForm.getFieldsValue().shipping?.country)}
-                                                allowClear
-                                            ></Select>
-                                        </Form.Item>
+                                        <div className="profile-form-grid">
+                                            <Form.Item name={['profileName']} label="Profile Name" required rules={[requiredWithoutMessage]}>
+                                                <Input />
+                                            </Form.Item>
+                                            <Form.Item name={['shipping', 'firstName']} label="First Name" required rules={[requiredWithoutMessage]}>
+                                                <Input />
+                                            </Form.Item>
+                                            <Form.Item name={['shipping', 'lastName']} label="Last Name" required rules={[requiredWithoutMessage]}>
+                                                <Input />
+                                            </Form.Item>
+                                            <Form.Item name={['shipping', 'phone']} label="Phone" required rules={[requiredWithoutMessage]}>
+                                                <Input placeholder={'Phone'} type="number" />
+                                            </Form.Item>
+                                            <Form.Item name={['shipping', 'email']} label="Email" required rules={[requiredWithoutMessage]}>
+                                                <Input placeholder={'Email'} />
+                                            </Form.Item>
+                                            <Form.Item name={['shipping', 'address']} label="Address" required rules={[requiredWithoutMessage]}>
+                                                <Input placeholder={'Address'} />
+                                            </Form.Item>
+                                            <Form.Item name={['shipping', 'town']} label="Town" required rules={[requiredWithoutMessage]}>
+                                                <Input placeholder={'Town'} />
+                                            </Form.Item>
+                                            <Form.Item
+                                                name={['shipping', 'postalCode']}
+                                                label="Postal Code"
+                                                required
+                                                rules={[requiredWithoutMessage]}
+                                            >
+                                                <Input placeholder={'Postal Code'} />
+                                            </Form.Item>
+                                            <Form.Item name={['shipping', 'country']} label="Country" required rules={[requiredWithoutMessage]}>
+                                                <Select
+                                                    placeholder="Country"
+                                                    options={getCountriesOptions()}
+                                                    allowClear
+                                                    onChange={() => onCountryChange('shipping')}
+                                                ></Select>
+                                            </Form.Item>
+                                            <Form.Item
+                                                name={['shipping', 'region']}
+                                                label="Region"
+                                                required
+                                                rules={[requiredWithoutMessage]}
+                                                dependencies={['shipping']}
+                                            >
+                                                <Select
+                                                    placeholder="Region"
+                                                    options={getRegionsOptions(profileForm.getFieldsValue().shipping?.country)}
+                                                    allowClear
+                                                ></Select>
+                                            </Form.Item>
+                                        </div>
                                     </TabPane>
 
                                     <TabPane tab="Payment Information" key="billingTab">
-                                        <Form.Item name={['billing', 'firstName']} label="First Name" required rules={[requiredWithoutMessage]}>
-                                            <Input disabled={same} />
-                                        </Form.Item>
-                                        <Form.Item name={['billing', 'lastName']} label="Last Name" required rules={[requiredWithoutMessage]}>
-                                            <Input disabled={same} />
-                                        </Form.Item>
-                                        <Form.Item name={['billing', 'phone']} label="Phone" required rules={[requiredWithoutMessage]}>
-                                            <Input placeholder={'Phone'} type="number" disabled={same} />
-                                        </Form.Item>
-                                        <Form.Item name={['billing', 'email']} label="Email" required rules={[requiredWithoutMessage]}>
-                                            <Input placeholder={'Email'} disabled={same} />
-                                        </Form.Item>
-                                        <Form.Item name={['billing', 'address']} label="Address" required rules={[requiredWithoutMessage]}>
-                                            <Input placeholder={'Address'} disabled={same} />
-                                        </Form.Item>
-                                        <Form.Item name={['billing', 'town']} label="Town" required rules={[requiredWithoutMessage]}>
-                                            <Input placeholder={'Town'} disabled={same} />
-                                        </Form.Item>
-                                        <Form.Item name={['billing', 'postalCode']} label="Postal Code" required rules={[requiredWithoutMessage]}>
-                                            <Input placeholder={'Postal Code'} disabled={same} />
-                                        </Form.Item>
-                                        <Form.Item name={['billing', 'country']} label="Country" required rules={[requiredWithoutMessage]}>
-                                            <Select
-                                                placeholder="Country"
-                                                options={getCountriesOptions()}
-                                                allowClear
-                                                onChange={() => onCountryChange('billing')}
-                                                disabled={same}
-                                            ></Select>
-                                        </Form.Item>
-                                        <Form.Item name={['billing', 'region']} label="Region" required rules={[requiredWithoutMessage]}>
-                                            <Select
-                                                placeholder="Region"
-                                                options={getRegionsOptions(profileForm.getFieldsValue().billing?.country)}
-                                                allowClear
-                                                disabled={same}
-                                            ></Select>
-                                        </Form.Item>
-
+                                        <div className="profile-form-grid">
+                                            <Form.Item name={['billing', 'firstName']} label="First Name" required rules={[requiredWithoutMessage]}>
+                                                <Input disabled={same} />
+                                            </Form.Item>
+                                            <Form.Item name={['billing', 'lastName']} label="Last Name" required rules={[requiredWithoutMessage]}>
+                                                <Input disabled={same} />
+                                            </Form.Item>
+                                            <Form.Item name={['billing', 'phone']} label="Phone" required rules={[requiredWithoutMessage]}>
+                                                <Input placeholder={'Phone'} type="number" disabled={same} />
+                                            </Form.Item>
+                                            <Form.Item name={['billing', 'email']} label="Email" required rules={[requiredWithoutMessage]}>
+                                                <Input placeholder={'Email'} disabled={same} />
+                                            </Form.Item>
+                                            <Form.Item name={['billing', 'address']} label="Address" required rules={[requiredWithoutMessage]}>
+                                                <Input placeholder={'Address'} disabled={same} />
+                                            </Form.Item>
+                                            <Form.Item name={['billing', 'town']} label="Town" required rules={[requiredWithoutMessage]}>
+                                                <Input placeholder={'Town'} disabled={same} />
+                                            </Form.Item>
+                                            <Form.Item name={['billing', 'postalCode']} label="Postal Code" required rules={[requiredWithoutMessage]}>
+                                                <Input placeholder={'Postal Code'} disabled={same} />
+                                            </Form.Item>
+                                            <Form.Item name={['billing', 'country']} label="Country" required rules={[requiredWithoutMessage]}>
+                                                <Select
+                                                    placeholder="Country"
+                                                    options={getCountriesOptions()}
+                                                    allowClear
+                                                    onChange={() => onCountryChange('billing')}
+                                                    disabled={same}
+                                                ></Select>
+                                            </Form.Item>
+                                            <Form.Item name={['billing', 'region']} label="Region" required rules={[requiredWithoutMessage]}>
+                                                <Select
+                                                    placeholder="Region"
+                                                    options={getRegionsOptions(profileForm.getFieldsValue().billing?.country)}
+                                                    allowClear
+                                                    disabled={same}
+                                                ></Select>
+                                            </Form.Item>
+                                        </div>
                                         <Checkbox checked={same} onChange={handleSameShippingBilling}>
                                             Same as shipping
                                         </Checkbox>
@@ -216,6 +223,7 @@ const AddProfileModal: React.FunctionComponent<Props> = (props) => {
                                                 overflow: 'auto',
                                                 padding: 15,
                                                 alignItems: 'center',
+                                                width: '100%',
                                             }}
                                         >
                                             <div>

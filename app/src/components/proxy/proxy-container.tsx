@@ -19,11 +19,11 @@ const ProxyContainer: React.FunctionComponent = () => {
 
     const [isOpen, setOpen] = useState(false);
     useEffect(() => {
-        window.ElectronBridge.on(ProxySetChannel.onSelectedProxySet, handleOnProxySetSelected);
+        window.ElectronBridge.on(ProxySetChannel.onProxySetSelected, handleOnProxySetSelected);
         window.ElectronBridge.on(ProxySetChannel.proxiesUpdated, handleOnProxisUpdated);
 
         return () => {
-            window.ElectronBridge.removeAllListeners(ProxySetChannel.onSelectedProxySet);
+            window.ElectronBridge.removeAllListeners(ProxySetChannel.onProxySetSelected);
             window.ElectronBridge.removeAllListeners(ProxySetChannel.proxiesUpdated);
         };
     }, []);

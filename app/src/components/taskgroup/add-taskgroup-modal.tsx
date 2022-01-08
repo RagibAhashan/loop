@@ -1,5 +1,7 @@
-import { getStores } from '@constants/Stores';
+import { getStores } from '@constants/stores';
+import { generateId } from '@core/helpers';
 import { TaskGroupChannel } from '@core/ipc-channels';
+import { taskGroupPrefix } from '@core/taskgroup';
 import { Button, Input, Modal, Select } from 'antd';
 import React, { useState } from 'react';
 
@@ -17,7 +19,7 @@ const AddTaskGroupModal: React.FunctionComponent<Props> = (props) => {
     const [store, setStore] = useState('');
 
     const onSubmit = () => {
-        window.ElectronBridge.send(TaskGroupChannel.addTaskGroup, name, store);
+        window.ElectronBridge.send(TaskGroupChannel.addTaskGroup, generateId(taskGroupPrefix), name, store);
         setOpen(false);
     };
 

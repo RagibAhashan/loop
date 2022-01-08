@@ -3,31 +3,27 @@ import { Proxy, ProxyFormData, ProxyViewData } from '@core/proxy';
 import { ipcMain } from 'electron';
 import { ProxySetChannel } from './ipc-channels';
 import { debug } from './log';
+import { Manager } from './manager';
 import { ProxyFactory } from './proxy-factory';
 import { ProxySet, ProxySetViewData } from './proxyset';
 import { ProxySetFactory } from './proxyset-factory';
 
 const log = debug.extend('ProxySetManager');
+
 export type ProxySetMap = Map<string, ProxySet>;
-export class ProxySetManager {
+
+export class ProxySetManager extends Manager {
     private proxySetMap: ProxySetMap;
 
-    private database: AppDatabase;
-
     constructor(database: AppDatabase) {
+        super(database);
         this.proxySetMap = new Map();
-        this.database = database;
     }
 
-    public ready(): void {
-        this.registerListeners();
-        this.loadFromDB();
-    }
+    protected async loadFromDB(): Promise<void> {
+        const proxySets = await this.database.loadModelDB<ProxySet[]>('ProxySet');
 
-    public async loadFromDB(): Promise<void> {
-        const proxySets = await this.database.loadModelDB<ProxySet>('ProxySet');
-
-        const proxies = await this.database.loadModelDB<Proxy>('Proxy');
+        const proxies = await this.database.loadModelDB<Proxy[]>('Proxy');
 
         if (!proxySets || !proxies) return;
 
@@ -47,8 +43,8 @@ export class ProxySetManager {
     }
 
     public async saveToDB(): Promise<boolean> {
-        const proxySetsSaved = await this.database.saveModelDB<ProxySet>('ProxySet', this.getAllProxySets());
-        const proxiesSaved = await this.database.saveModelDB<Proxy>('Proxy', this.getAllProxies());
+        const proxySetsSaved = await this.database.saveModelDB<ProxySet[]>('ProxySet', this.getAllProxySets());
+        const proxiesSaved = await this.database.saveModelDB<Proxy[]>('Proxy', this.getAllProxies());
 
         if (!proxySetsSaved || !proxiesSaved) return false;
 
@@ -161,12 +157,15 @@ export class ProxySetManager {
         return proxySet.getAllProxiesViewData();
     }
 
-    private editProxySetName(setId: string, newName: string): void {
+    private editProxySetName(setId: string, newName: string): ProxySetViewData[] {
         const proxySet = this.proxySetMap.get(setId);
+
         proxySet.editName(newName);
+
+        return this.getAllProxySetsViewData();
     }
 
-    private registerListeners(): void {
+    protected registerListeners(): void {
         ipcMain.handle(ProxySetChannel.getAllProxySets, (_): ProxySetViewData[] => {
             return this.getAllProxySetsViewData();
         });
@@ -198,11 +197,21 @@ export class ProxySetManager {
             }
         });
 
+        ipcMain.on(ProxySetChannel.editProxySetName, (event, setId: string, newName: string) => {
+            const proxySets = this.editProxySetName(setId, newName);
+
+            if (proxySets) {
+                event.reply(ProxySetChannel.proxySetUpdated, proxySets);
+            } else {
+                event.reply(ProxySetChannel.proxySetError, 'Error');
+            }
+        });
+
         ipcMain.on(ProxySetChannel.getProxySetProxies, (event, setId: string) => {
             const currentProxySet = this.getProxySet(setId);
             if (currentProxySet) {
                 const proxies = currentProxySet.getAllProxiesViewData();
-                event.reply(ProxySetChannel.onSelectedProxySet, currentProxySet.getViewData(), proxies);
+                event.reply(ProxySetChannel.onProxySetSelected, currentProxySet.getViewData(), proxies);
             }
         });
 

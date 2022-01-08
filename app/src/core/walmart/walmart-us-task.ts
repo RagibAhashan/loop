@@ -1,6 +1,6 @@
+import { Account } from '@core/account';
 import { Profile } from '@core/profile';
 import { ProfileGroupManager } from '@core/profilegroup-manager';
-import { Proxy } from '@core/proxy';
 import { ProxySet } from '@core/proxyset';
 import { ProxySetManager } from '@core/proxyset-manager';
 import { NOTIFY_CAPTCHA_TASK, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
@@ -43,32 +43,30 @@ export class WalmartUSTask extends WalmartTask {
     private static readonly IN_STOCK = 'IN_STOCK';
 
     constructor(
-        uuid: string,
+        id: string,
         retryDelay: number,
+        productIdentifier: string,
         userProfile: Profile,
-        proxySet: ProxySet,
-        proxy: Proxy,
+        proxySet: ProxySet | null,
+        account: Account | null,
+        productQuantity: number,
         taskGroupName: string,
         requestInstance: RequestInstance,
         profileGroupManager: ProfileGroupManager,
         proxyManager: ProxySetManager,
-        offerId: string,
-        productQuantity: number,
-        productSKU: string,
     ) {
         super(
-            uuid,
+            id,
             retryDelay,
+            productIdentifier,
             userProfile,
             proxySet,
-            proxy,
+            account,
+            productQuantity,
             taskGroupName,
             requestInstance,
             profileGroupManager,
             proxyManager,
-            offerId,
-            productQuantity,
-            productSKU,
         );
     }
 
@@ -92,6 +90,8 @@ export class WalmartUSTask extends WalmartTask {
     }
 
     async doTask(): Promise<void> {
+        super.doTask();
+
         try {
             log('Starting task with proxy %O', this.proxy);
             this.cookieJar = new CookieJar(this.requestInstance.baseURL);
@@ -806,7 +806,7 @@ export class WalmartUSTask extends WalmartTask {
         this.emit(TASK_STATUS, { message: MESSAGES.WAIT_CAPTCHA_MESSAGE, level: 'captcha' });
 
         this.emit(NOTIFY_CAPTCHA_TASK, {
-            uuid: this.uuid,
+            uuid: this.id,
             params: captchaResponse,
         });
 

@@ -1,10 +1,12 @@
 import { TASK_STOP } from '@common/Constants';
-import { StoreType } from '../constants/Stores';
+import { StoreType } from '../constants/stores';
 import { debug } from './log';
 import { Task, TaskViewData } from './task';
 import { Viewable } from './viewable';
 
 const log = debug.extend('TaskGroup');
+
+export const taskGroupPrefix = 'taskgrp';
 
 export interface TaskGroupViewData {
     id: string;
@@ -44,12 +46,12 @@ export class TaskGroup implements ITaskGroup, Viewable<TaskGroupViewData> {
 
     public addTasks(task: Task): void {
         //Should never happen
-        if (this.tasks.has(task.uuid)) {
-            log('UUID already exists in task map, could not add task %s %s', task.uuid, this.storeType);
+        if (this.tasks.has(task.id)) {
+            log('Task already exists in task map, could not add task %s %s', task.id, this.storeType);
             return;
         }
 
-        this.tasks.set(task.uuid, task);
+        this.tasks.set(task.id, task);
     }
 
     public removeTask(uuid: string): void {

@@ -1,6 +1,7 @@
 import { ProfileGroupViewData } from '@core/profilegroup';
 import { ProxySetViewData } from '@core/proxyset';
 import { TaskViewData } from '@core/task';
+import { TaskGroupViewData } from '@core/taskgroup';
 import React from 'react';
 import DeleteTaskAction from './delete-task-action';
 import StartTaskAction from './start-task-action';
@@ -10,19 +11,19 @@ interface Props {
     task: TaskViewData;
     proxySets: ProxySetViewData[];
     profileGroups: ProfileGroupViewData[];
-    groupName: string;
+    taskGroup: TaskGroupViewData;
 }
 
 const TaskActions: React.FunctionComponent<Props> = (props) => {
-    const { task, profileGroups, proxySets, groupName } = props;
+    const { task, profileGroups, proxySets, taskGroup } = props;
 
     const isRunning = false;
 
     const runButton = () => {
         return task.isRunning ? (
-            <StopTaskAction groupName={groupName} task={task}></StopTaskAction>
+            <StopTaskAction taskGroup={taskGroup} task={task}></StopTaskAction>
         ) : (
-            <StartTaskAction groupName={groupName} task={task}></StartTaskAction>
+            <StartTaskAction taskGroup={taskGroup} task={task}></StartTaskAction>
         );
     };
 
@@ -38,7 +39,7 @@ const TaskActions: React.FunctionComponent<Props> = (props) => {
                 ></EditTaskAction> */}
             </div>
             <div>
-                <DeleteTaskAction groupName={groupName} task={task}></DeleteTaskAction>
+                <DeleteTaskAction taskGroup={taskGroup} task={task}></DeleteTaskAction>
             </div>
         </div>
     );

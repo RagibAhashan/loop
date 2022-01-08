@@ -1,4 +1,4 @@
-import { StoreType } from './../constants/Stores';
+import { StoreType } from '../constants/stores';
 export interface ProxyState {
     [proxyName: string]: ProxySet;
 }

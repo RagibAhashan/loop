@@ -5,6 +5,16 @@ export enum StoreType {
     WalmartCA = 'WalmartCA',
 }
 
+export enum AccountStoreType {
+    WalmartUS = 'WalmartUS',
+    WalmartCA = 'WalmartCA',
+    Amazon = 'Amazon',
+}
+
+export interface AccountStoreInfo {
+    name: string;
+}
+
 export enum CaptchaType {
     Google,
     Px,
@@ -19,9 +29,7 @@ export interface StoreInfo {
     captchaType: CaptchaType;
 }
 
-export type StoresMap = { readonly [key in StoreType]: StoreInfo };
-
-export const STORES: StoresMap = {
+export const STORES: Record<StoreType, StoreInfo> = {
     FootlockerUS: {
         name: 'Footlocker US',
         baseURL: 'https://www.footlocker.com/api',
@@ -56,6 +64,16 @@ export const STORES: StoresMap = {
     },
 };
 
+export const ACCOUNT_STORES: Record<AccountStoreType, AccountStoreInfo> = {
+    Amazon: { name: 'Amazon' },
+    WalmartCA: { name: 'Walmart CA' },
+    WalmartUS: { name: 'Walmart US' },
+};
+
 export const getStores = () => {
     return Object.entries(STORES);
+};
+
+export const getAccountStores = () => {
+    return Object.entries(ACCOUNT_STORES);
 };

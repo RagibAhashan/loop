@@ -1,4 +1,5 @@
 import { CloseCircleOutlined } from '@ant-design/icons';
+import Editable from '@components/base/editable';
 import { ProfileGroupChannel } from '@core/ipc-channels';
 import { ProfileGroupViewData } from '@core/profilegroup';
 import { Button } from 'antd';
@@ -22,6 +23,10 @@ const ProfileGroup: React.FunctionComponent<Props> = (props) => {
         event.stopPropagation();
     };
 
+    const handleProfileGroupNameEdit = (value: string) => {
+        window.ElectronBridge.send(ProfileGroupChannel.editProfileGroupName, profileGroup.id, value);
+    };
+
     return (
         <div
             style={{
@@ -38,7 +43,9 @@ const ProfileGroup: React.FunctionComponent<Props> = (props) => {
             <div>
                 <Button type="primary" shape="circle" icon={<CloseCircleOutlined />} onClick={handleRemoveProfileGroupClick} />
             </div>
-            <div>{profileGroup.name}</div>
+            <div>
+                <Editable value={profileGroup.name} onSubmit={handleProfileGroupNameEdit} />
+            </div>
         </div>
     );
 };

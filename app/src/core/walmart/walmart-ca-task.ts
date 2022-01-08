@@ -23,6 +23,8 @@ const log = debug.extend('WalmartCATask');
 
 export class WalmartCATask extends WalmartTask {
     async doTask(): Promise<void> {
+        super.doTask();
+
         try {
             this.cookieJar = new CookieJar(this.requestInstance.baseURL);
 
@@ -104,8 +106,8 @@ export class WalmartCATask extends WalmartTask {
                     postalCode: 'L5V2N6',
                     items: [
                         {
-                            offerId: this.offerId,
-                            skuId: this.offerId,
+                            offerId: this.productIdentifier,
+                            skuId: this.productIdentifier,
                             quantity: this.productQuantity,
                             allowSubstitutions: false,
                             subscription: false,
@@ -215,7 +217,7 @@ export class WalmartCATask extends WalmartTask {
                 const body = {
                     shipMethods: [
                         {
-                            offerId: this.offerId,
+                            offerId: this.productIdentifier,
                             levelOfService: 'STANDARD',
                         },
                     ],
@@ -414,7 +416,7 @@ export class WalmartCATask extends WalmartTask {
         this.emitStatus(MESSAGES.WAIT_CAPTCHA_MESSAGE, 'info');
 
         this.emit(TaskChannel.onCaptcha, {
-            uuid: this.uuid,
+            id: this.id,
             params: captchaResponse,
         });
 

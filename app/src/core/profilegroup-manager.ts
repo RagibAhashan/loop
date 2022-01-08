@@ -3,6 +3,7 @@ import { AppDatabase } from './app-database';
 import { CreditCardFormData, ICreditCard } from './credit-card';
 import { ProfileGroupChannel } from './ipc-channels';
 import { debug } from './log';
+import { Manager } from './manager';
 import { Profile, ProfileFormData, ProfileViewData, UserProfile } from './profile';
 import { ProfileFactory } from './profile-factory';
 import { ProfileGroup, ProfileGroupViewData } from './profilegroup';
@@ -11,22 +12,21 @@ import { ProfileGroupFactory } from './profilegroup-factory';
 const log = debug.extend('ProfileGroupManager');
 export type ProfileGroupMap = Map<string, ProfileGroup>;
 
-export class ProfileGroupManager {
+export class ProfileGroupManager extends Manager {
     private profileGroupMap: ProfileGroupMap;
-    private database: AppDatabase;
     private profileGroupFactory: ProfileGroupFactory;
     private profileFactory: ProfileFactory;
 
-    constructor(profileGroupFactory: ProfileGroupFactory, profileFactory: ProfileFactory, database: AppDatabase) {
+    constructor(database: AppDatabase, profileGroupFactory: ProfileGroupFactory, profileFactory: ProfileFactory) {
+        super(database);
         this.profileGroupMap = new Map();
-        this.database = database;
         this.profileGroupFactory = profileGroupFactory;
         this.profileFactory = profileFactory;
     }
 
-    public async loadFromDB(): Promise<void> {
-        const profileGroups = await this.database.loadModelDB<ProfileGroup>('ProfileGroup');
-        const profiles = await this.database.loadModelDB<Partial<Profile>>('Profile');
+    protected async loadFromDB(): Promise<void> {
+        const profileGroups = await this.database.loadModelDB<ProfileGroup[]>('ProfileGroup');
+        const profiles = await this.database.loadModelDB<Partial<Profile>[]>('Profile');
 
         if (!profiles || !profileGroups) return;
 
@@ -54,18 +54,13 @@ export class ProfileGroupManager {
     }
 
     public async saveToDB(): Promise<boolean> {
-        const profileGroupsSaved = await this.database.saveModelDB<ProfileGroup>('ProfileGroup', this.getAllProfileGroups());
-        const profileSaved = await this.database.saveModelDB<Partial<Profile>>('Profile', this.getAllProfilesDB());
+        const profileGroupsSaved = await this.database.saveModelDB<ProfileGroup[]>('ProfileGroup', this.getAllProfileGroups());
+        const profileSaved = await this.database.saveModelDB<Partial<Profile>[]>('Profile', this.getAllProfilesDB());
 
         if (!profileGroupsSaved || !profileSaved) return false;
 
         log('ProfileGroup Saved to DB!');
         return true;
-    }
-
-    public async ready(): Promise<void> {
-        this.registerListeners();
-        this.loadFromDB();
     }
 
     private addProfileGroup(id: string, name: string): ProfileGroupViewData[] | null {
@@ -208,7 +203,7 @@ export class ProfileGroupManager {
         return profileGroup.getAllProfilesViewData();
     }
 
-    private registerListeners(): void {
+    protected registerListeners(): void {
         ipcMain.handle(ProfileGroupChannel.getAllProfileGroups, (_): ProfileGroupViewData[] => {
             return this.getAllProfileGroupsViewData();
         });

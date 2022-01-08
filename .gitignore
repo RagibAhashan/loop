@@ -6,5 +6,5 @@ app/.eslintcache
 app/src/main.prod.js
 .vscode/settings.json
 app/src/main.prod.js.map
-
+resources/
 prototype/

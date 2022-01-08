@@ -1,18 +1,19 @@
 import { TaskGroupChannel } from '@core/ipc-channels';
+import { TaskGroupViewData } from '@core/taskgroup';
 import { Button } from 'antd';
 import React from 'react';
 import { buttonStyle } from '../../styles/Buttons';
 
 interface Props {
-    groupName: string;
+    taskGroup: TaskGroupViewData;
     areTasksRunning: boolean;
     areTasksCreated: boolean;
 }
 const StartAllTasksAction: React.FunctionComponent<Props> = (props) => {
-    const { groupName, areTasksCreated, areTasksRunning } = props;
+    const { taskGroup, areTasksCreated, areTasksRunning } = props;
 
     const handleStartAllTasks = () => {
-        window.ElectronBridge.send(TaskGroupChannel.startAllTasks, groupName);
+        window.ElectronBridge.send(TaskGroupChannel.startAllTasks, taskGroup.id);
     };
 
     return (
@@ -20,7 +21,7 @@ const StartAllTasksAction: React.FunctionComponent<Props> = (props) => {
             type="default"
             style={{ ...buttonStyle, backgroundColor: 'green' }}
             onClick={handleStartAllTasks}
-            disabled={!areTasksCreated || areTasksRunning}
+            disabled={!areTasksCreated || areTasksRunning || !!taskGroup}
         >
             Run all
         </Button>

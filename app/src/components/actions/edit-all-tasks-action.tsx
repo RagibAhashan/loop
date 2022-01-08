@@ -1,3 +1,4 @@
+import EditTaskModal from '@components/task/edit-task-modal';
 import { ProfileGroupViewData } from '@core/profilegroup';
 import { ProxySetViewData } from '@core/proxyset';
 import { TaskGroupViewData } from '@core/taskgroup';
@@ -6,22 +7,21 @@ import React, { useState } from 'react';
 import { buttonStyle } from '../../styles/Buttons';
 
 interface Props {
-    EditTaskModalComponent: React.ComponentType<any>;
     taskGroup: TaskGroupViewData;
     proxySets: ProxySetViewData[];
     profileGroups: ProfileGroupViewData[];
 }
 
 const EditAllTasksAction: React.FunctionComponent<Props> = (props) => {
-    const { EditTaskModalComponent, proxySets, profileGroups } = props;
+    const { proxySets, profileGroups, taskGroup } = props;
 
-    const [showModal, setShowModal] = useState(false);
+    const [isOpen, setOpen] = useState(false);
 
     // const areTasksRunning = store.running;
     // const noTaskCreated = Object.keys(tasks).length === 0;
 
     const onEditClick = () => {
-        setShowModal(true);
+        setOpen(true);
     };
 
     const handleEditTask = (newValues: any) => {
@@ -30,22 +30,25 @@ const EditAllTasksAction: React.FunctionComponent<Props> = (props) => {
 
         // TODO editall proxy reassignment
 
-        setShowModal(false);
+        setOpen(false);
     };
 
     return (
         <div>
-            <Button style={buttonStyle} type="primary" onClick={onEditClick}>
+            <Button style={buttonStyle} type="primary" onClick={onEditClick} disabled={!taskGroup}>
                 Edit All
             </Button>
-            <EditTaskModalComponent
-                proxySets={proxySets}
-                profileGroups={profileGroups}
-                showModal={showModal}
-                massEdit={true}
-                setShowModal={setShowModal}
-                task={{}}
-            />
+
+            {!!taskGroup ?? (
+                <EditTaskModal
+                    proxySets={proxySets}
+                    profileGroups={profileGroups}
+                    setOpen={setOpen}
+                    massEdit={true}
+                    isOpen={isOpen}
+                    task={{} as any}
+                />
+            )}
         </div>
     );
 };

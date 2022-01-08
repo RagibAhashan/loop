@@ -1,4 +1,5 @@
 import { CloseCircleOutlined } from '@ant-design/icons';
+import Editable from '@components/base/editable';
 import { TaskGroupChannel } from '@core/ipc-channels';
 import { TaskGroupViewData } from '@core/taskgroup';
 import { Button } from 'antd';
@@ -23,6 +24,10 @@ const TaskGroup: React.FunctionComponent<Props> = (props) => {
         event.stopPropagation();
     };
 
+    const handleNameEdit = (value: string) => {
+        window.ElectronBridge.send(TaskGroupChannel.editTaskGroupName, taskGroup.id, value);
+    };
+
     return (
         <div
             style={{
@@ -39,7 +44,9 @@ const TaskGroup: React.FunctionComponent<Props> = (props) => {
             <div>
                 <Button type="primary" shape="circle" icon={<CloseCircleOutlined />} onClick={handleRemoveTaskGroupClick} />
             </div>
-            <div>Group {taskGroup.name}</div>
+            <div>
+                <Editable value={taskGroup.name} onSubmit={handleNameEdit} />
+            </div>
             <div>Store {taskGroup.storeType}</div>
         </div>
     );

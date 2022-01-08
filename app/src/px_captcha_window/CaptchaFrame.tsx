@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { STORE_KEY } from '../common/Constants';
-import { STORES, StoreType } from '../constants/Stores';
+import { STORES, StoreType } from '../constants/stores';
 import { debug } from '../core/log';
 import { Captcha } from '../interfaces/TaskInterfaces';
 

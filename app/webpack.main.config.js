@@ -11,7 +11,7 @@ module.exports = {
         rules: require('./webpack.rules'),
     },
     resolve: {
-        extensions: ['.js', '.ts', '.jsx', '.tsx', '.css', '.json'],
+        extensions: ['.js', '.ts', '.jsx', '.tsx', '.css', '.json', 'png', 'svg', '.less'],
         alias: {
             '@main_window': path.resolve(__dirname, 'src/main_window/'),
             '@license_window': path.resolve(__dirname, 'src/license_window/'),
@@ -25,6 +25,8 @@ module.exports = {
             '@interfaces': path.resolve(__dirname, 'src/interfaces/'),
             '@services': path.resolve(__dirname, 'src/services/'),
             '@styles': path.resolve(__dirname, 'src/styles/'),
+            '@css': path.resolve(__dirname, 'src/css/'),
+            '@assets': path.resolve(__dirname, 'src/assets/'),
         },
     },
     externals: {

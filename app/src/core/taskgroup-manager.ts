@@ -1,36 +1,32 @@
 import { ITask, Task, TaskFormData, TaskViewData } from '@core/task';
 import { ipcMain } from 'electron';
-import { StoreType } from '../constants/Stores';
+import { StoreType } from '../constants/stores';
 import { AppDatabase } from './app-database';
 import { TaskGroupChannel } from './ipc-channels';
 import { debug } from './log';
+import { Manager } from './manager';
 import { TaskFactory } from './task-factory';
 import { TaskGroup, TaskGroupViewData } from './taskgroup';
 import { TaskGroupFactory } from './taskgroup-factory';
 
 const log = debug.extend('TaskGroupManager');
 export type TaskGroupMap = Map<string, TaskGroup>;
-export class TaskGroupManager {
+
+export class TaskGroupManager extends Manager {
     private taskGroupMap: TaskGroupMap;
     private taskGroupFactory: TaskGroupFactory;
-    private database: AppDatabase;
     private taskFactory: TaskFactory;
 
-    constructor(taskGroupFactory: TaskGroupFactory, taskFactory: TaskFactory, database: AppDatabase) {
+    constructor(database: AppDatabase, taskGroupFactory: TaskGroupFactory, taskFactory: TaskFactory) {
+        super(database);
         this.taskGroupMap = new Map();
-        this.database = database;
         this.taskGroupFactory = taskGroupFactory;
         this.taskFactory = taskFactory;
     }
 
-    public ready(): void {
-        this.registerListeners();
-        this.loadFromDB();
-    }
-
-    public async loadFromDB(): Promise<void> {
-        const taskGroups = await this.database.loadModelDB<TaskGroup>('TaskGroup');
-        const tasks = await this.database.loadModelDB<Task>('Task');
+    protected async loadFromDB(): Promise<void> {
+        const taskGroups = await this.database.loadModelDB<TaskGroup[]>('TaskGroup');
+        const tasks = await this.database.loadModelDB<Task[]>('Task');
 
         if (!taskGroups || !tasks) return;
 
@@ -51,8 +47,8 @@ export class TaskGroupManager {
     }
 
     public async saveToDB(): Promise<boolean> {
-        const tgSaved = await this.database.saveModelDB<TaskGroup>('TaskGroup', this.getAllTaskGroups());
-        const tSaved = await this.database.saveModelDB<Task>('Task', this.getAllTasks());
+        const tgSaved = await this.database.saveModelDB<TaskGroup[]>('TaskGroup', this.getAllTaskGroups());
+        const tSaved = await this.database.saveModelDB<Task[]>('Task', this.getAllTasks());
 
         if (!tgSaved || tSaved) return false;
 
@@ -217,7 +213,7 @@ export class TaskGroupManager {
         return this.getAllTaskGroupsViewData();
     }
 
-    private registerListeners(): void {
+    protected registerListeners(): void {
         ipcMain.handle(TaskGroupChannel.getAllTaskGroups, (_): TaskGroupViewData[] => {
             return this.getAllTaskGroupsViewData();
         });

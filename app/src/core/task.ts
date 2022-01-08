@@ -1,30 +1,37 @@
 import { Profile } from '@core/profile';
-import { Proxy } from '@core/proxy';
 import { Status, StatusLevel } from '@interfaces/TaskInterfaces';
 import { AxiosInstance } from 'axios';
 import { EventEmitter } from 'events';
 import { TASK_STOP, TASK_STOPPED } from '../common/Constants';
+import { Account } from './account';
 import { MESSAGES } from './constants/Constants';
 import { CookieJar } from './cookie-jar';
 import { TaskChannel } from './ipc-channels';
 import { debug } from './log';
 import { ProfileGroupManager } from './profilegroup-manager';
+import { Proxy } from './proxy';
 import { ProxySet } from './proxyset';
 import { ProxySetManager } from './proxyset-manager';
 import { RequestInstance } from './request-instance';
 import { Viewable } from './viewable';
 
 export const CANCEL_ERROR = 'Cancel';
+
+export const taskPrefix = 'task';
+
 const log = debug.extend('Task');
 
 export interface TaskFormData {
     profileName: string;
     proxySetName: string;
     retryDelay: number;
+    id: string;
 }
 
 export interface TaskViewData {
-    uuid: string;
+    id: string;
+    productIdentifier: string; // can be either SKU, URL, etc
+    accountName: string;
     proxySetName: string;
     profileName: string;
     retryDelay: number;
@@ -33,14 +40,16 @@ export interface TaskViewData {
 }
 
 export interface ITask {
+    id: string;
+    retryDelay: number;
+    productIdentifier: string;
     userProfile: Profile;
-    proxy: Proxy | null;
     proxySet: ProxySet | null;
+    account: Account | null;
+    productQuantity: number;
     isRunning: boolean;
     status: Status;
     taskGroupId: string;
-    retryDelay: number;
-    uuid: string;
 }
 
 export abstract class Task extends EventEmitter implements ITask, Viewable<TaskViewData> {
@@ -51,22 +60,27 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
     protected axiosSession: AxiosInstance;
     protected profileGroupManager: ProfileGroupManager;
     protected proxyManager: ProxySetManager;
+    protected proxy: Proxy;
 
-    public uuid: string;
+    public id: string;
     public userProfile: Profile;
-    public proxy: Proxy | null;
+    public productIdentifier: string;
     public proxySet: ProxySet | null;
+    public account: Account | null;
     public isRunning: boolean;
     public status: Status;
     public taskGroupId: string;
     public retryDelay: number;
+    public productQuantity: number;
 
     constructor(
-        uuid: string,
+        id: string,
         retryDelay: number,
+        productIdentifier: string,
         userProfile: Profile,
-        proxySet: ProxySet,
-        proxy: Proxy,
+        proxySet: ProxySet | null,
+        account: Account | null,
+        productQuantity: number,
         taskGroupId: string,
         requestInstance: RequestInstance,
         profileGroupManager: ProfileGroupManager,
@@ -77,28 +91,36 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
         this.axiosSession = requestInstance.axios;
         this.cancel = false;
         this.cancelTimeout = () => {};
-        this.uuid = uuid;
+        this.id = id;
         this.profileGroupManager = profileGroupManager;
         this.proxyManager = proxyManager;
         this.taskGroupId = taskGroupId;
         this.retryDelay = retryDelay;
         this.status = { level: 'idle', message: 'Idle' };
         this.proxySet = proxySet;
-        this.proxy = proxy;
+        this.productIdentifier = productIdentifier;
+        this.account = account;
         this.userProfile = userProfile;
+        this.productQuantity = productQuantity;
     }
 
-    abstract doTask(): void;
+    public async doTask(): Promise<void> {
+        if (this.proxySet) {
+            this.proxy = this.proxyManager.pickProxyFromSet(this.proxySet.id);
+        }
+    }
 
     // Return a simple interface to be send to the view
     public getViewData(): TaskViewData {
         return {
             proxySetName: this.proxySet.name,
-            uuid: this.uuid,
+            id: this.id,
             retryDelay: this.retryDelay,
             profileName: this.userProfile.profileName,
             status: this.status,
             isRunning: this.isRunning,
+            productIdentifier: this.productIdentifier,
+            accountName: this.account.name,
         };
     }
 

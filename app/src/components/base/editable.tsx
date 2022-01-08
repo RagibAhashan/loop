@@ -8,10 +8,10 @@ const Editable: React.FunctionComponent<Props> = (props) => {
     const { value, onSubmit } = props;
 
     const [isEditing, setEditing] = useState(false);
+
     const inputRef = useRef<HTMLInputElement>(null);
 
     const handleStopEditing = () => {
-        console.log('before trim', inputRef.current, inputRef.current.value);
         if (!inputRef.current.value) {
             setTimeout(() => setEditing(false), 100);
             return;
@@ -19,10 +19,7 @@ const Editable: React.FunctionComponent<Props> = (props) => {
 
         const newValue = inputRef.current.value.trim();
 
-        console.log('new value', newValue, value);
         if (newValue !== value && newValue.length > 0) {
-            console.log('submitting', newValue, value);
-
             onSubmit(newValue);
         }
 
@@ -52,7 +49,7 @@ const Editable: React.FunctionComponent<Props> = (props) => {
     return (
         <div>
             {isEditing ? (
-                <input className="editable" defaultValue={value} type="text" ref={inputRef} onBlur={handleStopEditing} onKeyPress={handleKeyPress} />
+                <input className="editable" defaultValue={value} type="text" ref={inputRef} onBlur={handleStopEditing} onKeyDown={handleKeyPress} />
             ) : (
                 <span onDoubleClick={handleDoubleClick}> {value} </span>
             )}

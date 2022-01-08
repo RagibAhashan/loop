@@ -1,4 +1,5 @@
 import { CloseCircleOutlined } from '@ant-design/icons';
+import Editable from '@components/base/editable';
 import { ProxySetChannel } from '@core/ipc-channels';
 import { ProxySetViewData } from '@core/proxyset';
 import { Button } from 'antd';
@@ -25,6 +26,10 @@ const ProxySet: React.FunctionComponent<Props> = (props) => {
         event.stopPropagation();
     };
 
+    const handleProxySetNameEdit = (value: string) => {
+        window.ElectronBridge.send(ProxySetChannel.editProxySetName, proxySet.id, value);
+    };
+
     return (
         <div
             style={{
@@ -41,7 +46,9 @@ const ProxySet: React.FunctionComponent<Props> = (props) => {
             <div>
                 <Button type="primary" shape="circle" icon={<CloseCircleOutlined />} onClick={handleRemoveProxySet} />
             </div>
-            <div>{proxySet.name}</div>
+            <div>
+                <Editable value={proxySet.name} onSubmit={handleProxySetNameEdit} />
+            </div>
         </div>
     );
 };

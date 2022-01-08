@@ -29,9 +29,9 @@ const ProxySetContainer: React.FunctionComponent<Props> = () => {
         };
     }, []);
 
-    const handleProxySetUpdated = (_, proxySets: ProxySetViewData[], msg: string) => {
+    const handleProxySetUpdated = (_, proxySets: ProxySetViewData[], msg?: string) => {
         setProxySets(proxySets);
-        message.success(msg, 1);
+        if (msg) message.success(msg, 1);
     };
 
     const handleProxySetError = (_, msg: string) => {
