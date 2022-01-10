@@ -10,7 +10,7 @@ const TaskGroupList: React.FunctionComponent<Props> = (props) => {
     const { taskGroups } = props;
 
     // Only used to style focus the selected task group
-    const [selectedTaskGroup, setSelectedTaskGroup] = useState(null);
+    const [selectedTaskGroup, setSelectedTaskGroup] = useState<TaskGroupViewData>();
 
     useEffect(() => {
         window.ElectronBridge.on(TaskGroupChannel.onTaskGroupSelected, handleOnTaskGroupSelected);

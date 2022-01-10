@@ -1,12 +1,14 @@
 import { AppDatabase } from '@core/app-database';
-import { Proxy, ProxyFormData, ProxyViewData } from '@core/proxy';
+import { IProxy, Proxy, ProxyFormData, ProxyViewData } from '@core/proxy';
 import { ipcMain } from 'electron';
+import { EntityId } from './entity-id';
 import { ProxySetChannel } from './ipc-channels';
 import { debug } from './log';
 import { Manager } from './manager';
 import { ProxyFactory } from './proxy-factory';
-import { ProxySet, ProxySetViewData } from './proxyset';
+import { IProxySet, ProxySet, ProxySetViewData } from './proxyset';
 import { ProxySetFactory } from './proxyset-factory';
+import { TaskGroupManager } from './taskgroup-manager';
 
 const log = debug.extend('ProxySetManager');
 
@@ -14,16 +16,18 @@ export type ProxySetMap = Map<string, ProxySet>;
 
 export class ProxySetManager extends Manager {
     private proxySetMap: ProxySetMap;
+    private taskGroupManager: TaskGroupManager;
 
-    constructor(database: AppDatabase) {
+    constructor(database: AppDatabase, taskGroupManager: TaskGroupManager) {
         super(database);
         this.proxySetMap = new Map();
+        this.taskGroupManager = taskGroupManager;
     }
 
     protected async loadFromDB(): Promise<void> {
-        const proxySets = await this.database.loadModelDB<ProxySet[]>('ProxySet');
+        const proxySets = await this.database.loadModelDB<IProxySet[]>('ProxySet');
 
-        const proxies = await this.database.loadModelDB<Proxy[]>('Proxy');
+        const proxies = await this.database.loadModelDB<IProxy[]>('Proxy');
 
         if (!proxySets || !proxies) return;
 
@@ -43,8 +47,8 @@ export class ProxySetManager extends Manager {
     }
 
     public async saveToDB(): Promise<boolean> {
-        const proxySetsSaved = await this.database.saveModelDB<ProxySet[]>('ProxySet', this.getAllProxySets());
-        const proxiesSaved = await this.database.saveModelDB<Proxy[]>('Proxy', this.getAllProxies());
+        const proxySetsSaved = await this.database.saveModelDB<IProxySet[]>('ProxySet', this.getAllProxySets());
+        const proxiesSaved = await this.database.saveModelDB<IProxy[]>('Proxy', this.getAllProxies());
 
         if (!proxySetsSaved || !proxiesSaved) return false;
 
@@ -52,13 +56,21 @@ export class ProxySetManager extends Manager {
         return true;
     }
 
-    public pickProxyFromSet(setId: string): Proxy {
-        const proxySet = this.proxySetMap.get(setId);
-        return proxySet.pickProxy();
+    public pickProxyFromSet(setId: string, taskId: EntityId): Proxy {
+        const proxySet = this.getProxySet(setId);
+
+        const proxy = proxySet.pickProxy();
+        proxy.setTaskId(taskId);
+
+        return proxy;
     }
 
-    private getProxySet(setId: string): ProxySet | undefined {
-        return this.proxySetMap.get(setId);
+    public getProxySet(setId: string): ProxySet {
+        const proxySet = this.proxySetMap.get(setId);
+
+        if (!proxySet) throw new Error('getProxySet: Could not find key');
+
+        return proxySet;
     }
 
     private addProxySet(setId: string, name: string): ProxySetViewData[] | null {
@@ -80,19 +92,18 @@ export class ProxySetManager extends Manager {
             return null;
         }
 
+        const proxySet = this.getProxySet(setId);
+
+        proxySet.getAllProxies().forEach((proxySet) => {
+            const taskId = proxySet.taskId;
+
+            if (taskId) {
+                const task = this.taskGroupManager.getTaskGroup(taskId.groupId).getTask(taskId.id);
+                task.proxy = null;
+            }
+        });
+
         this.proxySetMap.delete(setId);
-        return this.getAllProxySetsViewData();
-    }
-
-    private removeAllProxies(setId: string): ProxySetViewData[] | null {
-        if (!this.proxySetMap.has(setId)) {
-            log('[ProxySet not found]');
-            return null;
-        }
-
-        const proxySet = this.proxySetMap.get(setId);
-
-        proxySet.removeAllProxies();
 
         return this.getAllProxySetsViewData();
     }
@@ -124,12 +135,7 @@ export class ProxySetManager extends Manager {
      * @param proxies Array of string containing proxies in this format : host:port:user:pass
      */
     private addProxyToSet(setId: string, proxies: ProxyFormData[]): ProxyViewData[] | null {
-        if (!this.proxySetMap.has(setId)) {
-            log('[ProxySet not found]');
-            return null;
-        }
-
-        const proxySet = this.proxySetMap.get(setId);
+        const proxySet = this.getProxySet(setId);
 
         for (const proxyData of proxies) {
             const proxy = ProxyFactory.createProxy(setId, proxyData);
@@ -144,21 +150,41 @@ export class ProxySetManager extends Manager {
      * @param hosts Array of string containing proxies full host = hostname:port
      */
     private removeProxyFromSet(setId: string, proxyIds: string[]): ProxyViewData[] | null {
-        if (!this.proxySetMap.has(setId)) {
-            log('[ProxySetnot found]');
-            return null;
-        }
-        const proxySet = this.proxySetMap.get(setId);
+        const proxySet = this.getProxySet(setId);
 
         for (const proxyId of proxyIds) {
+            const taskId = proxySet.getProxy(proxyId).taskId;
+
+            if (taskId) {
+                const task = this.taskGroupManager.getTaskGroup(taskId.groupId).getTask(taskId.id);
+                task.proxy = null;
+            }
+
             proxySet.removeProxy(proxyId);
         }
 
         return proxySet.getAllProxiesViewData();
     }
 
+    private removeAllProxies(setId: string): ProxySetViewData[] {
+        const proxySet = this.getProxySet(setId);
+
+        proxySet.getAllProxies().forEach((proxySet) => {
+            const taskId = proxySet.taskId;
+
+            if (taskId) {
+                const task = this.taskGroupManager.getTaskGroup(taskId.groupId).getTask(taskId.id);
+                task.proxy = null;
+            }
+        });
+
+        proxySet.removeAllProxies();
+
+        return this.getAllProxySetsViewData();
+    }
+
     private editProxySetName(setId: string, newName: string): ProxySetViewData[] {
-        const proxySet = this.proxySetMap.get(setId);
+        const proxySet = this.getProxySet(setId);
 
         proxySet.editName(newName);
 

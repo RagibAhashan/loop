@@ -1,4 +1,5 @@
 import * as puppeteer from 'puppeteer-core';
+import { EntityId } from './entity-id';
 import { Settings } from './settings';
 import { Viewable } from './viewable';
 
@@ -27,27 +28,40 @@ export interface IAccount {
     loggedIn: boolean;
     logInPage: string;
     groupId: string;
+    loginProxy: string;
     settings: Settings;
+    isUsed: boolean;
+    taskId: EntityId | null;
 }
 export abstract class Account implements IAccount, Viewable<AccountViewData> {
     id: string;
+    groupId: string;
     name: string;
     email: string;
     password: string;
     loggedIn: boolean;
     logInPage: string;
-    groupId: string;
+    loginProxy: string;
     settings: Settings;
+    isUsed: boolean;
+    taskId: EntityId | null;
 
-    constructor(id: string, groupId: string, name: string, email: string, password: string, settings: Settings) {
+    constructor(id: string, groupId: string, name: string, email: string, password: string, loginProxy: string, settings: Settings) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.password = password;
         this.loggedIn = false;
         this.logInPage = '';
+        this.loginProxy = loginProxy;
         this.settings = settings;
         this.groupId = groupId;
+        this.isUsed = false;
+        this.taskId = null;
+    }
+
+    public setTaskId(value: EntityId | null): void {
+        this.taskId = value;
     }
 
     abstract logIn(): void;

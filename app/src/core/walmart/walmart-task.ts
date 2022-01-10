@@ -1,6 +1,5 @@
 import { Account } from '@core/account';
 import { Profile } from '@core/profile';
-import { ProfileGroupManager } from '@core/profilegroup-manager';
 import { ProxySet } from '@core/proxyset';
 import { ProxySetManager } from '@core/proxyset-manager';
 import { RequestInstance } from '@core/request-instance';
@@ -18,22 +17,9 @@ export abstract class WalmartTask extends Task implements Viewable<TaskViewData>
         productQuantity: number,
         taskGroupName: string,
         requestInstance: RequestInstance,
-        profileGroupManager: ProfileGroupManager,
         proxyManager: ProxySetManager,
     ) {
-        super(
-            id,
-            retryDelay,
-            productIdentifier,
-            userProfile,
-            proxySet,
-            account,
-            productQuantity,
-            taskGroupName,
-            requestInstance,
-            profileGroupManager,
-            proxyManager,
-        );
+        super(id, retryDelay, productIdentifier, userProfile, proxySet, account, productQuantity, taskGroupName, requestInstance, proxyManager);
 
         this.createErrorInterceptor();
     }

@@ -1,9 +1,9 @@
 import { Account } from '@core/account';
 import { Profile } from '@core/profile';
-import { ProfileGroupManager } from '@core/profilegroup-manager';
 import { ProxySet } from '@core/proxyset';
 import { ProxySetManager } from '@core/proxyset-manager';
-import { NOTIFY_CAPTCHA_TASK, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
+import { TaskEmittedEvents } from '@core/task';
+import { TASK_SUCCESS } from '../../common/Constants';
 import { REGIONS } from '../../common/Regions';
 import { WalmartCreditCard } from '../../interfaces/TaskInterfaces';
 import { WalmartEncryption } from '../../services/encryption/walmart-encryption';
@@ -52,22 +52,9 @@ export class WalmartUSTask extends WalmartTask {
         productQuantity: number,
         taskGroupName: string,
         requestInstance: RequestInstance,
-        profileGroupManager: ProfileGroupManager,
         proxyManager: ProxySetManager,
     ) {
-        super(
-            id,
-            retryDelay,
-            productIdentifier,
-            userProfile,
-            proxySet,
-            account,
-            productQuantity,
-            taskGroupName,
-            requestInstance,
-            profileGroupManager,
-            proxyManager,
-        );
+        super(id, retryDelay, productIdentifier, userProfile, proxySet, account, productQuantity, taskGroupName, requestInstance, proxyManager);
     }
 
     private isSoldByWalmartAndInStock(product: any): boolean {
@@ -91,6 +78,8 @@ export class WalmartUSTask extends WalmartTask {
 
     async doTask(): Promise<void> {
         super.doTask();
+
+        return;
 
         try {
             log('Starting task with proxy %O', this.proxy);
@@ -177,7 +166,7 @@ export class WalmartUSTask extends WalmartTask {
     async getLineItemId(): Promise<string> {
         let retry = false;
         let headers: any = { ...WALMART_US_GET_ITEM_HEADERS, referer: 'htt' };
-
+        let lineItemId;
         do {
             try {
                 retry = false;
@@ -208,14 +197,13 @@ export class WalmartUSTask extends WalmartTask {
                     continue;
                 }
 
-                const lineItemId = product['id'] as string;
+                lineItemId = product['id'] as string;
 
                 log('Got lineItemId %s', lineItemId);
 
                 if (resp.headers['set-cookie']) {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 }
-                return lineItemId;
             } catch (err) {
                 this.cancelTask();
                 retry = true;
@@ -223,12 +211,13 @@ export class WalmartUSTask extends WalmartTask {
                 await this.emitStatusWithDelay(MESSAGES.OOS_RETRY_MESSAGE, 'info');
             }
         } while (retry);
+        return lineItemId;
     }
 
     async getCartId(): Promise<string> {
         let retry = false;
         let headers: any = { ...WALMART_US_MERGE_GET_CART_HEADERS };
-
+        let cartId;
         do {
             try {
                 retry = false;
@@ -255,11 +244,9 @@ export class WalmartUSTask extends WalmartTask {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 }
 
-                const cartId = resp.data['data']['mergeAndGetCart']['id'];
+                cartId = resp.data['data']['mergeAndGetCart']['id'];
 
                 log('Get Cart Id resp %O %s', resp.status, cartId);
-
-                return cartId;
             } catch (error) {
                 this.cancelTask();
                 retry = true;
@@ -268,6 +255,8 @@ export class WalmartUSTask extends WalmartTask {
                 await this.emitStatusWithDelay('Getting Cart Id Failed', 'error');
             }
         } while (retry);
+
+        return cartId;
     }
 
     async addToCart(cartId: string, offerId: string, lineItemId: string): Promise<void> {
@@ -323,6 +312,7 @@ export class WalmartUSTask extends WalmartTask {
     async createDeliveryAddress(): Promise<string> {
         let retry = false;
         let headers: any = { ...WALMART_US_CREATE_DELIVERY_ADDRESS };
+        let addressId;
         do {
             try {
                 retry = false;
@@ -363,15 +353,13 @@ export class WalmartUSTask extends WalmartTask {
 
                 const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
 
-                const addressId = resp.data['data']['createAccountAddress']['newAddress']['id'];
+                addressId = resp.data['data']['createAccountAddress']['newAddress']['id'];
 
                 log('Create delivery address response %s', addressId);
 
                 if (resp.headers['set-cookie']) {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 }
-
-                return addressId;
             } catch (error) {
                 this.cancelTask();
                 retry = true;
@@ -379,6 +367,8 @@ export class WalmartUSTask extends WalmartTask {
                 await this.emitStatusWithDelay(MESSAGES.ADDRESS_ERROR_MESSAGE, 'error');
             }
         } while (retry);
+
+        return addressId;
     }
 
     async setFulFillment(cartId: string, addressId: string): Promise<void> {
@@ -428,6 +418,7 @@ export class WalmartUSTask extends WalmartTask {
     async createContract(cartId: string): Promise<string> {
         let retry = false;
         let headers: any = { ...WALMART_US_CREATE_CONTRACT_HEADERS };
+        let contractId;
         do {
             try {
                 retry = false;
@@ -450,15 +441,13 @@ export class WalmartUSTask extends WalmartTask {
 
                 const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
 
-                const contractId = resp.data['data']['createPurchaseContract']['id'];
+                contractId = resp.data['data']['createPurchaseContract']['id'];
 
                 log('Create Contract response %O', resp.status);
 
                 if (resp.headers['set-cookie']) {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 }
-
-                return contractId;
             } catch (error) {
                 console.log('Create contract Error');
                 this.cancelTask();
@@ -466,11 +455,14 @@ export class WalmartUSTask extends WalmartTask {
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
             }
         } while (retry);
+
+        return contractId;
     }
 
     async getTenderPlan(contractId: string): Promise<string> {
         let retry = false;
         let headers: any = { ...WALMART_US_GET_TENDER_PLAN_HEADERS };
+        let tenderPlanId;
         do {
             try {
                 retry = false;
@@ -492,15 +484,13 @@ export class WalmartUSTask extends WalmartTask {
 
                 const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
 
-                const tenderPlanId = resp.data['data']['tenderPlan']['tenderPlan']['id'];
+                tenderPlanId = resp.data['data']['tenderPlan']['tenderPlan']['id'];
 
                 log('Get Tender Plan response %O %s', resp.status, tenderPlanId);
 
                 if (resp.headers['set-cookie']) {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 }
-
-                return tenderPlanId;
             } catch (error) {
                 log('get tender plan Error');
                 this.cancelTask();
@@ -509,11 +499,15 @@ export class WalmartUSTask extends WalmartTask {
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
             }
         } while (retry);
+
+        return tenderPlanId;
     }
 
     async createCreditCard(): Promise<[string, WalmartCreditCard]> {
         let retry = false;
         let headers: any = { ...WALMART_US_CREATE_CREDIT_CARD_HEADERS };
+        let encryptedCard;
+        let creditCardId;
         do {
             try {
                 retry = false;
@@ -523,7 +517,7 @@ export class WalmartUSTask extends WalmartTask {
 
                 if (cookie) headers = { ...headers, cookie: cookie };
 
-                const encryptedCard = await this.encryptCard();
+                encryptedCard = await this.encryptCard();
 
                 const body = {
                     query: 'mutation CreateCreditCard($input:AccountCreditCardInput!){createAccountCreditCard(input:$input){errors{code message}creditCard{...CreditCardFragment}}}fragment CreditCardFragment on CreditCard{__typename firstName lastName phone addressLineOne addressLineTwo city state postalCode cardType expiryYear expiryMonth lastFour id isDefault isExpired needVerifyCVV isEditable capOneProperties{shouldPromptForLink}linkedCard{availableCredit currentCreditBalance currentMinimumAmountDue minimumPaymentDueDate statementBalance statementDate rewards{rewardsBalance rewardsCurrency cashValue cashDisplayValue canRedeem}links{linkMethod linkHref linkType}}}',
@@ -565,15 +559,13 @@ export class WalmartUSTask extends WalmartTask {
 
                 log('Create credit card response %s', JSON.stringify(resp.data['data'], null, 4));
 
-                const creditCardId = resp.data['data']['createAccountCreditCard']['creditCard']['id'];
+                creditCardId = resp.data['data']['createAccountCreditCard']['creditCard']['id'];
 
                 log('Create credit card response %O %s', resp.status, creditCardId);
 
                 if (resp.headers['set-cookie']) {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 }
-
-                return [creditCardId, encryptedCard];
             } catch (error) {
                 log('create credit card Error');
                 this.cancelTask();
@@ -582,11 +574,14 @@ export class WalmartUSTask extends WalmartTask {
                 await this.emitStatusWithDelay(MESSAGES.CREDIT_CARD_REJECTED, 'error');
             }
         } while (retry);
+
+        return [creditCardId, encryptedCard];
     }
 
     async updateTenderPlan(contractId: string, tenderPlanId: string, creditCardId: string): Promise<string> {
         let retry = false;
         let headers: any = { ...WALMART_US_UPDATE_TENDER_PLAN_HEADERS };
+        let newTenderPlanId;
         do {
             try {
                 retry = false;
@@ -620,15 +615,13 @@ export class WalmartUSTask extends WalmartTask {
 
                 const resp = await this.axiosSession.post('/orchestra/cartxo/graphql', body, { headers: headers });
 
-                const newTenderPlanId = resp.data['data']['updateTenderPlan']['tenderPlan']['id'];
+                newTenderPlanId = resp.data['data']['updateTenderPlan']['tenderPlan']['id'];
 
                 log('Update tender plan response %O', resp.status);
 
                 if (resp.headers['set-cookie']) {
                     await this.cookieJar.saveInSessionFromArray(resp.headers['set-cookie']);
                 }
-
-                return newTenderPlanId;
             } catch (error) {
                 log('Update tender plan Error');
                 this.cancelTask();
@@ -636,6 +629,8 @@ export class WalmartUSTask extends WalmartTask {
                 await this.emitStatusWithDelay(MESSAGES.BILLING_ERROR_MESSAGE, 'error');
             }
         } while (retry);
+
+        return newTenderPlanId;
     }
 
     async saveTenderPlanPC(contractId: string, tenderPlanId: string): Promise<void> {
@@ -803,9 +798,9 @@ export class WalmartUSTask extends WalmartTask {
     This function will wait for the user to solve the captcha
     */
     private async dispatchCaptcha(captchaResponse: any): Promise<void> {
-        this.emit(TASK_STATUS, { message: MESSAGES.WAIT_CAPTCHA_MESSAGE, level: 'captcha' });
+        this.emit(TaskEmittedEvents.Status, { message: MESSAGES.WAIT_CAPTCHA_MESSAGE, level: 'captcha' });
 
-        this.emit(NOTIFY_CAPTCHA_TASK, {
+        this.emit(TaskEmittedEvents.Captcha, {
             uuid: this.id,
             params: captchaResponse,
         });

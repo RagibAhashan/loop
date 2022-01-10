@@ -4,7 +4,7 @@ import { AppDatabase } from './app-database';
 import { SettingsChannel } from './ipc-channels';
 import { debug } from './log';
 import { Manager } from './manager';
-import { Settings, SettingsViewData } from './settings';
+import { ISettings, Settings, SettingsViewData } from './settings';
 
 const log = debug.extend('SettingsManager');
 
@@ -16,13 +16,8 @@ export class SettingsManager extends Manager {
         this.settings = settings;
     }
 
-    public ready(): void {
-        this.registerListeners();
-        this.loadFromDB();
-    }
-
     protected async loadFromDB(): Promise<void> {
-        const settings = await this.database.loadModelDB<Settings>('Settings');
+        const settings = await this.database.loadModelDB<ISettings>('Settings');
 
         if (!settings) return;
 
@@ -32,7 +27,7 @@ export class SettingsManager extends Manager {
     }
 
     public async saveToDB(): Promise<boolean> {
-        const settingsSaved = await this.database.saveModelDB<Settings>('Settings', this.getSettings());
+        const settingsSaved = await this.database.saveModelDB<ISettings>('Settings', this.getSettings());
 
         if (!settingsSaved) return false;
 
@@ -51,7 +46,7 @@ export class SettingsManager extends Manager {
     private async setBrowserPath(path: string): Promise<void> {
         this.settings.setBrowserPath(path);
         log('Launching browser');
-        const browser = await puppeteer.launch({ executablePath: path, headless: null, defaultViewport: null });
+        const browser = await puppeteer.launch({ executablePath: path, headless: false, defaultViewport: null });
         const page = await browser.newPage();
         await page.goto('https://www.google.com');
     }
@@ -87,8 +82,8 @@ export class SettingsManager extends Manager {
             event.reply(SettingsChannel.settingsUpdated, this.getSettingsViewData(), 'Settings Updated');
         });
 
-        ipcMain.handle(SettingsChannel.testDiscordWebhook, (event): string | null => {
-            const status = this.settings.testDiscordWebHook();
+        ipcMain.handle(SettingsChannel.testDiscordWebhook, async (event): Promise<string | null> => {
+            const status = await this.settings.testDiscordWebHook();
 
             return status ? null : 'Something Went Wrong';
         });

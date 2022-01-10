@@ -5,7 +5,7 @@ import React from 'react';
 import { buttonStyle } from '../../styles/Buttons';
 
 interface Props {
-    taskGroup: TaskGroupViewData;
+    taskGroup: TaskGroupViewData | undefined;
     areTasksRunning: boolean;
     areTasksCreated: boolean;
 }
@@ -13,6 +13,8 @@ const StartAllTasksAction: React.FunctionComponent<Props> = (props) => {
     const { taskGroup, areTasksCreated, areTasksRunning } = props;
 
     const handleStartAllTasks = () => {
+        if (!taskGroup) return;
+
         window.ElectronBridge.send(TaskGroupChannel.startAllTasks, taskGroup.id);
     };
 

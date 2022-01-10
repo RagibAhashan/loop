@@ -30,7 +30,7 @@ export const getMonths = (): { value: string; label: string }[] => {
 
 export const getYears = (): { value: string; label: string }[] => {
     const year = new Date().getFullYear();
-    const years = [];
+    const years: any = [];
     for (let i = year; i < year + 15; i++) {
         years.push({
             value: i.toString(),

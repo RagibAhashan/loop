@@ -3,7 +3,7 @@ import { ProfileGroupViewData } from '@core/profilegroup';
 import { ProxySetViewData } from '@core/proxyset';
 import { TaskViewData } from '@core/task';
 import { TaskGroupViewData } from '@core/taskgroup';
-import { Col, Row, Tooltip } from 'antd';
+import { Tooltip } from 'antd';
 import React, { useEffect } from 'react';
 import TaskStatus from './task-status';
 
@@ -50,36 +50,30 @@ const Task: React.FunctionComponent<Props> = (props) => {
 
     return (
         <div style={style}>
-            <Row
-                align="middle"
+            <div
+                className="task-row"
                 style={{
-                    backgroundColor: '#282c31',
-                    borderRadius: 5,
                     height: style.height - 5,
-                    whiteSpace: 'nowrap',
-                    userSelect: 'none',
                 }}
             >
                 <Tooltip placement="bottomLeft" title={`Retry Delay : ${task.retryDelay} ms`}>
-                    <Col span={4} style={{ paddingLeft: 15, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.productIdentifier}</div>
-                    </Col>
+                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.productIdentifier}</div>
                 </Tooltip>
 
-                <Col span={4}>
-                    <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.proxySetName ?? 'No Proxies'}</div>
-                </Col>
+                <div className="task-item">{task.profileName}</div>
 
-                <div style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{task.profileName}</div>
+                <div className="task-item">{task.proxySetName}</div>
 
-                <Col span={6}>
-                    <TaskStatus taskGroup={taskGroup} task={task}></TaskStatus>
-                </Col>
+                <div className="task-item">{task.accountName}</div>
 
-                <Col flex="auto" span={2}>
+                <div>
+                    <TaskStatus task={task}></TaskStatus>
+                </div>
+
+                <div>
                     <TaskActions taskGroup={taskGroup} proxySets={proxySets} profileGroups={profileGroups} task={task}></TaskActions>
-                </Col>
-            </Row>
+                </div>
+            </div>
         </div>
     );
 };

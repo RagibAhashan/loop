@@ -2,13 +2,10 @@ import { Profile } from '@core/profile';
 import { Status, StatusLevel } from '@interfaces/TaskInterfaces';
 import { AxiosInstance } from 'axios';
 import { EventEmitter } from 'events';
-import { TASK_STOP, TASK_STOPPED } from '../common/Constants';
 import { Account } from './account';
 import { MESSAGES } from './constants/Constants';
 import { CookieJar } from './cookie-jar';
-import { TaskChannel } from './ipc-channels';
 import { debug } from './log';
-import { ProfileGroupManager } from './profilegroup-manager';
 import { Proxy } from './proxy';
 import { ProxySet } from './proxyset';
 import { ProxySetManager } from './proxyset-manager';
@@ -21,11 +18,21 @@ export const taskPrefix = 'task';
 
 const log = debug.extend('Task');
 
+export const enum TaskEmittedEvents {
+    Stopped = 'stopped',
+    Status = 'status',
+    Succeeded = 'succeeded',
+    Captcha = 'captcha',
+    CaptchaSolved = 'captchaSolved',
+}
 export interface TaskFormData {
-    profileName: string;
-    proxySetName: string;
-    retryDelay: number;
     id: string;
+    profile: { groupId: string; id: string };
+    proxySetId: string;
+    account: { groupId: string; id: string } | null;
+    productIdentifier: string;
+    productQuantity: number;
+    retryDelay: number;
 }
 
 export interface TaskViewData {
@@ -58,10 +65,9 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
     protected cancel: boolean;
     protected cancelTimeout: () => void;
     protected axiosSession: AxiosInstance;
-    protected profileGroupManager: ProfileGroupManager;
     protected proxyManager: ProxySetManager;
-    protected proxy: Proxy;
 
+    public proxy: Proxy | null;
     public id: string;
     public userProfile: Profile;
     public productIdentifier: string;
@@ -83,7 +89,6 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
         productQuantity: number,
         taskGroupId: string,
         requestInstance: RequestInstance,
-        profileGroupManager: ProfileGroupManager,
         proxyManager: ProxySetManager,
     ) {
         super();
@@ -92,7 +97,6 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
         this.cancel = false;
         this.cancelTimeout = () => {};
         this.id = id;
-        this.profileGroupManager = profileGroupManager;
         this.proxyManager = proxyManager;
         this.taskGroupId = taskGroupId;
         this.retryDelay = retryDelay;
@@ -105,28 +109,30 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
     }
 
     public async doTask(): Promise<void> {
-        if (this.proxySet) {
-            this.proxy = this.proxyManager.pickProxyFromSet(this.proxySet.id);
+        if (this.proxySet && !this.proxy) {
+            this.proxy = this.proxyManager.pickProxyFromSet(this.proxySet.id, { id: this.id, groupId: this.taskGroupId });
         }
+
+        return;
     }
 
     // Return a simple interface to be send to the view
     public getViewData(): TaskViewData {
         return {
-            proxySetName: this.proxySet.name,
             id: this.id,
             retryDelay: this.retryDelay,
-            profileName: this.userProfile.profileName,
+            profileName: this.userProfile.name,
             status: this.status,
             isRunning: this.isRunning,
             productIdentifier: this.productIdentifier,
-            accountName: this.account.name,
+            proxySetName: this.proxySet ? this.proxySet.name : 'None',
+            accountName: this.account ? this.account.name : 'None',
         };
     }
 
     protected handleCancel(): void {
         this.cancel = false;
-        this.once(TASK_STOP, async () => {
+        this.once(TaskEmittedEvents.Stopped, async () => {
             log('Cancelling Task');
             this.cancel = true;
             this.emitStatus(MESSAGES.CANCELED_MESSAGE, 'cancel');
@@ -142,12 +148,12 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
 
     protected emitStatus(message: string, level: StatusLevel): void {
         this.status = { message: message, level: level };
-        this.emit(TaskChannel.onTaskStatus, this.status);
+        this.emit(TaskEmittedEvents.Status, this.status);
     }
 
     protected async emitStatusWithDelay(message: string, level: StatusLevel, delay?: number): Promise<any> {
         this.status = { message: message, level: level };
-        this.emit(TaskChannel.onTaskStatus, this.status);
+        this.emit(TaskEmittedEvents.Status, this.status);
         const wait = this.waitError(delay ? delay : this.retryDelay);
         this.cancelTimeout = wait.cancel;
         // this is is promise not a function
@@ -181,7 +187,7 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
         let cancel;
 
         const promise = new Promise((resolve, reject) => {
-            this.once(TaskChannel.onCaptchaSolved, () => {
+            this.once(TaskEmittedEvents.CaptchaSolved, () => {
                 resolve(`${this.constructor.name} captcha solved by user`);
             });
 
@@ -194,6 +200,10 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
         return { promise: promise, cancel: cancel };
     }
 
+    public setProxy(value: Proxy | null): void {
+        this.proxy = value;
+    }
+
     async execute(): Promise<void> {
         try {
             this.handleCancel();
@@ -202,7 +212,6 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
             this.isRunning = false;
         } catch (err) {
             // waitError cancel would reject promise so error could equal to CANCEL_ERROR
-            this.emit(TASK_STOPPED);
             console.log('EXECUTE ERROR', err);
             this.isRunning = false;
         }

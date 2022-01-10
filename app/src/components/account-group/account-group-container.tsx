@@ -11,7 +11,8 @@ const AccountGroupContainer: React.FunctionComponent = () => {
     const [isOpen, setOpen] = useState(false);
 
     useEffect(() => {
-        window.ElectronBridge.invoke(AccountGroupChannel.getAllAccountsFromGroup).then((data: AccountGroupViewData[]) => {
+        window.ElectronBridge.invoke(AccountGroupChannel.getAccountGroups).then((data: AccountGroupViewData[]) => {
+            console.log('got account group', data);
             setAccountGroups(data);
         });
 

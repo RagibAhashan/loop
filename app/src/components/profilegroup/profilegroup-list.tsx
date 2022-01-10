@@ -10,7 +10,7 @@ const ProfileGroupList: React.FunctionComponent<Props> = (props) => {
     const { profileGroups } = props;
 
     // Only used to style focus the selected task group
-    const [selectedProfileGroup, setSelectedProfileGroup] = useState(null);
+    const [selectedProfileGroup, setSelectedProfileGroup] = useState<ProfileGroupViewData | undefined>(undefined);
 
     useEffect(() => {
         window.ElectronBridge.on(ProfileGroupChannel.onProfileGroupSelected, handleOnProfileGroupSelected);

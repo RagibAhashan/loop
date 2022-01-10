@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { buttonStyle } from '../../styles/Buttons';
 
 interface Props {
-    taskGroup: TaskGroupViewData;
+    taskGroup: TaskGroupViewData | undefined;
     proxySets: ProxySetViewData[];
     profileGroups: ProfileGroupViewData[];
 }

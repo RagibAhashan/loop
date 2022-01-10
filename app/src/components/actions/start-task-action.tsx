@@ -15,7 +15,7 @@ const StartTaskAction: React.FunctionComponent<Props> = (props) => {
 
     const handleStartTask = () => {
         console.log('starting task', task);
-        window.ElectronBridge.send(TaskGroupChannel.startTask, taskGroup, task.id);
+        window.ElectronBridge.send(TaskGroupChannel.startTask, taskGroup.id, task.id);
     };
 
     return <Button onClick={handleStartTask} style={startButton} icon={<PlayCircleFilled />} size="small" />;

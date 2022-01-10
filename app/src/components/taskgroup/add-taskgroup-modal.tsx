@@ -23,10 +23,14 @@ const AddTaskGroupModal: React.FunctionComponent<Props> = (props) => {
         setOpen(false);
     };
 
+    const onStoreChange = (value: string) => {
+        setStore(value);
+    };
+
     return (
         <Modal title={'New Profile Group'} visible={isOpen} onCancel={() => setOpen(false)} footer={<Button onClick={onSubmit}>Add</Button>}>
             <Input id="groupName" type="text" placeholder="Name" onChange={(e) => setName(e.target.value)} />
-            <Select placeholder="Select store" onChange={(value) => setStore(value.toString())}>
+            <Select placeholder="Select store" onChange={onStoreChange}>
                 {getStores().map(([key, store]) => (
                     <Select.Option key={key} value={store.key} disabled={key.includes('Foot')}>
                         {store.name}

@@ -7,7 +7,7 @@ import React from 'react';
 
 interface Props {
     taskGroup: TaskGroupViewData;
-    selected: TaskGroupViewData;
+    selected: TaskGroupViewData | undefined;
 }
 
 const TaskGroup: React.FunctionComponent<Props> = (props) => {

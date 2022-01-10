@@ -7,7 +7,7 @@ import React from 'react';
 
 interface Props {
     profileGroup: ProfileGroupViewData;
-    selectedProfileGroup: ProfileGroupViewData;
+    selectedProfileGroup: ProfileGroupViewData | undefined;
 }
 
 const ProfileGroup: React.FunctionComponent<Props> = (props) => {

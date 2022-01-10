@@ -6,7 +6,7 @@ import { TaskGroupChannel } from './ipc-channels';
 import { debug } from './log';
 import { Manager } from './manager';
 import { TaskFactory } from './task-factory';
-import { TaskGroup, TaskGroupViewData } from './taskgroup';
+import { ITaskGroup, TaskGroup, TaskGroupViewData } from './taskgroup';
 import { TaskGroupFactory } from './taskgroup-factory';
 
 const log = debug.extend('TaskGroupManager');
@@ -25,8 +25,8 @@ export class TaskGroupManager extends Manager {
     }
 
     protected async loadFromDB(): Promise<void> {
-        const taskGroups = await this.database.loadModelDB<TaskGroup[]>('TaskGroup');
-        const tasks = await this.database.loadModelDB<Task[]>('Task');
+        const taskGroups = await this.database.loadModelDB<ITaskGroup[]>('TaskGroup');
+        const tasks = await this.database.loadModelDB<ITask[]>('Task');
 
         if (!taskGroups || !tasks) return;
 
@@ -34,21 +34,37 @@ export class TaskGroupManager extends Manager {
             this.addTaskGroup(taskGroup.id, taskGroup.name, taskGroup.storeType);
 
             // TODO Review this logic
-            const taskDatas: ITask[] = [];
+            const taskDatas: TaskFormData[] = [];
 
             tasks.forEach((task) => {
-                if (task.taskGroupId === taskGroup.id) taskDatas.push(task);
+                const taskFormData = this.taskInterfaceToTaskForm(task);
+                if (task.taskGroupId === taskGroup.id) taskDatas.push(taskFormData);
             });
 
-            this.addTaskToGroup(taskGroup.name, taskDatas);
+            this.addTaskToGroup(taskGroup.id, taskDatas);
         }
 
         log('TaskGroup Loaded');
     }
 
+    /* Helper task to be used when getting an ITask from the DB and want to reuse the addTaskToGroup method
+    which takes a TaskFormData
+    */
+    private taskInterfaceToTaskForm(task: ITask): TaskFormData {
+        return {
+            account: task.account ? { groupId: task.account.groupId, id: task.account.id } : null,
+            proxySetId: task.proxySet ? task.proxySet.id : '',
+            productIdentifier: task.productIdentifier,
+            id: task.id,
+            productQuantity: task.productQuantity,
+            profile: { groupId: task.userProfile.groupId, id: task.userProfile.id },
+            retryDelay: task.retryDelay,
+        };
+    }
+
     public async saveToDB(): Promise<boolean> {
-        const tgSaved = await this.database.saveModelDB<TaskGroup[]>('TaskGroup', this.getAllTaskGroups());
-        const tSaved = await this.database.saveModelDB<Task[]>('Task', this.getAllTasks());
+        const tgSaved = await this.database.saveModelDB<ITaskGroup[]>('TaskGroup', this.getAllTaskGroups());
+        const tSaved = await this.database.saveModelDB<ITask[]>('Task', this.getAllTasks());
 
         if (!tgSaved || tSaved) return false;
 
@@ -57,7 +73,7 @@ export class TaskGroupManager extends Manager {
     }
 
     private addTaskGroup(id: string, name: string, storeType: StoreType): TaskGroupViewData[] | null {
-        if (this.taskGroupMap.has(name)) {
+        if (this.findTaskGroupByName(name)) {
             log('[Group %s already exists]', name);
             return null;
         }
@@ -79,8 +95,16 @@ export class TaskGroupManager extends Manager {
         return this.getAllTaskGroupsViewData();
     }
 
-    private getTaskGroup(groupId: string): TaskGroup | undefined {
-        return this.taskGroupMap.get(groupId);
+    public getTaskGroup(groupId: string): TaskGroup {
+        const taskGroup = this.taskGroupMap.get(groupId);
+
+        if (!taskGroup) throw new Error('getTaskGroup: Key not found ');
+
+        return taskGroup;
+    }
+
+    private findTaskGroupByName(name: string): boolean {
+        return Array.from(this.taskGroupMap.values()).some((taskGroup) => taskGroup.name === name);
     }
 
     private getAllTaskGroupsViewData(): TaskGroupViewData[] {
@@ -99,46 +123,39 @@ export class TaskGroupManager extends Manager {
         return tasks;
     }
 
-    private addTaskToGroup(groupId: string, taskDatas: Partial<ITask>[]): TaskViewData[] | null {
-        if (!this.taskGroupMap.has(groupId)) {
-            log('[Group %s not found]', groupId);
-            return null;
-        }
-
-        const taskGroup = this.taskGroupMap.get(groupId);
-
-        const tempTaskDB = [];
+    private addTaskToGroup(groupId: string, taskDatas: TaskFormData[]): TaskViewData[] {
+        const taskGroup = this.getTaskGroup(groupId);
 
         for (const taskData of taskDatas) {
             const newTask = this.taskFactory.createTask(taskGroup.storeType, taskData, groupId);
             taskGroup.addTasks(newTask);
-            tempTaskDB.push(tempTaskDB);
         }
 
         return taskGroup.getAllTasksViewData();
     }
 
-    private removeTaskFromGroup(groupId: string, uuids: string[]): TaskViewData[] | null {
-        if (!this.taskGroupMap.has(groupId)) {
-            log('[Group %s not found]', groupId);
-            return null;
-        }
-        const taskGroup = this.taskGroupMap.get(groupId);
+    private removeTaskFromGroup(groupId: string, taskIds: string[]): TaskViewData[] {
+        const taskGroup = this.getTaskGroup(groupId);
 
-        for (const uuid of uuids) {
-            taskGroup.removeTask(uuid);
+        for (const id of taskIds) {
+            taskGroup.getTask(id).userProfile.setTaskId(null);
+            taskGroup.getTask(id).account?.setTaskId(null);
+            taskGroup.getTask(id).proxy?.setTaskId(null);
+
+            taskGroup.removeTask(id);
         }
 
         return taskGroup.getAllTasksViewData();
     }
 
-    private removeAllTasksFromGroup(groupId: string): TaskViewData[] | null {
-        if (!this.taskGroupMap.has(groupId)) {
-            log('[Group %s not found]', groupId);
-            return null;
-        }
+    private removeAllTasksFromGroup(groupId: string): TaskViewData[] {
+        const taskGroup = this.getTaskGroup(groupId);
 
-        const taskGroup = this.taskGroupMap.get(groupId);
+        taskGroup.getAllTasks().forEach((task) => {
+            task.userProfile.setTaskId(null);
+            task.account?.setTaskId(null);
+            task.proxy?.setTaskId(null);
+        });
 
         taskGroup.removeAllTasks();
 
@@ -146,12 +163,7 @@ export class TaskGroupManager extends Manager {
     }
 
     private startTask(groupId: string, uuid: string): TaskViewData[] {
-        if (!this.taskGroupMap.has(groupId)) {
-            log('[Group %s not found]', groupId);
-            return null;
-        }
-
-        const taskGroup = this.taskGroupMap.get(groupId);
+        const taskGroup = this.getTaskGroup(groupId);
 
         taskGroup.startTask(uuid);
 
@@ -159,12 +171,7 @@ export class TaskGroupManager extends Manager {
     }
 
     private startAllTasks(groupId: string): TaskViewData[] {
-        if (!this.taskGroupMap.has(groupId)) {
-            log('[Group %s not found]', groupId);
-            return null;
-        }
-
-        const taskGroup = this.taskGroupMap.get(groupId);
+        const taskGroup = this.getTaskGroup(groupId);
 
         taskGroup.startAllTasks();
 
@@ -172,12 +179,7 @@ export class TaskGroupManager extends Manager {
     }
 
     private stopTask(groupId: string, uuid: string): TaskViewData[] {
-        if (!this.taskGroupMap.has(groupId)) {
-            log('[Group %s not found]', groupId);
-            return null;
-        }
-
-        const taskGroup = this.taskGroupMap.get(groupId);
+        const taskGroup = this.getTaskGroup(groupId);
 
         taskGroup.stopTask(uuid);
 
@@ -185,12 +187,7 @@ export class TaskGroupManager extends Manager {
     }
 
     private stopAllTasks(groupId: string): TaskViewData[] {
-        if (!this.taskGroupMap.has(groupId)) {
-            log('[Group %s not found]', groupId);
-            return null;
-        }
-
-        const taskGroup = this.taskGroupMap.get(groupId);
+        const taskGroup = this.getTaskGroup(groupId);
 
         taskGroup.stopAllTasks();
 
@@ -198,7 +195,7 @@ export class TaskGroupManager extends Manager {
     }
 
     private editTaskGroupName(groupId: string, newName: string): TaskGroupViewData[] {
-        const taskGroup = this.taskGroupMap.get(groupId);
+        const taskGroup = this.getTaskGroup(groupId);
 
         taskGroup.editName(newName);
 
@@ -206,7 +203,7 @@ export class TaskGroupManager extends Manager {
     }
 
     private editTaskGroupStore(groupId: string, newStoreType: StoreType): TaskGroupViewData[] {
-        const taskGroup = this.taskGroupMap.get(groupId);
+        const taskGroup = this.getTaskGroup(groupId);
 
         taskGroup.editStore(newStoreType);
 
@@ -263,12 +260,10 @@ export class TaskGroupManager extends Manager {
             }
         });
 
-        ipcMain.handle(TaskGroupChannel.getTaskFromTaskGroup, (event, groupId: string, uuid: string): TaskViewData => {
+        ipcMain.handle(TaskGroupChannel.getTaskFromTaskGroup, (event, groupId: string, id: string): TaskViewData => {
             const currentTaskGroup = this.getTaskGroup(groupId);
-            if (currentTaskGroup) {
-                const task = currentTaskGroup.getTaskViewData(uuid);
-                return task;
-            }
+            const task = currentTaskGroup.getTaskViewData(id);
+            return task;
         });
 
         ipcMain.on(TaskGroupChannel.addTaskToGroup, (event, groupId: string, tasks: TaskFormData[]) => {

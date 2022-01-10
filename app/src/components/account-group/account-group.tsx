@@ -8,15 +8,13 @@ import React from 'react';
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface Props {
     accountGroup: AccountGroupViewData;
-    selectedAccountGroup: AccountGroupViewData;
+    selectedAccountGroup: AccountGroupViewData | undefined;
 }
 
 const AccountGroup: React.FunctionComponent<Props> = (props) => {
     const { accountGroup, selectedAccountGroup } = props;
 
     const isSelected = selectedAccountGroup ? accountGroup.id === selectedAccountGroup.id : false;
-
-    const selectedStyle = isSelected ? { borderColor: '#9ecaed', boxShadow: '0 0 10px #9ecaed' } : undefined;
 
     const handleClickAccountGroup = () => {
         window.ElectronBridge.send(AccountGroupChannel.getAllAccountsFromGroup, accountGroup.id);

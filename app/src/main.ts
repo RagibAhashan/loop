@@ -12,6 +12,7 @@ import { TaskFactory } from '@core/task-factory';
 import { TaskGroupFactory } from '@core/taskgroup-factory';
 import * as electron from 'electron';
 import { app, BrowserWindow, ipcMain } from 'electron';
+import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import hash from 'object-hash';
 import si from 'systeminformation';
 import { ACCESS_GRANTED, CAPTHA_WINDOW_CLOSED, CAPTHA_WINDOW_OPEN, GET_SYSTEM_ID, SET_PROXY_CAPTCHA_WINDOW, STORE_KEY } from './common/Constants';
@@ -79,15 +80,47 @@ const createWindow = () => {
     });
 };
 
+let appDatabase: AppDatabase;
+let profileGroupManager: ProfileGroupManager;
+let accountGroupManager: AccountGroupManager;
+let proxySetManager: ProxySetManager;
+let taskGroupManager: TaskGroupManager;
+let settingsManager: SettingsManager;
+
 app.whenReady().then(async () => {
-    // installExtension(REDUX_DEVTOOLS)
-    //     .then((name) => console.log(`Added Extension:  ${name}`))
-    //     .catch((err) => console.log('An error occurred: ', err));
-    // installExtension(REACT_DEVELOPER_TOOLS)
-    //     .then((name) => console.log(`Added Extension:  ${name}`))
-    //     .catch((err) => console.log('An error occurred: ', err));
+    installExtension(REACT_DEVELOPER_TOOLS)
+        .then((name) => console.log(`Added Extension:  ${name}`))
+        .catch((err) => console.log('An error occurred: ', err));
     disableSpellcheckerDownload();
     createWindow();
+
+    log('Initiatilising app');
+
+    appDatabase = new AppDatabase();
+
+    const settings = new Settings();
+    settingsManager = new SettingsManager(appDatabase, settings);
+    await settingsManager.ready();
+
+    const creditCardFactory = new CreditCardFactory();
+    const profileFactory = new ProfileFactory(creditCardFactory);
+    const profileGroupFactory = new ProfileGroupFactory();
+    profileGroupManager = new ProfileGroupManager(appDatabase, profileGroupFactory, profileFactory);
+
+    const accountGroupFactory = new AccountGroupFactory();
+    const accountFactory = new AccountFactory(settingsManager);
+
+    const taskGroupFactory = new TaskGroupFactory();
+    const taskFactory = new TaskFactory(profileGroupManager, proxySetManager, accountGroupManager, mainWindow);
+    taskGroupManager = new TaskGroupManager(appDatabase, taskGroupFactory, taskFactory);
+
+    proxySetManager = new ProxySetManager(appDatabase, taskGroupManager);
+    accountGroupManager = new AccountGroupManager(appDatabase, accountGroupFactory, accountFactory, taskGroupManager);
+
+    await profileGroupManager.ready();
+    await proxySetManager.ready();
+    await accountGroupManager.ready();
+    await taskGroupManager.ready();
 });
 
 app.on('activate', () => {
@@ -104,33 +137,6 @@ app.on('activate', () => {
 ipcMain.on(ACCESS_GRANTED, () => {
     mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 });
-
-const appDatabase = new AppDatabase();
-
-const settings = new Settings();
-const settingsManager = new SettingsManager(appDatabase, settings);
-settingsManager.ready();
-
-const creditCardFactory = new CreditCardFactory();
-const profileFactory = new ProfileFactory(creditCardFactory);
-const profileGroupFactory = new ProfileGroupFactory();
-const profileGroupManager = new ProfileGroupManager(appDatabase, profileGroupFactory, profileFactory);
-profileGroupManager.ready();
-
-const proxySetManager = new ProxySetManager(appDatabase);
-proxySetManager.ready();
-
-const taskGroupFactory = new TaskGroupFactory();
-const taskFactory = new TaskFactory(profileGroupManager, proxySetManager, mainWindow);
-
-const taskGroupManager = new TaskGroupManager(appDatabase, taskGroupFactory, taskFactory);
-taskGroupManager.ready();
-
-const accountGroupFactory = new AccountGroupFactory();
-const accountFactory = new AccountFactory(settingsManager);
-
-const accountGroupManager = new AccountGroupManager(appDatabase, accountGroupFactory, accountFactory);
-accountGroupManager.ready();
 
 app.on('window-all-closed', async () => {
     //TODO(wail) maybe not the best place to put this here

@@ -12,8 +12,8 @@ export abstract class Manager {
 
     public abstract saveToDB(): Promise<boolean>;
 
-    public ready(): void {
+    public async ready(): Promise<void> {
+        await this.loadFromDB();
         this.registerListeners();
-        this.loadFromDB();
     }
 }

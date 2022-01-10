@@ -1,6 +1,4 @@
-import { TaskChannel, TaskGroupChannel } from '@core/ipc-channels';
-import { TaskViewData } from '@core/task';
-import { TaskGroupViewData } from '@core/taskgroup';
+import { TaskEmittedEvents, TaskViewData } from '@core/task';
 import React, { useEffect, useState } from 'react';
 import { Status, StatusLevel } from '../../interfaces/TaskInterfaces';
 
@@ -24,25 +22,20 @@ const statusColor = (level: StatusLevel) => {
 
 interface Props {
     task: TaskViewData;
-    taskGroup: TaskGroupViewData;
 }
 const TaskStatus: React.FunctionComponent<Props> = (props) => {
-    const { task, taskGroup } = props;
+    const { task } = props;
 
     const [status, setStatus] = useState<Status>(task.status);
 
     useEffect(() => {
-        window.ElectronBridge.on(TaskChannel.onTaskStatus + task.id, handleTaskStatusUpdated);
-        window.ElectronBridge.invoke(TaskGroupChannel.getTaskFromTaskGroup, taskGroup.id, task.id).then((data: TaskViewData) => {
-            setStatus(data.status);
-        });
+        console.log('rendereing task status');
+        window.ElectronBridge.on(TaskEmittedEvents.Status + task.id, handleTaskStatusUpdated);
 
         return () => {
-            window.ElectronBridge.removeAllListeners(TaskChannel.onTaskStatus + task.id);
+            window.ElectronBridge.removeAllListeners(TaskEmittedEvents.Status + task.id);
         };
-
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [task.id]);
 
     const handleTaskStatusUpdated = (event, status: Status) => {
         setStatus(status);

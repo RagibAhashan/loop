@@ -1,3 +1,9 @@
+import { Account } from '@core/account';
+import { Profile } from '@core/profile';
+import { ProxySet } from '@core/proxyset';
+import { ProxySetManager } from '@core/proxyset-manager';
+import { RequestInstance } from '@core/request-instance';
+import { TaskEmittedEvents } from '@core/task';
 import { COUNTRY, REGIONS } from '../../common/Regions';
 import { WalmartCreditCard } from '../../interfaces/TaskInterfaces';
 import { WalmartEncryption } from '../../services/encryption/walmart-encryption';
@@ -14,7 +20,6 @@ import {
 } from '../constants/Walmart';
 import { CookieJar } from '../cookie-jar';
 import { CaptchaException } from '../exceptions/CaptchaException';
-import { TaskChannel } from '../ipc-channels';
 import { debug } from '../log';
 import { generatePxCookies } from './scripts/px';
 import { WalmartTask } from './walmart-task';
@@ -22,6 +27,21 @@ import { WalmartTask } from './walmart-task';
 const log = debug.extend('WalmartCATask');
 
 export class WalmartCATask extends WalmartTask {
+    constructor(
+        id: string,
+        retryDelay: number,
+        productIdentifier: string,
+        userProfile: Profile,
+        proxySet: ProxySet | null,
+        account: Account | null,
+        productQuantity: number,
+        taskGroupName: string,
+        requestInstance: RequestInstance,
+        proxyManager: ProxySetManager,
+    ) {
+        super(id, retryDelay, productIdentifier, userProfile, proxySet, account, productQuantity, taskGroupName, requestInstance, proxyManager);
+    }
+
     async doTask(): Promise<void> {
         super.doTask();
 
@@ -415,7 +435,7 @@ export class WalmartCATask extends WalmartTask {
     private async dispatchCaptcha(captchaResponse: any): Promise<void> {
         this.emitStatus(MESSAGES.WAIT_CAPTCHA_MESSAGE, 'info');
 
-        this.emit(TaskChannel.onCaptcha, {
+        this.emit(TaskEmittedEvents.Captcha, {
             id: this.id,
             params: captchaResponse,
         });

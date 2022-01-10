@@ -16,7 +16,7 @@ export class ProfileFactory {
 
         const profile = new Profile(
             profileData.id,
-            profileData.profileName,
+            profileData.name,
             groupName,
             profileData.billing,
             profileData.shipping,

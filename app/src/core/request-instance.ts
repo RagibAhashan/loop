@@ -26,13 +26,8 @@ export class RequestInstance {
         this.axios.defaults.cancelToken = this.source.token;
     }
 
-    public updateProxy(proxy: Proxy | null) {
-        console.log('updateing proxy with', proxy.host);
-        if (!proxy) {
-            this.axios.defaults.httpsAgent = undefined;
-        } else {
-            this.axios.defaults.httpsAgent = proxy.getAgent();
-        }
+    public setProxy(proxy: Proxy) {
+        this.axios.defaults.httpsAgent = proxy.getAgent();
     }
 
     get proxy(): any {

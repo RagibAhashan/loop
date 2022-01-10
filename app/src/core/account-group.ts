@@ -11,6 +11,7 @@ export interface AccountGroupViewData {
     id: string;
     name: string;
     storeType: AccountStoreType;
+    accounts: AccountViewData[];
 }
 
 export interface IAccountGroup {
@@ -40,6 +41,7 @@ export class AccountGroup implements IAccountGroup, Viewable<AccountGroupViewDat
             id: this.id,
             name: this.name,
             storeType: this.storeType,
+            accounts: this.getAllAccountsViewData(),
         };
     }
 
@@ -70,7 +72,7 @@ export class AccountGroup implements IAccountGroup, Viewable<AccountGroupViewDat
     }
 
     public getAccountViewData(id: string): AccountViewData {
-        const account = this.accounts.get(id);
+        const account = this.getAccount(id);
         return account.getViewData();
     }
 
@@ -79,12 +81,13 @@ export class AccountGroup implements IAccountGroup, Viewable<AccountGroupViewDat
     }
 
     public getAccount(id: string): Account {
-        const account = this.accounts.get(id);
+        const account = this.getAccount(id);
+        if (!account) throw new Error('getAccount: Cound not be found key');
         return account;
     }
 
     public logIn(id: string): void {
-        const account = this.accounts.get(id);
+        const account = this.getAccount(id);
         account.logIn();
     }
 

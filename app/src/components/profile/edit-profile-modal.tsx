@@ -63,8 +63,6 @@ const EditProfileModal: React.FunctionComponent<Props> = (props) => {
     };
 
     const onProfileNameEdit = (value: string) => {
-        console.log('old', profile.profileName, 'new profile name ', value);
-
         window.ElectronBridge.send(ProfileGroupChannel.editProfileName, selectedProfileGroup.id, profile.id, value);
     };
 
@@ -83,7 +81,7 @@ const EditProfileModal: React.FunctionComponent<Props> = (props) => {
                 <div style={{ padding: 24, backgroundColor: '#212427', borderRadius: '10px' }}>
                     <Tabs defaultActiveKey="shippingTab">
                         <TabPane tab="Profile and Shipping" key="shippingTab">
-                            <Editable value={profile.profileName} onSubmit={onProfileNameEdit} />
+                            <Editable value={profile.name} onSubmit={onProfileNameEdit} />
 
                             <Editable value={profile.billing.firstName} onSubmit={(value: string) => onBillingSubmitEdit('firstName', value)} />
                         </TabPane>

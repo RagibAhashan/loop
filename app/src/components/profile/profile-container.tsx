@@ -9,7 +9,7 @@ import ProfileList from './profile-list';
 
 interface State {
     profiles: ProfileViewData[];
-    selectedProfileGroup: ProfileGroupViewData;
+    selectedProfileGroup: ProfileGroupViewData | undefined;
 }
 
 const ProfileContainer: React.FunctionComponent = () => {
@@ -54,24 +54,35 @@ const ProfileContainer: React.FunctionComponent = () => {
         setEditOpen(true);
     };
 
-    return profileContainerState.selectedProfileGroup ? (
+    return (
         <div>
-            <Button style={{ marginBottom: 10 }} onClick={handleAddProfile}>
-                Add Profile
-            </Button>
+            <h4> Profiles </h4>
+            {profileContainerState.selectedProfileGroup ? (
+                <div>
+                    <Button style={{ marginBottom: 10 }} onClick={handleAddProfile}>
+                        Add Profile
+                    </Button>
 
-            <ProfileList profiles={profileContainerState.profiles} onEditClick={handleOnProfileClick}></ProfileList>
+                    <ProfileList profiles={profileContainerState.profiles} onEditClick={handleOnProfileClick}></ProfileList>
+                    <AddProfileModal
+                        isOpen={isAddOpen}
+                        setOpen={setAddOpen}
+                        profileGroup={profileContainerState.selectedProfileGroup}
+                    ></AddProfileModal>
 
-            <AddProfileModal isOpen={isAddOpen} setOpen={setAddOpen} profileGroup={profileContainerState.selectedProfileGroup}></AddProfileModal>
-            <EditProfileModal
-                isOpen={isEditOpen}
-                setOpen={setEditOpen}
-                selectedProfileGroup={profileContainerState.selectedProfileGroup}
-                profile={selectedProfile}
-            ></EditProfileModal>
+                    {selectedProfile && (
+                        <EditProfileModal
+                            isOpen={isEditOpen}
+                            setOpen={setEditOpen}
+                            selectedProfileGroup={profileContainerState.selectedProfileGroup}
+                            profile={selectedProfile}
+                        ></EditProfileModal>
+                    )}
+                </div>
+            ) : (
+                <div> No profile group selected</div>
+            )}
         </div>
-    ) : (
-        <div> No profile group selected</div>
     );
 };
 

@@ -4,25 +4,28 @@ interface Props {
     proxySets: ProxySetViewData[];
     defaultValue: any;
     register: any;
-    name: string;
+    error?: any;
 }
 const ProxySelectDropdown: React.FunctionComponent<Props> = (props) => {
-    const { proxySets, defaultValue, register, name } = props;
+    const { proxySets, defaultValue, register, error } = props;
 
     return (
-        <select defaultValue={defaultValue} style={{ width: 200 }} {...register(name)}>
-            <option key={'null'} value={undefined}>
-                No Proxy
-            </option>
+        <label>
+            Proxy
+            <select className={error && 'input--error'} defaultValue={defaultValue} style={{ width: 200 }} {...register}>
+                <option key={'null'} value={defaultValue}>
+                    No Proxy
+                </option>
 
-            {proxySets.map((proxySet) => {
-                return (
-                    <option key={proxySet.id} value={proxySet.name}>
-                        {proxySet.name}
-                    </option>
-                );
-            })}
-        </select>
+                {proxySets.map((proxySet) => {
+                    return (
+                        <option key={proxySet.id} value={proxySet.id}>
+                            {proxySet.name}
+                        </option>
+                    );
+                })}
+            </select>
+        </label>
     );
 };
 

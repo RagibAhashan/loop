@@ -45,12 +45,21 @@ export class ProxySet implements IProxySet, Viewable<ProxySetViewData> {
     }
 
     public pickProxy(): Proxy {
-        return this.proxiesRingBuffer.next();
+        const proxy = this.proxiesRingBuffer.next();
+        return proxy;
     }
 
     public addProxy(proxy: Proxy): void {
         this.proxies.set(proxy.id, proxy);
         this.proxiesRingBuffer.fillBuffer(proxy);
+    }
+
+    public getProxy(id: string): Proxy {
+        const proxy = this.proxies.get(id);
+
+        if (!proxy) throw new Error('getProxy: Could not find key');
+
+        return proxy;
     }
 
     public removeProxy(proxyId: string): void {
@@ -77,9 +86,9 @@ export class ProxySet implements IProxySet, Viewable<ProxySetViewData> {
         this.name = newName;
     }
 
-    public testProxies(proxyHosts: string[]) {
-        for (const proxyHost of proxyHosts) {
-            const proxy = this.proxies.get(proxyHost);
+    public testProxies(proxyIDs: string[]) {
+        for (const proxyId of proxyIDs) {
+            const proxy = this.getProxy(proxyId);
             proxy.testProxy();
         }
     }

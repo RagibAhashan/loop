@@ -1,93 +1,107 @@
+import AccountDropdown from '@components/base/account-dropdown';
 import ProfileSelectDropdown from '@components/base/profile-select-dropdown';
 import ProxySelectDropdown from '@components/base/proxy-select-dropdown';
+import { AccountGroupViewData } from '@core/account-group';
 import { ProfileGroupViewData } from '@core/profilegroup';
 import { ProxySetViewData } from '@core/proxyset';
 import { Button, Modal } from 'antd';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
+export type GroupEntityID = `${string}:${string}`;
+
 export type TaskFormValues = {
     productIdentifier: string;
-    profileName: string;
+    profile: GroupEntityID; // groupId:profileId
+    account: GroupEntityID;
+    proxySetId: string;
     retryDelay: number;
-    proxySetName: string;
     productQuantity: number;
-    accountName: string;
     quantity: number;
 };
 
 export interface Props {
     proxySets: ProxySetViewData[];
     profileGroups: ProfileGroupViewData[];
+    accountGroups: AccountGroupViewData[];
     isOpen: boolean;
     setOpen: (value: boolean) => void;
     onAdd: (data: TaskFormValues, quantity: number) => void;
 }
 
 export const NewTaskModal: React.FunctionComponent<Props> = (props) => {
-    const { isOpen, setOpen, onAdd, profileGroups, proxySets } = props;
+    const { isOpen, setOpen, onAdd, profileGroups, proxySets, accountGroups } = props;
 
-    const { register, handleSubmit, watch } = useForm<TaskFormValues>();
-
-    console.log(watch());
-
-    const onFinishForm = async (data: any) => {
-        console.log('adding task data walmart', data);
-        // onAdd(data, quantity);
-    };
-
-    // let proxiesOptions: any = proxySets.map((proxySet) => {
-    //     return { label: proxySet.name, value: proxySet.name };
-    // });
-
-    // proxiesOptions = [...proxiesOptions, { label: 'No Proxies', value: null }];
-    // optionsProfiles = [...optionsProfiles, { label: 'No Profile', value: null }];
-
-    const onFormFinish = (data: TaskFormValues) => {
-        console.log('adding task data walmart', data);
-        onAdd(data, data.quantity);
-    };
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm<TaskFormValues>();
 
     return (
-        <Modal
-            visible={isOpen}
-            onCancel={() => setOpen(false)}
-            width={'700px'}
-            footer={
-                <Button form="taskForm" type="primary" htmlType="submit">
-                    Create Task
-                </Button>
-            }
-        >
-            <form>
-                <div className={'task-form'}>
-                    <ProfileSelectDropdown defaultValue={undefined} profileGroups={profileGroups} register={register} name="profileName" />
-                    <ProxySelectDropdown defaultValue={undefined} proxySets={proxySets} register={register} name="proxySetName" />
+        <Modal visible={isOpen} onCancel={() => setOpen(false)} width={'700px'} footer={null}>
+            <form
+                onSubmit={handleSubmit((data) => {
+                    console.log(data);
+                    onAdd(data, data.quantity);
+                })}
+            >
+                <div className="form-control">
+                    <div>
+                        <ProfileSelectDropdown
+                            error={errors.profile}
+                            defaultValue={''}
+                            profileGroups={profileGroups}
+                            register={register('profile', { required: true })}
+                        />
+                    </div>
 
-                    <label>
-                        Account
-                        <input {...register('accountName')} />
-                    </label>
+                    <div>
+                        <ProxySelectDropdown error={errors.proxySetId} defaultValue={''} proxySets={proxySets} register={register('proxySetId')} />
+                    </div>
 
-                    <label>
-                        SKU
-                        <input {...register('productIdentifier')} />
-                    </label>
-
-                    <label>
-                        Retry Delay
-                        <input {...register('retryDelay')} />
-                    </label>
-
-                    <label>
-                        Product Quantity
-                        <input {...register('productQuantity')} />
-                    </label>
-
-                    <label>
-                        Task Quantity
-                        <input {...register('quantity')} />
-                    </label>
+                    <div>
+                        <AccountDropdown error={errors.account} defaultValue={''} accountGroups={accountGroups} register={register('account')} />
+                    </div>
+                    <div>
+                        <label>
+                            SKU
+                            <input className={errors.productIdentifier && 'input--error'} {...register('productIdentifier', { required: true })} />
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            Retry Delay
+                            <input
+                                type="number"
+                                className={errors.retryDelay && 'input--error'}
+                                {...register('retryDelay', { required: true, valueAsNumber: true })}
+                            />
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            Product Quantity
+                            <input
+                                type="number"
+                                className={errors.productQuantity && 'input--error'}
+                                {...register('productQuantity', { required: true, valueAsNumber: true })}
+                            />
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            Task Quantity
+                            <input
+                                type="number"
+                                className={errors.quantity && 'input--error'}
+                                {...register('quantity', { required: true, valueAsNumber: true })}
+                            />
+                        </label>
+                    </div>
+                    <div>
+                        <Button htmlType="submit"> Create Task</Button>
+                    </div>
                 </div>
             </form>
         </Modal>

@@ -42,7 +42,7 @@ export class ProfileGroup implements IProfileGroup, Viewable<ProfileGroupViewDat
     public addProfile(profile: Profile): void {
         //Should never happen
         if (this.profiles.has(profile.id)) {
-            log('ID already exists in profile map, could not add profile %s to group %s', profile.profileName, this.name);
+            log('ID already exists in profile map, could not add profile %s to group %s', profile.name, this.name);
             return;
         }
 
@@ -65,7 +65,11 @@ export class ProfileGroup implements IProfileGroup, Viewable<ProfileGroupViewDat
     }
 
     public getProfile(id: string): Profile {
-        return this.profiles.get(id);
+        const profile = this.profiles.get(id);
+
+        if (!profile) throw new Error('getProfile: Could not find key');
+
+        return profile;
     }
 
     public getAllProfilesViewData(): ProfileViewData[] {
@@ -75,7 +79,8 @@ export class ProfileGroup implements IProfileGroup, Viewable<ProfileGroupViewDat
     }
 
     public getProfileViewData(id: string): ProfileViewData {
-        const profile = this.profiles.get(id);
+        const profile = this.getProfile(id);
+
         return profile.getViewData();
     }
 

@@ -33,7 +33,7 @@ const deleteButton = {
 interface Props {
     proxy: ProxyViewData;
     style: any;
-    selectedProxySet: ProxySetViewData;
+    selectedProxySet: ProxySetViewData | undefined;
 }
 // Named it ProxyComponent to avoid name collision with the Proxy class
 const ProxyComponent: React.FunctionComponent<Props> = (props) => {
@@ -57,6 +57,8 @@ const ProxyComponent: React.FunctionComponent<Props> = (props) => {
     };
 
     const handleDeleteProxy = () => {
+        if (!selectedProxySet) return;
+
         window.ElectronBridge.send(ProxySetChannel.removeProxyFromSet, selectedProxySet.id, [proxy.id]);
     };
 

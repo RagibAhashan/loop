@@ -4,31 +4,30 @@ interface Props {
     profileGroups: ProfileGroupViewData[];
     defaultValue: any;
     register: any;
-    name: string;
+    error?: any;
 }
 const ProfileSelectDropdown: React.FunctionComponent<Props> = (props) => {
-    const { profileGroups, defaultValue, register, name } = props;
+    const { profileGroups, defaultValue, register, error } = props;
 
     return (
-        <select defaultValue={defaultValue} style={{ width: 200 }} {...register(name)}>
-            <option key={'null'} value={undefined}>
-                No Profile
-            </option>
-
-            {profileGroups.map((profileGroup) => {
-                return (
-                    <optgroup key={profileGroup.id} label={profileGroup.name}>
-                        {profileGroup.profiles.map((profile) => {
-                            return (
-                                <option key={profile.id} value={profile.profileName}>
-                                    {profile.profileName}
-                                </option>
-                            );
-                        })}
-                    </optgroup>
-                );
-            })}
-        </select>
+        <label>
+            Profile
+            <select className={error && 'input--error'} defaultValue={defaultValue} style={{ width: 200 }} {...register}>
+                {profileGroups.map((profileGroup) => {
+                    return (
+                        <optgroup key={profileGroup.id} label={profileGroup.name}>
+                            {profileGroup.profiles.map((profile) => {
+                                return (
+                                    <option key={profile.id} value={`${profile.groupId}:${profile.id}`}>
+                                        {profile.name}
+                                    </option>
+                                );
+                            })}
+                        </optgroup>
+                    );
+                })}
+            </select>
+        </label>
     );
 };
 

@@ -1,6 +1,4 @@
 export enum StoreType {
-    FootlockerUS = 'FootlockerUS',
-    FootlockerCA = 'FootlockerCA',
     WalmartUS = 'WalmartUS',
     WalmartCA = 'WalmartCA',
 }
@@ -30,22 +28,22 @@ export interface StoreInfo {
 }
 
 export const STORES: Record<StoreType, StoreInfo> = {
-    FootlockerUS: {
-        name: 'Footlocker US',
-        baseURL: 'https://www.footlocker.com/api',
-        key: StoreType.FootlockerUS,
-        url: 'https://www.footlocker.com',
-        siteKey: '6LccSjEUAAAAANCPhaM2c-WiRxCZ5CzsjR_vd8uX',
-        captchaType: CaptchaType.Google,
-    },
-    FootlockerCA: {
-        name: 'Footlocker CA',
-        baseURL: 'http://localhost:3200/api',
-        key: StoreType.FootlockerCA,
-        url: 'https://www.footlocker.ca',
-        siteKey: '6LccSjEUAAAAANCPhaM2c-WiRxCZ5CzsjR_vd8uX', //captcha key,
-        captchaType: CaptchaType.Google,
-    },
+    // FootlockerUS: {
+    //     name: 'Footlocker US',
+    //     baseURL: 'https://www.footlocker.com/api',
+    //     key: StoreType.FootlockerUS,
+    //     url: 'https://www.footlocker.com',
+    //     siteKey: '6LccSjEUAAAAANCPhaM2c-WiRxCZ5CzsjR_vd8uX',
+    //     captchaType: CaptchaType.Google,
+    // },
+    // FootlockerCA: {
+    //     name: 'Footlocker CA',
+    //     baseURL: 'http://localhost:3200/api',
+    //     key: StoreType.FootlockerCA,
+    //     url: 'https://www.footlocker.ca',
+    //     siteKey: '6LccSjEUAAAAANCPhaM2c-WiRxCZ5CzsjR_vd8uX', //captcha key,
+    //     captchaType: CaptchaType.Google,
+    // },
     WalmartUS: {
         name: 'Walmart US',
         baseURL: 'https://www.walmart.com',

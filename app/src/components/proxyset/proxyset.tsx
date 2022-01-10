@@ -5,18 +5,15 @@ import { ProxySetViewData } from '@core/proxyset';
 import { Button } from 'antd';
 import React from 'react';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface Props {
     proxySet: ProxySetViewData;
-    selectedProxySet: ProxySetViewData;
+    selectedProxySet: ProxySetViewData | undefined;
 }
 
 const ProxySet: React.FunctionComponent<Props> = (props) => {
     const { proxySet, selectedProxySet } = props;
 
     const isSelected = selectedProxySet ? proxySet.id === selectedProxySet.id : false;
-
-    const selectedStyle = isSelected ? { borderColor: '#9ecaed', boxShadow: '0 0 10px #9ecaed' } : undefined;
 
     const handleClickProxySet = () => {
         window.ElectronBridge.send(ProxySetChannel.getProxySetProxies, proxySet.id);

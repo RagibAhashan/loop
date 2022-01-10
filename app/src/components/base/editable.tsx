@@ -12,6 +12,8 @@ const Editable: React.FunctionComponent<Props> = (props) => {
     const inputRef = useRef<HTMLInputElement>(null);
 
     const handleStopEditing = () => {
+        if (!inputRef.current) return;
+
         if (!inputRef.current.value) {
             setTimeout(() => setEditing(false), 100);
             return;
@@ -30,11 +32,15 @@ const Editable: React.FunctionComponent<Props> = (props) => {
         setEditing(true);
 
         setTimeout(() => {
+            if (!inputRef.current) return;
+
             inputRef.current.focus();
             inputRef.current.select();
         });
     };
     const handleKeyPress = (e: React.KeyboardEvent) => {
+        if (!inputRef.current) return;
+
         if (e.key === 'Enter') {
             handleStopEditing();
             return;

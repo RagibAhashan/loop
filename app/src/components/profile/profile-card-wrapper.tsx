@@ -10,7 +10,7 @@ interface Props {
 const ProfileCardWrapper: React.FunctionComponent<Props> = (props) => {
     const { profile, onEditClick } = props;
 
-    const profileName = profile.profileName;
+    const profileName = profile.name;
     const userFullName = `${profile.billing.firstName} ${profile.billing.lastName}`.toUpperCase();
 
     const renderProfileCard = () => {

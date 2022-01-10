@@ -22,13 +22,6 @@ export enum TaskGroupChannel {
     editTaskGroupStore = 'dynasty:editTaskGroupStore',
 }
 
-export enum TaskChannel {
-    onTaskStatus = 'dynasty:onTaskStatus',
-    onTaskSuccess = 'dynasty:onTaskSuccess',
-    onCaptcha = 'dynasty:onCaptcha',
-    onCaptchaSolved = 'dynasty:onCaptchaSolved',
-}
-
 export enum ProxySetChannel {
     getAllProxySets = 'dynasty:getAllProxySets',
     getProxySetProxies = 'dynasty:getProxySetProxies',

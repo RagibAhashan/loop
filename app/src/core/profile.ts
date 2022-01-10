@@ -1,12 +1,13 @@
 import { CreditCard, CreditCardFormData } from './credit-card';
 import { CreditCardFactory } from './credit-card-factory';
+import { EntityId } from './entity-id';
 import { Viewable } from './viewable';
 
 export const profilePrefix = 'prof';
 
 export interface ProfileFormData {
     id: string;
-    profileName: string; // identifier for profile
+    name: string; // identifier for profile
     billing: UserProfile;
     shipping: UserProfile;
     payment: CreditCardFormData;
@@ -29,7 +30,7 @@ export interface UserProfile {
 /* interface used as a mediator from client to backend */
 export interface ProfileViewData {
     id: string;
-    profileName: string;
+    name: string;
     billing: UserProfile;
     shipping: UserProfile;
     payment: CreditCard;
@@ -38,26 +39,28 @@ export interface ProfileViewData {
 
 export interface IProfile {
     id: string;
-    profileName: string; // identifier for profile
+    name: string; // identifier for profile
     groupId: string;
     billing: UserProfile;
     shipping: UserProfile;
     payment: CreditCard;
+    taskId: EntityId | null;
 }
 
 export class Profile implements IProfile, Viewable<ProfileViewData> {
     id: string;
-    profileName: string;
+    name: string;
     billing: UserProfile;
     shipping: UserProfile;
     payment: CreditCard;
     groupId: string;
+    taskId: EntityId | null;
 
     private creditCardFactory;
 
     constructor(
         id: string,
-        profileName: string,
+        name: string,
         groupId: string,
         billing: UserProfile,
         shipping: UserProfile,
@@ -65,12 +68,13 @@ export class Profile implements IProfile, Viewable<ProfileViewData> {
         creditCardFactory: CreditCardFactory,
     ) {
         this.id = id;
-        this.profileName = profileName;
+        this.name = name;
         this.billing = billing;
         this.shipping = shipping;
         this.payment = payment;
         this.groupId = groupId;
         this.creditCardFactory = creditCardFactory;
+        this.taskId = null;
     }
 
     public getViewData(): ProfileViewData {
@@ -79,7 +83,7 @@ export class Profile implements IProfile, Viewable<ProfileViewData> {
             shipping: this.shipping,
             billing: this.billing,
             payment: this.payment,
-            profileName: this.profileName,
+            name: this.name,
             groupId: this.groupId,
         };
     }
@@ -91,13 +95,17 @@ export class Profile implements IProfile, Viewable<ProfileViewData> {
             billing: this.billing,
             shipping: this.shipping,
             payment: this.payment.getValueDB() as CreditCard,
-            profileName: this.profileName,
+            name: this.name,
             groupId: this.groupId,
         };
     }
 
+    public setTaskId(value: EntityId | null): void {
+        this.taskId = value;
+    }
+
     public editProfileName(name: string) {
-        this.profileName = name;
+        this.name = name;
     }
 
     public editShipping(shipUpdate: Partial<UserProfile>) {

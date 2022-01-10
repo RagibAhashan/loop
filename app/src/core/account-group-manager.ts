@@ -1,14 +1,14 @@
 import { ipcMain } from 'electron';
 import { AccountStoreType } from '../constants/stores';
-import { Account, AccountViewData, IAccount } from './account';
+import { Account, AccountFormData, AccountViewData, IAccount } from './account';
 import { AccountFactory } from './account-factory';
-import { AccountGroup, AccountGroupViewData } from './account-group';
+import { AccountGroup, AccountGroupViewData, IAccountGroup } from './account-group';
 import { AccountGroupFactory } from './account-group-factory';
 import { AppDatabase } from './app-database';
 import { AccountGroupChannel } from './ipc-channels';
 import { debug } from './log';
 import { Manager } from './manager';
-import { TaskFormData } from './task';
+import { TaskGroupManager } from './taskgroup-manager';
 
 const log = debug.extend('AccountGroupManager');
 export type AccountGroupMap = Map<string, AccountGroup>;
@@ -17,17 +17,19 @@ export class AccountGroupManager extends Manager {
     private accountGroupMap: AccountGroupMap;
     private accountGroupFactory: AccountGroupFactory;
     private accountFactory: AccountFactory;
+    private taskGroupManager: TaskGroupManager;
 
-    constructor(database: AppDatabase, accountGroupFactory: AccountGroupFactory, accountFactory: AccountFactory) {
+    constructor(database: AppDatabase, accountGroupFactory: AccountGroupFactory, accountFactory: AccountFactory, taskGroupManager: TaskGroupManager) {
         super(database);
         this.accountGroupMap = new Map();
         this.accountGroupFactory = accountGroupFactory;
         this.accountFactory = accountFactory;
+        this.taskGroupManager = taskGroupManager;
     }
 
     protected async loadFromDB(): Promise<void> {
-        const accountGroups = await this.database.loadModelDB<AccountGroup[]>('AccountGroup');
-        const accounts = await this.database.loadModelDB<Account[]>('Account');
+        const accountGroups = await this.database.loadModelDB<IAccountGroup[]>('AccountGroup');
+        const accounts = await this.database.loadModelDB<IAccount[]>('Account');
 
         if (!accountGroups || !accounts) return;
 
@@ -35,21 +37,33 @@ export class AccountGroupManager extends Manager {
             this.addAccountGroup(accountGroup.id, accountGroup.name, accountGroup.storeType);
 
             // TODO Review this logic
-            const accountDatas: IAccount[] = [];
+            const accountDatas: AccountFormData[] = [];
 
             accounts.forEach((account) => {
-                if (account.groupId === accountGroup.id) accountDatas.push(account);
+                if (account.groupId === accountGroup.id) {
+                    accountDatas.push(this.accountInterfaceToFormData(account));
+                }
             });
 
-            this.addTaskToGroup(accountGroup.name, accountDatas);
+            this.addAccountToGroup(accountGroup.id, accountDatas);
         }
 
         log('AccountGroup Loaded');
     }
 
+    private accountInterfaceToFormData(account: IAccount): AccountFormData {
+        return {
+            id: account.id,
+            loginProxy: account.loginProxy,
+            email: account.email,
+            name: account.name,
+            password: account.password,
+        };
+    }
+
     public async saveToDB(): Promise<boolean> {
-        const agSaved = await this.database.saveModelDB<AccountGroup[]>('AccountGroup', this.getAllAccountGroups());
-        const aSaved = await this.database.saveModelDB<Account[]>('Account', this.getAllAccounts());
+        const agSaved = await this.database.saveModelDB<IAccountGroup[]>('AccountGroup', this.getAllAccountGroups());
+        const aSaved = await this.database.saveModelDB<IAccount[]>('Account', this.getAllAccounts());
 
         if (!agSaved || aSaved) return false;
 
@@ -75,13 +89,29 @@ export class AccountGroupManager extends Manager {
             log('[Group not found]');
             return null;
         }
+
+        const accountGroup = this.getAccountGroup(groupId);
+
+        accountGroup.getAllAccounts().forEach((account) => {
+            const taskId = account.taskId;
+            // If account is associated with task, then remove relation
+            if (taskId) {
+                const task = this.taskGroupManager.getTaskGroup(taskId.groupId).getTask(taskId.id);
+                task.account = null;
+            }
+        });
+
         this.accountGroupMap.delete(groupId);
 
         return this.getAllAccountGroupsViewData();
     }
 
-    private getAccountGroup(groupId: string): AccountGroup | undefined {
-        return this.accountGroupMap.get(groupId);
+    public getAccountGroup(groupId: string): AccountGroup {
+        const accountGroup = this.accountGroupMap.get(groupId);
+
+        if (!accountGroup) throw new Error('getAccountGroup: Could not get key');
+
+        return accountGroup;
     }
 
     private getAllAccountGroupsViewData(): AccountGroupViewData[] {
@@ -100,13 +130,8 @@ export class AccountGroupManager extends Manager {
         return accounts;
     }
 
-    private addTaskToGroup(groupId: string, taskDatas: Partial<Account>[]): AccountViewData[] | null {
-        if (!this.accountGroupMap.has(groupId)) {
-            log('[Group %s not found]', groupId);
-            return null;
-        }
-
-        const accountGroup = this.accountGroupMap.get(groupId);
+    private addAccountToGroup(groupId: string, taskDatas: AccountFormData[]): AccountViewData[] {
+        const accountGroup = this.getAccountGroup(groupId);
 
         for (const accountData of taskDatas) {
             const newAccount = this.accountFactory.createAccount(accountData, groupId);
@@ -116,35 +141,44 @@ export class AccountGroupManager extends Manager {
         return accountGroup.getAllAccountsViewData();
     }
 
-    private removeTaskFromGroup(groupId: string, accountIds: string[]): AccountViewData[] | null {
-        if (!this.accountGroupMap.has(groupId)) {
-            log('[Group %s not found]', groupId);
-            return null;
-        }
-        const accountGroup = this.accountGroupMap.get(groupId);
+    private removeAccountFromGroup(groupId: string, accountIds: string[]): AccountViewData[] | null {
+        const accountGroup = this.getAccountGroup(groupId);
 
         for (const id of accountIds) {
+            const taskId = accountGroup.getAccount(id).taskId;
+
+            if (taskId) {
+                const task = this.taskGroupManager.getTaskGroup(taskId.groupId).getTask(taskId.id);
+                task.account = null;
+            }
+
             accountGroup.removeAccount(id);
         }
 
         return accountGroup.getAllAccountsViewData();
     }
 
-    private removeAllAccountsFromGroup(groupId: string): AccountViewData[] | null {
-        if (!this.accountGroupMap.has(groupId)) {
-            log('[Group %s not found]', groupId);
-            return null;
-        }
+    private removeAllAccountsFromGroup(groupId: string): AccountViewData[] {
+        const accountGroup = this.getAccountGroup(groupId);
 
-        const accountGroup = this.accountGroupMap.get(groupId);
+        accountGroup.getAllAccounts().forEach((account) => {
+            const taskId = account.taskId;
+
+            if (taskId) {
+                const task = this.taskGroupManager.getTaskGroup(taskId.groupId).getTask(taskId.id);
+                task.account = null;
+            }
+        });
 
         accountGroup.removeAllAccounts();
 
         return accountGroup.getAllAccountsViewData();
     }
 
-    private editAccountGroupName(groupId: string, newName: string): AccountGroupViewData[] {
+    private editAccountGroupName(groupId: string, newName: string): AccountGroupViewData[] | null {
         const accountGroup = this.accountGroupMap.get(groupId);
+
+        if (!accountGroup) return null;
 
         accountGroup.editName(newName);
 
@@ -192,16 +226,14 @@ export class AccountGroupManager extends Manager {
             }
         });
 
-        ipcMain.handle(AccountGroupChannel.getAccountFromAccountGroup, (event, groupId: string, uuid: string): AccountViewData => {
+        ipcMain.handle(AccountGroupChannel.getAccountFromAccountGroup, (event, groupId: string, accountId: string): AccountViewData => {
             const currentAccountGroup = this.getAccountGroup(groupId);
-            if (currentAccountGroup) {
-                const task = currentAccountGroup.getAccountViewData(uuid);
-                return task;
-            }
+            const account = currentAccountGroup.getAccountViewData(accountId);
+            return account;
         });
 
-        ipcMain.on(AccountGroupChannel.addAccountToGroup, (event, groupId: string, accounts: TaskFormData[]) => {
-            const taskList = this.addTaskToGroup(groupId, accounts);
+        ipcMain.on(AccountGroupChannel.addAccountToGroup, (event, groupId: string, accounts: AccountFormData[]) => {
+            const taskList = this.addAccountToGroup(groupId, accounts);
 
             if (taskList) {
                 event.reply(AccountGroupChannel.accountsUpdated, taskList);
@@ -210,8 +242,8 @@ export class AccountGroupManager extends Manager {
             }
         });
 
-        ipcMain.on(AccountGroupChannel.removeAccountFromGroup, (event, groupId: string, uuids: string[]) => {
-            const taskList = this.removeTaskFromGroup(groupId, uuids);
+        ipcMain.on(AccountGroupChannel.removeAccountFromGroup, (event, groupId: string, accountIds: string[]) => {
+            const taskList = this.removeAccountFromGroup(groupId, accountIds);
             if (taskList) {
                 event.reply(AccountGroupChannel.accountsUpdated, taskList);
             } else {

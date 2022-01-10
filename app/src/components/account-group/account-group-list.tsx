@@ -9,7 +9,7 @@ interface Props {
 
 const AccountGroupList: React.FunctionComponent<Props> = (props) => {
     const { accountGroups } = props;
-    const [selectedAccountGroup, setSelectedAccountGroup] = useState(null);
+    const [selectedAccountGroup, setSelectedAccountGroup] = useState<AccountGroupViewData | undefined>(undefined);
 
     useEffect(() => {
         window.ElectronBridge.on(AccountGroupChannel.onAccountGroupSelected, handleOnAccountGroupSelected);

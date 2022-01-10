@@ -9,7 +9,7 @@ interface Props {
 
 const ProxySetList: React.FunctionComponent<Props> = (props) => {
     const { proxySets } = props;
-    const [selectedProxySet, setSelectedProxySet] = useState(null);
+    const [selectedProxySet, setSelectedProxySet] = useState<ProxySetViewData | undefined>(undefined);
 
     useEffect(() => {
         window.ElectronBridge.on(ProxySetChannel.onProxySetSelected, handleOnProxySetSelected);

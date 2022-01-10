@@ -54,9 +54,16 @@ export class TaskGroup implements ITaskGroup, Viewable<TaskGroupViewData> {
         this.tasks.set(task.id, task);
     }
 
-    public removeTask(uuid: string): void {
-        if (this.tasks.has(uuid)) {
-            this.tasks.delete(uuid);
+    public getTask(id: string): Task {
+        const task = this.tasks.get(id);
+        if (!task) throw new Error('getTask: Could not find key');
+        return task;
+    }
+
+    public removeTask(id: string): void {
+        if (this.tasks.has(id)) {
+            this.stopTask(id);
+            this.tasks.delete(id);
         }
     }
 
@@ -72,8 +79,8 @@ export class TaskGroup implements ITaskGroup, Viewable<TaskGroupViewData> {
         return tasks;
     }
 
-    public getTaskViewData(uuid: string): TaskViewData {
-        const task = this.tasks.get(uuid);
+    public getTaskViewData(id: string): TaskViewData {
+        const task = this.getTask(id);
         return task.getViewData();
     }
 
@@ -81,13 +88,8 @@ export class TaskGroup implements ITaskGroup, Viewable<TaskGroupViewData> {
         return Array.from(this.tasks.values());
     }
 
-    public getTask(uuid: string): Task {
-        const task = this.tasks.get(uuid);
-        return task;
-    }
-
-    public startTask(uuid: string): void {
-        const task = this.tasks.get(uuid);
+    public startTask(id: string): void {
+        const task = this.getTask(id);
         task.execute();
     }
 
@@ -97,9 +99,9 @@ export class TaskGroup implements ITaskGroup, Viewable<TaskGroupViewData> {
         }
     }
 
-    public stopTask(uuid: string): void {
+    public stopTask(id: string): void {
         log('Stopping task');
-        const task = this.tasks.get(uuid);
+        const task = this.getTask(id);
         task.emit(TASK_STOP);
     }
 

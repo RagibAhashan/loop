@@ -62,7 +62,7 @@ const AddProfileModal: React.FunctionComponent<Props> = (props) => {
 
         const profileData: ProfileFormData = {
             id: generateId(profilePrefix),
-            profileName: allValues.profileName,
+            name: allValues.profileName,
             shipping: allValues.shipping,
             billing: allValues.billing,
             payment: allValues.payment,
@@ -72,11 +72,10 @@ const AddProfileModal: React.FunctionComponent<Props> = (props) => {
     };
 
     const handleFormSubmit = () => {
-        console.log('submitted all forms');
+        onAddProfile();
     };
 
     const handleFormFailed = (errors: any) => {
-        console.log('form failed', errors);
         message.error('Please fill all the form!');
     };
 

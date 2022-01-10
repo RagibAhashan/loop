@@ -29,6 +29,7 @@
             "@css/*": ["src/css/*"],
             "@assets/*": ["src/assets/*"]
         },
+        "strictNullChecks": true,
         "jsx": "react",
         "removeComments": true
     },

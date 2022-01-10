@@ -11,7 +11,7 @@ const { Title } = Typography;
 
 export interface State {
     proxies: ProxyViewData[];
-    selectedProxySet: ProxySetViewData;
+    selectedProxySet: ProxySetViewData | undefined;
 }
 
 const ProxyContainer: React.FunctionComponent = () => {
@@ -48,9 +48,14 @@ const ProxyContainer: React.FunctionComponent = () => {
                 <Title level={3}>Proxies</Title>
                 {proxyContainerState.selectedProxySet ? <Button onClick={handleAddProxies}> Add Proxies </Button> : null}
             </div>
-            <ProxyHeaders></ProxyHeaders>
-            <ProxyList proxies={proxyContainerState.proxies} selectedProxySet={proxyContainerState.selectedProxySet}></ProxyList>
-            <AddProxyModal isOpen={isOpen} setOpen={setOpen} selectedProxySet={proxyContainerState.selectedProxySet}></AddProxyModal>
+
+            {proxyContainerState.selectedProxySet && (
+                <>
+                    <ProxyHeaders></ProxyHeaders>
+                    <ProxyList proxies={proxyContainerState.proxies} selectedProxySet={proxyContainerState.selectedProxySet}></ProxyList>
+                    <AddProxyModal isOpen={isOpen} setOpen={setOpen} selectedProxySet={proxyContainerState.selectedProxySet}></AddProxyModal>
+                </>
+            )}
         </div>
     );
 };

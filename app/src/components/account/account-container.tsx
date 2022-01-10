@@ -11,7 +11,7 @@ const { Title } = Typography;
 
 export interface State {
     accounts: AccountViewData[];
-    selectedAccountGroup: AccountGroupViewData;
+    selectedAccountGroup: AccountGroupViewData | undefined;
 }
 
 const AccountContainer: React.FunctionComponent = () => {
@@ -48,9 +48,20 @@ const AccountContainer: React.FunctionComponent = () => {
                 <Title level={3}>Accounts</Title>
                 {accountContainerState.selectedAccountGroup ? <Button onClick={handleAddAccounts}> Add Accounts </Button> : null}
             </div>
-            <AccountHeaders></AccountHeaders>
-            <AccountList accounts={accountContainerState.accounts} selectedAccountGroup={accountContainerState.selectedAccountGroup}></AccountList>
-            <AddAccountModal isOpen={isOpen} setOpen={setOpen} selectedAccountGroup={accountContainerState.selectedAccountGroup}></AddAccountModal>
+            {accountContainerState.selectedAccountGroup && (
+                <>
+                    <AccountHeaders></AccountHeaders>
+                    <AccountList
+                        accounts={accountContainerState.accounts}
+                        selectedAccountGroup={accountContainerState.selectedAccountGroup}
+                    ></AccountList>
+                    <AddAccountModal
+                        isOpen={isOpen}
+                        setOpen={setOpen}
+                        selectedAccountGroup={accountContainerState.selectedAccountGroup}
+                    ></AddAccountModal>
+                </>
+            )}
         </div>
     );
 };

@@ -13,8 +13,6 @@ const TaskHeaders: React.FunctionComponent<any> = (props) => {
 
                 <div>Account</div>
 
-                <div>Profile</div>
-
                 <div>Status</div>
 
                 <div>Actions</div>

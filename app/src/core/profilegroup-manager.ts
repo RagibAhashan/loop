@@ -4,9 +4,9 @@ import { CreditCardFormData, ICreditCard } from './credit-card';
 import { ProfileGroupChannel } from './ipc-channels';
 import { debug } from './log';
 import { Manager } from './manager';
-import { Profile, ProfileFormData, ProfileViewData, UserProfile } from './profile';
+import { IProfile, Profile, ProfileFormData, ProfileViewData, UserProfile } from './profile';
 import { ProfileFactory } from './profile-factory';
-import { ProfileGroup, ProfileGroupViewData } from './profilegroup';
+import { IProfileGroup, ProfileGroup, ProfileGroupViewData } from './profilegroup';
 import { ProfileGroupFactory } from './profilegroup-factory';
 
 const log = debug.extend('ProfileGroupManager');
@@ -16,7 +16,6 @@ export class ProfileGroupManager extends Manager {
     private profileGroupMap: ProfileGroupMap;
     private profileGroupFactory: ProfileGroupFactory;
     private profileFactory: ProfileFactory;
-
     constructor(database: AppDatabase, profileGroupFactory: ProfileGroupFactory, profileFactory: ProfileFactory) {
         super(database);
         this.profileGroupMap = new Map();
@@ -25,8 +24,8 @@ export class ProfileGroupManager extends Manager {
     }
 
     protected async loadFromDB(): Promise<void> {
-        const profileGroups = await this.database.loadModelDB<ProfileGroup[]>('ProfileGroup');
-        const profiles = await this.database.loadModelDB<Partial<Profile>[]>('Profile');
+        const profileGroups = await this.database.loadModelDB<IProfileGroup[]>('ProfileGroup');
+        const profiles = await this.database.loadModelDB<IProfile[]>('Profile');
 
         if (!profiles || !profileGroups) return;
 
@@ -42,7 +41,7 @@ export class ProfileGroupManager extends Manager {
                         billing: profile.billing,
                         id: profile.id,
                         shipping: profile.shipping,
-                        profileName: profile.profileName,
+                        name: profile.name,
                         payment: profile.payment,
                     });
             });
@@ -54,7 +53,7 @@ export class ProfileGroupManager extends Manager {
     }
 
     public async saveToDB(): Promise<boolean> {
-        const profileGroupsSaved = await this.database.saveModelDB<ProfileGroup[]>('ProfileGroup', this.getAllProfileGroups());
+        const profileGroupsSaved = await this.database.saveModelDB<IProfileGroup[]>('ProfileGroup', this.getAllProfileGroups());
         const profileSaved = await this.database.saveModelDB<Partial<Profile>[]>('Profile', this.getAllProfilesDB());
 
         if (!profileGroupsSaved || !profileSaved) return false;
@@ -82,6 +81,7 @@ export class ProfileGroupManager extends Manager {
         }
 
         this.profileGroupMap.delete(id);
+
         return this.getAllProfileGroupsViewData();
     }
 
@@ -91,8 +91,12 @@ export class ProfileGroupManager extends Manager {
         return profileGroups;
     }
 
-    private getProfileGroup(id: string): ProfileGroup | undefined {
-        return this.profileGroupMap.get(id);
+    public getProfileGroup(id: string): ProfileGroup {
+        const profileGroup = this.profileGroupMap.get(id);
+
+        if (!profileGroup) throw new Error('getProfileGroup: Could not find group');
+
+        return profileGroup;
     }
 
     private getAllProfileGroups(): ProfileGroup[] {
@@ -108,13 +112,8 @@ export class ProfileGroupManager extends Manager {
         return profiles;
     }
 
-    private addProfileToGroup(groupId: string, profileDatas: ProfileFormData[]): ProfileViewData[] | null {
-        if (!this.profileGroupMap.has(groupId)) {
-            log('[Adding profile to Group] Group not found');
-            return null;
-        }
-
-        const profileGroup = this.profileGroupMap.get(groupId);
+    private addProfileToGroup(groupId: string, profileDatas: ProfileFormData[]): ProfileViewData[] {
+        const profileGroup = this.getProfileGroup(groupId);
 
         for (const profileData of profileDatas) {
             const newProfile = this.profileFactory.createProfile(groupId, profileData);
@@ -124,13 +123,8 @@ export class ProfileGroupManager extends Manager {
         return profileGroup.getAllProfilesViewData();
     }
 
-    private removeProfileFromGroup(groupId: string, profileIds: string[]): ProfileViewData[] | null {
-        if (!this.profileGroupMap.has(groupId)) {
-            log('[Group %s not found]', groupId);
-            return null;
-        }
-
-        const profileGroup = this.profileGroupMap.get(groupId);
+    private removeProfileFromGroup(groupId: string, profileIds: string[]): ProfileViewData[] {
+        const profileGroup = this.getProfileGroup(groupId);
 
         for (const profileId of profileIds) {
             profileGroup.removeProfile(profileId);
@@ -139,13 +133,8 @@ export class ProfileGroupManager extends Manager {
         return profileGroup.getAllProfilesViewData();
     }
 
-    private removeAllProfilesFromGroup(groupId: string): ProfileViewData[] | null {
-        if (!this.profileGroupMap.has(groupId)) {
-            log('[Group %s not found]', groupId);
-            return null;
-        }
-
-        const profileGroup = this.profileGroupMap.get(groupId);
+    private removeAllProfilesFromGroup(groupId: string): ProfileViewData[] {
+        const profileGroup = this.getProfileGroup(groupId);
 
         profileGroup.removeAllProfiles();
 
@@ -153,7 +142,7 @@ export class ProfileGroupManager extends Manager {
     }
 
     private editProfileGroupName(groupId: string, newName: string): ProfileGroupViewData[] {
-        const profileGroup = this.profileGroupMap.get(groupId);
+        const profileGroup = this.getProfileGroup(groupId);
 
         profileGroup.editName(newName);
 
@@ -236,10 +225,10 @@ export class ProfileGroupManager extends Manager {
 
         ipcMain.handle(ProfileGroupChannel.getProfileFromProfileGroup, (event, groupId: string, profileId: string): ProfileViewData => {
             const profileGroup = this.getProfileGroup(groupId);
-            if (profileGroup) {
-                const profile = profileGroup.getProfile(profileId);
-                return profile.getViewData();
-            }
+
+            const profile = profileGroup.getProfile(profileId);
+
+            return profile.getViewData();
         });
 
         ipcMain.on(ProfileGroupChannel.addProfileToGroup, (event, groupId: string, profileDatas: ProfileFormData[]) => {

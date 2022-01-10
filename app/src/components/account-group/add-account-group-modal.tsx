@@ -23,10 +23,16 @@ const AddAccountGroupModal: React.FunctionComponent<Props> = (props) => {
         setOpen(false);
     };
 
+    const onStoreChange = (value: string) => {
+        if (!value) return;
+
+        setStore(value);
+    };
+
     return (
         <Modal title={'New Account Group'} visible={isOpen} onCancel={() => setOpen(false)} footer={<Button onClick={onSubmit}>Add</Button>}>
             <Input id="groupName" type="text" placeholder="Name" onChange={(e) => setName(e.target.value)} />
-            <Select placeholder="Select store" onChange={(value) => setStore(value.toString())}>
+            <Select placeholder="Select store" onChange={onStoreChange}>
                 {getAccountStores().map(([key, store]) => (
                     <Select.Option key={key} value={key}>
                         {store.name}

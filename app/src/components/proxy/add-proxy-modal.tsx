@@ -27,8 +27,6 @@ const AddProxyModal: React.FunctionComponent<Props> = (props) => {
             return { id: generateId(proxyPrefix), proxy };
         });
 
-        console.log('adding proxies', proxyDatas);
-
         window.ElectronBridge.send(ProxySetChannel.addProxyToSet, selectedProxySet.id, proxyDatas);
         setOpen(false);
     };

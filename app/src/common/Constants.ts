@@ -22,7 +22,6 @@ export const NOTIFY_ON_START_INIT_TASK = (store: StoreType) => `on-start-init-ta
 export const NOTIFY_CAPTCHA_TASK = 'task-notify-captcha';
 export const NOTIFY_CAPTCHA_STORE = (store: StoreType) => `notify-captcha-${store}`;
 export const NOTIFY_CAPTCHA_SOLVED = 'captcha-solved';
-export const TASK_STOPPED = 'task-stopped';
 export const TASK_STOP = 'task-stop';
 export const TASK_STATUS = 'status';
 export const TASK_SUCCESS = 'checkout';

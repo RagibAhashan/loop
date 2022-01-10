@@ -35,7 +35,13 @@ export class WalmartEncryption {
             const PIE = await this.fetchPIE();
             log('Got PIE keys %o', PIE);
 
-            const [encryptedNumber, encryptedCVC, integrityCheck] = EncryptWalmart(plainCC.number, plainCC.cvc, true, PIE);
+            const encryptedParams = EncryptWalmart(plainCC.number, plainCC.cvc, true, PIE);
+
+            if (!encryptedParams) {
+                throw new Error('EncryptWalmart Failed');
+            }
+
+            const [encryptedNumber, encryptedCVC, integrityCheck] = encryptedParams;
 
             log('Encryption successful %s %s %s', encryptedNumber, encryptedCVC, integrityCheck);
 

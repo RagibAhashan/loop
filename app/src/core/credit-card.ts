@@ -36,8 +36,8 @@ export class CreditCard implements ICreditCard {
             truncatedNumber: this.truncatedNumber,
             expiryMonth: this.expiryMonth,
             expiryYear: this.expiryYear,
-            cvc: null,
-            number: null,
+            cvc: '',
+            number: '',
         };
     }
     /*
