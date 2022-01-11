@@ -1,7 +1,7 @@
 import { AppDatabase } from './app-database';
 import { EntityId } from './entity-id';
 import { debug } from './log';
-import { IProxy, Proxy, ProxyViewData } from './proxy';
+import { IProxy, Proxy, ProxyFormData, ProxyViewData } from './proxy';
 import { ProxyFactory } from './proxy-factory';
 import { IProxyGroup, ProxyGroup, ProxyGroupViewData } from './proxy-group';
 import { ProxyGroupFactory } from './proxy-group-factory';
@@ -33,26 +33,23 @@ export class ProxyGroupStore {
         for (const proxyGroup of proxyGroups) {
             this.addProxyGroup(proxyGroup.id, proxyGroup.name);
 
-            // const proxiesData: ProxyFormData[] = [];
+            const proxiesData: ProxyFormData[] = [];
 
-            // proxies.forEach((proxy) => {
-            //     if (proxy.groupId === proxySet.id) proxiesData.push({ proxy: `${proxy.host}:${proxy.user}:${proxy.password}`, id: proxy.id });
-            // });
+            proxies.forEach((proxy) => {
+                if (proxy.groupId === proxyGroup.id) proxiesData.push({ proxy: `${proxy.host}:${proxy.user}:${proxy.password}`, id: proxy.id });
+            });
 
-            this.addProxyToSet(
-                proxyGroup.id,
-                proxies.filter((proxy) => proxy.groupId === proxyGroup.id),
-            );
+            this.addProxyToSet(proxyGroup.id, proxiesData);
         }
 
         log('ProxyGroup Loaded');
     }
 
     public async saveToDB(): Promise<boolean> {
-        const proxySetsSaved = await this.database.saveModelDB<IProxyGroup[]>('ProxyGroup', this.getAllProxyGroups());
+        const proxyGroupsSaved = await this.database.saveModelDB<IProxyGroup[]>('ProxyGroup', this.getAllProxyGroups());
         const proxiesSaved = await this.database.saveModelDB<IProxy[]>('Proxy', this.getAllProxies());
 
-        if (!proxySetsSaved || !proxiesSaved) return false;
+        if (!proxyGroupsSaved || !proxiesSaved) return false;
 
         log('ProxyGroup Saved to DB!');
         return true;
@@ -61,8 +58,7 @@ export class ProxyGroupStore {
     public pickProxyFromSet(setId: string, taskId: EntityId): Proxy {
         const proxySet = this.getProxyGroup(setId);
 
-        const proxy = proxySet.pickProxy();
-        proxy.setTaskId(taskId);
+        const proxy = proxySet.pickProxy(taskId);
 
         return proxy;
     }
@@ -125,11 +121,11 @@ export class ProxyGroupStore {
      *
      * @param proxies Array of string containing proxies in this format : host:port:user:pass
      */
-    public addProxyToSet(setId: string, proxies: IProxy[]): ProxyViewData[] | null {
+    public addProxyToSet(setId: string, proxies: ProxyFormData[]): ProxyViewData[] | null {
         const proxySet = this.getProxyGroup(setId);
 
         for (const proxyData of proxies) {
-            const proxy = this.proxyFactory.createProxy(proxyData);
+            const proxy = this.proxyFactory.createProxy(setId, proxyData);
             proxySet.addProxy(proxy);
         }
 

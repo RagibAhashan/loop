@@ -1,6 +1,6 @@
 import { AppDatabase } from './app-database';
 import { debug } from './log';
-import { IProfile, Profile, ProfileViewData } from './profile';
+import { IProfile, Profile, ProfileFormData, ProfileViewData } from './profile';
 import { ProfileFactory } from './profile-factory';
 import { IProfileGroup, ProfileGroup, ProfileGroupViewData } from './profile-group';
 import { ProfileGroupFactory } from './profile-group-factory';
@@ -95,7 +95,7 @@ export class ProfileGroupStore {
         return this.getAllProfileGroupsViewData();
     }
 
-    public addProfileToGroup(groupId: string, profiles: IProfile[]): ProfileViewData[] {
+    public addProfileToGroup(groupId: string, profiles: ProfileFormData[]): ProfileViewData[] {
         const profileGroup = this.getProfileGroup(groupId);
 
         for (const profile of profiles) {

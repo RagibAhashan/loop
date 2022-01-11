@@ -1,5 +1,4 @@
 import { ipcMain } from 'electron';
-import puppeteer from 'puppeteer-core';
 import { SettingsChannel } from './ipc-channels';
 import { debug } from './log';
 import { Manager } from './manager';
@@ -22,10 +21,6 @@ export class SettingsManager extends Manager {
 
     private async setBrowserPath(path: string): Promise<void> {
         this.settingsStore.getSettings().setBrowserPath(path);
-        log('Launching browser');
-        const browser = await puppeteer.launch({ executablePath: path, headless: false, defaultViewport: null });
-        const page = await browser.newPage();
-        await page.goto('https://www.google.com');
     }
 
     private setDiscordWebhook(webhook: string): void {

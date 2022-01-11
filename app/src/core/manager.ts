@@ -5,7 +5,6 @@ export abstract class Manager {
     protected abstract registerListeners(): void;
 
     public async ready(): Promise<void> {
-        console.log('readying that shit');
         await this.loadFromDB();
         this.registerListeners();
     }

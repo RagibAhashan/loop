@@ -5,8 +5,9 @@ import { AccountGroupStore } from './account-group-store';
 import { AccountGroupChannel } from './ipc-channels';
 import { debug } from './log';
 import { Manager } from './manager';
-import { AccountFormData, AccountViewData, IAccount } from './models/account';
+import { AccountFormData, AccountViewData } from './models/account';
 import { SettingsStore } from './settings-store';
+import { TaskGroupStore } from './task-group-store';
 
 const log = debug.extend('AccountGroupManager');
 export type AccountGroupMap = Map<string, AccountGroup>;
@@ -15,11 +16,13 @@ export class AccountGroupManager extends Manager {
     private accountGroupMap: AccountGroupMap;
     private accountGroupStore: AccountGroupStore;
     private settingsStore: SettingsStore;
+    private taskGroupStore: TaskGroupStore;
 
-    constructor(accountGroupStore: AccountGroupStore, settingsStore: SettingsStore) {
+    constructor(accountGroupStore: AccountGroupStore, settingsStore: SettingsStore, taskGroupStore: TaskGroupStore) {
         super();
         this.accountGroupStore = accountGroupStore;
         this.settingsStore = settingsStore;
+        this.taskGroupStore = taskGroupStore;
     }
 
     protected async loadFromDB(): Promise<void> {
@@ -51,6 +54,17 @@ export class AccountGroupManager extends Manager {
         });
 
         ipcMain.on(AccountGroupChannel.removeAccountGroup, (event, groupId: string) => {
+            const accountGroup = this.accountGroupStore.getAccountGroup(groupId);
+
+            accountGroup.getAllAccounts().forEach((account) => {
+                const taskId = account.taskId;
+                // If account is associated with task, then remove relation
+                if (taskId) {
+                    const task = this.taskGroupStore.getTaskGroup(taskId.groupId).getTask(taskId.id);
+                    task.account = null;
+                }
+            });
+
             const accountGroups = this.accountGroupStore.removeAccountGroup(groupId);
             if (accountGroups) {
                 event.reply(AccountGroupChannel.accountGroupsUpdated, accountGroups);
@@ -84,25 +98,7 @@ export class AccountGroupManager extends Manager {
         });
 
         ipcMain.on(AccountGroupChannel.addAccountToGroup, (event, groupId: string, accountDatas: AccountFormData[]) => {
-            const accounts = accountDatas.map((accountData) => {
-                const account: IAccount = {
-                    email: accountData.email,
-                    groupId: groupId,
-                    id: accountData.id,
-                    logInPage: '',
-                    loggedIn: false,
-                    loginProxy: accountData.loginProxy,
-                    name: accountData.name,
-                    password: accountData.password,
-                    settings: this.settingsStore.getSettings(),
-                    taskId: null,
-                    status: { message: 'Ready', level: 'info' },
-                };
-
-                return account;
-            });
-
-            const accountList = this.accountGroupStore.addAccountToGroup(groupId, accounts);
+            const accountList = this.accountGroupStore.addAccountToGroup(groupId, accountDatas);
 
             if (accountList) {
                 event.reply(AccountGroupChannel.accountsUpdated, accountList);
@@ -112,7 +108,19 @@ export class AccountGroupManager extends Manager {
         });
 
         ipcMain.on(AccountGroupChannel.removeAccountFromGroup, (event, groupId: string, accountIds: string[]) => {
+            const accountGroup = this.accountGroupStore.getAccountGroup(groupId);
+
+            for (const accountId of accountIds) {
+                const taskId = accountGroup.getAccount(accountId).taskId;
+
+                if (taskId) {
+                    const task = this.taskGroupStore.getTaskGroup(taskId.groupId).getTask(taskId.id);
+                    task.account = null;
+                }
+            }
+
             const accountList = this.accountGroupStore.removeAccountFromGroup(groupId, accountIds);
+
             if (accountList) {
                 event.reply(AccountGroupChannel.accountsUpdated, accountList);
             } else {
@@ -121,6 +129,17 @@ export class AccountGroupManager extends Manager {
         });
 
         ipcMain.on(AccountGroupChannel.removeAllAccountsFromGroup, (event, groupId: string) => {
+            const accountGroup = this.accountGroupStore.getAccountGroup(groupId);
+
+            accountGroup.getAllAccounts().forEach((account) => {
+                const taskId = account.taskId;
+
+                if (taskId) {
+                    const task = this.taskGroupStore.getTaskGroup(taskId.groupId).getTask(taskId.id);
+                    task.account = null;
+                }
+            });
+
             const accountList = this.accountGroupStore.removeAllAccountsFromGroup(groupId);
             if (accountList) {
                 event.reply(AccountGroupChannel.accountsUpdated, accountList);

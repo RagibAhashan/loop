@@ -119,18 +119,18 @@ app.whenReady().then(async () => {
     const proxyFactory = new ProxyFactory();
     proxyGroupStore = new ProxyGroupStore(appDatabase, proxyFactory, proxyGroupFactory);
 
-    const taskGroupFactory = new TaskGroupFactory();
-    const taskFactory = new TaskFactory(mainWindow);
-    taskGroupStore = new TaskGroupStore(appDatabase, taskGroupFactory, taskFactory);
-
     const accountGroupFactory = new AccountGroupFactory();
-    const accountFactory = new AccountFactory(mainWindow);
-    accountGroupStore = new AccountGroupStore(appDatabase, accountGroupFactory, accountFactory, taskGroupStore);
+    const accountFactory = new AccountFactory(mainWindow, settingsStore);
+    accountGroupStore = new AccountGroupStore(appDatabase, accountGroupFactory, accountFactory);
+
+    const taskGroupFactory = new TaskGroupFactory();
+    const taskFactory = new TaskFactory(mainWindow, proxyGroupStore, profileGroupStore, accountGroupStore);
+    taskGroupStore = new TaskGroupStore(appDatabase, taskGroupFactory, taskFactory);
 
     settingsManager = new SettingsManager(settingsStore);
     proxySetManager = new ProxyGroupManager(proxyGroupStore, taskGroupStore);
     taskGroupManager = new TaskGroupManager(taskGroupStore, profileGroupStore, accountGroupStore, proxyGroupStore);
-    accountGroupManager = new AccountGroupManager(accountGroupStore, settingsStore);
+    accountGroupManager = new AccountGroupManager(accountGroupStore, settingsStore, taskGroupStore);
     profileGroupManager = new ProfileGroupManager(profileGroupStore, creditCardFactory);
 
     await settingsManager.ready();

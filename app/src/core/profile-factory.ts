@@ -1,6 +1,6 @@
 import { CreditCardFactory } from './credit-card-factory';
 import { debug } from './log';
-import { IProfile, Profile } from './profile';
+import { Profile, ProfileFormData } from './profile';
 
 const log = debug.extend('ProfileFactory');
 
@@ -10,7 +10,7 @@ export class ProfileFactory {
     constructor(creditCardFactory: CreditCardFactory) {
         this.creditCardFactory = creditCardFactory;
     }
-    public createProfile(groupName: string, profile: IProfile): Profile {
+    public createProfile(groupName: string, profile: ProfileFormData): Profile {
         // expiryMonth: string, expiryYear: string, cvc: string, cardHolderName: string
         const cc = this.creditCardFactory.createCreditCard(profile.payment);
 

@@ -1,7 +1,6 @@
 import { Account } from '@core/account';
 import { Profile } from '@core/profile';
 import { ProxyGroup } from '@core/proxy-group';
-import { ProxyGroupStore } from '@core/proxy-group-store';
 import { TaskEmittedEvents } from '@core/task';
 import { TASK_SUCCESS } from '../../common/Constants';
 import { REGIONS } from '../../common/Regions';
@@ -52,9 +51,8 @@ export class WalmartUSTask extends WalmartTask {
         productQuantity: number,
         taskGroupName: string,
         requestInstance: RequestInstance,
-        proxyStore: ProxyGroupStore,
     ) {
-        super(id, retryDelay, productIdentifier, userProfile, proxySet, account, productQuantity, taskGroupName, requestInstance, proxyStore);
+        super(id, retryDelay, productIdentifier, userProfile, proxySet, account, productQuantity, taskGroupName, requestInstance);
     }
 
     private isSoldByWalmartAndInStock(product: any): boolean {

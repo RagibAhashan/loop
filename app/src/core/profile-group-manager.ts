@@ -4,7 +4,7 @@ import { CreditCardFactory } from './credit-card-factory';
 import { ProfileGroupChannel } from './ipc-channels';
 import { debug } from './log';
 import { Manager } from './manager';
-import { IProfile, ProfileFormData, ProfileViewData, UserProfile } from './profile';
+import { ProfileFormData, ProfileViewData, UserProfile } from './profile';
 import { ProfileGroup, ProfileGroupViewData } from './profile-group';
 import { ProfileGroupStore } from './profile-group-store';
 
@@ -115,21 +115,7 @@ export class ProfileGroupManager extends Manager {
         });
 
         ipcMain.on(ProfileGroupChannel.addProfileToGroup, (event, groupId: string, profileDatas: ProfileFormData[]) => {
-            const profiles = profileDatas.map((profileData) => {
-                const profile: IProfile = {
-                    billing: profileData.billing,
-                    id: profileData.id,
-                    shipping: profileData.shipping,
-                    name: profileData.name,
-                    payment: this.creditCardFactory.createCreditCard(profileData.payment), // TODO review
-                    groupId: groupId,
-                    taskId: null,
-                };
-
-                return profile;
-            });
-
-            const profilesView = this.profileGroupStore.addProfileToGroup(groupId, profiles);
+            const profilesView = this.profileGroupStore.addProfileToGroup(groupId, profileDatas);
 
             if (profilesView) {
                 event.reply(ProfileGroupChannel.profilesUpdated, profilesView);

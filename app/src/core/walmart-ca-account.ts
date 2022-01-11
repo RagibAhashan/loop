@@ -1,5 +1,5 @@
 import { Account } from './account';
-import { AccountEmittedEvents, AccountStatus } from './models/account';
+import { AccountStatus } from './models/account';
 import { Settings } from './settings';
 
 export class WalmartCAAccount extends Account {
@@ -18,15 +18,17 @@ export class WalmartCAAccount extends Account {
     }
 
     public async logIn(): Promise<void> {
-        this.emit(AccountEmittedEvents.Status, { level: 'info', message: 'Opening browser...' } as AccountStatus);
+        this.emitStatus('info', 'Opening browser...');
 
         const browser = await this.openLoginPage();
 
-        this.emit(AccountEmittedEvents.Status, { level: 'info', message: 'Waiting for login' } as AccountStatus);
+        this.emitStatus('info', 'Waiting for login');
 
-        await new Promise((r) => setTimeout(r, 2000));
+        await new Promise((r) => setTimeout(r, 10000));
 
         this.loggedIn = true;
+
+        this.emitStatus('success', 'Logged in');
 
         browser.close();
     }

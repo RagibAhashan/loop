@@ -6,7 +6,6 @@ import { AccountGroupFactory } from './account-group-factory';
 import { AppDatabase } from './app-database';
 import { debug } from './log';
 import { AccountFormData, AccountViewData, IAccount } from './models/account';
-import { TaskGroupStore } from './task-group-store';
 
 const log = debug.extend('AccountGroupStore');
 export type AccountGroupMap = Map<string, AccountGroup>;
@@ -15,14 +14,12 @@ export class AccountGroupStore {
     private accountGroupMap: AccountGroupMap;
     private accountGroupFactory: AccountGroupFactory;
     private accountFactory: AccountFactory;
-    private taskGroupStore: TaskGroupStore;
     private database: AppDatabase;
 
-    constructor(database: AppDatabase, accountGroupFactory: AccountGroupFactory, accountFactory: AccountFactory, taskGroupStore: TaskGroupStore) {
+    constructor(database: AppDatabase, accountGroupFactory: AccountGroupFactory, accountFactory: AccountFactory) {
         this.accountGroupMap = new Map();
         this.accountGroupFactory = accountGroupFactory;
         this.accountFactory = accountFactory;
-        this.taskGroupStore = taskGroupStore;
         this.database = database;
     }
 
@@ -35,10 +32,15 @@ export class AccountGroupStore {
         for (const accountGroup of accountGroups) {
             this.addAccountGroup(accountGroup.id, accountGroup.name, accountGroup.storeType);
 
-            this.addAccountToGroup(
-                accountGroup.id,
-                accounts.filter((account) => account.groupId === accountGroup.id),
-            );
+            // TODO review this logic
+            const accountDatas: AccountFormData[] = [];
+
+            accounts.forEach((account) => {
+                const accountFormData = this.accountInterfaceToFormData(account);
+                if (account.groupId === accountGroup.id) accountDatas.push(accountFormData);
+            });
+
+            this.addAccountToGroup(accountGroup.id, accountDatas);
         }
 
         log('AccountGroup Loaded');
@@ -83,17 +85,6 @@ export class AccountGroupStore {
             return null;
         }
 
-        const accountGroup = this.getAccountGroup(groupId);
-
-        accountGroup.getAllAccounts().forEach((account) => {
-            const taskId = account.taskId;
-            // If account is associated with task, then remove relation
-            if (taskId) {
-                const task = this.taskGroupStore.getTaskGroup(taskId.groupId).getTask(taskId.id);
-                task.account = null;
-            }
-        });
-
         this.accountGroupMap.delete(groupId);
 
         return this.getAllAccountGroupsViewData();
@@ -129,11 +120,11 @@ export class AccountGroupStore {
         return accounts;
     }
 
-    public addAccountToGroup(groupId: string, accounts: IAccount[]): AccountViewData[] {
+    public addAccountToGroup(groupId: string, accountDatas: AccountFormData[]): AccountViewData[] {
         const accountGroup = this.getAccountGroup(groupId);
 
-        for (const account of accounts) {
-            const newAccount = this.accountFactory.createAccount(groupId, account);
+        for (const accountData of accountDatas) {
+            const newAccount = this.accountFactory.createAccount(groupId, accountData);
             accountGroup.addAccount(newAccount);
         }
 
@@ -144,13 +135,6 @@ export class AccountGroupStore {
         const accountGroup = this.getAccountGroup(groupId);
 
         for (const id of accountIds) {
-            const taskId = accountGroup.getAccount(id).taskId;
-
-            if (taskId) {
-                const task = this.taskGroupStore.getTaskGroup(taskId.groupId).getTask(taskId.id);
-                task.account = null;
-            }
-
             accountGroup.removeAccount(id);
         }
 
@@ -159,15 +143,6 @@ export class AccountGroupStore {
 
     public removeAllAccountsFromGroup(groupId: string): AccountViewData[] {
         const accountGroup = this.getAccountGroup(groupId);
-
-        accountGroup.getAllAccounts().forEach((account) => {
-            const taskId = account.taskId;
-
-            if (taskId) {
-                const task = this.taskGroupStore.getTaskGroup(taskId.groupId).getTask(taskId.id);
-                task.account = null;
-            }
-        });
 
         accountGroup.removeAllAccounts();
 

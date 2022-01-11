@@ -62,7 +62,7 @@ const Task: React.FunctionComponent<Props> = (props) => {
 
                 <div className="task-item">{task.profileName}</div>
 
-                <div className="task-item">{task.proxySetName}</div>
+                <div className="task-item">{task.proxyGroupName}</div>
 
                 <div className="task-item">{task.accountName}</div>
 

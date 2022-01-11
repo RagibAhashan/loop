@@ -1,7 +1,7 @@
 import EventEmitter from 'events';
-import * as puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer-core';
 import { EntityId } from './entity-id';
-import { AccountStatus, AccountViewData, IAccount } from './models/account';
+import { AccountEmittedEvents, AccountStatus, AccountStatusLevel, AccountViewData, IAccount } from './models/account';
 import { Settings } from './settings';
 import { Viewable } from './viewable';
 
@@ -49,16 +49,20 @@ export abstract class Account extends EventEmitter implements IAccount, Viewable
     abstract logIn(): void;
 
     protected async openLoginPage(): Promise<puppeteer.Browser> {
-        const browser = await puppeteer.launch({ headless: false, defaultViewport: null, executablePath: this.settings.browserPath });
+        try {
+            const browser = await puppeteer.launch({ headless: false, defaultViewport: null, executablePath: this.settings.browserPath });
 
-        browser.on('disconnected', async () => {
-            console.log('browser disconnected');
-            console.log('cookies', await page.cookies());
-        });
-        const page = await browser.newPage();
-        await page.goto(this.logInPage);
-
-        return browser;
+            browser.on('disconnected', async () => {
+                console.log('browser disconnected');
+                console.log('cookies', await page.cookies());
+            });
+            const page = await browser.newPage();
+            await page.goto(this.logInPage);
+            return browser;
+        } catch (error) {
+            this.emitStatus('error', 'Could not open browser');
+            throw new Error(error);
+        }
     }
 
     public logOut(): void {
@@ -68,5 +72,10 @@ export abstract class Account extends EventEmitter implements IAccount, Viewable
 
     public getViewData(): AccountViewData {
         return { id: this.id, name: this.name, email: this.email, groupId: this.groupId, status: this.status, loggedIn: this.loggedIn };
+    }
+
+    protected emitStatus(level: AccountStatusLevel, message: string): void {
+        this.emit(AccountEmittedEvents.Status, { level, message });
+        this.status = { level, message };
     }
 }

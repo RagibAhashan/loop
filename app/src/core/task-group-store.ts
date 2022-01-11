@@ -1,7 +1,7 @@
 import { StoreType } from '@constants/stores';
 import { AppDatabase } from './app-database';
 import { debug } from './log';
-import { ITask, Task, TaskViewData } from './task';
+import { ITask, Task, TaskFormData, TaskViewData } from './task';
 import { TaskFactory } from './task-factory';
 import { ITaskGroup, TaskGroup, TaskGroupViewData } from './task-group';
 import { TaskGroupFactory } from './task-group-factory';
@@ -32,21 +32,33 @@ export class TaskGroupStore {
         for (const taskGroup of taskGroups) {
             this.addTaskGroup(taskGroup.id, taskGroup.name, taskGroup.storeType);
 
-            // // TODO Review this logic
-            // const taskDatas: TaskFormData[] = [];
+            // TODO Review this logic
+            const taskDatas: TaskFormData[] = [];
 
-            // tasks.forEach((task) => {
-            //     const taskFormData = this.taskInterfaceToTaskForm(task);
-            //     if (task.groupId === taskGroup.id) taskDatas.push(taskFormData);
-            // });
+            tasks.forEach((task) => {
+                const taskFormData = this.taskInterfaceToTaskForm(task);
+                if (task.groupId === taskGroup.id) taskDatas.push(taskFormData);
+            });
 
-            this.addTaskToGroup(
-                taskGroup.id,
-                tasks.filter((task) => task.groupId === taskGroup.id),
-            );
+            this.addTaskToGroup(taskGroup.id, taskDatas);
         }
 
         log('TaskGroup Loaded');
+    }
+
+    /* Helper task to be used when getting an ITask from the DB and want to reuse the addTaskToGroup method
+    which takes a TaskFormData
+    */
+    private taskInterfaceToTaskForm(task: ITask): TaskFormData {
+        return {
+            account: task.account ? { groupId: task.account.groupId, id: task.account.id } : null,
+            profile: { groupId: task.userProfile.groupId, id: task.userProfile.id },
+            proxyGroupId: task.proxyGroup ? task.proxyGroup.id : '',
+            productIdentifier: task.productIdentifier,
+            id: task.id,
+            productQuantity: task.productQuantity,
+            retryDelay: task.retryDelay,
+        };
     }
 
     public async saveToDB(): Promise<boolean> {
@@ -110,7 +122,7 @@ export class TaskGroupStore {
         return tasks;
     }
 
-    public addTaskToGroup(groupId: string, tasks: ITask[]): TaskViewData[] {
+    public addTaskToGroup(groupId: string, tasks: TaskFormData[]): TaskViewData[] {
         const taskGroup = this.getTaskGroup(groupId);
 
         for (const task of tasks) {

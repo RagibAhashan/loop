@@ -1,3 +1,4 @@
+import { EntityId } from './entity-id';
 import { Proxy, ProxyViewData } from './proxy';
 import { RingBuffer } from './ring-buffer';
 import { Viewable } from './viewable';
@@ -44,8 +45,9 @@ export class ProxyGroup implements IProxyGroup, Viewable<ProxyGroupViewData> {
         return { id: this.id, name: this.name, proxies: this.getAllProxiesViewData() };
     }
 
-    public pickProxy(): Proxy {
+    public pickProxy(taskId: EntityId): Proxy {
         const proxy = this.proxiesRingBuffer.next();
+        proxy.setTaskId(taskId);
         return proxy;
     }
 

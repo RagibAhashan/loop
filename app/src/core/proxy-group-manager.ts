@@ -1,4 +1,4 @@
-import { IProxy, ProxyFormData } from '@core/proxy';
+import { ProxyFormData } from '@core/proxy';
 import { ipcMain } from 'electron';
 import { ProxyGroupChannel } from './ipc-channels';
 import { debug } from './log';
@@ -91,22 +91,7 @@ export class ProxyGroupManager extends Manager {
         });
 
         ipcMain.on(ProxyGroupChannel.addProxyToSet, (event, setId: string, proxyDatas: ProxyFormData[]) => {
-            const proxies = proxyDatas.map((proxyData) => {
-                const proxySplit = proxyData.proxy.split(':');
-                const proxy: IProxy = {
-                    hostname: proxySplit[0],
-                    host: '',
-                    port: proxySplit[1],
-                    user: proxySplit[2],
-                    password: proxySplit[3],
-                    id: proxyData.id,
-                    groupId: setId,
-                    taskId: null,
-                };
-                return proxy;
-            });
-
-            const proxyList = this.proxyGroupStore.addProxyToSet(setId, proxies);
+            const proxyList = this.proxyGroupStore.addProxyToSet(setId, proxyDatas);
 
             if (proxyList) {
                 event.reply(ProxyGroupChannel.proxiesUpdated, proxyList);

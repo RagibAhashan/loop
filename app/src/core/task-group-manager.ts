@@ -1,4 +1,4 @@
-import { ITask, TaskFormData, TaskViewData } from '@core/task';
+import { TaskFormData, TaskViewData } from '@core/task';
 import { ipcMain } from 'electron';
 import { StoreType } from '../constants/stores';
 import { AccountGroupStore } from './account-group-store';
@@ -140,33 +140,7 @@ export class TaskGroupManager extends Manager {
         });
 
         ipcMain.on(TaskGroupChannel.addTaskToGroup, (event, groupId: string, taskDatas: TaskFormData[]) => {
-            const tasks: ITask[] = [];
-
-            for (const taskData of taskDatas) {
-                const userProfile = this.profileGroupStore.getProfileGroup(taskData.profile.groupId).getProfile(taskData.profile.id);
-
-                if (userProfile) userProfile.setTaskId({ groupId: groupId, id: taskData.id });
-
-                const proxySet = taskData.groupId ? this.proxyGroupStore.getProxyGroup(taskData.groupId) : null;
-                const account = taskData.account
-                    ? this.accountGroupStore.getAccountGroup(taskData.account.groupId).getAccount(taskData.account.id)
-                    : null;
-
-                tasks.push({
-                    productIdentifier: taskData.productIdentifier,
-                    productQuantity: taskData.productQuantity,
-                    retryDelay: taskData.retryDelay,
-                    id: taskData.id,
-                    account: account,
-                    userProfile: userProfile,
-                    proxySet: proxySet,
-                    groupId: groupId,
-                    isRunning: false,
-                    status: { level: 'idle', message: 'Idle' },
-                });
-            }
-
-            const taskList = this.taskGroupStore.addTaskToGroup(groupId, tasks);
+            const taskList = this.taskGroupStore.addTaskToGroup(groupId, taskDatas);
 
             if (taskList) {
                 event.reply(TaskGroupChannel.tasksUpdated, taskList);

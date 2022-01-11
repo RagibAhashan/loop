@@ -31,7 +31,7 @@ const AddTaskAction: React.FunctionComponent<Props> = (props) => {
                 id: generateId(taskPrefix),
                 productIdentifier: task.productIdentifier,
                 productQuantity: task.productQuantity,
-                groupId: task.groupId,
+                proxyGroupId: task.proxyGroupId,
                 retryDelay: task.retryDelay,
                 account: task.account ? { groupId: task.account.split(':')[0], id: task.account.split(':')[1] } : null,
                 profile: { groupId: task.profile.split(':')[0], id: task.profile.split(':')[1] },

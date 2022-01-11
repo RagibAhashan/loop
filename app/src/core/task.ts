@@ -32,7 +32,7 @@ export const enum TaskEmittedEvents {
 export interface TaskFormData {
     id: string;
     profile: { groupId: string; id: string };
-    groupId: string;
+    proxyGroupId: string;
     account: { groupId: string; id: string } | null;
     productIdentifier: string;
     productQuantity: number;
@@ -43,7 +43,7 @@ export interface TaskViewData {
     id: string;
     productIdentifier: string; // can be either SKU, URL, etc
     accountName: string;
-    proxySetName: string;
+    proxyGroupName: string;
     profileName: string;
     retryDelay: number;
     status: TaskStatus;
@@ -55,7 +55,7 @@ export interface ITask {
     retryDelay: number;
     productIdentifier: string;
     userProfile: Profile;
-    proxySet: ProxyGroup | null;
+    proxyGroup: ProxyGroup | null;
     account: Account | null;
     productQuantity: number;
     isRunning: boolean;
@@ -75,7 +75,7 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
     public id: string;
     public userProfile: Profile;
     public productIdentifier: string;
-    public proxySet: ProxyGroup | null;
+    public proxyGroup: ProxyGroup | null;
     public account: Account | null;
     public isRunning: boolean;
     public status: TaskStatus;
@@ -88,12 +88,11 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
         retryDelay: number,
         productIdentifier: string,
         userProfile: Profile,
-        proxySet: ProxyGroup | null,
+        proxyGroup: ProxyGroup | null,
         account: Account | null,
         productQuantity: number,
         groupId: string,
         requestInstance: RequestInstance,
-        proxyStore: ProxyGroupStore,
     ) {
         super();
         this.requestInstance = requestInstance;
@@ -101,11 +100,10 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
         this.cancel = false;
         this.cancelTimeout = () => {};
         this.id = id;
-        this.proxyStore = proxyStore;
         this.groupId = groupId;
         this.retryDelay = retryDelay;
         this.status = { level: 'idle', message: 'Idle' };
-        this.proxySet = proxySet;
+        this.proxyGroup = proxyGroup;
         this.productIdentifier = productIdentifier;
         this.account = account;
         this.userProfile = userProfile;
@@ -113,8 +111,8 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
     }
 
     public async doTask(): Promise<void> {
-        if (this.proxySet && !this.proxy) {
-            this.proxy = this.proxyStore.pickProxyFromSet(this.proxySet.id, { id: this.id, groupId: this.groupId });
+        if (this.proxyGroup && !this.proxy) {
+            this.proxy = this.proxyGroup.pickProxy({ id: this.id, groupId: this.groupId });
         }
 
         return;
@@ -129,7 +127,7 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
             status: this.status,
             isRunning: this.isRunning,
             productIdentifier: this.productIdentifier,
-            proxySetName: this.proxySet ? this.proxySet.name : 'None',
+            proxyGroupName: this.proxyGroup ? this.proxyGroup.name : 'None',
             accountName: this.account ? this.account.name : 'None',
         };
     }

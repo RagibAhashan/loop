@@ -1,7 +1,6 @@
 import { Account } from '@core/account';
 import { Profile } from '@core/profile';
 import { ProxyGroup } from '@core/proxy-group';
-import { ProxyGroupStore } from '@core/proxy-group-store';
 import { RequestInstance } from '@core/request-instance';
 import { Task, TaskViewData } from '@core/task';
 import { Viewable } from '@core/viewable';
@@ -17,9 +16,8 @@ export abstract class WalmartTask extends Task implements Viewable<TaskViewData>
         productQuantity: number,
         taskGroupName: string,
         requestInstance: RequestInstance,
-        proxyStore: ProxyGroupStore,
     ) {
-        super(id, retryDelay, productIdentifier, userProfile, proxySet, account, productQuantity, taskGroupName, requestInstance, proxyStore);
+        super(id, retryDelay, productIdentifier, userProfile, proxySet, account, productQuantity, taskGroupName, requestInstance);
 
         this.createErrorInterceptor();
     }

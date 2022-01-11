@@ -14,7 +14,7 @@ export type TaskFormValues = {
     productIdentifier: string;
     profile: GroupEntityID; // groupId:profileId
     account: GroupEntityID;
-    groupId: string;
+    proxyGroupId: string;
     retryDelay: number;
     productQuantity: number;
     quantity: number;
@@ -57,7 +57,12 @@ export const NewTaskModal: React.FunctionComponent<Props> = (props) => {
                     </div>
 
                     <div>
-                        <ProxySelectDropdown error={errors.groupId} defaultValue={''} proxyGroups={proxyGroups} register={register('groupId')} />
+                        <ProxySelectDropdown
+                            error={errors.proxyGroupId}
+                            defaultValue={''}
+                            proxyGroups={proxyGroups}
+                            register={register('proxyGroupId')}
+                        />
                     </div>
 
                     <div>

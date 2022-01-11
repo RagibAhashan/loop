@@ -11,6 +11,7 @@ const AccountActions: React.FunctionComponent<Props> = (props) => {
     const { account } = props;
 
     const handleLogin = () => {
+        console.log('login ');
         window.ElectronBridge.send(AccountGroupChannel.logIn, account.groupId, account.id);
     };
 
@@ -19,11 +20,11 @@ const AccountActions: React.FunctionComponent<Props> = (props) => {
     const renderLoginButton = () => {
         return account.loggedIn ? (
             <div>
-                <Button onClick={handleLogin} icon={<LoginOutlined />} size="small" />
+                <Button onClick={handleLogout} icon={<LogoutOutlined />} size="small" />
             </div>
         ) : (
             <div>
-                <Button onClick={handleLogout} icon={<LogoutOutlined />} size="small" />
+                <Button onClick={handleLogin} icon={<LoginOutlined />} size="small" />
             </div>
         );
     };

@@ -1,7 +1,6 @@
 import { Account } from '@core/account';
 import { Profile } from '@core/profile';
 import { ProxyGroup } from '@core/proxy-group';
-import { ProxyGroupStore } from '@core/proxy-group-store';
 import { RequestInstance } from '@core/request-instance';
 import { TaskEmittedEvents } from '@core/task';
 import { COUNTRY, REGIONS } from '../../common/Regions';
@@ -37,9 +36,8 @@ export class WalmartCATask extends WalmartTask {
         productQuantity: number,
         taskGroupName: string,
         requestInstance: RequestInstance,
-        proxyStore: ProxyGroupStore,
     ) {
-        super(id, retryDelay, productIdentifier, userProfile, proxySet, account, productQuantity, taskGroupName, requestInstance, proxyStore);
+        super(id, retryDelay, productIdentifier, userProfile, proxySet, account, productQuantity, taskGroupName, requestInstance);
     }
 
     async doTask(): Promise<void> {
