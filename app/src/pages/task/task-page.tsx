@@ -1,5 +1,5 @@
+import TaskGroupContainer from '@components/task-group/task-group-container';
 import TaskContainer from '@components/task/task-container';
-import TaskGroupContainer from '@components/taskgroup/taskgroup-container';
 import React from 'react';
 
 const TaskPage = () => {

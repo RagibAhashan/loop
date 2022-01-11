@@ -1,6 +1,6 @@
-import { AccountViewData } from '@core/account';
 import { AccountGroupViewData } from '@core/account-group';
 import { AccountGroupChannel } from '@core/ipc-channels';
+import { AccountViewData } from '@core/models/account';
 import { Button, Typography } from 'antd';
 import React, { useEffect, useState } from 'react';
 import AccountHeaders from './account-headers';
@@ -33,6 +33,7 @@ const AccountContainer: React.FunctionComponent = () => {
     };
 
     const handleOnAccountsUpdated = (_, accounts: AccountViewData[]) => {
+        console.log('account updated', accounts);
         setAccountContainerState((prev) => {
             return { accounts: accounts, selectedAccountGroup: prev.selectedAccountGroup };
         });

@@ -2,7 +2,7 @@ import { CreditCardFormData } from '@core/credit-card';
 import { generateId, getCountriesOptions, getMonths, getRegionsOptions, getYears } from '@core/helpers';
 import { ProfileGroupChannel } from '@core/ipc-channels';
 import { ProfileFormData, profilePrefix, UserProfile } from '@core/profile';
-import { ProfileGroupViewData } from '@core/profilegroup';
+import { ProfileGroupViewData } from '@core/profile-group';
 import { Button, Checkbox, Divider, Form, Input, message, Modal, Select, Tabs } from 'antd';
 import React, { useState } from 'react';
 import Cards from 'react-credit-cards';

@@ -25,7 +25,7 @@ export interface IProxy {
     user: string;
     password: string;
     host: string;
-    proxySetId: string;
+    groupId: string;
     taskId: EntityId | null;
 }
 export class Proxy implements IProxy, Viewable<ProxyViewData> {
@@ -35,15 +35,15 @@ export class Proxy implements IProxy, Viewable<ProxyViewData> {
     user: string;
     password: string;
     host: string;
-    proxySetId: string;
+    groupId: string;
     httpsAgent: HttpsProxyAgent;
     taskId: EntityId | null;
 
-    constructor(id: string, proxySetId: string, hostname: string, port: string, user?: string, password?: string) {
+    constructor(id: string, groupId: string, hostname: string, port: string, user?: string, password?: string) {
         this.id = id;
         this.hostname = hostname;
         this.port = port;
-        this.proxySetId = proxySetId;
+        this.groupId = groupId;
         this.host = `${this.hostname}:${this.port}`;
 
         let auth;

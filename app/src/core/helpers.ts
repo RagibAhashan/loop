@@ -1,5 +1,7 @@
 import { Country, getRegions } from '@common/Regions';
 import { v4 as uuid } from 'uuid';
+import { AccountStatusLevel } from './models/account';
+import { TaskStatusLevel } from './task';
 
 export const generateId = (prefix?: string): string => {
     const id = uuid().replace(/-/g, '');
@@ -53,4 +55,35 @@ export const getRegionsOptions = (country: string | undefined): { value: string;
     return Object.keys(getRegions(country as Country)).map((region) => {
         return { value: region, label: region };
     });
+};
+
+export const taskStatusColor = (level: TaskStatusLevel) => {
+    switch (level) {
+        case 'idle':
+            return '#faa61a';
+        case 'info':
+            return 'white';
+        case 'success':
+            return 'green';
+        case 'error':
+            return '#ff001e';
+        case 'cancel':
+        case 'fail':
+            return '#f7331e';
+        default:
+            return 'white';
+    }
+};
+
+export const accountStatusColor = (level: AccountStatusLevel) => {
+    switch (level) {
+        case 'info':
+            return 'white';
+        case 'success':
+            return 'green';
+        case 'error':
+            return '#ff001e';
+        default:
+            return 'white';
+    }
 };

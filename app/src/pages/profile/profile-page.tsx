@@ -1,5 +1,5 @@
+import ProfileGroupContainer from '@components/profile-group/profile-group-container';
 import ProfileContainer from '@components/profile/profile-container';
-import ProfileGroupContainer from '@components/profilegroup/profilegroup-container';
 import React from 'react';
 
 const ProfilePage = () => {

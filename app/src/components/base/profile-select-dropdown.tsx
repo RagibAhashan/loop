@@ -1,4 +1,4 @@
-import { ProfileGroupViewData } from '@core/profilegroup';
+import { ProfileGroupViewData } from '@core/profile-group';
 import React from 'react';
 interface Props {
     profileGroups: ProfileGroupViewData[];

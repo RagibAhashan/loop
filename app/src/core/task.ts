@@ -1,14 +1,14 @@
 import { Profile } from '@core/profile';
-import { Status, StatusLevel } from '@interfaces/TaskInterfaces';
 import { AxiosInstance } from 'axios';
 import { EventEmitter } from 'events';
 import { Account } from './account';
 import { MESSAGES } from './constants/Constants';
 import { CookieJar } from './cookie-jar';
+import { Status } from './interfaces/base';
 import { debug } from './log';
 import { Proxy } from './proxy';
-import { ProxySet } from './proxyset';
-import { ProxySetManager } from './proxyset-manager';
+import { ProxyGroup } from './proxy-group';
+import { ProxyGroupStore } from './proxy-group-store';
 import { RequestInstance } from './request-instance';
 import { Viewable } from './viewable';
 
@@ -18,6 +18,9 @@ export const taskPrefix = 'task';
 
 const log = debug.extend('Task');
 
+export type TaskStatusLevel = 'error' | 'status' | 'info' | 'idle' | 'cancel' | 'success' | 'fail';
+export type TaskStatus = Status<TaskStatusLevel>;
+
 export const enum TaskEmittedEvents {
     Stopped = 'stopped',
     Status = 'status',
@@ -25,10 +28,11 @@ export const enum TaskEmittedEvents {
     Captcha = 'captcha',
     CaptchaSolved = 'captchaSolved',
 }
+
 export interface TaskFormData {
     id: string;
     profile: { groupId: string; id: string };
-    proxySetId: string;
+    groupId: string;
     account: { groupId: string; id: string } | null;
     productIdentifier: string;
     productQuantity: number;
@@ -42,7 +46,7 @@ export interface TaskViewData {
     proxySetName: string;
     profileName: string;
     retryDelay: number;
-    status: Status;
+    status: TaskStatus;
     isRunning: boolean;
 }
 
@@ -51,12 +55,12 @@ export interface ITask {
     retryDelay: number;
     productIdentifier: string;
     userProfile: Profile;
-    proxySet: ProxySet | null;
+    proxySet: ProxyGroup | null;
     account: Account | null;
     productQuantity: number;
     isRunning: boolean;
-    status: Status;
-    taskGroupId: string;
+    status: TaskStatus;
+    groupId: string;
 }
 
 export abstract class Task extends EventEmitter implements ITask, Viewable<TaskViewData> {
@@ -65,17 +69,17 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
     protected cancel: boolean;
     protected cancelTimeout: () => void;
     protected axiosSession: AxiosInstance;
-    protected proxyManager: ProxySetManager;
+    protected proxyStore: ProxyGroupStore;
 
     public proxy: Proxy | null;
     public id: string;
     public userProfile: Profile;
     public productIdentifier: string;
-    public proxySet: ProxySet | null;
+    public proxySet: ProxyGroup | null;
     public account: Account | null;
     public isRunning: boolean;
-    public status: Status;
-    public taskGroupId: string;
+    public status: TaskStatus;
+    public groupId: string;
     public retryDelay: number;
     public productQuantity: number;
 
@@ -84,12 +88,12 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
         retryDelay: number,
         productIdentifier: string,
         userProfile: Profile,
-        proxySet: ProxySet | null,
+        proxySet: ProxyGroup | null,
         account: Account | null,
         productQuantity: number,
-        taskGroupId: string,
+        groupId: string,
         requestInstance: RequestInstance,
-        proxyManager: ProxySetManager,
+        proxyStore: ProxyGroupStore,
     ) {
         super();
         this.requestInstance = requestInstance;
@@ -97,8 +101,8 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
         this.cancel = false;
         this.cancelTimeout = () => {};
         this.id = id;
-        this.proxyManager = proxyManager;
-        this.taskGroupId = taskGroupId;
+        this.proxyStore = proxyStore;
+        this.groupId = groupId;
         this.retryDelay = retryDelay;
         this.status = { level: 'idle', message: 'Idle' };
         this.proxySet = proxySet;
@@ -110,7 +114,7 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
 
     public async doTask(): Promise<void> {
         if (this.proxySet && !this.proxy) {
-            this.proxy = this.proxyManager.pickProxyFromSet(this.proxySet.id, { id: this.id, groupId: this.taskGroupId });
+            this.proxy = this.proxyStore.pickProxyFromSet(this.proxySet.id, { id: this.id, groupId: this.groupId });
         }
 
         return;
@@ -146,12 +150,12 @@ export abstract class Task extends EventEmitter implements ITask, Viewable<TaskV
         if (this.cancel) throw new Error(CANCEL_ERROR);
     }
 
-    protected emitStatus(message: string, level: StatusLevel): void {
+    protected emitStatus(message: string, level: TaskStatusLevel): void {
         this.status = { message: message, level: level };
         this.emit(TaskEmittedEvents.Status, this.status);
     }
 
-    protected async emitStatusWithDelay(message: string, level: StatusLevel, delay?: number): Promise<any> {
+    protected async emitStatusWithDelay(message: string, level: TaskStatusLevel, delay?: number): Promise<any> {
         this.status = { message: message, level: level };
         this.emit(TaskEmittedEvents.Status, this.status);
         const wait = this.waitError(delay ? delay : this.retryDelay);

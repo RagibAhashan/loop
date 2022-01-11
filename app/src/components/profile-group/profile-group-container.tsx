@@ -1,9 +1,9 @@
 import { ProfileGroupChannel } from '@core/ipc-channels';
-import { ProfileGroupViewData } from '@core/profilegroup';
+import { ProfileGroupViewData } from '@core/profile-group';
 import { Button, message } from 'antd';
 import React, { useEffect, useState } from 'react';
-import AddProfileGroupModal from './add-profilegroup-modal';
-import ProfileGroupList from './profilegroup-list';
+import AddProfileGroupModal from './add-profile-group-modal';
+import ProfileGroupList from './profile-group-list';
 
 const ProfileGroupContainer: React.FunctionComponent = () => {
     const [profileGroups, setProfileGroups] = useState<ProfileGroupViewData[]>([]);

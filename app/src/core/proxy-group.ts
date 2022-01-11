@@ -4,18 +4,18 @@ import { Viewable } from './viewable';
 
 export const proxySetPrefix = 'proxset';
 
-export interface ProxySetFormData {
+export interface ProxyGroupFormData {
     id: string;
     name: string;
 }
 
-export interface ProxySetViewData {
+export interface ProxyGroupViewData {
     id: string;
     name: string;
     proxies: ProxyViewData[];
 }
 
-export interface IProxySet {
+export interface IProxyGroup {
     id: string;
     name: string;
 }
@@ -23,7 +23,7 @@ export interface IProxySet {
 // Map of name (hostname:port) to proxy
 export type ProxyMap = Map<string, Proxy>;
 
-export class ProxySet implements IProxySet, Viewable<ProxySetViewData> {
+export class ProxyGroup implements IProxyGroup, Viewable<ProxyGroupViewData> {
     id: string;
     name: string;
     proxies: ProxyMap;
@@ -40,7 +40,7 @@ export class ProxySet implements IProxySet, Viewable<ProxySetViewData> {
         return Array.from(this.proxies.values());
     }
 
-    public getViewData(): ProxySetViewData {
+    public getViewData(): ProxyGroupViewData {
         return { id: this.id, name: this.name, proxies: this.getAllProxiesViewData() };
     }
 

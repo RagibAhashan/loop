@@ -1,7 +1,7 @@
 // import TaskActions from '@components/actions/task-actions';
 // import TaskStatus from '@components/task-status/task-status';
-// import { ProfileGroupViewData } from '@core/profilegroup';
-// import { ProxySetViewData } from '@core/proxyset';
+// import { ProfileGroupViewData } from '@core/profile-group';
+// import { ProxyGroupViewData } from '@core/proxy-group';
 // import { WalmartTaskViewData } from '@core/walmart/walmart-task';
 // import { Col, Row, Tooltip } from 'antd';
 // import React, { useEffect } from 'react';
@@ -9,12 +9,12 @@
 // interface Props {
 //     task: WalmartTaskViewData;
 //     style: any;
-//     proxySets: ProxySetViewData[];
+//     proxyGroups: ProxyGroupViewData[];
 //     profileGroups: ProfileGroupViewData[];
 //     groupName: string;
 // }
 // const WalmartTask: React.FunctionComponent<Props> = (props) => {
-//     const { task, style, proxySets, profileGroups, groupName } = props;
+//     const { task, style, proxyGroups, profileGroups, groupName } = props;
 
 //     const isRunning = false;
 
@@ -75,7 +75,7 @@
 //                 </Col>
 
 //                 <Col flex="auto" span={2}>
-//                     <TaskActions groupName={groupName} proxySets={proxySets} profileGroups={profileGroups} task={task}></TaskActions>
+//                     <TaskActions groupName={groupName} proxyGroups={proxyGroups} profileGroups={profileGroups} task={task}></TaskActions>
 //                 </Col>
 //             </Row>
 //         </div>

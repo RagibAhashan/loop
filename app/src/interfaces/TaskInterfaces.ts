@@ -23,13 +23,6 @@ export interface WalmartCreditCard {
     phase: string;
 }
 
-export type StatusLevel = 'error' | 'status' | 'info' | 'idle' | 'cancel' | 'success' | 'fail';
-export interface Status {
-    message: string;
-    level: StatusLevel;
-    checkedSize?: string;
-}
-
 // Interfaces that define different captcha provider properties
 // Subject to change
 export interface PxCaptcha {

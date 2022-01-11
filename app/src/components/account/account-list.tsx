@@ -1,5 +1,5 @@
-import { AccountViewData } from '@core/account';
 import { AccountGroupViewData } from '@core/account-group';
+import { AccountViewData } from '@core/models/account';
 import { Empty } from 'antd';
 import React from 'react';
 import { FixedSizeList } from 'react-window';

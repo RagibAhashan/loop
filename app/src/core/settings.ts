@@ -25,6 +25,7 @@ export class Settings implements ISettings, Viewable<SettingsViewData> {
             this.browserPath = settings.browserPath;
             this.discordWebHook = settings.discordWebHook;
             this.publicCheckout = settings.publicCheckout;
+            return;
         }
         this.browserPath = '';
         this.discordWebHook = '';

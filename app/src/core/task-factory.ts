@@ -1,46 +1,34 @@
 import { BrowserWindow } from 'electron';
 import { StoreInfo, STORES, StoreType } from '../constants/stores';
-import { Captcha, Status } from '../interfaces/TaskInterfaces';
+import { Captcha } from '../interfaces/TaskInterfaces';
 import UserAgentProvider from '../services/user-agent-provider';
-import { AccountGroupManager } from './account-group-manager';
 import { debug } from './log';
-import { ProfileGroupManager } from './profilegroup-manager';
-import { ProxySetManager } from './proxyset-manager';
 import { RequestInstance } from './request-instance';
-import { Task, TaskEmittedEvents, TaskFormData } from './task';
+import { ITask, Task, TaskEmittedEvents, TaskStatus } from './task';
 import { WalmartCATask } from './walmart/walmart-ca-task';
 import { WalmartUSTask } from './walmart/walmart-us-task';
 
 const log = debug.extend('TaskFactory');
 export class TaskFactory {
-    private profileGroupManager: ProfileGroupManager;
-    private proxyManager: ProxySetManager;
-    private accountManager: AccountGroupManager;
     // TODO : should not have electron logic here
     // mainWindow is used to send a message to the window on task evens (status, captcha, etc)
     private mainWindow: BrowserWindow;
 
-    constructor(
-        profileGroupManager: ProfileGroupManager,
-        proxyManager: ProxySetManager,
-        accountManager: AccountGroupManager,
-        mainWindow: BrowserWindow,
-    ) {
-        this.profileGroupManager = profileGroupManager;
-        this.proxyManager = proxyManager;
+    constructor(mainWindow: BrowserWindow) {
         this.mainWindow = mainWindow;
-        this.accountManager = accountManager;
     }
-    public createTask(storeType: StoreType, taskData: TaskFormData, taskGroupId: string): Task {
+    public createTask(storeType: StoreType, taskData: ITask, groupId: string): Task {
         let task: Task;
         switch (storeType) {
             case StoreType.WalmartCA:
             case StoreType.WalmartUS:
-                task = this.createWalmartTask(storeType, taskData, taskGroupId);
+                task = this.createWalmartTask(storeType, taskData, groupId);
                 break;
         }
 
-        task.on(TaskEmittedEvents.Status, (message: Status) => {
+        // TODO maybe just use webContents.send directly in Task
+
+        task.on(TaskEmittedEvents.Status, (message: TaskStatus) => {
             this.mainWindow.webContents.send(TaskEmittedEvents.Status + task.id, message);
         });
 
@@ -56,16 +44,10 @@ export class TaskFactory {
         return task;
     }
 
-    private createWalmartTask(storeType: StoreType, taskData: TaskFormData, taskGroupId: string): Task {
+    private createWalmartTask(storeType: StoreType, taskData: ITask, groupId: string): Task {
         const store = STORES[storeType];
 
         const axios = this.createRequestInstance(store);
-        const userProfile = this.profileGroupManager.getProfileGroup(taskData.profile.groupId).getProfile(taskData.profile.id);
-
-        if (userProfile) userProfile.setTaskId({ groupId: taskGroupId, id: taskData.id });
-
-        const proxySet = taskData.proxySetId ? this.proxyManager.getProxySet(taskData.proxySetId) : null;
-        const account = taskData.account ? this.accountManager.getAccountGroup(taskData.account.groupId).getAccount(taskData.account.id) : null;
 
         let wTask;
         switch (storeType) {
@@ -74,13 +56,13 @@ export class TaskFactory {
                     taskData.id,
                     taskData.retryDelay,
                     taskData.productIdentifier,
-                    userProfile,
-                    proxySet,
-                    account,
+                    taskData.userProfile,
+                    taskData.proxySet,
+                    taskData.account,
                     taskData.productQuantity,
-                    taskGroupId,
+                    groupId,
                     axios,
-                    this.proxyManager,
+                    {} as any,
                 );
                 break;
             case StoreType.WalmartUS:
@@ -88,13 +70,13 @@ export class TaskFactory {
                     taskData.id,
                     taskData.retryDelay,
                     taskData.productIdentifier,
-                    userProfile,
-                    proxySet,
-                    account,
+                    taskData.userProfile,
+                    taskData.proxySet,
+                    taskData.account,
                     taskData.productQuantity,
-                    taskGroupId,
+                    groupId,
                     axios,
-                    this.proxyManager,
+                    {} as any,
                 );
                 break;
         }

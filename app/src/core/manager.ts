@@ -1,18 +1,11 @@
-import { AppDatabase } from './app-database';
-
 export abstract class Manager {
-    protected database: AppDatabase;
-
-    constructor(database: AppDatabase) {
-        this.database = database;
-    }
+    constructor() {}
 
     protected abstract loadFromDB(): Promise<void>;
     protected abstract registerListeners(): void;
 
-    public abstract saveToDB(): Promise<boolean>;
-
     public async ready(): Promise<void> {
+        console.log('readying that shit');
         await this.loadFromDB();
         this.registerListeners();
     }

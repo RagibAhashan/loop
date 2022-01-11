@@ -1,6 +1,6 @@
 import { StoreType } from '../constants/stores';
 export interface ProxyState {
-    [proxyName: string]: ProxySet;
+    [proxyName: string]: ProxyGroup;
 }
 
 export interface Stores {
@@ -13,7 +13,7 @@ export interface IStore {
     key: StoreType;
 }
 
-export interface ProxySet {
+export interface ProxyGroup {
     proxies: { [proxyHost: string]: Proxy };
     notUsed: { [proxyHost: string]: Proxy };
 }

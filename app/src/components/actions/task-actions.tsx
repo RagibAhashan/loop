@@ -1,7 +1,7 @@
-import { ProfileGroupViewData } from '@core/profilegroup';
-import { ProxySetViewData } from '@core/proxyset';
+import { ProfileGroupViewData } from '@core/profile-group';
+import { ProxyGroupViewData } from '@core/proxy-group';
 import { TaskViewData } from '@core/task';
-import { TaskGroupViewData } from '@core/taskgroup';
+import { TaskGroupViewData } from '@core/task-group';
 import React from 'react';
 import DeleteTaskAction from './delete-task-action';
 import StartTaskAction from './start-task-action';
@@ -9,13 +9,13 @@ import StopTaskAction from './stop-task-action';
 
 interface Props {
     task: TaskViewData;
-    proxySets: ProxySetViewData[];
+    proxyGroups: ProxyGroupViewData[];
     profileGroups: ProfileGroupViewData[];
     taskGroup: TaskGroupViewData;
 }
 
 const TaskActions: React.FunctionComponent<Props> = (props) => {
-    const { task, profileGroups, proxySets, taskGroup } = props;
+    const { task, profileGroups, proxyGroups, taskGroup } = props;
 
     const isRunning = false;
 
@@ -34,7 +34,7 @@ const TaskActions: React.FunctionComponent<Props> = (props) => {
                 {/* <EditTaskAction
                     EditTaskModalComponent={WalmartEditTaskModal}
                     profileGroups={profileGroups}
-                    proxySets={proxySets}
+                    proxyGroups={proxyGroups}
                     task={task}
                 ></EditTaskAction> */}
             </div>

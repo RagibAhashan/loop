@@ -1,5 +1,5 @@
+import ProxyGroupContainer from '@components/proxy-group/proxy-group-container';
 import ProxyContainer from '@components/proxy/proxy-container';
-import ProxySetContainer from '@components/proxyset/proxyset-container';
 import React from 'react';
 
 const ProxyPage = () => {
@@ -12,7 +12,7 @@ const ProxyPage = () => {
                     backgroundColor: '#2a2e31',
                 }}
             >
-                <ProxySetContainer></ProxySetContainer>
+                <ProxyGroupContainer></ProxyGroupContainer>
             </div>
             <div style={{ height: '100%', width: '100%' }}>
                 <ProxyContainer></ProxyContainer>

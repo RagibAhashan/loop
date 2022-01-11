@@ -1,9 +1,9 @@
 import { TaskGroupChannel } from '@core/ipc-channels';
-import { TaskGroupViewData } from '@core/taskgroup';
+import { TaskGroupViewData } from '@core/task-group';
 import { Button, message } from 'antd';
 import React, { useEffect, useState } from 'react';
-import AddTaskGroupModal from './add-taskgroup-modal';
-import TaskGroupList from './taskgroup-list';
+import AddTaskGroupModal from './add-task-group-modal';
+import TaskGroupList from './task-group-list';
 
 const TaskGroupContainer: React.FunctionComponent = () => {
     const [taskGroups, setTaskGroups] = useState<TaskGroupViewData[]>([]);

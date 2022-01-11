@@ -1,7 +1,7 @@
 import { getStores } from '@constants/stores';
 import { generateId } from '@core/helpers';
 import { TaskGroupChannel } from '@core/ipc-channels';
-import { taskGroupPrefix } from '@core/taskgroup';
+import { taskGroupPrefix } from '@core/task-group';
 import { Button, Input, Modal, Select } from 'antd';
 import React, { useState } from 'react';
 

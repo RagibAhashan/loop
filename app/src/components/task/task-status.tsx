@@ -1,24 +1,6 @@
-import { TaskEmittedEvents, TaskViewData } from '@core/task';
+import { taskStatusColor } from '@core/helpers';
+import { TaskEmittedEvents, TaskStatus, TaskViewData } from '@core/task';
 import React, { useEffect, useState } from 'react';
-import { Status, StatusLevel } from '../../interfaces/TaskInterfaces';
-
-const statusColor = (level: StatusLevel) => {
-    switch (level) {
-        case 'idle':
-            return '#faa61a';
-        case 'info':
-            return 'white';
-        case 'success':
-            return 'green';
-        case 'error':
-            return '#ff001e';
-        case 'cancel':
-        case 'fail':
-            return '#f7331e';
-        default:
-            return 'white';
-    }
-};
 
 interface Props {
     task: TaskViewData;
@@ -26,7 +8,7 @@ interface Props {
 const TaskStatus: React.FunctionComponent<Props> = (props) => {
     const { task } = props;
 
-    const [status, setStatus] = useState<Status>(task.status);
+    const [status, setStatus] = useState<TaskStatus>(task.status);
 
     useEffect(() => {
         console.log('rendereing task status');
@@ -37,20 +19,20 @@ const TaskStatus: React.FunctionComponent<Props> = (props) => {
         };
     }, [task.id]);
 
-    const handleTaskStatusUpdated = (event, status: Status) => {
+    const handleTaskStatusUpdated = (event, status: TaskStatus) => {
         setStatus(status);
     };
 
     return (
         <div style={{ display: 'flex', alignItems: 'center' }}>
             <svg height="6" width="6">
-                <circle cx="3" cy="3" r="3" fill={statusColor(status.level)} />
+                <circle cx="3" cy="3" r="3" fill={taskStatusColor(status.level)} />
             </svg>
             <span
                 style={{
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    color: statusColor(status.level),
+                    color: taskStatusColor(status.level),
                     fontWeight: 500,
                     marginLeft: 5,
                     flex: 1,

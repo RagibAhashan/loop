@@ -2,8 +2,8 @@ import AccountDropdown from '@components/base/account-dropdown';
 import ProfileSelectDropdown from '@components/base/profile-select-dropdown';
 import ProxySelectDropdown from '@components/base/proxy-select-dropdown';
 import { AccountGroupViewData } from '@core/account-group';
-import { ProfileGroupViewData } from '@core/profilegroup';
-import { ProxySetViewData } from '@core/proxyset';
+import { ProfileGroupViewData } from '@core/profile-group';
+import { ProxyGroupViewData } from '@core/proxy-group';
 import { Button, Modal } from 'antd';
 import React from 'react';
 import { useForm } from 'react-hook-form';
@@ -14,14 +14,14 @@ export type TaskFormValues = {
     productIdentifier: string;
     profile: GroupEntityID; // groupId:profileId
     account: GroupEntityID;
-    proxySetId: string;
+    groupId: string;
     retryDelay: number;
     productQuantity: number;
     quantity: number;
 };
 
 export interface Props {
-    proxySets: ProxySetViewData[];
+    proxyGroups: ProxyGroupViewData[];
     profileGroups: ProfileGroupViewData[];
     accountGroups: AccountGroupViewData[];
     isOpen: boolean;
@@ -30,7 +30,7 @@ export interface Props {
 }
 
 export const NewTaskModal: React.FunctionComponent<Props> = (props) => {
-    const { isOpen, setOpen, onAdd, profileGroups, proxySets, accountGroups } = props;
+    const { isOpen, setOpen, onAdd, profileGroups, proxyGroups, accountGroups } = props;
 
     const {
         register,
@@ -57,7 +57,7 @@ export const NewTaskModal: React.FunctionComponent<Props> = (props) => {
                     </div>
 
                     <div>
-                        <ProxySelectDropdown error={errors.proxySetId} defaultValue={''} proxySets={proxySets} register={register('proxySetId')} />
+                        <ProxySelectDropdown error={errors.groupId} defaultValue={''} proxyGroups={proxyGroups} register={register('groupId')} />
                     </div>
 
                     <div>

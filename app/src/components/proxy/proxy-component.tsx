@@ -1,7 +1,7 @@
 import { DeleteFilled } from '@ant-design/icons';
-import { ProxySetChannel } from '@core/ipc-channels';
+import { ProxyGroupChannel } from '@core/ipc-channels';
 import { ProxyViewData } from '@core/proxy';
-import { ProxySetViewData } from '@core/proxyset';
+import { ProxyGroupViewData } from '@core/proxy-group';
 import { Button, Col, Row } from 'antd';
 import React from 'react';
 
@@ -33,11 +33,11 @@ const deleteButton = {
 interface Props {
     proxy: ProxyViewData;
     style: any;
-    selectedProxySet: ProxySetViewData | undefined;
+    selectedProxyGroup: ProxyGroupViewData | undefined;
 }
 // Named it ProxyComponent to avoid name collision with the Proxy class
 const ProxyComponent: React.FunctionComponent<Props> = (props) => {
-    const { proxy, style, selectedProxySet } = props;
+    const { proxy, style, selectedProxyGroup } = props;
 
     const statusColor = (level: string) => {
         switch (level) {
@@ -57,9 +57,9 @@ const ProxyComponent: React.FunctionComponent<Props> = (props) => {
     };
 
     const handleDeleteProxy = () => {
-        if (!selectedProxySet) return;
+        if (!selectedProxyGroup) return;
 
-        window.ElectronBridge.send(ProxySetChannel.removeProxyFromSet, selectedProxySet.id, [proxy.id]);
+        window.ElectronBridge.send(ProxyGroupChannel.removeProxyFromSet, selectedProxyGroup.id, [proxy.id]);
     };
 
     return (

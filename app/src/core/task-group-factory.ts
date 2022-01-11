@@ -1,6 +1,6 @@
 import { StoreType } from '../constants/stores';
 import { debug } from './log';
-import { TaskGroup } from './taskgroup';
+import { TaskGroup } from './task-group';
 
 const log = debug.extend('TaskGroupFactory');
 

@@ -1,5 +1,5 @@
 import { ProxyViewData } from '@core/proxy';
-import { ProxySetViewData } from '@core/proxyset';
+import { ProxyGroupViewData } from '@core/proxy-group';
 import { Empty } from 'antd';
 import React from 'react';
 import { FixedSizeList } from 'react-window';
@@ -7,15 +7,15 @@ import ProxyComponent from './proxy-component';
 
 interface Props {
     proxies: ProxyViewData[];
-    selectedProxySet: ProxySetViewData;
+    selectedProxyGroup: ProxyGroupViewData;
 }
 const ProxyList: React.FunctionComponent<Props> = (props) => {
-    const { proxies, selectedProxySet } = props;
+    const { proxies, selectedProxyGroup } = props;
 
     const renderProxies = (element: any) => {
         const { index, style } = element;
 
-        return <ProxyComponent key={proxies[index].host} proxy={proxies[index]} selectedProxySet={selectedProxySet} style={style} />;
+        return <ProxyComponent key={proxies[index].host} proxy={proxies[index]} selectedProxyGroup={selectedProxyGroup} style={style} />;
     };
 
     return proxies.length === 0 ? (

@@ -1,7 +1,7 @@
 import { TaskGroupChannel } from '@core/ipc-channels';
-import { TaskGroupViewData } from '@core/taskgroup';
+import { TaskGroupViewData } from '@core/task-group';
 import React, { useEffect, useState } from 'react';
-import TaskGroup from './taskgroup';
+import TaskGroup from './task-group';
 
 interface Props {
     taskGroups: TaskGroupViewData[];

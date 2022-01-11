@@ -1,5 +1,5 @@
 // import { IProfile } from '@core/profile';
-// import { IProxySet } from '@core/proxyset';
+// import { IProxyGroup } from '@core/proxy-group';
 // import { ITask } from '@core/task';
 // import { IWalmartTask } from '@core/walmart/walmart-task';
 // import { Col, Form, Input, InputNumber, Modal, Row, Select } from 'antd';
@@ -16,12 +16,12 @@
 //     setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
 //     task: ITask;
 //     massEdit: boolean;
-//     proxySets: IProxySet[];
+//     proxyGroups: IProxyGroup[];
 //     profiles: IProfile[];
 // }
 
 // export const WalmartEditTaskModal: React.FunctionComponent<Props> = (props) => {
-//     const { proxySets, profiles, showModal, setShowModal, task, massEdit } = props;
+//     const { proxyGroups, profiles, showModal, setShowModal, task, massEdit } = props;
 
 //     const [form] = useForm<IWalmartTask>();
 
@@ -29,7 +29,7 @@
 //         return { label: profile.profileName, value: profile.profileName };
 //     });
 
-//     let proxiesOptions = proxySets.map((proxySet) => {
+//     let proxiesOptions = proxyGroups.map((proxySet) => {
 //         return { label: proxySet.name, value: proxySet.name };
 //     });
 

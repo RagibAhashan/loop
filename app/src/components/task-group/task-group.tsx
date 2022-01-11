@@ -1,7 +1,7 @@
 import { CloseCircleOutlined } from '@ant-design/icons';
 import Editable from '@components/base/editable';
 import { TaskGroupChannel } from '@core/ipc-channels';
-import { TaskGroupViewData } from '@core/taskgroup';
+import { TaskGroupViewData } from '@core/task-group';
 import { Button } from 'antd';
 import React from 'react';
 

@@ -1,19 +1,19 @@
 import EditTaskModal from '@components/task/edit-task-modal';
-import { ProfileGroupViewData } from '@core/profilegroup';
-import { ProxySetViewData } from '@core/proxyset';
-import { TaskGroupViewData } from '@core/taskgroup';
+import { ProfileGroupViewData } from '@core/profile-group';
+import { ProxyGroupViewData } from '@core/proxy-group';
+import { TaskGroupViewData } from '@core/task-group';
 import { Button } from 'antd';
 import React, { useState } from 'react';
 import { buttonStyle } from '../../styles/Buttons';
 
 interface Props {
     taskGroup: TaskGroupViewData | undefined;
-    proxySets: ProxySetViewData[];
+    proxyGroups: ProxyGroupViewData[];
     profileGroups: ProfileGroupViewData[];
 }
 
 const EditAllTasksAction: React.FunctionComponent<Props> = (props) => {
-    const { proxySets, profileGroups, taskGroup } = props;
+    const { proxyGroups, profileGroups, taskGroup } = props;
 
     const [isOpen, setOpen] = useState(false);
 
@@ -41,7 +41,7 @@ const EditAllTasksAction: React.FunctionComponent<Props> = (props) => {
 
             {!!taskGroup ?? (
                 <EditTaskModal
-                    proxySets={proxySets}
+                    proxyGroups={proxyGroups}
                     profileGroups={profileGroups}
                     setOpen={setOpen}
                     massEdit={true}

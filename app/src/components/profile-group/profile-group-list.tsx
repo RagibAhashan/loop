@@ -1,7 +1,7 @@
 import { ProfileGroupChannel } from '@core/ipc-channels';
-import { ProfileGroupViewData } from '@core/profilegroup';
+import { ProfileGroupViewData } from '@core/profile-group';
 import React, { useEffect, useState } from 'react';
-import ProfileGroup from './profilegroup';
+import ProfileGroup from './profile-group';
 
 interface Props {
     profileGroups: ProfileGroupViewData[];

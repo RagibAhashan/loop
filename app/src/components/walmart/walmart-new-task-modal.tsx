@@ -9,7 +9,7 @@
 // }
 
 // const WalmartNewTaskModal: React.FunctionComponent<NewTaskModalProps> = (props) => {
-//     const { isOpen, setOpen, onAdd, profileGroups, proxySets } = props;
+//     const { isOpen, setOpen, onAdd, profileGroups, proxyGroups } = props;
 
 //     const [quantity, setQuantity] = useState(1);
 
@@ -29,7 +29,7 @@
 //         // onAdd(data, quantity);
 //     };
 
-//     // let proxiesOptions: any = proxySets.map((proxySet) => {
+//     // let proxiesOptions: any = proxyGroups.map((proxySet) => {
 //     //     return { label: proxySet.name, value: proxySet.name };
 //     // });
 

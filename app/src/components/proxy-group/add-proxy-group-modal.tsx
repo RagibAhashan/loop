@@ -1,6 +1,6 @@
 import { generateId } from '@core/helpers';
-import { ProxySetChannel } from '@core/ipc-channels';
-import { proxySetPrefix } from '@core/proxyset';
+import { ProxyGroupChannel } from '@core/ipc-channels';
+import { proxySetPrefix } from '@core/proxy-group';
 import { Input, Modal } from 'antd';
 import React, { useState } from 'react';
 
@@ -9,13 +9,13 @@ interface Props {
     setOpen: (value: boolean) => void;
 }
 
-const AddProxySetModal: React.FunctionComponent<Props> = (props) => {
+const AddProxyGroupModal: React.FunctionComponent<Props> = (props) => {
     const { isOpen, setOpen } = props;
     const [name, setName] = useState('New Proxy Set');
 
     const onSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        window.ElectronBridge.send(ProxySetChannel.addProxySet, generateId(proxySetPrefix), name);
+        window.ElectronBridge.send(ProxyGroupChannel.addProxyGroup, generateId(proxySetPrefix), name);
         setOpen(false);
     };
 
@@ -29,4 +29,4 @@ const AddProxySetModal: React.FunctionComponent<Props> = (props) => {
     );
 };
 
-export default AddProxySetModal;
+export default AddProxyGroupModal;

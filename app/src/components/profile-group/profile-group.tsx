@@ -1,7 +1,7 @@
 import { CloseCircleOutlined } from '@ant-design/icons';
 import Editable from '@components/base/editable';
 import { ProfileGroupChannel } from '@core/ipc-channels';
-import { ProfileGroupViewData } from '@core/profilegroup';
+import { ProfileGroupViewData } from '@core/profile-group';
 import { Button } from 'antd';
 import React from 'react';
 

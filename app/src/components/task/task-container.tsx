@@ -4,11 +4,11 @@ import EditAllTasksAction from '@components/actions/edit-all-tasks-action';
 import StartAllTasksAction from '@components/actions/start-all-task-action';
 import StopAllTasksAction from '@components/actions/stop-all-tasks-action';
 import { AccountGroupViewData } from '@core/account-group';
-import { AccountGroupChannel, ProfileGroupChannel, ProxySetChannel, TaskGroupChannel } from '@core/ipc-channels';
-import { ProfileGroupViewData } from '@core/profilegroup';
-import { ProxySetViewData } from '@core/proxyset';
+import { AccountGroupChannel, ProfileGroupChannel, ProxyGroupChannel, TaskGroupChannel } from '@core/ipc-channels';
+import { ProfileGroupViewData } from '@core/profile-group';
+import { ProxyGroupViewData } from '@core/proxy-group';
 import { TaskViewData } from '@core/task';
-import { TaskGroupViewData } from '@core/taskgroup';
+import { TaskGroupViewData } from '@core/task-group';
 import React, { useEffect, useState } from 'react';
 import TaskHeaders from './task-headers';
 import TaskList from './task-list';
@@ -22,7 +22,7 @@ const TaskContainer: React.FunctionComponent = () => {
     const [taskContainerState, setTaskContainerState] = useState<State>({ tasks: [], selectedTaskGroup: undefined });
 
     const [profileGroups, setProfileGroups] = useState<ProfileGroupViewData[]>([]);
-    const [proxySets, setProxySets] = useState<ProxySetViewData[]>([]);
+    const [proxyGroups, setProxyGroups] = useState<ProxyGroupViewData[]>([]);
     const [accountGroups, setAccountGroups] = useState<AccountGroupViewData[]>([]);
 
     const handleOnTaskGroupSelected = (event, taskGroup: TaskGroupViewData, tasks: TaskViewData[]) => {
@@ -48,8 +48,8 @@ const TaskContainer: React.FunctionComponent = () => {
             setProfileGroups(data);
         });
 
-        window.ElectronBridge.invoke(ProxySetChannel.getAllProxySets).then((data: ProxySetViewData[]) => {
-            setProxySets(data);
+        window.ElectronBridge.invoke(ProxyGroupChannel.getAllProxyGroups).then((data: ProxyGroupViewData[]) => {
+            setProxyGroups(data);
         });
 
         window.ElectronBridge.invoke(AccountGroupChannel.getAccountGroups).then((data: AccountGroupViewData[]) => {
@@ -75,7 +75,7 @@ const TaskContainer: React.FunctionComponent = () => {
                 tasks={taskContainerState.tasks}
                 taskGroup={taskContainerState.selectedTaskGroup}
                 profileGroups={profileGroups}
-                proxySets={proxySets}
+                proxyGroups={proxyGroups}
             />
         );
     };
@@ -99,7 +99,7 @@ const TaskContainer: React.FunctionComponent = () => {
                 <div>
                     <AddTaskAction
                         accountGroups={accountGroups}
-                        proxySets={proxySets}
+                        proxyGroups={proxyGroups}
                         profileGroups={profileGroups}
                         taskGroup={taskContainerState.selectedTaskGroup}
                     ></AddTaskAction>
@@ -107,7 +107,7 @@ const TaskContainer: React.FunctionComponent = () => {
                 <div>
                     <EditAllTasksAction
                         taskGroup={taskContainerState.selectedTaskGroup}
-                        proxySets={proxySets}
+                        proxyGroups={proxyGroups}
                         profileGroups={profileGroups}
                     ></EditAllTasksAction>
                 </div>

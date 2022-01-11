@@ -1,5 +1,5 @@
 import { debug } from './log';
-import { ProfileGroup } from './profilegroup';
+import { ProfileGroup } from './profile-group';
 
 const log = debug.extend('ProfileGroupFactory');
 

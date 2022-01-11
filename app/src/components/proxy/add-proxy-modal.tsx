@@ -1,7 +1,7 @@
 import { generateId } from '@core/helpers';
-import { ProxySetChannel } from '@core/ipc-channels';
+import { ProxyGroupChannel } from '@core/ipc-channels';
 import { ProxyFormData, proxyPrefix } from '@core/proxy';
-import { ProxySetViewData } from '@core/proxyset';
+import { ProxyGroupViewData } from '@core/proxy-group';
 import { Modal, Tabs } from 'antd';
 import React, { useState } from 'react';
 import CopyProxy from './copy-proxy';
@@ -12,13 +12,13 @@ const { TabPane } = Tabs;
 interface Props {
     isOpen: boolean;
     setOpen: (value: boolean) => void;
-    selectedProxySet: ProxySetViewData;
+    selectedProxyGroup: ProxyGroupViewData;
 }
 const uploadTabKey = 'uploadProxy';
 const copyTabKey = 'copyPaste';
 
 const AddProxyModal: React.FunctionComponent<Props> = (props) => {
-    const { isOpen, setOpen, selectedProxySet } = props;
+    const { isOpen, setOpen, selectedProxyGroup } = props;
 
     const [tabKey, setTabKey] = useState('uploadProxy');
 
@@ -27,7 +27,7 @@ const AddProxyModal: React.FunctionComponent<Props> = (props) => {
             return { id: generateId(proxyPrefix), proxy };
         });
 
-        window.ElectronBridge.send(ProxySetChannel.addProxyToSet, selectedProxySet.id, proxyDatas);
+        window.ElectronBridge.send(ProxyGroupChannel.addProxyToSet, selectedProxyGroup.id, proxyDatas);
         setOpen(false);
     };
 

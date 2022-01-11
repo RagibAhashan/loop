@@ -1,26 +1,31 @@
 import { AccountFactory } from '@core/account-factory';
 import { AccountGroupFactory } from '@core/account-group-factory';
 import { AccountGroupManager } from '@core/account-group-manager';
+import { AccountGroupStore } from '@core/account-group-store';
 import { AppDatabase } from '@core/app-database';
 import { CreditCardFactory } from '@core/credit-card-factory';
 import { ProfileFactory } from '@core/profile-factory';
-import { ProfileGroupFactory } from '@core/profilegroup-factory';
-import { ProfileGroupManager } from '@core/profilegroup-manager';
+import { ProfileGroupFactory } from '@core/profile-group-factory';
+import { ProfileGroupManager } from '@core/profile-group-manager';
+import { ProfileGroupStore } from '@core/profile-group-store';
+import { ProxyFactory } from '@core/proxy-factory';
+import { ProxyGroupFactory } from '@core/proxy-group-factory';
+import { ProxyGroupStore } from '@core/proxy-group-store';
 import { Settings } from '@core/settings';
 import { SettingsManager } from '@core/settings-manager';
+import { SettingsStore } from '@core/settings-store';
 import { TaskFactory } from '@core/task-factory';
-import { TaskGroupFactory } from '@core/taskgroup-factory';
-import * as electron from 'electron';
-import { app, BrowserWindow, ipcMain } from 'electron';
-import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+import { TaskGroupFactory } from '@core/task-group-factory';
+import { TaskGroupStore } from '@core/task-group-store';
+import { app, BrowserWindow, ipcMain, session } from 'electron';
 import hash from 'object-hash';
 import si from 'systeminformation';
 import { ACCESS_GRANTED, CAPTHA_WINDOW_CLOSED, CAPTHA_WINDOW_OPEN, GET_SYSTEM_ID, SET_PROXY_CAPTCHA_WINDOW, STORE_KEY } from './common/Constants';
 import { CaptchaType, STORES, StoreType } from './constants/stores';
 import { captchaWindowManager } from './core/captcha-window/CaptchaWindowManager';
 import { debug } from './core/log';
-import { ProxySetManager } from './core/proxyset-manager';
-import { TaskGroupManager } from './core/taskgroup-manager';
+import { ProxyGroupManager } from './core/proxy-group-manager';
+import { TaskGroupManager } from './core/task-group-manager';
 import { Proxy } from './interfaces/OtherInterfaces';
 import UserAgentProvider from './services/user-agent-provider';
 
@@ -40,7 +45,7 @@ let mainWindow: BrowserWindow;
 console.log('WEBPACK ENTRY', MAIN_WINDOW_WEBPACK_ENTRY);
 
 const disableSpellcheckerDownload = () => {
-    electron.session.defaultSession.setSpellCheckerDictionaryDownloadURL('https://00.00/');
+    session.defaultSession.setSpellCheckerDictionaryDownloadURL('https://00.00/');
 };
 
 const getSystemUniqueID = async (): Promise<string> => {
@@ -83,14 +88,18 @@ const createWindow = () => {
 let appDatabase: AppDatabase;
 let profileGroupManager: ProfileGroupManager;
 let accountGroupManager: AccountGroupManager;
-let proxySetManager: ProxySetManager;
+let proxySetManager: ProxyGroupManager;
 let taskGroupManager: TaskGroupManager;
 let settingsManager: SettingsManager;
+let settingsStore: SettingsStore;
+let profileGroupStore: ProfileGroupStore;
+let proxyGroupStore: ProxyGroupStore;
+let taskGroupStore: TaskGroupStore;
+let accountGroupStore: AccountGroupStore;
 
 app.whenReady().then(async () => {
-    installExtension(REACT_DEVELOPER_TOOLS)
-        .then((name) => console.log(`Added Extension:  ${name}`))
-        .catch((err) => console.log('An error occurred: ', err));
+    await session.defaultSession.loadExtension('/home/wail/.config/google-chrome/Default/Extensions/fmkadmapgofadopljbjfkapdkoienihi/4.22.0_0');
+
     disableSpellcheckerDownload();
     createWindow();
 
@@ -99,24 +108,32 @@ app.whenReady().then(async () => {
     appDatabase = new AppDatabase();
 
     const settings = new Settings();
-    settingsManager = new SettingsManager(appDatabase, settings);
-    await settingsManager.ready();
+    settingsStore = new SettingsStore(appDatabase, settings);
 
     const creditCardFactory = new CreditCardFactory();
     const profileFactory = new ProfileFactory(creditCardFactory);
     const profileGroupFactory = new ProfileGroupFactory();
-    profileGroupManager = new ProfileGroupManager(appDatabase, profileGroupFactory, profileFactory);
+    profileGroupStore = new ProfileGroupStore(appDatabase, profileGroupFactory, profileFactory);
 
-    const accountGroupFactory = new AccountGroupFactory();
-    const accountFactory = new AccountFactory(settingsManager);
+    const proxyGroupFactory = new ProxyGroupFactory();
+    const proxyFactory = new ProxyFactory();
+    proxyGroupStore = new ProxyGroupStore(appDatabase, proxyFactory, proxyGroupFactory);
 
     const taskGroupFactory = new TaskGroupFactory();
-    const taskFactory = new TaskFactory(profileGroupManager, proxySetManager, accountGroupManager, mainWindow);
-    taskGroupManager = new TaskGroupManager(appDatabase, taskGroupFactory, taskFactory);
+    const taskFactory = new TaskFactory(mainWindow);
+    taskGroupStore = new TaskGroupStore(appDatabase, taskGroupFactory, taskFactory);
 
-    proxySetManager = new ProxySetManager(appDatabase, taskGroupManager);
-    accountGroupManager = new AccountGroupManager(appDatabase, accountGroupFactory, accountFactory, taskGroupManager);
+    const accountGroupFactory = new AccountGroupFactory();
+    const accountFactory = new AccountFactory(mainWindow);
+    accountGroupStore = new AccountGroupStore(appDatabase, accountGroupFactory, accountFactory, taskGroupStore);
 
+    settingsManager = new SettingsManager(settingsStore);
+    proxySetManager = new ProxyGroupManager(proxyGroupStore, taskGroupStore);
+    taskGroupManager = new TaskGroupManager(taskGroupStore, profileGroupStore, accountGroupStore, proxyGroupStore);
+    accountGroupManager = new AccountGroupManager(accountGroupStore, settingsStore);
+    profileGroupManager = new ProfileGroupManager(profileGroupStore, creditCardFactory);
+
+    await settingsManager.ready();
     await profileGroupManager.ready();
     await proxySetManager.ready();
     await accountGroupManager.ready();
@@ -141,11 +158,11 @@ ipcMain.on(ACCESS_GRANTED, () => {
 app.on('window-all-closed', async () => {
     //TODO(wail) maybe not the best place to put this here
     log('Saving models to DB');
-    await profileGroupManager.saveToDB();
-    await proxySetManager.saveToDB();
-    await taskGroupManager.saveToDB();
-    await settingsManager.saveToDB();
-    await accountGroupManager.saveToDB();
+    await profileGroupStore.saveToDB();
+    await proxyGroupStore.saveToDB();
+    await taskGroupStore.saveToDB();
+    await settingsStore.saveToDB();
+    await accountGroupStore.saveToDB();
 
     log('models saved!');
 

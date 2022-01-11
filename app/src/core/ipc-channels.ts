@@ -22,19 +22,19 @@ export enum TaskGroupChannel {
     editTaskGroupStore = 'dynasty:editTaskGroupStore',
 }
 
-export enum ProxySetChannel {
-    getAllProxySets = 'dynasty:getAllProxySets',
-    getProxySetProxies = 'dynasty:getProxySetProxies',
-    addProxySet = 'dynasty:addProxySet',
-    removeProxySet = 'dynasty:removeProxySet',
+export enum ProxyGroupChannel {
+    getAllProxyGroups = 'dynasty:getAllProxyGroups',
+    getProxyGroupProxies = 'dynasty:getProxyGroupProxies',
+    addProxyGroup = 'dynasty:addProxyGroup',
+    removeProxyGroup = 'dynasty:removeProxyGroup',
     addProxyToSet = 'dynasty:addProxyToSet',
     removeProxyFromSet = 'dynasty:removeProxyFromSet',
     proxiesUpdated = 'dynasty:proxiesUpdated', // Event when proxies are added or removed to set
-    removeAllProxiesFromProxySet = 'dynasty:removeAllProxiesFromProxySet',
+    removeAllProxiesFromProxyGroup = 'dynasty:removeAllProxiesFromProxyGroup',
     proxySetUpdated = 'dynasty:proxySetUpdated',
-    onProxySetSelected = 'dynasty:onProxySetSelected',
+    onProxyGroupSelected = 'dynasty:onProxyGroupSelected',
     proxySetError = 'dynasty:proxySetError',
-    editProxySetName = 'dynasty:proxySetName',
+    editProxyGroupName = 'dynasty:proxySetName',
 }
 
 export enum ProfileGroupChannel {
@@ -82,6 +82,6 @@ export enum AccountGroupChannel {
     getAccountFromAccountGroup = 'dynasty:getAccountFromAccountGroup',
     onAccountGroupSelected = 'dynasty:onAccountGroupSelected',
     editAccountGroupName = 'dynasty:editAccountGroupName',
-
     logIn = 'dynasty:logIn',
+    logOut = 'dynasty:logOut',
 }

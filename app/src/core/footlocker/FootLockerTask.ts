@@ -1,9 +1,9 @@
 // import { CreditCard } from '@core/credit-card';
 // import { Profile } from '@core/profile';
-// import { ProfileGroupManager } from '@core/profilegroup-manager';
+// import { ProfileGroupManager } from '@core/profile-group-manager';
 // import { Proxy } from '@core/proxy';
-// import { ProxySet } from '@core/proxyset';
-// import { ProxySetManager } from '@core/proxyset-manager';
+// import { ProxyGroup } from '@core/proxy-group';
+// import { ProxyGroupManager } from '@core/proxy-group-manager';
 // import { Viewable } from '@core/viewable';
 // import { AxiosResponse } from 'axios';
 // import { NOTIFY_CAPTCHA_SOLVED, NOTIFY_CAPTCHA_TASK, TASK_STATUS, TASK_SUCCESS } from '../../common/Constants';
@@ -37,12 +37,12 @@
 //         uuid: string,
 //         retryDelay: number,
 //         userProfile: Profile,
-//         proxySet: ProxySet,
+//         proxySet: ProxyGroup,
 //         proxy: Proxy,
 //         taskGroupName: string,
 //         requestInstance: RequestInstance,
 //         profileGroupManager: ProfileGroupManager,
-//         proxyManager: ProxySetManager,
+//         proxyManager: ProxyGroupManager,
 //         productSKU: string,
 //         sizes: string[],
 //         deviceId: string,

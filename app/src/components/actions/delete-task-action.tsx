@@ -1,7 +1,7 @@
 import { DeleteFilled, QuestionCircleOutlined } from '@ant-design/icons';
 import { TaskGroupChannel } from '@core/ipc-channels';
 import { TaskViewData } from '@core/task';
-import { TaskGroupViewData } from '@core/taskgroup';
+import { TaskGroupViewData } from '@core/task-group';
 import { Button, Popconfirm } from 'antd';
 import React from 'react';
 import { deleteButton } from '../../styles/Buttons';

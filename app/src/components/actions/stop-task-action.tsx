@@ -1,7 +1,7 @@
 import { StopFilled } from '@ant-design/icons';
 import { TaskGroupChannel } from '@core/ipc-channels';
 import { TaskViewData } from '@core/task';
-import { TaskGroupViewData } from '@core/taskgroup';
+import { TaskGroupViewData } from '@core/task-group';
 import { Button } from 'antd';
 import React from 'react';
 import { stopButton } from '../../styles/Buttons';

@@ -1,6 +1,7 @@
 import { AccountStoreType } from '../constants/stores';
-import { Account, AccountViewData } from './account';
+import { Account } from './account';
 import { debug } from './log';
+import { AccountViewData } from './models/account';
 import { Viewable } from './viewable';
 
 const log = debug.extend('AccountGroup');
@@ -81,14 +82,19 @@ export class AccountGroup implements IAccountGroup, Viewable<AccountGroupViewDat
     }
 
     public getAccount(id: string): Account {
-        const account = this.getAccount(id);
+        const account = this.accounts.get(id);
         if (!account) throw new Error('getAccount: Cound not be found key');
         return account;
     }
 
-    public logIn(id: string): void {
+    public async logIn(id: string): Promise<void> {
         const account = this.getAccount(id);
-        account.logIn();
+        await account.logIn();
+    }
+
+    public logOut(id: string): void {
+        const account = this.getAccount(id);
+        account.logOut();
     }
 
     public editName(newName: string): void {

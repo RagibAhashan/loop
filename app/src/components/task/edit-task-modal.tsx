@@ -1,5 +1,5 @@
-import { ProfileGroupViewData } from '@core/profilegroup';
-import { ProxySetViewData } from '@core/proxyset';
+import { ProfileGroupViewData } from '@core/profile-group';
+import { ProxyGroupViewData } from '@core/proxy-group';
 import { TaskViewData } from '@core/task';
 import React from 'react';
 interface Props {
@@ -7,7 +7,7 @@ interface Props {
     setOpen: (value: boolean) => void;
     task: TaskViewData;
     massEdit: boolean;
-    proxySets: ProxySetViewData[];
+    proxyGroups: ProxyGroupViewData[];
     profileGroups: ProfileGroupViewData[];
 }
 

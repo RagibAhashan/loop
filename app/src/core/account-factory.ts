@@ -1,27 +1,34 @@
-import { Account, AccountFormData } from './account';
+import { BrowserWindow } from 'electron';
+import { Account } from './account';
 import { debug } from './log';
-import { SettingsManager } from './settings-manager';
+import { AccountEmittedEvents, AccountStatus, IAccount } from './models/account';
 import { WalmartCAAccount } from './walmart-ca-account';
 
 const log = debug.extend('AccountFactory');
-export class AccountFactory {
-    private settingsManager: SettingsManager;
 
-    constructor(settingsManager: SettingsManager) {
-        this.settingsManager = settingsManager;
+export class AccountFactory {
+    private mainWindow: BrowserWindow;
+
+    constructor(mainWindow: BrowserWindow) {
+        this.mainWindow = mainWindow;
     }
-    public createAccount(accountData: AccountFormData, groupId: string): Account {
-        const settings = this.settingsManager.getSettings();
-        const account = new WalmartCAAccount(
-            accountData.id,
+
+    public createAccount(groupId: string, account: IAccount): Account {
+        const newAccount = new WalmartCAAccount(
+            account.id,
             groupId,
-            accountData.name,
-            accountData.email,
-            accountData.password,
-            accountData.loginProxy,
-            settings,
+            account.name,
+            account.email,
+            account.password,
+            account.loginProxy,
+            account.settings,
+            account.status,
         );
 
-        return account;
+        newAccount.on(AccountEmittedEvents.Status, (status: AccountStatus) => {
+            this.mainWindow.webContents.send(AccountEmittedEvents.Status + account.id, status);
+        });
+
+        return newAccount;
     }
 }

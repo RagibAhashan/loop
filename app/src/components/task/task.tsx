@@ -1,8 +1,8 @@
 import TaskActions from '@components/actions/task-actions';
-import { ProfileGroupViewData } from '@core/profilegroup';
-import { ProxySetViewData } from '@core/proxyset';
+import { ProfileGroupViewData } from '@core/profile-group';
+import { ProxyGroupViewData } from '@core/proxy-group';
 import { TaskViewData } from '@core/task';
-import { TaskGroupViewData } from '@core/taskgroup';
+import { TaskGroupViewData } from '@core/task-group';
 import { Tooltip } from 'antd';
 import React, { useEffect } from 'react';
 import TaskStatus from './task-status';
@@ -10,7 +10,7 @@ import TaskStatus from './task-status';
 interface Props {
     task: TaskViewData;
     style: any;
-    proxySets: ProxySetViewData[];
+    proxyGroups: ProxyGroupViewData[];
     profileGroups: ProfileGroupViewData[];
     taskGroup: TaskGroupViewData;
 }
@@ -18,12 +18,12 @@ interface Props {
 interface Props {
     task: TaskViewData;
     style: any;
-    proxySets: ProxySetViewData[];
+    proxyGroups: ProxyGroupViewData[];
     profileGroups: ProfileGroupViewData[];
     taskGroup: TaskGroupViewData;
 }
 const Task: React.FunctionComponent<Props> = (props) => {
-    const { task, style, proxySets, profileGroups, taskGroup } = props;
+    const { task, style, proxyGroups, profileGroups, taskGroup } = props;
 
     const isRunning = false;
 
@@ -71,7 +71,7 @@ const Task: React.FunctionComponent<Props> = (props) => {
                 </div>
 
                 <div>
-                    <TaskActions taskGroup={taskGroup} proxySets={proxySets} profileGroups={profileGroups} task={task}></TaskActions>
+                    <TaskActions taskGroup={taskGroup} proxyGroups={proxyGroups} profileGroups={profileGroups} task={task}></TaskActions>
                 </div>
             </div>
         </div>

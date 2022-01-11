@@ -1,6 +1,6 @@
 import { SettingsChannel } from '@core/ipc-channels';
 import { SettingsViewData } from '@core/settings';
-import { message, Switch } from 'antd';
+import { Button, message, Switch } from 'antd';
 import React, { useEffect, useState } from 'react';
 
 const SettingsPage = () => {
@@ -21,7 +21,6 @@ const SettingsPage = () => {
 
     const handleSettingsUpdated = (_, settings: SettingsViewData, msg: string) => {
         setSettings(settings);
-        message.success(msg, 1);
     };
 
     const handleSetBrowserPath = (value: string) => {
@@ -58,14 +57,12 @@ const SettingsPage = () => {
             <div>
                 <label> Discord Web Hook </label>
                 <input defaultValue={settings.discordWebHook} onBlur={(e) => handleSetDiscordWebHook(e.target.value)}></input>
+                <Button onClick={handleTestWebhook}> Test </Button>
             </div>
 
             <div>
                 <label> Public Checkout </label>
                 <Switch defaultChecked onChange={handleSetPublicCheckout}></Switch>
-            </div>
-            <div>
-                <button onClick={handleTestWebhook}> Test </button>
             </div>
         </div>
     ) : (
