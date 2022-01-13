@@ -18,8 +18,7 @@ import { TaskFactory } from '@core/task-factory';
 import { TaskGroupFactory } from '@core/task-group-factory';
 import { TaskGroupStore } from '@core/task-group-store';
 import { app, BrowserWindow, ipcMain, session } from 'electron';
-import hash from 'object-hash';
-import si from 'systeminformation';
+import { machineId } from 'node-machine-id';
 import { ACCESS_GRANTED, CAPTHA_WINDOW_CLOSED, CAPTHA_WINDOW_OPEN, GET_SYSTEM_ID, SET_PROXY_CAPTCHA_WINDOW, STORE_KEY } from './common/Constants';
 import { CaptchaType, STORES, StoreType } from './constants/stores';
 import { captchaWindowManager } from './core/captcha-window/CaptchaWindowManager';
@@ -50,9 +49,9 @@ const disableSpellcheckerDownload = () => {
 
 const getSystemUniqueID = async (): Promise<string> => {
     try {
-        const SYSTEM_ID = await si.system();
-        const HASHED_DATA = await hash(SYSTEM_ID);
-        return HASHED_DATA;
+        const hashedDeviceId = await machineId();
+        console.log('system id', hashedDeviceId);
+        return hashedDeviceId;
     } catch (error) {
         throw new Error('Could not fetch system information');
     }
@@ -72,7 +71,7 @@ const createWindow = () => {
 
     mainWindow.loadURL(LICENSE_WINDOW_WEBPACK_ENTRY);
 
-    if (process.env.NODE_ENV === 'development') {
+    if (process.env.NODE_ENV !== 'production') {
         mainWindow.webContents.openDevTools();
     }
 
@@ -245,11 +244,6 @@ ipcMain.on(SET_PROXY_CAPTCHA_WINDOW, (event, storeType: StoreType, proxy: Proxy)
     app.removeAllListeners('login');
 });
 
-ipcMain.handle(GET_SYSTEM_ID, async (event) => {
-    try {
-        const ID = await getSystemUniqueID();
-        return ID;
-    } catch (error) {
-        console.log('err', error);
-    }
+ipcMain.handle(GET_SYSTEM_ID, async (event): Promise<string> => {
+    return await getSystemUniqueID();
 });

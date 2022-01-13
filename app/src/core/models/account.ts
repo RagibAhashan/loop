@@ -1,3 +1,4 @@
+import { CookieJar } from '@core/cookie-jar';
 import { EntityId } from '@core/entity-id';
 import { Status } from '@core/interfaces/base';
 import { Settings } from '@core/settings';
@@ -41,4 +42,5 @@ export interface IAccount {
     settings: Settings;
     taskId: EntityId | null;
     status: AccountStatus;
+    sessionCookies: CookieJar;
 }

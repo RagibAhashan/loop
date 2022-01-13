@@ -65,10 +65,9 @@ export class TaskFactory {
 
         const userProfile = this.profileGroupStore.getProfileGroup(taskData.profile.groupId).getProfile(taskData.profile.id);
 
-        if (userProfile) userProfile.setTaskId({ groupId: groupId, id: taskData.id });
+        const account = taskData.account ? this.accountGroupStore.getAccountGroup(taskData.account.groupId).getAccount(taskData.account.id) : null;
 
         const proxySet = taskData.proxyGroupId ? this.proxyGroupStore.getProxyGroup(taskData.proxyGroupId) : null;
-        const account = taskData.account ? this.accountGroupStore.getAccountGroup(taskData.account.groupId).getAccount(taskData.account.id) : null;
 
         let wTask;
         switch (storeType) {

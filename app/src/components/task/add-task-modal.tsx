@@ -36,7 +36,7 @@ export const NewTaskModal: React.FunctionComponent<Props> = (props) => {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm<TaskFormValues>();
+    } = useForm<TaskFormValues>({ defaultValues: { productQuantity: 1, quantity: 1 } });
 
     return (
         <Modal visible={isOpen} onCancel={() => setOpen(false)} width={'700px'} footer={null}>

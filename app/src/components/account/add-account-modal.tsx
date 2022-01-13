@@ -25,7 +25,7 @@ const AddAccountModal: React.FunctionComponent<Props> = (props) => {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm<AccountFormValues>();
+    } = useForm<AccountFormValues>({ defaultValues: { password: '', email: '' } });
 
     const onAddAccount = (account: AccountFormValues) => {
         const accountData: AccountFormData = { ...account, id: generateId(accountPrefix) };
@@ -53,13 +53,17 @@ const AddAccountModal: React.FunctionComponent<Props> = (props) => {
                         <div>
                             <label>
                                 Email
-                                <input className={errors.email && 'input--error'} {...register('email', { required: true })} />
+                                <input className={errors.email && 'input--error'} {...register('email', { required: true, disabled: true })} />
                             </label>
                         </div>
                         <div>
                             <label>
                                 Password
-                                <input type="password" className={errors.password && 'input--error'} {...register('password', { required: true })} />
+                                <input
+                                    type="password"
+                                    className={errors.password && 'input--error'}
+                                    {...register('password', { required: true, disabled: true })}
+                                />
                             </label>
                         </div>
                         <div>

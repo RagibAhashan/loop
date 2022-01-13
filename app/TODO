@@ -48,3 +48,5 @@ RpcIpcMessagePortClosedError: Cannot send the message - the message port has bee
 -   Checkout Tailwind css components, they seem to have good looking community components
 
 https://tailwindui.com/#components
+
+4.  Subscription licenses can be implemented in a couple different ways. If you have a payment provider, such as Stripe, we recommend tethering the license's expiration date to the subscription period. This can be accomplished using webhooks.

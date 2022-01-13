@@ -1,5 +1,6 @@
 import EventEmitter from 'events';
-import puppeteer from 'puppeteer-core';
+import puppeteer from 'puppeteer';
+import { CookieJar } from './cookie-jar';
 import { EntityId } from './entity-id';
 import { AccountEmittedEvents, AccountStatus, AccountStatusLevel, AccountViewData, IAccount } from './models/account';
 import { Settings } from './settings';
@@ -17,6 +18,7 @@ export abstract class Account extends EventEmitter implements IAccount, Viewable
     settings: Settings;
     taskId: EntityId | null;
     status: AccountStatus;
+    sessionCookies: CookieJar;
 
     constructor(
         id: string,
@@ -40,29 +42,49 @@ export abstract class Account extends EventEmitter implements IAccount, Viewable
         this.groupId = groupId;
         this.taskId = null;
         this.status = status;
+        this.sessionCookies = new CookieJar(this.logInPage);
     }
 
     public setTaskId(value: EntityId | null): void {
         this.taskId = value;
     }
 
-    abstract logIn(): void;
-
-    protected async openLoginPage(): Promise<puppeteer.Browser> {
+    /*
+    Returns puppeteer page and browser
+    */
+    protected async openLoginPage(): Promise<any> {
         try {
             const browser = await puppeteer.launch({ headless: false, defaultViewport: null, executablePath: this.settings.browserPath });
 
-            browser.on('disconnected', async () => {
-                console.log('browser disconnected');
-                console.log('cookies', await page.cookies());
-            });
             const page = await browser.newPage();
-            await page.goto(this.logInPage);
-            return browser;
+            await page.setDefaultNavigationTimeout(0);
+
+            await page.goto(this.logInPage, { timeout: 0, waitUntil: 'load' });
+
+            return page;
         } catch (error) {
             this.emitStatus('error', 'Could not open browser');
             throw new Error(error);
         }
+    }
+
+    public async logIn(): Promise<void> {
+        this.emitStatus('info', 'Opening browser...');
+
+        const page = await this.openLoginPage();
+
+        this.emitStatus('info', 'Waiting for login');
+
+        await page.waitForNavigation();
+
+        const cookiesJSON = await page.cookies();
+
+        this.loggedIn = true;
+        this.sessionCookies.saveInSessionFromJSON(cookiesJSON);
+
+        page.browser().close();
+
+        this.emitStatus('success', 'Logged in');
     }
 
     public logOut(): void {

@@ -22,56 +22,72 @@ export class CookieJar {
     /**
      * Gather all set-cookie header array and store them in the cookies map
      *
+     * @param {cookies} cookies
+     *
+     * list of cookies in a string format : ['name=value; attributes;values', 'name2=value2; attributes2;values2']
+     *
      * @return {void}
      *
      */
-    async saveInSessionFromArray(cookies: string[]): Promise<void> {
+    public async saveInSessionFromArray(cookies: string[]): Promise<void> {
         if (cookies.length === 0) return;
-        await this.saveInSession(cookies);
+
+        const toughCookieArr = cookies.map((cookie) => this.CookieUtil.parse(cookie));
+
+        await this.saveInSession(toughCookieArr);
     }
 
     /**
      * Gather a cookie string 'abc=123;123=abc' and store them in the cookies map
      *
+     * @param {cookie}
+     *
+     * cookie string in the same format returned by document.cookie :
+     * that is 'name1=value1; name2=value2; name3=value3`
+     *
      * @return {void}
      *
      */
-    async saveInSessionFromString(cookies: string): Promise<void> {
-        await this.saveInSession(cookies.split(';'));
+    public async saveInSessionFromDocumentCookie(cookies: string): Promise<void> {
+        const cookiesArr = cookies.split(';');
+        const toughCookieArr = cookiesArr.map((cookie) => this.CookieUtil.parse(cookie));
+
+        await this.saveInSession(toughCookieArr);
     }
 
-    // /**
-    //  * Gather all set-cookie header from a puppeteer json object and store them in the cookies map
-    //  *
-    //  * @return {void}
-    //  *
-    //  */
-    // async saveInSessionFromJSON(cookies: puppeteer.Protocol.Network.Cookie[]): Promise<void> {
-    //     if (cookies.length === 0) return;
+    /**
+     * Gather json cookies and store them in the cookie jar
+     *
+     * @param {cookies} list of object in this form
+     *
+     * {
+     * name: 'name',
+     * value: '1',
+     * domain: 'www.',
+     * path: '/',
+     * expires: 345345,
+     * size: 17,
+     * httpOnly: false,
+     * secure: true,
+     * session: false,
+     * sameSite: 'Strict',
+     * sameParty: false,
+     * sourceScheme: 'Secure',
+     * sourcePort: 443
+     * }
+     *
+     * @return {void}
+     *
+     */
+    async saveInSessionFromJSON(cookiesJSON: any[]): Promise<void> {
+        const toughCookie = cookiesJSON.map((cookieJSON) => tough.fromJSON(cookieJSON));
 
-    //     let cookiesStrArr: string[] = [];
+        await this.saveInSession(toughCookie);
+    }
 
-    //     /*
-    //      *  because we are also using pupeteer to get some cookies, it only returns cookies in an object format
-    //      *  that is not accepted by tough-cookie, so we transform it in string first
-    //      */
-    //     cookiesStrArr = cookies.map((cookie) => {
-    //         return cookieParser.serialize(cookie.name, cookie.value, {
-    //             domain: cookie.domain,
-    //             expires: new Date(cookie.expires),
-    //             httpOnly: cookie.httpOnly,
-    //             path: cookie.path,
-    //         });
-    //     });
-
-    //     await this.saveInSession(cookiesStrArr);
-    // }
-
-    private async saveInSession(cookies: string[]): Promise<void> {
-        const toughCookieArr = cookies.map((cookie) => this.CookieUtil.parse(cookie));
-
+    private async saveInSession(cookies: (tough.Cookie | undefined)[]): Promise<void> {
         // array of tough cookie object
-        for (const cookie of toughCookieArr) {
+        for (const cookie of cookies) {
             if (!cookie) continue;
 
             // if cookie does not match domain for some reason, returns undefined

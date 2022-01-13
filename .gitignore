@@ -8,3 +8,6 @@ app/src/main.prod.js
 app/src/main.prod.js.map
 resources/
 prototype/
+keys
+accounts_test
+cdfix

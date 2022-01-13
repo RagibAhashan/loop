@@ -15,7 +15,9 @@ const AccountActions: React.FunctionComponent<Props> = (props) => {
         window.ElectronBridge.send(AccountGroupChannel.logIn, account.groupId, account.id);
     };
 
-    const handleLogout = () => {};
+    const handleLogout = () => {
+        window.ElectronBridge.send(AccountGroupChannel.logOut, account.groupId, account.id);
+    };
 
     const renderLoginButton = () => {
         return account.loggedIn ? (

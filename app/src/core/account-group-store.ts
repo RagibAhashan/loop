@@ -124,7 +124,7 @@ export class AccountGroupStore {
         const accountGroup = this.getAccountGroup(groupId);
 
         for (const accountData of accountDatas) {
-            const newAccount = this.accountFactory.createAccount(groupId, accountData);
+            const newAccount = this.accountFactory.createAccount(groupId, accountGroup.storeType, accountData);
             accountGroup.addAccount(newAccount);
         }
 

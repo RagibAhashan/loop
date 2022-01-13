@@ -137,10 +137,6 @@ export class TaskGroupStore {
         const taskGroup = this.getTaskGroup(groupId);
 
         for (const id of taskIds) {
-            taskGroup.getTask(id).userProfile.setTaskId(null);
-            taskGroup.getTask(id).account?.setTaskId(null);
-            taskGroup.getTask(id).proxy?.setTaskId(null);
-
             taskGroup.removeTask(id);
         }
 
@@ -149,12 +145,6 @@ export class TaskGroupStore {
 
     public removeAllTasksFromGroup(groupId: string): TaskViewData[] {
         const taskGroup = this.getTaskGroup(groupId);
-
-        taskGroup.getAllTasks().forEach((task) => {
-            task.userProfile.setTaskId(null);
-            task.account?.setTaskId(null);
-            task.proxy?.setTaskId(null);
-        });
 
         taskGroup.removeAllTasks();
 
