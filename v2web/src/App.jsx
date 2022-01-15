@@ -1,6 +1,7 @@
 // React Required
 import React, { useCallback, useEffect } from 'react';
 import { Route, Switch } from 'react-router-dom';
+import { CancelCheckout, SuccessCheckout } from './component/common/PostCheckout';
 // holds reference to the current connected user
 import { useUser } from './component/common/UserContext';
 // Common Layout
@@ -33,6 +34,8 @@ const App = () => {
                 <Route exact path={`${process.env.PUBLIC_URL}/`} component={DarkMainDemo} />
                 <Route exact path={`${process.env.PUBLIC_URL}/dashboard`} component={() => <Dashboard />} />
                 <Route exact path={`${process.env.PUBLIC_URL}/register`} component={Register} />
+                <Route path={`${process.env.PUBLIC_URL}/success`} component={SuccessCheckout} />
+                <Route path={`${process.env.PUBLIC_URL}/canceled`} component={CancelCheckout} />
                 <Route path={`${process.env.PUBLIC_URL}/404`} component={error404} />
                 <Route component={error404} />
             </Switch>

@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useUser } from '../component/common/UserContext';
@@ -13,12 +14,15 @@ const SERVER_ENDPOINT = process.env.REACT_APP_SERVER_ENDPOINT;
  */
 
 const Dashboard = (props) => {
-    const { user, logoutUser, fetchingUser } = useUser();
+    const { user, logoutUser, fetchingUser, setUser } = useUser();
     const history = useHistory();
     const [wasBound, setWasBound] = useState(false);
     const [renderDelay, setRenderDelay] = useState(true);
 
+    const [licenseKey, setLicenseKey] = useState('');
+
     useEffect(() => {
+        console.log('Dashboard init');
         // Wait for user fetching, this is done in case someone is trying to reach this route
         // manually from the url or after the login redirect from the server
         if (!fetchingUser && !user) {
@@ -39,17 +43,86 @@ const Dashboard = (props) => {
         history.push('/');
     };
 
+    const handleActivateKey = async () => {
+        if (!licenseKey) return;
+        console.log('activating', licenseKey);
+        try {
+            const resp = await axios.post(
+                process.env.REACT_APP_SERVER_ENDPOINT + '/license/activate',
+                { key: licenseKey },
+                { withCredentials: true },
+            );
+
+            console.log('got user after activating license');
+            setUser(resp['data']);
+        } catch (error) {
+            console.log('Error activating license key', error);
+            // TODO show notification
+        }
+    };
+
+    const handleResetLicenseKey = async (key) => {
+        if (!key) return;
+        console.log('resetting key', key);
+
+        try {
+            const resp = await axios.post(process.env.REACT_APP_SERVER_ENDPOINT + '/license/reset', { key }, { withCredentials: true });
+            setUser(resp['data']);
+        } catch (error) {
+            console.log('Error resetting key', error);
+        }
+    };
+
     return fetchingUser ? null : renderDelay ? null : (
         <div>
-            <div className="rn-finding-us-area attacment-fixed rn-finding-us ptb--120 bg_color--2" data-black-overlay="5">
+            <div>
                 <div>
                     <button onClick={handleLogout}>LOG OUT</button>
                 </div>
-                <span>Render dashboard here,</span>
 
-                <span>bind key to discord ( to get invited to discord group )</span>
-                <span>unbind key from device (if user wants to computer)</span>
-                <span>reset key entirely (unbind from and discord and machine, to resell)</span>
+                <div></div>
+
+                <div>
+                    <label>
+                        Bind a license to this discord account (To get invited to the discord group)
+                        <input value={licenseKey} onChange={(e) => setLicenseKey(e.target.value)} placeholder="XXXX-XXXX-XXXX-XXXX" />
+                        <button onClick={handleActivateKey}> Submit </button>
+                    </label>
+                </div>
+
+                <span> -------------- LICENSES MANAGEMENT -------------------</span>
+
+                {user.licenses ? (
+                    <div>
+                        <pre>{JSON.stringify(user, null, 2)}</pre>
+
+                        {user.licenses.map((license) => {
+                            return (
+                                <div key={license.key}>
+                                    <div>
+                                        <span> License : </span>
+                                        <span> {license.key} </span>
+                                    </div>
+                                    <div>
+                                        {/* (You can only use one device at a time) */}
+                                        <span>Unbind key from device </span>
+                                        <div> Current device </div>
+                                        <span> {license.deviceInfo.hostname} </span>
+                                        <span> {license.deviceInfo.platform} </span>
+                                        <span> {license.deviceInfo.release} </span>
+                                    </div>
+                                    {/* (by resetting the license, it will remove access from our discord and you can no longer use it
+                                        unless you bind it again) */}
+                                    <button onClick={() => handleResetLicenseKey(license.key)}>Reset key</button>
+
+                                    <button>Manage subscription for this license</button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div> No licenses... Start by binding one</div>
+                )}
             </div>
             <Footer />
         </div>

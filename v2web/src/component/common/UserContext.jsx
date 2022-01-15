@@ -40,7 +40,7 @@ const UserProvider = ({ children }) => {
         }
     };
 
-    return <UserContext.Provider value={{ user, fetchUser, logoutUser, fetchingUser }}>{children}</UserContext.Provider>;
+    return <UserContext.Provider value={{ user, fetchUser, logoutUser, fetchingUser, setUser }}>{children}</UserContext.Provider>;
 };
 
 export default UserProvider;

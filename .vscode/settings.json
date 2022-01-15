@@ -7,5 +7,9 @@
     },
     "html.format.indentInnerHtml": true,
     "terminal.integrated.scrollback": 999999999,
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "[go]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "golang.go"
+    }
 }
